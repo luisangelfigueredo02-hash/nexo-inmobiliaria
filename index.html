@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexo Inmobiliaria | Residencias Exclusivas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #0a192f;
+      --bg-card: #0f2342;
+      --gold-primary: #d4af37;
+      --gold-light: #f3e5ab;
+      --gold-gradient: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+      --text-light: #f0f4f8;
+      --text-muted: #8892b0;
+      --border-color: rgba(212, 175, 55, 0.25);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Headings */
+    h1, h2, h3, h4, .brand-logo {
+      font-family: 'Cinzel', serif;
+      letter-spacing: 1px;
+    }
+
+    /* Header & Navigation */
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(10, 25, 47, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 1000;
+      padding: 1.2rem 8%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-logo {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--gold-primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo span {
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 2.5rem;
+    }
+
+    nav a {
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: var(--gold-primary);
+    }
+
+    /* Hero Section */
+    .hero {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 0 1rem;
+      background: radial-gradient(circle at center, rgba(15, 35, 66, 0.8) 0%, rgba(10, 25, 47, 1) 70%);
+      position: relative;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: rgba(212, 175, 55, 0.05);
+      filter: blur(100px);
+      border-radius: 50%;
+    }
+
+    .hero-title {
+      font-size: 3.8rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+
+    .hero-slogan {
+      font-size: 1.2rem;
+      font-weight: 300;
+      letter-spacing: 4px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+      position: relative;
+      display: inline-block;
+    }
+
+    .hero-slogan::after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 2px;
+      background: var(--gold-primary);
+      margin: 15px auto 0;
+    }
+
+    .btn-gold {
+      padding: 1rem 2.5rem;
+      background: transparent;
+      color: var(--gold-primary);
+      border: 1px solid var(--gold-primary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-gold:hover {
+      background: var(--gold-primary);
+      color: var(--bg-dark);
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+    }
+
+    /* Section Styling */
+    section {
+      padding: 7rem 8%;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 2.2rem;
+      color: var(--gold-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 4rem;
+    }
+
+    /* Properties Grid */
+    .properties-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2.5rem;
+    }
+
+    .property-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      position: relative;
+    }
+
+    .property-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(212, 175, 55, 0.2);
+    }
+
+    .property-img {
+      width: 100%;
+      height: 260px;
+      object-fit: cover;
+      filter: brightness(0.9);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .property-content {
+      padding: 2rem;
+    }
+
+    .property-price {
+      font-family: 'Cinzel', serif;
+      font-size: 1.5rem;
+      color: var(--gold-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .property-title {
+      font-size: 1.2rem;
+      color: var(--text-light);
+      margin-bottom: 0.5rem;
+    }
+
+    .property-location {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .property-features {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 1.2rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .property-features span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Pillars / Trust Section */
+    .pillars {
+      background: rgba(15, 35, 66, 0.5);
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 3rem;
+      text-align: center;
+    }
+
+    .pillar-card {
+      padding: 2rem;
+    }
+
+    .pillar-icon {
+      font-size: 2.5rem;
+      color: var(--gold-primary);
+      margin-bottom: 1.5rem;
+    }
+
+    .pillar-title {
+      font-size: 1.3rem;
+      color: var(--text-light);
+      margin-bottom: 1rem;
+    }
+
+    .pillar-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Footer */
+    footer {
+      background: #050c18;
+      padding: 4rem 8% 2rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 3rem;
+      margin-bottom: 3rem;
+    }
+
+    .footer-col h4 {
+      color: var(--gold-primary);
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+    }
+
+    .footer-col p, .footer-col a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: block;
+      margin-bottom: 0.8rem;
+    }
+
+    .footer-col a:hover {
+      color: var(--gold-primary);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      header {
+        padding: 1rem 5%;
+      }
+      nav ul {
+        display: none;
+      }
+      .hero-title {
+        font-size: 2.5rem;
+      }
+      .hero-slogan {
+        font-size: 0.9rem;
+      }
+      section {
+        padding: 5rem 5%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header>
+    <a href="#" class="brand-logo">
+      <span>NEXO INMOBILIARIA</span>
+    </a>
+    <nav>
+      <ul>
+        <li><a href="#propiedades">Propiedades</a></li>
+        <li><a href="#nosotros">Nosotros</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1 class="hero-title">Nexo Inmobiliaria</h1>
+    <p class="hero-slogan">Unión, experiencia y solidez</p>
+    <a href="#propiedades" class="btn-gold">Explorar Residencias</a>
+  </section>
+
+  <!-- Properties Section -->
+  <section id="propiedades">
+    <h2 class="section-title">Residencias Exclusivas</h2>
+    <p class="section-subtitle">Arquitectura de vanguardia e ingeniería de alto nivel</p>
+
+    <div class="properties-grid">
+      <!-- Property Card 1 -->
+      <article class="property-card">
+        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80" alt="Residencia Imperial" class="property-img">
+        <div class="property-content">
+          <div class="property-price">$1,850,000 USD</div>
+          <h3 class="property-title">Residencia Imperial</h3>
+          <p class="property-location">Exclusivo Sector Privado</p>
+          <div class="property-features">
+            <span>4 Hab</span>
+            <span>5 Baños</span>
+            <span>650 m²</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Property Card 2 -->
+      <article class="property-card">
+        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" alt="Villa Pedralbes" class="property-img">
+        <div class="property-content">
+          <div class="property-price">$2,400,000 USD</div>
+          <h3 class="property-title">Villa Pedralbes</h3>
+          <p class="property-location">Zona Residencial Premium</p>
+          <div class="property-features">
+            <span>5 Hab</span>
+            <span>6 Baños</span>
+            <span>820 m²</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Property Card 3 -->
+      <article class="property-card">
+        <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80" alt="Casa Nexo Alta" class="property-img">
+        <div class="property-content">
+          <div class="property-price">$1,200,000 USD</div>
+          <h3 class="property-title">Casa Nexo Alta</h3>
+          <p class="property-location">Club de Golf & Country</p>
+          <div class="property-features">
+            <span>3 Hab</span>
+            <span>4 Baños</span>
+            <span>480 m²</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Pillars Section -->
+  <section class="pillars" id="nosotros">
+    <div class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-icon">🏛️</div>
+        <h3 class="pillar-title">Unión</h3>
+        <p class="pillar-desc">Integramos arquitectura, diseño y seguridad para crear patrimonio perdurable.</p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">📐</div>
+        <h3 class="pillar-title">Experiencia</h3>
+        <p class="pillar-desc">Décadas respaldando operaciones inmobiliarias de alto nivel corporativo.</p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-icon">🛡️</div>
+        <h3 class="pillar-title">Solidez</h3>
+        <p class="pillar-desc">Estructuras e inversiones con garantía y prestigio comprobado.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="contacto">
+    <div class="footer-content">
+      <div class="footer-col">
+        <h4>NEXO INMOBILIARIA</h4>
+        <p>Firma inmobiliaria especializada en residencias ejecutivas y desarrollo de patrimonio de alto nivel.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Contacto Privado</h4>
+        <p>📍 Av. Principal 100, Suite 500</p>
+        <p>📞 +34 912 345 678</p>
+        <p>✉️ contacto@nexoinmobiliaria.com</p>
+      </div>
+      <div class="footer-col">
+        <h4>Atención</h4>
+        <p>Lunes a Viernes: 9:00 - 18:00</p>
+        <p>Citas privadas en showroom previa reserva.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Nexo Inmobiliaria Real Estate. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
