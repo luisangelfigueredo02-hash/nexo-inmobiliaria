@@ -26,7 +26,7 @@ export default {
     };
 
     // ==========================================
-    // ESTADO DE LA API
+    // API PRINCIPAL
     // ==========================================
 
     if (url.pathname === "/" && request.method === "GET") {
@@ -38,7 +38,7 @@ export default {
     }
 
     // ==========================================
-    // OBTENER PROPIEDADES PÚBLICAS
+    // OBTENER PROPIEDADES
     // ==========================================
 
     if (
@@ -103,6 +103,13 @@ export default {
             ? body.city.trim()
             : "";
 
+        if (!propertyType || !city) {
+          return json({
+            success: false,
+            error: "El tipo de propiedad y la ciudad son obligatorios."
+          }, 400);
+        }
+
         const neighborhood =
           typeof body.neighborhood === "string"
             ? body.neighborhood.trim()
@@ -133,12 +140,6 @@ export default {
             ? body.notes.trim()
             : null;
 
-        const status =
-          typeof body.status === "string" &&
-          body.status.trim()
-            ? body.status.trim()
-            : "available";
-
         const bedrooms =
           body.bedrooms === "" ||
           body.bedrooms === null ||
@@ -167,68 +168,19 @@ export default {
             ? null
             : Number(body.price);
 
-        if (!propertyType) {
-          return json({
-            success: false,
-            error: "El tipo de propiedad es obligatorio."
-          }, 400);
-        }
+        const status =
+          typeof body.status === "string" &&
+          body.status.trim()
+            ? body.status.trim()
+            : "available";
 
-        if (!city) {
-          return json({
-            success: false,
-            error: "La ciudad es obligatoria."
-          }, 400);
-        }
-
-        if (
-          price !== null &&
-          (!Number.isFinite(price) || price < 0)
-        ) {
-          return json({
-            success: false,
-            error: "El precio no es válido."
-          }, 400);
-        }
-
-        if (
-          bedrooms !== null &&
-          (!Number.isFinite(bedrooms) || bedrooms < 0)
-        ) {
-          return json({
-            success: false,
-            error: "Las habitaciones no son válidas."
-          }, 400);
-        }
-
-        if (
-          bathrooms !== null &&
-          (!Number.isFinite(bathrooms) || bathrooms < 0)
-        ) {
-          return json({
-            success: false,
-            error: "Los baños no son válidos."
-          }, 400);
-        }
-
-        if (
-          squareMeters !== null &&
-          (!Number.isFinite(squareMeters) || squareMeters < 0)
-        ) {
-          return json({
-            success: false,
-            error: "Los metros cuadrados no son válidos."
-          }, 400);
-        }
-
-        let photos = "[]";
-
-        if (body.photos !== undefined && body.photos !== null) {
-          photos =
-            typeof body.photos === "string"
+        const photos =
+          body.photos === undefined ||
+          body.photos === null
+            ? "[]"
+            : typeof body.photos === "string"
               ? body.photos
               : JSON.stringify(body.photos);
-        }
 
         const result = await env.DB
           .prepare(`
@@ -344,6 +296,29 @@ export default {
           error: "Error al consultar la propiedad."
         }, 500);
       }
+    }
+
+    // ==========================================
+    // ARCHIVOS DE LA WEB
+    // ==========================================
+
+    if (url.pathname === "/admin.html") {
+      return new Response("NEXO Admin", {
+        headers: {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      });
+    }
+
+    if (
+      url.pathname === "/" ||
+      url.pathname === "/index.html"
+    ) {
+      return new Response("NEXO", {
+        headers: {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      });
     }
 
     // ==========================================
