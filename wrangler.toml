@@ -1,0 +1,8 @@
+name = "nexo-inmobiliaria"
+main = "worker.js"
+compatibility_date = "2026-08-15"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nexo-db"
+database_id = "03a0f232-751a-4d5b-a865-473062fbefbe"
