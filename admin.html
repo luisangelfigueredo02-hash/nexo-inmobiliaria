@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>NEXO | Administración</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+      background: #080808;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    header {
+      border-bottom: 1px solid #252525;
+      padding: 20px;
+    }
+
+    .header-inner {
+      max-width: 900px;
+      margin: auto;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 4px;
+    }
+
+    .admin-label {
+      color: #999;
+      font-size: 13px;
+    }
+
+    main {
+      max-width: 900px;
+      margin: auto;
+      padding: 35px 20px 80px;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #999;
+      margin-bottom: 35px;
+    }
+
+    form {
+      background: #111;
+      border: 1px solid #252525;
+      border-radius: 18px;
+      padding: 24px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    .section h2 {
+      font-size: 18px;
+      margin-bottom: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+
+      background: #080808;
+      color: #fff;
+
+      border: 1px solid #333;
+      border-radius: 10px;
+
+      padding: 13px;
+
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #777;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .private-section {
+      border-top: 1px solid #252525;
+      padding-top: 25px;
+    }
+
+    .private-note {
+      color: #777;
+      font-size: 12px;
+      margin-bottom: 18px;
+    }
+
+    button {
+      width: 100%;
+
+      border: none;
+      border-radius: 999px;
+
+      padding: 15px;
+
+      background: #fff;
+      color: #000;
+
+      font-size: 16px;
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #message {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 10px;
+      display: none;
+      font-size: 14px;
+    }
+
+    .success {
+      display: block !important;
+      background: #162016;
+      border: 1px solid #294429;
+    }
+
+    .error {
+      display: block !important;
+      background: #241515;
+      border: 1px solid #492525;
+    }
+
+    @media (max-width: 700px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full {
+        grid-column: auto;
+      }
+
+      main {
+        padding-top: 25px;
+      }
+
+      form {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo">NEXO</div>
+      <div class="admin-label">Administración</div>
+    </div>
+  </header>
+
+  <main>
+
+    <h1>Nueva propiedad</h1>
+
+    <p class="subtitle">
+      Añade una propiedad al inventario de NEXO.
+    </p>
+
+    <form id="propertyForm">
+
+      <!-- INFORMACIÓN PRINCIPAL -->
+
+      <div class="section">
+
+        <h2>Información de la propiedad</h2>
+
+        <div class="grid">
+
+          <div class="field">
+            <label for="property_type">
+              Tipo de propiedad
+            </label>
+
+            <select id="property_type" required>
+              <option value="">Seleccionar</option>
+              <option value="Casa">Casa</option>
+              <option value="Apartamento">Apartamento</option>
+              <option value="Villa">Villa</option>
+              <option value="Terreno">Terreno</option>
+              <option value="Local comercial">
+                Local comercial
+              </option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+
+          <div class="field">
+            <label for="price">
+              Precio
+            </label>
+
+            <input
+              id="price"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="150000"
+              required
+            >
+          </div>
+
+
+          <div class="field">
+            <label for="city">
+              Ciudad
+            </label>
+
+            <input
+              id="city"
+              type="text"
+              placeholder="Ciudad"
+              required
+            >
+          </div>
+
+
+          <div class="field">
+            <label for="neighborhood">
+              Zona / Barrio
+            </label>
+
+            <input
+              id="neighborhood"
+              type="text"
+              placeholder="Zona o barrio"
+            >
+          </div>
+
+
+          <div class="field full">
+            <label for="address">
+              Dirección exacta
+            </label>
+
+            <input
+              id="address"
+              type="text"
+              placeholder="Dirección exacta"
+            >
+          </div>
+
+
+          <div class="field">
+            <label for="bedrooms">
+              Habitaciones
+            </label>
+
+            <input
+              id="bedrooms"
+              type="number"
+              min="0"
+              placeholder="3"
+            >
+          </div>
+
+
+          <div class="field">
+            <label for="bathrooms">
+              Baños
+            </label>
+
+            <input
+              id="bathrooms"
+              type="number"
+              min="0"
+              step="0.5"
+              placeholder="2"
+            >
+          </div>
+
+
+          <div class="field">
+            <label for="square_meters">
+              Metros cuadrados
+            </label>
+
+            <input
+              id="square_meters"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="120"
+            >
+          </div>
+
+
+          <div class="field">
+            <label for="status">
+              Estado
+            </label>
+
+            <select id="status">
+              <option value="available">
+                Disponible
+              </option>
+
+              <option value="sold">
+                Vendida
+              </option>
+
+              <option value="hidden">
+                Oculta
+              </option>
+            </select>
+          </div>
+
+
+          <div class="field full">
+            <label for="description">
+              Descripción
+            </label>
+
+            <textarea
+              id="description"
+              placeholder="Describe la propiedad..."
+            ></textarea>
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- DATOS PRIVADOS -->
+
+      <div class="section private-section">
+
+        <h2>Información privada</h2>
+
+        <p class="private-note">
+          Estos datos son para administración de NEXO
+          y no deben mostrarse públicamente.
+        </p>
+
+        <div class="grid">
+
+          <div class="field">
+            <label for="owner_name">
+              Nombre del propietario
+            </label>
+
+            <input
+              id="owner_name"
+              type="text"
+              placeholder="Nombre"
+            >
+          </div>
+
+
+          <div class="field">
+            <label for="owner_phone">
+              Teléfono del propietario
+            </label>
+
+            <input
+              id="owner_phone"
+              type="tel"
+              placeholder="Teléfono"
+            >
+          </div>
+
+
+          <div class="field full">
+            <label for="notes">
+              Notas internas
+            </label>
+
+            <textarea
+              id="notes"
+              placeholder="Notas privadas para NEXO..."
+            ></textarea>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <button
+        id="submitButton"
+        type="submit"
+      >
+        Añadir propiedad
+      </button>
+
+      <div id="message"></div>
+
+    </form>
+
+  </main>
+
+
+  <script>
+
+    const API_URL =
+      "https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev";
+
+
+    const form =
+      document.getElementById("propertyForm");
+
+    const button =
+      document.getElementById("submitButton");
+
+    const message =
+      document.getElementById("message");
+
+
+    form.addEventListener(
+      "submit",
+      async (event) => {
+
+        event.preventDefault();
+
+        button.disabled = true;
+        button.textContent = "Guardando...";
+
+        message.className = "";
+        message.style.display = "none";
+
+        const property = {
+
+          property_type:
+            document.getElementById(
+              "property_type"
+            ).value,
+
+          city:
+            document.getElementById(
+              "city"
+            ).value,
+
+          neighborhood:
+            document.getElementById(
+              "neighborhood"
+            ).value,
+
+          address:
+            document.getElementById(
+              "address"
+            ).value,
+
+          bedrooms:
+            document.getElementById(
+              "bedrooms"
+            ).value || null,
+
+          bathrooms:
+            document.getElementById(
+              "bathrooms"
+            ).value || null,
+
+          square_meters:
+            document.getElementById(
+              "square_meters"
+            ).value || null,
+
+          price:
+            document.getElementById(
+              "price"
+            ).value,
+
+          description:
+            document.getElementById(
+              "description"
+            ).value,
+
+          owner_name:
+            document.getElementById(
+              "owner_name"
+            ).value,
+
+          owner_phone:
+            document.getElementById(
+              "owner_phone"
+            ).value,
+
+          notes:
+            document.getElementById(
+              "notes"
+            ).value,
+
+          status:
+            document.getElementById(
+              "status"
+            ).value,
+
+          photos: "[]"
+        };
+
+
+        try {
+
+          const response =
+            await fetch(
+              `${API_URL}/api/properties`,
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify(property)
+              }
+            );
+
+
+          const data =
+            await response.json();
+
+
+          if (!response.ok || !data.success) {
+
+            throw new Error(
+              data.error ||
+              "No se pudo guardar la propiedad."
+            );
+
+          }
+
+
+          message.textContent =
+            "Propiedad añadida correctamente a NEXO.";
+
+          message.className =
+            "success";
+
+
+          form.reset();
+
+
+        } catch (error) {
+
+          console.error(error);
+
+          message.textContent =
+            error.message ||
+            "Ocurrió un error.";
+
+          message.className =
+            "error";
+
+        }
+
+
+        button.disabled = false;
+        button.textContent =
+          "Añadir propiedad";
+
+      }
+    );
+
+  </script>
+
+</body>
+</html>
