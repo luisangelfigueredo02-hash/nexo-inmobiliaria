@@ -2,6 +2,9 @@ name = "nexo-inmobiliaria"
 main = "worker.js"
 compatibility_date = "2026-08-15"
 
+[assets]
+directory = "."
+
 [[d1_databases]]
 binding = "DB"
 database_name = "nexo-db"
