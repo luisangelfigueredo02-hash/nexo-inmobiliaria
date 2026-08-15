@@ -2,9 +2,13 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>NEXO | Administración</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>NEXO — Administración</title>
 
   <style>
     * {
@@ -18,82 +22,55 @@
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
-        Roboto,
-        Arial,
         sans-serif;
 
-      background: #080808;
-      color: #fff;
-      min-height: 100vh;
-    }
-
-    header {
-      border-bottom: 1px solid #252525;
+      background: #f5f5f3;
+      color: #171717;
       padding: 20px;
     }
 
-    .header-inner {
-      max-width: 900px;
-      margin: auto;
+    .container {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+    }
 
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    header {
+      padding: 20px 0 30px;
     }
 
     .logo {
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 800;
-      letter-spacing: 4px;
-    }
-
-    .admin-label {
-      color: #999;
-      font-size: 13px;
-    }
-
-    main {
-      max-width: 900px;
-      margin: auto;
-      padding: 35px 20px 80px;
-    }
-
-    h1 {
-      font-size: 32px;
-      margin-bottom: 8px;
+      letter-spacing: 3px;
     }
 
     .subtitle {
-      color: #999;
-      margin-bottom: 35px;
+      color: #777;
+      margin-top: 6px;
     }
 
-    form {
-      background: #111;
-      border: 1px solid #252525;
-      border-radius: 18px;
-      padding: 24px;
+    .card {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.05);
     }
 
-    .section {
-      margin-bottom: 30px;
-    }
-
-    .section h2 {
-      font-size: 18px;
-      margin-bottom: 18px;
+    h1 {
+      font-size: 26px;
+      margin-bottom: 22px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
     }
 
     .field {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
+      margin-bottom: 15px;
     }
 
     .full {
@@ -101,92 +78,74 @@
     }
 
     label {
-      font-size: 13px;
-      color: #aaa;
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 7px;
     }
 
     input,
-    select,
-    textarea {
+    textarea,
+    select {
       width: 100%;
-
-      background: #080808;
-      color: #fff;
-
-      border: 1px solid #333;
-      border-radius: 10px;
-
       padding: 13px;
-
-      font-size: 15px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: white;
+      color: #171717;
+      font-size: 16px;
       outline: none;
     }
 
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: #777;
-    }
-
     textarea {
-      min-height: 120px;
+      min-height: 110px;
       resize: vertical;
     }
 
-    .private-section {
-      border-top: 1px solid #252525;
-      padding-top: 25px;
-    }
-
-    .private-note {
-      color: #777;
-      font-size: 12px;
-      margin-bottom: 18px;
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #171717;
     }
 
     button {
       width: 100%;
-
-      border: none;
-      border-radius: 999px;
-
+      border: 0;
+      border-radius: 12px;
       padding: 15px;
-
-      background: #fff;
-      color: #000;
-
+      background: #171717;
+      color: white;
       font-size: 16px;
       font-weight: 700;
-
       cursor: pointer;
+      margin-top: 10px;
     }
 
     button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+      opacity: .6;
     }
 
     #message {
-      margin-top: 18px;
-      padding: 14px;
+      margin-top: 16px;
+      padding: 13px;
       border-radius: 10px;
       display: none;
-      font-size: 14px;
+      line-height: 1.4;
     }
 
     .success {
       display: block !important;
-      background: #162016;
-      border: 1px solid #294429;
+      background: #e8f7ed;
+      color: #176b35;
     }
 
     .error {
       display: block !important;
-      background: #241515;
-      border: 1px solid #492525;
+      background: #fdeaea;
+      color: #9b1c1c;
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 600px) {
       .grid {
         grid-template-columns: 1fr;
       }
@@ -194,89 +153,74 @@
       .full {
         grid-column: auto;
       }
-
-      main {
-        padding-top: 25px;
-      }
-
-      form {
-        padding: 18px;
-      }
     }
   </style>
 </head>
 
 <body>
 
-  <header>
-    <div class="header-inner">
+  <div class="container">
+
+    <header>
       <div class="logo">NEXO</div>
-      <div class="admin-label">Administración</div>
-    </div>
-  </header>
+      <div class="subtitle">
+        Panel de administración
+      </div>
+    </header>
 
-  <main>
+    <main class="card">
 
-    <h1>Nueva propiedad</h1>
+      <h1>Agregar propiedad</h1>
 
-    <p class="subtitle">
-      Añade una propiedad al inventario de NEXO.
-    </p>
-
-    <form id="propertyForm">
-
-      <!-- INFORMACIÓN PRINCIPAL -->
-
-      <div class="section">
-
-        <h2>Información de la propiedad</h2>
+      <form id="propertyForm">
 
         <div class="grid">
 
           <div class="field">
             <label for="property_type">
-              Tipo de propiedad
+              Tipo de propiedad *
             </label>
 
             <select id="property_type" required>
-              <option value="">Seleccionar</option>
-              <option value="Casa">Casa</option>
-              <option value="Apartamento">Apartamento</option>
-              <option value="Villa">Villa</option>
-              <option value="Terreno">Terreno</option>
-              <option value="Local comercial">
-                Local comercial
+              <option value="">
+                Seleccionar
               </option>
-              <option value="Otro">Otro</option>
+
+              <option value="Casa">
+                Casa
+              </option>
+
+              <option value="Apartamento">
+                Apartamento
+              </option>
+
+              <option value="Villa">
+                Villa
+              </option>
+
+              <option value="Terreno">
+                Terreno
+              </option>
+
+              <option value="Local">
+                Local
+              </option>
+
+              <option value="Oficina">
+                Oficina
+              </option>
             </select>
           </div>
 
 
           <div class="field">
-            <label for="price">
-              Precio
-            </label>
-
-            <input
-              id="price"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="150000"
-              required
-            >
-          </div>
-
-
-          <div class="field">
             <label for="city">
-              Ciudad
+              Ciudad *
             </label>
 
             <input
               id="city"
               type="text"
-              placeholder="Ciudad"
               required
             >
           </div>
@@ -290,12 +234,11 @@
             <input
               id="neighborhood"
               type="text"
-              placeholder="Zona o barrio"
             >
           </div>
 
 
-          <div class="field full">
+          <div class="field">
             <label for="address">
               Dirección exacta
             </label>
@@ -303,7 +246,6 @@
             <input
               id="address"
               type="text"
-              placeholder="Dirección exacta"
             >
           </div>
 
@@ -317,7 +259,6 @@
               id="bedrooms"
               type="number"
               min="0"
-              placeholder="3"
             >
           </div>
 
@@ -331,8 +272,6 @@
               id="bathrooms"
               type="number"
               min="0"
-              step="0.5"
-              placeholder="2"
             >
           </div>
 
@@ -346,30 +285,21 @@
               id="square_meters"
               type="number"
               min="0"
-              step="0.01"
-              placeholder="120"
             >
           </div>
 
 
           <div class="field">
-            <label for="status">
-              Estado
+            <label for="price">
+              Precio
             </label>
 
-            <select id="status">
-              <option value="available">
-                Disponible
-              </option>
-
-              <option value="sold">
-                Vendida
-              </option>
-
-              <option value="hidden">
-                Oculta
-              </option>
-            </select>
+            <input
+              id="price"
+              type="number"
+              min="0"
+              step="0.01"
+            >
           </div>
 
 
@@ -380,26 +310,22 @@
 
             <textarea
               id="description"
-              placeholder="Describe la propiedad..."
             ></textarea>
           </div>
 
-        </div>
-      </div>
 
+          <div class="field full">
+            <label for="photos">
+              Fotos
+            </label>
 
-      <!-- DATOS PRIVADOS -->
+            <input
+              id="photos"
+              type="text"
+              placeholder="URLs de fotos, separadas por coma"
+            >
+          </div>
 
-      <div class="section private-section">
-
-        <h2>Información privada</h2>
-
-        <p class="private-note">
-          Estos datos son para administración de NEXO
-          y no deben mostrarse públicamente.
-        </p>
-
-        <div class="grid">
 
           <div class="field">
             <label for="owner_name">
@@ -409,7 +335,6 @@
             <input
               id="owner_name"
               type="text"
-              placeholder="Nombre"
             >
           </div>
 
@@ -422,39 +347,38 @@
             <input
               id="owner_phone"
               type="tel"
-              placeholder="Teléfono"
             >
           </div>
 
 
           <div class="field full">
             <label for="notes">
-              Notas internas
+              Notas privadas
             </label>
 
             <textarea
               id="notes"
-              placeholder="Notas privadas para NEXO..."
             ></textarea>
           </div>
 
         </div>
 
-      </div>
 
+        <button
+          id="submitButton"
+          type="submit"
+        >
+          Añadir propiedad
+        </button>
 
-      <button
-        id="submitButton"
-        type="submit"
-      >
-        Añadir propiedad
-      </button>
+      </form>
+
 
       <div id="message"></div>
 
-    </form>
+    </main>
 
-  </main>
+  </div>
 
 
   <script>
@@ -466,26 +390,44 @@
     const form =
       document.getElementById("propertyForm");
 
-    const button =
-      document.getElementById("submitButton");
-
     const message =
       document.getElementById("message");
+
+    const submitButton =
+      document.getElementById("submitButton");
 
 
     form.addEventListener(
       "submit",
-      async (event) => {
+      async function(event) {
 
         event.preventDefault();
 
-        button.disabled = true;
-        button.textContent = "Guardando...";
 
         message.className = "";
         message.style.display = "none";
+        message.textContent = "";
 
-        const property = {
+
+        submitButton.disabled = true;
+        submitButton.textContent =
+          "Guardando...";
+
+
+        const photosText =
+          document.getElementById("photos").value.trim();
+
+
+        const photos =
+          photosText
+            ? photosText
+                .split(",")
+                .map(photo => photo.trim())
+                .filter(Boolean)
+            : [];
+
+
+        const data = {
 
           property_type:
             document.getElementById(
@@ -510,17 +452,17 @@
           bedrooms:
             document.getElementById(
               "bedrooms"
-            ).value || null,
+            ).value,
 
           bathrooms:
             document.getElementById(
               "bathrooms"
-            ).value || null,
+            ).value,
 
           square_meters:
             document.getElementById(
               "square_meters"
-            ).value || null,
+            ).value,
 
           price:
             document.getElementById(
@@ -531,6 +473,8 @@
             document.getElementById(
               "description"
             ).value,
+
+          photos,
 
           owner_name:
             document.getElementById(
@@ -547,12 +491,7 @@
               "notes"
             ).value,
 
-          status:
-            document.getElementById(
-              "status"
-            ).value,
-
-          photos: "[]"
+          status: "available"
         };
 
 
@@ -570,30 +509,31 @@
                 },
 
                 body:
-                  JSON.stringify(property)
+                  JSON.stringify(data)
               }
             );
 
 
-          const data =
+          const result =
             await response.json();
 
 
-          if (!response.ok || !data.success) {
+          if (!response.ok ||
+              !result.success) {
 
             throw new Error(
-              data.error ||
-              "No se pudo guardar la propiedad."
+              result.error ||
+              "No se pudo crear la propiedad."
             );
 
           }
 
 
-          message.textContent =
-            "Propiedad añadida correctamente a NEXO.";
-
           message.className =
             "success";
+
+          message.textContent =
+            `Propiedad añadida correctamente a NEXO. ID: ${result.id}`;
 
 
           form.reset();
@@ -601,21 +541,28 @@
 
         } catch (error) {
 
-          console.error(error);
+          console.error(
+            "NEXO:",
+            error
+          );
+
+
+          message.className =
+            "error";
 
           message.textContent =
             error.message ||
             "Ocurrió un error.";
 
-          message.className =
-            "error";
+        } finally {
+
+          submitButton.disabled =
+            false;
+
+          submitButton.textContent =
+            "Añadir propiedad";
 
         }
-
-
-        button.disabled = false;
-        button.textContent =
-          "Añadir propiedad";
 
       }
     );
