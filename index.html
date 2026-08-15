@@ -8,12 +8,12 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>NEXO</title>
-
   <meta
     name="description"
-    content="NEXO — Propiedades inmobiliarias"
+    content="NEXO — Encuentra tu próximo lugar."
   >
+
+  <title>NEXO | Encuentra tu próximo lugar</title>
 
   <style>
 
@@ -23,34 +23,62 @@
       padding: 0;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       font-family:
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
         sans-serif;
 
       background: #f7f7f5;
-      color: #171717;
+      color: #151515;
+      line-height: 1.5;
     }
 
-    header {
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    .site-header {
       position: sticky;
       top: 0;
       z-index: 100;
 
-      background: rgba(255,255,255,.94);
-      backdrop-filter: blur(12px);
+      width: 100%;
 
-      border-bottom:
-        1px solid #e8e8e8;
+      background: rgba(255, 255, 255, 0.92);
+
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+
+      border-bottom: 1px solid #e8e8e5;
     }
 
     .nav {
-      max-width: 1200px;
-      margin: auto;
+      max-width: 1180px;
+      margin: 0 auto;
 
-      padding: 18px 20px;
+      min-height: 72px;
+
+      padding: 0 22px;
 
       display: flex;
       align-items: center;
@@ -58,115 +86,301 @@
     }
 
     .logo {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 800;
-      letter-spacing: 3px;
+      letter-spacing: -1px;
     }
 
-    .hero {
-      max-width: 1200px;
-      margin: auto;
+    .logo span {
+      font-weight: 400;
+    }
 
-      padding: 80px 20px 60px;
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+
+      padding: 10px 16px;
+
+      border-radius: 999px;
+
+      font-size: 14px;
+      font-weight: 600;
+
+      transition: 0.2s ease;
+    }
+
+    .nav-link:hover {
+      background: #eeeeeb;
+    }
+
+    /* =========================
+       HERO
+    ========================= */
+
+    .hero {
+      position: relative;
+
+      min-height: 620px;
+
+      display: flex;
+      align-items: center;
+
+      background:
+        radial-gradient(
+          circle at 80% 20%,
+          rgba(0, 0, 0, 0.08),
+          transparent 35%
+        ),
+        linear-gradient(
+          135deg,
+          #111111 0%,
+          #252525 50%,
+          #111111 100%
+        );
+
+      color: white;
+
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+
+      position: absolute;
+      inset: 0;
+
+      background:
+        linear-gradient(
+          90deg,
+          rgba(0,0,0,0.55),
+          rgba(0,0,0,0.08)
+        );
+
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+
+      width: 100%;
+      max-width: 1180px;
+
+      margin: 0 auto;
+
+      padding: 80px 22px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+
+      margin-bottom: 20px;
+
+      padding: 7px 12px;
+
+      border: 1px solid rgba(255,255,255,0.22);
+
+      border-radius: 999px;
+
+      font-size: 12px;
+      font-weight: 700;
+
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+
+      color: rgba(255,255,255,0.78);
     }
 
     .hero h1 {
-      max-width: 800px;
+      max-width: 780px;
 
-      font-size:
-        clamp(42px, 8vw, 82px);
+      font-size: clamp(
+        48px,
+        9vw,
+        92px
+      );
 
-      line-height: .95;
-      letter-spacing: -3px;
+      line-height: 0.94;
 
-      margin-bottom: 24px;
+      letter-spacing: -5px;
+
+      margin-bottom: 28px;
     }
 
-    .hero p {
-      max-width: 600px;
+    .hero h1 span {
+      color: #d9d9d4;
+    }
 
-      color: #666;
+    .hero-description {
+      max-width: 590px;
+
+      color: rgba(255,255,255,0.74);
+
       font-size: 18px;
-      line-height: 1.6;
+
+      line-height: 1.65;
+
+      margin-bottom: 34px;
     }
+
+    .hero-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      min-height: 52px;
+
+      padding: 0 24px;
+
+      border-radius: 999px;
+
+      background: white;
+      color: #111;
+
+      font-size: 15px;
+      font-weight: 700;
+
+      transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+    }
+
+    .hero-button:hover {
+      transform: translateY(-2px);
+      background: #eeeeeb;
+    }
+
+    /* =========================
+       PROPERTIES
+    ========================= */
 
     .properties-section {
-      max-width: 1200px;
-      margin: auto;
+      max-width: 1180px;
+
+      margin: 0 auto;
 
       padding:
-        20px 20px 80px;
+        90px 22px
+        110px;
+    }
+
+    .section-header {
+      display: flex;
+
+      align-items: end;
+      justify-content: space-between;
+
+      gap: 30px;
+
+      margin-bottom: 42px;
+    }
+
+    .section-kicker {
+      margin-bottom: 8px;
+
+      font-size: 12px;
+
+      font-weight: 800;
+
+      letter-spacing: 1.5px;
+
+      text-transform: uppercase;
+
+      color: #777;
     }
 
     .section-title {
-      margin-bottom: 30px;
+      font-size: clamp(
+        34px,
+        5vw,
+        52px
+      );
+
+      line-height: 1;
+
+      letter-spacing: -2.5px;
     }
 
-    .section-title h2 {
-      font-size: 32px;
-      margin-bottom: 8px;
+    .section-description {
+      max-width: 390px;
+
+      color: #737373;
+
+      font-size: 15px;
+
+      line-height: 1.65;
     }
 
-    .section-title p {
-      color: #777;
-    }
+    /* =========================
+       PROPERTY GRID
+    ========================= */
 
     .properties-grid {
       display: grid;
 
       grid-template-columns:
-        repeat(auto-fit, minmax(280px, 1fr));
+        repeat(3, minmax(0, 1fr));
 
       gap: 24px;
     }
 
     .property-card {
-      background: white;
-
-      border-radius: 20px;
       overflow: hidden;
 
-      border: 1px solid #e8e8e8;
+      background: white;
+
+      border: 1px solid #e7e7e4;
+
+      border-radius: 22px;
 
       box-shadow:
-        0 10px 30px
-        rgba(0,0,0,.06);
+        0 8px 30px
+        rgba(0,0,0,0.045);
 
       transition:
-        transform .2s ease,
-        box-shadow .2s ease;
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
     }
 
     .property-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-5px);
 
       box-shadow:
-        0 18px 40px
-        rgba(0,0,0,.10);
+        0 18px 45px
+        rgba(0,0,0,0.09);
     }
 
     .property-image {
-      height: 230px;
+      position: relative;
+
+      aspect-ratio: 4 / 3;
 
       background:
         linear-gradient(
           135deg,
-          #202020,
-          #555
+          #dadad5,
+          #eeeeeb
         );
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      overflow: hidden;
     }
 
     .property-placeholder {
-      color: white;
+      position: absolute;
+      inset: 0;
 
-      font-size: 28px;
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      font-size: 25px;
+
       font-weight: 800;
 
-      letter-spacing: 4px;
+      letter-spacing: -1px;
+
+      color: rgba(0,0,0,0.28);
     }
 
     .property-content {
@@ -176,35 +390,59 @@
     .property-type {
       display: inline-block;
 
-      font-size: 12px;
-      font-weight: 700;
+      margin-bottom: 8px;
+
+      font-size: 11px;
+
+      font-weight: 800;
+
+      letter-spacing: 1.1px;
 
       text-transform: uppercase;
-      letter-spacing: 1px;
 
       color: #777;
-
-      margin-bottom: 8px;
     }
 
     .property-content h3 {
+      margin-bottom: 3px;
+
       font-size: 25px;
-      margin-bottom: 5px;
+
+      line-height: 1.1;
+
+      letter-spacing: -1px;
     }
 
     .property-location {
       color: #777;
+
+      font-size: 14px;
+
       margin-bottom: 18px;
     }
 
     .property-details {
       display: flex;
-      gap: 15px;
+
+      flex-wrap: wrap;
+
+      gap: 8px;
+
+      padding-bottom: 20px;
+
+      border-bottom: 1px solid #eeeeeb;
+    }
+
+    .property-details span {
+      padding: 7px 9px;
+
+      background: #f5f5f2;
+
+      border-radius: 8px;
+
+      font-size: 12px;
 
       color: #555;
-      font-size: 14px;
-
-      margin-bottom: 22px;
     }
 
     .property-bottom {
@@ -214,33 +452,48 @@
       justify-content: space-between;
 
       gap: 15px;
+
+      padding-top: 18px;
     }
 
     .property-bottom strong {
-      font-size: 20px;
+      font-size: 21px;
+
+      letter-spacing: -0.8px;
     }
 
     .property-bottom button {
-      border: none;
+      border: 0;
 
-      background: #171717;
+      padding: 10px 14px;
+
+      border-radius: 999px;
+
+      background: #111;
+
       color: white;
-
-      padding: 11px 15px;
-
-      border-radius: 10px;
 
       cursor: pointer;
 
-      font-weight: 600;
+      font-size: 12px;
+
+      font-weight: 700;
+
+      transition: 0.2s ease;
     }
 
     .property-bottom button:hover {
-      opacity: .85;
+      background: #333;
     }
 
+    /* =========================
+       EMPTY / ERROR
+    ========================= */
+
     .nexo-empty {
-      padding: 50px 20px;
+      grid-column: 1 / -1;
+
+      padding: 60px 20px;
 
       text-align: center;
 
@@ -248,37 +501,156 @@
 
       background: white;
 
-      border-radius: 18px;
+      border: 1px dashed #d5d5d1;
 
-      border: 1px solid #e8e8e8;
+      border-radius: 20px;
     }
 
-    footer {
-      border-top:
-        1px solid #e8e8e8;
+    /* =========================
+       FOOTER
+    ========================= */
 
-      padding: 30px 20px;
+    .site-footer {
+      background: #111;
 
-      text-align: center;
-
-      color: #888;
-
-      font-size: 14px;
+      color: white;
     }
 
-    @media (max-width: 600px) {
+    .footer-inner {
+      max-width: 1180px;
+
+      margin: 0 auto;
+
+      padding: 55px 22px;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 30px;
+    }
+
+    .footer-logo {
+      font-size: 24px;
+
+      font-weight: 800;
+
+      letter-spacing: -1px;
+    }
+
+    .footer-text {
+      color: #999;
+
+      font-size: 13px;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 900px) {
+
+      .properties-grid {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
 
       .hero {
+        min-height: 560px;
+      }
+
+    }
+
+
+    @media (max-width: 650px) {
+
+      .nav {
+        min-height: 64px;
+
         padding:
-          55px 20px 45px;
+          0 17px;
+      }
+
+      .logo {
+        font-size: 22px;
+      }
+
+      .nav-link {
+        padding: 8px 12px;
+
+        font-size: 12px;
+      }
+
+      .hero {
+        min-height: 620px;
+      }
+
+      .hero-content {
+        padding:
+          70px 20px;
       }
 
       .hero h1 {
-        letter-spacing: -2px;
+        font-size:
+          clamp(
+            50px,
+            17vw,
+            72px
+          );
+
+        letter-spacing: -3.5px;
+      }
+
+      .hero-description {
+        font-size: 16px;
+      }
+
+      .properties-section {
+        padding:
+          65px 17px
+          80px;
+      }
+
+      .section-header {
+        display: block;
+      }
+
+      .section-description {
+        margin-top: 16px;
       }
 
       .properties-grid {
         grid-template-columns: 1fr;
+
+        gap: 18px;
+      }
+
+      .property-card {
+        border-radius: 18px;
+      }
+
+      .property-content {
+        padding: 19px;
+      }
+
+      .property-content h3 {
+        font-size: 23px;
+      }
+
+      .property-bottom {
+        align-items: flex-end;
+      }
+
+      .footer-inner {
+        display: block;
+
+        padding:
+          40px 20px;
+      }
+
+      .footer-text {
+        margin-top: 10px;
       }
 
     }
@@ -286,54 +658,112 @@
   </style>
 </head>
 
+
 <body>
 
-  <header>
+  <!-- =========================
+       HEADER
+  ========================= -->
+
+  <header class="site-header">
 
     <nav class="nav">
 
-      <div class="logo">
-        NEXO
-      </div>
+      <a
+        href="/"
+        class="logo"
+      >
+        NEXO<span>.</span>
+      </a>
+
+      <a
+        href="#propiedades"
+        class="nav-link"
+      >
+        Propiedades
+      </a>
 
     </nav>
 
   </header>
 
 
+  <!-- =========================
+       HERO
+  ========================= -->
+
   <main>
 
     <section class="hero">
 
-      <h1>
-        Encuentra tu próximo lugar.
-      </h1>
+      <div class="hero-content">
 
-      <p>
-        Explora propiedades seleccionadas
-        y encuentra el espacio que conecta
-        contigo.
-      </p>
+        <div class="eyebrow">
+          NEXO INMUEBLE
+        </div>
+
+        <h1>
+          Encuentra
+          <span>tu próximo lugar.</span>
+        </h1>
+
+        <p class="hero-description">
+          Explora propiedades seleccionadas y
+          encuentra el espacio que conecta contigo.
+        </p>
+
+        <a
+          href="#propiedades"
+          class="hero-button"
+        >
+          Explorar propiedades
+        </a>
+
+      </div>
 
     </section>
 
+
+    <!-- =========================
+         PROPIEDADES
+    ========================= -->
 
     <section
       id="propiedades"
       class="properties-section"
     >
 
-      <div class="section-title">
+      <div class="section-header">
 
-        <h2>
-          Propiedades
-        </h2>
+        <div>
 
-        <p>
-          Descubre las propiedades
-          disponibles en NEXO.
+          <div class="section-kicker">
+            NEXO
+          </div>
+
+          <h2 class="section-title">
+            Propiedades
+          </h2>
+
+        </div>
+
+        <p class="section-description">
+          Descubre las propiedades disponibles
+          y encuentra una opción que se adapte
+          a lo que estás buscando.
         </p>
 
+      </div>
+
+
+      <!--
+        IMPORTANTE:
+        app.js utiliza este contenedor
+        para insertar las propiedades
+        automáticamente desde D1.
+      -->
+
+      <div class="properties-grid">
       </div>
 
     </section>
@@ -341,12 +771,30 @@
   </main>
 
 
-  <footer>
+  <!-- =========================
+       FOOTER
+  ========================= -->
 
-    © 2026 NEXO
+  <footer class="site-footer">
+
+    <div class="footer-inner">
+
+      <div class="footer-logo">
+        NEXO.
+      </div>
+
+      <div class="footer-text">
+        Encuentra tu próximo lugar.
+      </div>
+
+    </div>
 
   </footer>
 
+
+  <!-- =========================
+       JAVASCRIPT
+  ========================= -->
 
   <script src="app.js"></script>
 
