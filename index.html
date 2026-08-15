@@ -2,32 +2,25 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>NEXO</title>
 
   <meta
     name="description"
-    content="NEXO — Descubre propiedades que conectan contigo."
+    content="NEXO — Propiedades inmobiliarias"
   >
 
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-    }
-
-    :root {
-      --black: #080808;
-      --dark: #111111;
-      --white: #ffffff;
-      --gray: #999999;
-      --line: #252525;
-    }
-
-    html {
-      scroll-behavior: smooth;
     }
 
     body {
@@ -35,37 +28,29 @@
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
-        Roboto,
-        Helvetica,
-        Arial,
         sans-serif;
 
-      background: var(--black);
-      color: var(--white);
-      min-height: 100vh;
+      background: #f7f7f5;
+      color: #171717;
     }
-
-    /* =========================
-       HEADER
-    ========================= */
 
     header {
       position: sticky;
       top: 0;
       z-index: 100;
 
-      background: rgba(8, 8, 8, 0.92);
-      backdrop-filter: blur(16px);
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(12px);
 
-      border-bottom: 1px solid var(--line);
+      border-bottom:
+        1px solid #e8e8e8;
     }
 
     .nav {
       max-width: 1200px;
-      min-height: 72px;
-
       margin: auto;
-      padding: 0 20px;
+
+      padding: 18px 20px;
 
       display: flex;
       align-items: center;
@@ -73,296 +58,235 @@
     }
 
     .logo {
-      font-size: 25px;
+      font-size: 28px;
       font-weight: 800;
-      letter-spacing: 5px;
+      letter-spacing: 3px;
     }
-
-    .menu {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-    }
-
-    .menu a {
-      color: var(--white);
-      text-decoration: none;
-      font-size: 14px;
-    }
-
-    .menu a:hover {
-      opacity: 0.7;
-    }
-
-    .admin-button {
-      border: 1px solid var(--white);
-      padding: 9px 16px;
-      border-radius: 999px;
-    }
-
-    /* =========================
-       HERO
-    ========================= */
 
     .hero {
-      min-height: 78vh;
+      max-width: 1200px;
+      margin: auto;
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      text-align: center;
-
-      padding: 80px 20px;
-
-      background:
-        radial-gradient(
-          circle at center,
-          #242424 0%,
-          #080808 58%
-        );
-    }
-
-    .hero-content {
-      max-width: 850px;
+      padding: 80px 20px 60px;
     }
 
     .hero h1 {
-      font-size: clamp(58px, 14vw, 120px);
-      line-height: 0.9;
+      max-width: 800px;
 
-      font-weight: 800;
-      letter-spacing: 10px;
+      font-size:
+        clamp(42px, 8vw, 82px);
+
+      line-height: .95;
+      letter-spacing: -3px;
+
+      margin-bottom: 24px;
     }
 
     .hero p {
-      max-width: 650px;
+      max-width: 600px;
 
-      margin: 28px auto 0;
-
-      color: var(--gray);
-
+      color: #666;
       font-size: 18px;
       line-height: 1.6;
     }
 
-    .hero-button {
-      display: inline-block;
-
-      margin-top: 36px;
-
-      padding: 15px 26px;
-
-      border-radius: 999px;
-
-      background: var(--white);
-      color: var(--black);
-
-      text-decoration: none;
-
-      font-weight: 600;
-    }
-
-    .hero-button:hover {
-      opacity: 0.85;
-    }
-
-    /* =========================
-       PROPERTIES
-    ========================= */
-
     .properties-section {
       max-width: 1200px;
-
       margin: auto;
 
-      padding: 80px 20px 110px;
+      padding:
+        20px 20px 80px;
     }
 
     .section-title {
       margin-bottom: 30px;
     }
 
-    .section-title span {
-      color: var(--gray);
-
-      font-size: 12px;
-
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-
     .section-title h2 {
-      margin-top: 8px;
-
-      font-size: 36px;
+      font-size: 32px;
+      margin-bottom: 8px;
     }
 
-    /* =========================
-       PROPERTY GRID
-    ========================= */
+    .section-title p {
+      color: #777;
+    }
 
-    .property-grid {
+    .properties-grid {
       display: grid;
 
       grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+        repeat(auto-fit, minmax(280px, 1fr));
 
-      gap: 20px;
+      gap: 24px;
     }
 
-    /* =========================
-       PROPERTY CARD
-    ========================= */
-
     .property-card {
+      background: white;
+
+      border-radius: 20px;
       overflow: hidden;
 
-      background: var(--dark);
+      border: 1px solid #e8e8e8;
 
-      border: 1px solid var(--line);
-      border-radius: 18px;
+      box-shadow:
+        0 10px 30px
+        rgba(0,0,0,.06);
 
       transition:
-        transform 0.25s ease,
-        border-color 0.25s ease;
+        transform .2s ease,
+        box-shadow .2s ease;
     }
 
     .property-card:hover {
       transform: translateY(-4px);
-      border-color: #444;
+
+      box-shadow:
+        0 18px 40px
+        rgba(0,0,0,.10);
     }
 
     .property-image {
-      width: 100%;
-      height: 240px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      height: 230px;
 
       background:
         linear-gradient(
           135deg,
-          #292929,
-          #111111
+          #202020,
+          #555
         );
 
-      color: #666;
-
-      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .property-info {
-      padding: 20px;
+    .property-placeholder {
+      color: white;
+
+      font-size: 28px;
+      font-weight: 800;
+
+      letter-spacing: 4px;
     }
 
-    .property-info h3 {
-      font-size: 20px;
+    .property-content {
+      padding: 22px;
+    }
+
+    .property-type {
+      display: inline-block;
+
+      font-size: 12px;
+      font-weight: 700;
+
+      text-transform: uppercase;
+      letter-spacing: 1px;
+
+      color: #777;
+
       margin-bottom: 8px;
+    }
+
+    .property-content h3 {
+      font-size: 25px;
+      margin-bottom: 5px;
     }
 
     .property-location {
-      color: var(--gray);
-      font-size: 14px;
-    }
-
-    .property-price {
-      margin-top: 18px;
-
-      font-size: 19px;
-      font-weight: 700;
+      color: #777;
+      margin-bottom: 18px;
     }
 
     .property-details {
-      margin-top: 12px;
+      display: flex;
+      gap: 15px;
 
-      color: var(--gray);
+      color: #555;
+      font-size: 14px;
 
-      font-size: 13px;
+      margin-bottom: 22px;
     }
 
-    /* =========================
-       EMPTY STATE
-    ========================= */
+    .property-bottom {
+      display: flex;
 
-    .empty-state {
-      grid-column: 1 / -1;
+      align-items: center;
+      justify-content: space-between;
 
-      padding: 60px 20px;
+      gap: 15px;
+    }
+
+    .property-bottom strong {
+      font-size: 20px;
+    }
+
+    .property-bottom button {
+      border: none;
+
+      background: #171717;
+      color: white;
+
+      padding: 11px 15px;
+
+      border-radius: 10px;
+
+      cursor: pointer;
+
+      font-weight: 600;
+    }
+
+    .property-bottom button:hover {
+      opacity: .85;
+    }
+
+    .nexo-empty {
+      padding: 50px 20px;
 
       text-align: center;
 
-      border: 1px dashed #333;
+      color: #777;
+
+      background: white;
+
       border-radius: 18px;
 
-      color: var(--gray);
+      border: 1px solid #e8e8e8;
     }
-
-    .empty-state strong {
-      display: block;
-
-      margin-bottom: 8px;
-
-      color: var(--white);
-
-      font-size: 18px;
-    }
-
-    /* =========================
-       FOOTER
-    ========================= */
 
     footer {
-      border-top: 1px solid var(--line);
+      border-top:
+        1px solid #e8e8e8;
 
       padding: 30px 20px;
 
       text-align: center;
 
-      color: #666;
+      color: #888;
 
-      font-size: 13px;
+      font-size: 14px;
     }
 
-    /* =========================
-       MOBILE
-    ========================= */
-
-    @media (max-width: 800px) {
-
-      .menu a:not(.admin-button) {
-        display: none;
-      }
+    @media (max-width: 600px) {
 
       .hero {
-        min-height: 70vh;
+        padding:
+          55px 20px 45px;
       }
 
       .hero h1 {
-        letter-spacing: 6px;
+        letter-spacing: -2px;
       }
 
-      .property-grid {
+      .properties-grid {
         grid-template-columns: 1fr;
       }
 
-      .property-image {
-        height: 230px;
-      }
-
-      .section-title h2 {
-        font-size: 30px;
-      }
     }
+
   </style>
 </head>
 
 <body>
-
-  <!-- =========================
-       HEADER
-  ========================== -->
 
   <header>
 
@@ -372,61 +296,27 @@
         NEXO
       </div>
 
-      <div class="menu">
-
-        <a href="#propiedades">
-          Propiedades
-        </a>
-
-        <a href="#contacto">
-          Contacto
-        </a>
-
-        <a href="#" class="admin-button">
-          Admin
-        </a>
-
-      </div>
-
     </nav>
 
   </header>
 
 
-  <!-- =========================
-       MAIN
-  ========================== -->
-
   <main>
-
-    <!-- HERO -->
 
     <section class="hero">
 
-      <div class="hero-content">
+      <h1>
+        Encuentra tu próximo lugar.
+      </h1>
 
-        <h1>
-          NEXO
-        </h1>
-
-        <p>
-          Descubre propiedades que conectan contigo.
-          Una nueva forma de encontrar tu próximo hogar.
-        </p>
-
-        <a
-          href="#propiedades"
-          class="hero-button"
-        >
-          Explorar propiedades
-        </a>
-
-      </div>
+      <p>
+        Explora propiedades seleccionadas
+        y encuentra el espacio que conecta
+        contigo.
+      </p>
 
     </section>
 
-
-    <!-- PROPERTIES -->
 
     <section
       id="propiedades"
@@ -435,33 +325,14 @@
 
       <div class="section-title">
 
-        <span>
-          NEXO
-        </span>
-
         <h2>
-          Propiedades disponibles
+          Propiedades
         </h2>
 
-      </div>
-
-
-      <div
-        id="propertyGrid"
-        class="property-grid"
-      >
-
-        <div class="empty-state">
-
-          <strong>
-            NEXO está listo
-          </strong>
-
-          <span>
-            Las propiedades aparecerán aquí automáticamente.
-          </span>
-
-        </div>
+        <p>
+          Descubre las propiedades
+          disponibles en NEXO.
+        </p>
 
       </div>
 
@@ -470,20 +341,12 @@
   </main>
 
 
-  <!-- =========================
-       FOOTER
-  ========================== -->
-
-  <footer id="contacto">
+  <footer>
 
     © 2026 NEXO
 
   </footer>
 
-
-  <!-- =========================
-       NEXO JAVASCRIPT
-  ========================== -->
 
   <script src="app.js"></script>
 
