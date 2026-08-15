@@ -19,7 +19,7 @@ async function loadProperties() {
     console.error("NEXO:", error);
 
     const container =
-      document.querySelector("#properties");
+      document.querySelector("#propiedades");
 
     if (container) {
       container.innerHTML = `
