@@ -1,756 +1,763 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta charset="UTF-8">
+<title>NEXO | Propiedad</title>
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+<style>
 
-  <meta
-    name="robots"
-    content="index, follow"
-  >
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-  <title>NEXO | Propiedad</title>
+body {
+  background: #f5f5f2;
+  color: #151515;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+}
 
-  <style>
+button,
+a {
+  font: inherit;
+}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
 
-    html {
-      scroll-behavior: smooth;
-    }
+  height: 68px;
 
-    body {
-      background: #f5f5f2;
-      color: #151515;
+  background: rgba(255,255,255,.9);
 
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Helvetica,
-        Arial,
-        sans-serif;
-    }
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 
-    button,
-    a {
-      font: inherit;
-    }
+  border-bottom: 1px solid #e5e5e1;
+}
 
-    a {
-      color: inherit;
-    }
+.header-inner {
+  max-width: 1200px;
+  height: 100%;
+  margin: auto;
+  padding: 0 20px;
 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-    /* =========================
-       HEADER
-    ========================= */
+.logo {
+  text-decoration: none;
+  color: #111;
 
-    header {
-      position: fixed;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
 
-      top: 0;
-      left: 0;
-      right: 0;
+.logo span {
+  font-weight: 400;
+}
 
-      z-index: 50;
+.back-link {
+  text-decoration: none;
 
-      height: 68px;
+  padding: 9px 14px;
 
-      display: flex;
-      align-items: center;
+  border-radius: 999px;
 
-      background:
-        rgba(255,255,255,0.88);
+  background: #eeeeeb;
 
-      backdrop-filter:
-        blur(18px);
+  color: #444;
 
-      -webkit-backdrop-filter:
-        blur(18px);
+  font-size: 13px;
+  font-weight: 700;
+}
 
-      border-bottom:
-        1px solid rgba(0,0,0,0.07);
-    }
+main {
+  max-width: 1200px;
 
-    .header-inner {
-      width: 100%;
+  margin: auto;
 
-      max-width: 1200px;
+  padding:
+    105px 20px 80px;
+}
 
-      margin: 0 auto;
+.loading {
+  min-height: 60vh;
 
-      padding:
-        0 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-      display: flex;
+  color: #777;
+}
 
-      align-items: center;
+.property {
+  display: none;
+}
 
-      justify-content: space-between;
-    }
+.property.visible {
+  display: block;
+}
 
-    .logo {
-      text-decoration: none;
 
-      font-size: 24px;
+/* =========================
+   GALERÍA
+========================= */
 
-      font-weight: 800;
+.gallery-wrapper {
+  position: relative;
+}
 
-      letter-spacing: -1px;
-    }
+.gallery {
+  position: relative;
 
-    .logo span {
-      font-weight: 400;
-    }
+  width: 100%;
+  height: 56vh;
 
-    .back-link {
-      display: inline-flex;
+  min-height: 350px;
+  max-height: 650px;
 
-      align-items: center;
+  overflow: hidden;
 
-      gap: 7px;
+  border-radius: 28px;
 
-      text-decoration: none;
+  background: #202020;
+}
 
-      font-size: 13px;
+.gallery-image {
+  width: 100%;
+  height: 100%;
 
-      font-weight: 700;
+  object-fit: cover;
 
-      color: #444;
+  display: block;
 
-      padding:
-        9px 13px;
+  cursor: zoom-in;
+}
 
-      border-radius: 999px;
+.gallery-placeholder {
+  width: 100%;
+  height: 100%;
 
-      background: #eeeeeb;
-    }
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
+  background:
+    linear-gradient(
+      135deg,
+      #191919,
+      #444
+    );
 
-    /* =========================
-       MAIN
-    ========================= */
+  color: white;
 
-    main {
-      max-width: 1200px;
+  font-size: 52px;
+  font-weight: 800;
 
-      margin: 0 auto;
+  letter-spacing: -4px;
+}
 
-      padding:
-        105px 20px
-        80px;
-    }
+.type-badge {
+  position: absolute;
 
+  top: 20px;
+  left: 20px;
 
-    /* =========================
-       LOADING
-    ========================= */
+  z-index: 5;
 
-    .loading {
-      min-height: 60vh;
+  padding: 8px 13px;
 
-      display: flex;
+  border-radius: 999px;
 
-      align-items: center;
+  background: rgba(255,255,255,.94);
 
-      justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
 
-      color: #777;
+  text-transform: uppercase;
 
-      font-size: 14px;
-    }
+  letter-spacing: .7px;
+}
 
+.gallery-button {
+  position: absolute;
 
-    /* =========================
-       PROPERTY
-    ========================= */
+  top: 50%;
 
-    .property {
-      display: none;
-    }
+  transform: translateY(-50%);
 
-    .property.visible {
-      display: block;
-    }
+  z-index: 10;
 
+  width: 44px;
+  height: 44px;
 
-    /* =========================
-       GALLERY
-    ========================= */
+  border: 0;
 
-    .gallery {
-      width: 100%;
+  border-radius: 50%;
 
-      height: 55vh;
+  background: rgba(0,0,0,.55);
 
-      min-height: 360px;
+  color: white;
 
-      max-height: 650px;
+  cursor: pointer;
 
-      overflow: hidden;
+  font-size: 22px;
 
-      border-radius: 28px;
+  display: none;
 
-      background: #deded9;
+  align-items: center;
+  justify-content: center;
+}
 
-      position: relative;
-    }
+.gallery-button:hover {
+  background: rgba(0,0,0,.75);
+}
 
-    .gallery img {
-      width: 100%;
-      height: 100%;
+.gallery-button.prev {
+  left: 18px;
+}
 
-      display: block;
+.gallery-button.next {
+  right: 18px;
+}
 
-      object-fit: cover;
-    }
+.photo-counter {
+  position: absolute;
 
-    .gallery-placeholder {
-      width: 100%;
-      height: 100%;
+  bottom: 18px;
+  right: 18px;
 
-      display: flex;
+  z-index: 10;
 
-      align-items: center;
-      justify-content: center;
+  padding: 7px 11px;
 
-      background:
-        linear-gradient(
-          135deg,
-          #202020,
-          #444
-        );
+  border-radius: 999px;
 
-      color: white;
+  background: rgba(0,0,0,.65);
 
-      font-size: 50px;
+  color: white;
 
-      font-weight: 800;
+  font-size: 11px;
+  font-weight: 700;
 
-      letter-spacing: -3px;
-    }
+  display: none;
+}
 
-    .gallery-placeholder span {
-      opacity: .9;
-    }
 
-    .type-badge {
-      position: absolute;
+/* =========================
+   MINIATURAS
+========================= */
 
-      top: 20px;
-      left: 20px;
+.thumbnails {
+  display: none;
 
-      padding:
-        8px 13px;
+  gap: 9px;
 
-      border-radius: 999px;
+  margin-top: 12px;
 
-      background:
-        rgba(255,255,255,.94);
+  overflow-x: auto;
 
-      font-size: 11px;
+  padding-bottom: 3px;
+}
 
-      font-weight: 800;
+.thumbnails.visible {
+  display: flex;
+}
 
-      text-transform: uppercase;
+.thumbnail {
+  flex: 0 0 72px;
 
-      letter-spacing: .7px;
-    }
+  width: 72px;
+  height: 55px;
 
+  padding: 0;
 
-    /* =========================
-       CONTENT
-    ========================= */
+  border: 2px solid transparent;
 
-    .property-content {
-      max-width: 900px;
+  border-radius: 9px;
 
-      margin: 0 auto;
+  overflow: hidden;
 
-      padding:
-        38px 0 0;
-    }
+  background: #ddd;
 
-    .property-top {
-      display: flex;
+  cursor: pointer;
+}
 
-      align-items: flex-start;
+.thumbnail.active {
+  border-color: #111;
+}
 
-      justify-content: space-between;
+.thumbnail img {
+  width: 100%;
+  height: 100%;
 
-      gap: 30px;
+  object-fit: cover;
+}
 
-      margin-bottom: 30px;
-    }
 
-    .property-title {
+/* =========================
+   FULLSCREEN
+========================= */
 
-      font-size:
-        clamp(
-          36px,
-          7vw,
-          64px
-        );
+.lightbox {
+  position: fixed;
 
-      line-height: .95;
+  inset: 0;
 
-      letter-spacing: -3px;
+  z-index: 100;
 
-      margin-bottom: 13px;
-    }
+  display: none;
 
-    .location {
+  align-items: center;
+  justify-content: center;
 
-      color: #777;
+  background: rgba(0,0,0,.96);
 
-      font-size: 16px;
+  padding: 25px;
+}
 
-      line-height: 1.5;
-    }
+.lightbox.visible {
+  display: flex;
+}
 
-    .price {
+.lightbox img {
+  max-width: 95vw;
+  max-height: 90vh;
 
-      flex-shrink: 0;
+  object-fit: contain;
+}
 
-      text-align: right;
-    }
+.lightbox-close {
+  position: absolute;
 
-    .price small {
+  top: 18px;
+  right: 20px;
 
-      display: block;
+  width: 45px;
+  height: 45px;
 
-      margin-bottom: 4px;
+  border: 0;
 
-      color: #888;
+  border-radius: 50%;
 
-      font-size: 11px;
+  background: rgba(255,255,255,.12);
 
-      text-transform: uppercase;
+  color: white;
 
-      letter-spacing: 1px;
+  font-size: 26px;
 
-      font-weight: 700;
-    }
+  cursor: pointer;
+}
 
-    .price strong {
 
-      font-size:
-        clamp(
-          25px,
-          5vw,
-          38px
-        );
+/* =========================
+   CONTENIDO
+========================= */
 
-      letter-spacing: -1.5px;
-    }
+.property-content {
+  max-width: 900px;
 
+  margin: auto;
 
-    /* =========================
-       DETAILS
-    ========================= */
+  padding-top: 38px;
+}
 
-    .details {
+.property-top {
+  display: flex;
 
-      display: grid;
+  justify-content: space-between;
 
-      grid-template-columns:
-        repeat(3, 1fr);
+  gap: 30px;
 
-      border-top:
-        1px solid #deded9;
+  margin-bottom: 30px;
+}
 
-      border-bottom:
-        1px solid #deded9;
+.property-title {
+  font-size:
+    clamp(38px, 7vw, 64px);
 
-      margin-bottom: 38px;
-    }
+  line-height: .95;
 
-    .detail {
+  letter-spacing: -3px;
 
-      padding:
-        21px 15px;
+  margin-bottom: 13px;
+}
 
-      text-align: center;
+.location {
+  color: #777;
 
-      border-right:
-        1px solid #deded9;
-    }
+  font-size: 16px;
 
-    .detail:last-child {
-      border-right: 0;
-    }
+  line-height: 1.5;
+}
 
-    .detail-icon {
+.price {
+  flex-shrink: 0;
 
-      display: block;
+  text-align: right;
+}
 
-      margin-bottom: 6px;
+.price small {
+  display: block;
 
-      font-size: 19px;
-    }
+  margin-bottom: 4px;
 
-    .detail strong {
+  color: #888;
 
-      display: block;
+  font-size: 11px;
 
-      font-size: 17px;
-    }
+  text-transform: uppercase;
 
-    .detail span {
+  letter-spacing: 1px;
 
-      display: block;
+  font-weight: 700;
+}
 
-      margin-top: 3px;
+.price strong {
+  font-size:
+    clamp(26px,5vw,38px);
 
-      color: #888;
+  letter-spacing: -1.5px;
+}
 
-      font-size: 11px;
-    }
 
+/* =========================
+   DETALLES
+========================= */
 
-    /* =========================
-       DESCRIPTION
-    ========================= */
+.details {
+  display: grid;
 
-    .description {
+  grid-template-columns:
+    repeat(3,1fr);
 
-      margin-bottom: 40px;
-    }
+  border-top: 1px solid #deded9;
+  border-bottom: 1px solid #deded9;
 
-    .description h2 {
+  margin-bottom: 38px;
+}
 
-      margin-bottom: 14px;
+.detail {
+  padding: 21px 15px;
 
-      font-size: 23px;
+  text-align: center;
 
-      letter-spacing: -.7px;
-    }
+  border-right: 1px solid #deded9;
+}
 
-    .description p {
+.detail:last-child {
+  border-right: 0;
+}
 
-      color: #555;
+.detail-icon {
+  display: block;
 
-      font-size: 16px;
+  margin-bottom: 6px;
 
-      line-height: 1.75;
+  font-size: 19px;
+}
 
-      white-space: pre-line;
-    }
+.detail strong {
+  display: block;
 
+  font-size: 17px;
+}
 
-    /* =========================
-       CONTACT
-    ========================= */
+.detail span:last-child {
+  display: block;
 
-    .contact-box {
+  margin-top: 3px;
 
-      padding:
-        25px;
+  color: #888;
 
-      border-radius: 20px;
+  font-size: 11px;
+}
 
-      background: #111;
 
-      color: white;
+/* =========================
+   DESCRIPCIÓN
+========================= */
 
-      display: flex;
+.description {
+  margin-bottom: 40px;
+}
 
-      align-items: center;
+.description h2 {
+  margin-bottom: 14px;
 
-      justify-content: space-between;
+  font-size: 23px;
 
-      gap: 20px;
-    }
+  letter-spacing: -.7px;
+}
 
-    .contact-box h2 {
+.description p {
+  color: #555;
 
-      margin-bottom: 6px;
+  font-size: 16px;
 
-      font-size: 20px;
+  line-height: 1.75;
 
-      letter-spacing: -.5px;
-    }
+  white-space: pre-line;
+}
 
-    .contact-box p {
 
-      color: #aaa;
+/* =========================
+   CONTACTO
+========================= */
 
-      font-size: 13px;
+.contact-box {
+  padding: 25px;
 
-      line-height: 1.5;
-    }
+  border-radius: 20px;
 
-    .contact-button {
+  background: #111;
 
-      flex-shrink: 0;
+  color: white;
 
-      display: inline-flex;
+  display: flex;
 
-      align-items: center;
+  align-items: center;
 
-      justify-content: center;
+  justify-content: space-between;
 
-      min-height: 48px;
+  gap: 20px;
+}
 
-      padding:
-        0 20px;
+.contact-box h2 {
+  margin-bottom: 6px;
 
-      border-radius: 999px;
+  font-size: 20px;
+}
 
-      background: white;
+.contact-box p {
+  color: #aaa;
 
-      color: #111;
+  font-size: 13px;
 
-      text-decoration: none;
+  line-height: 1.5;
+}
 
-      font-size: 13px;
+.contact-button {
+  flex-shrink: 0;
 
-      font-weight: 800;
-    }
+  min-height: 48px;
 
+  padding: 0 20px;
 
-    /* =========================
-       ERROR
-    ========================= */
+  border-radius: 999px;
 
-    .error {
+  background: white;
 
-      display: none;
+  color: #111;
 
-      min-height: 60vh;
+  text-decoration: none;
 
-      align-items: center;
+  display: inline-flex;
 
-      justify-content: center;
+  align-items: center;
+  justify-content: center;
 
-      text-align: center;
-    }
+  font-size: 13px;
+  font-weight: 800;
+}
 
-    .error.visible {
-      display: flex;
-    }
 
-    .error-inner {
-      max-width: 450px;
-    }
+/* =========================
+   ERROR
+========================= */
 
-    .error h1 {
+.error {
+  display: none;
 
-      margin-bottom: 10px;
+  min-height: 60vh;
 
-      font-size: 34px;
+  align-items: center;
+  justify-content: center;
 
-      letter-spacing: -1.5px;
-    }
+  text-align: center;
+}
 
-    .error p {
+.error.visible {
+  display: flex;
+}
 
-      margin-bottom: 22px;
+.error-inner {
+  max-width: 450px;
+}
 
-      color: #777;
+.error h1 {
+  margin-bottom: 10px;
 
-      line-height: 1.6;
-    }
+  font-size: 34px;
+}
 
-    .error a {
+.error p {
+  margin-bottom: 22px;
 
-      display: inline-flex;
+  color: #777;
 
-      padding:
-        12px 18px;
+  line-height: 1.6;
+}
 
-      border-radius: 999px;
+.error a {
+  display: inline-flex;
 
-      background: #111;
+  padding: 12px 18px;
 
-      color: white;
+  border-radius: 999px;
 
-      text-decoration: none;
+  background: #111;
 
-      font-size: 13px;
+  color: white;
 
-      font-weight: 700;
-    }
+  text-decoration: none;
 
+  font-size: 13px;
+  font-weight: 700;
+}
 
-    /* =========================
-       MOBILE
-    ========================= */
 
-    @media (max-width: 700px) {
+/* =========================
+   MOBILE
+========================= */
 
-      header {
-        height: 62px;
-      }
+@media (max-width: 700px) {
 
-      .header-inner {
-        padding:
-          0 15px;
-      }
+  header {
+    height: 62px;
+  }
 
-      .logo {
-        font-size: 21px;
-      }
+  .header-inner {
+    padding: 0 15px;
+  }
 
-      main {
+  .logo {
+    font-size: 21px;
+  }
 
-        padding:
-          82px 15px
-          60px;
-      }
+  main {
+    padding:
+      82px 15px 60px;
+  }
 
-      .gallery {
+  .gallery {
+    height: 52vh;
+    min-height: 300px;
 
-        height:
-          52vh;
+    border-radius: 20px;
+  }
 
-        min-height:
-          300px;
+  .property-content {
+    padding-top: 28px;
+  }
 
-        border-radius:
-          20px;
-      }
+  .property-top {
+    display: block;
+  }
 
-      .property-content {
+  .property-title {
+    letter-spacing: -2px;
+  }
 
-        padding-top:
-          28px;
-      }
+  .price {
+    margin-top: 20px;
 
-      .property-top {
+    text-align: left;
+  }
 
-        display: block;
+  .details {
+    margin-bottom: 30px;
+  }
 
-        margin-bottom:
-          25px;
-      }
+  .detail {
+    padding: 17px 5px;
+  }
 
-      .property-title {
+  .detail strong {
+    font-size: 15px;
+  }
 
-        margin-bottom:
-          10px;
+  .contact-box {
+    display: block;
 
-        letter-spacing:
-          -2px;
-      }
+    padding: 22px;
+  }
 
-      .price {
+  .contact-button {
+    width: 100%;
 
-        margin-top:
-          20px;
+    margin-top: 18px;
+  }
 
-        text-align:
-          left;
-      }
+}
 
-      .details {
-
-        margin-bottom:
-          30px;
-      }
-
-      .detail {
-
-        padding:
-          17px 5px;
-      }
-
-      .detail strong {
-        font-size:
-          15px;
-      }
-
-      .detail span {
-        font-size:
-          10px;
-      }
-
-      .contact-box {
-
-        display: block;
-
-        padding:
-          22px;
-      }
-
-      .contact-button {
-
-        width: 100%;
-
-        margin-top:
-          18px;
-      }
-
-    }
-
-  </style>
-
+</style>
 </head>
 
 
 <body>
 
 
-  <!-- =========================
-       HEADER
-  ========================= -->
+<header>
 
-  <header>
+  <div class="header-inner">
 
-    <div class="header-inner">
-
-      <a
-        href="/"
-        class="logo"
-      >
-        NEXO<span>.</span>
-      </a>
-
-      <a
-        href="/"
-        class="back-link"
-      >
-        ← Volver
-      </a>
-
-    </div>
-
-  </header>
-
-
-  <!-- =========================
-       MAIN
-  ========================= -->
-
-  <main>
-
-
-    <div
-      id="loading"
-      class="loading"
+    <a
+      href="/"
+      class="logo"
     >
-      Cargando propiedad...
-    </div>
+      NEXO<span>.</span>
+    </a>
 
-
-    <div
-      id="property"
-      class="property"
+    <a
+      href="/"
+      class="back-link"
     >
+      ← Volver
+    </a>
+
+  </div>
+
+</header>
 
 
-      <!-- GALERÍA -->
+<main>
+
+
+  <div
+    id="loading"
+    class="loading"
+  >
+    Cargando propiedad...
+  </div>
+
+
+  <div
+    id="property"
+    class="property"
+  >
+
+
+    <!-- GALERÍA -->
+
+    <div class="gallery-wrapper">
 
       <div class="gallery">
 
@@ -758,8 +765,9 @@
           id="galleryContent"
           class="gallery-placeholder"
         >
-          <span>NEXO</span>
+          NEXO
         </div>
+
 
         <div
           id="typeBadge"
@@ -768,315 +776,374 @@
           Propiedad
         </div>
 
+
+        <button
+          id="prevButton"
+          class="gallery-button prev"
+          type="button"
+          aria-label="Foto anterior"
+        >
+          ‹
+        </button>
+
+
+        <button
+          id="nextButton"
+          class="gallery-button next"
+          type="button"
+          aria-label="Foto siguiente"
+        >
+          ›
+        </button>
+
+
+        <div
+          id="photoCounter"
+          class="photo-counter"
+        >
+          1 / 1
+        </div>
+
       </div>
 
 
-      <!-- CONTENIDO -->
-
-      <div class="property-content">
-
-
-        <div class="property-top">
-
-          <div>
-
-            <h1
-              id="propertyTitle"
-              class="property-title"
-            >
-              Propiedad
-            </h1>
-
-            <div
-              id="propertyLocation"
-              class="location"
-            >
-              Ubicación
-            </div>
-
-          </div>
-
-
-          <div class="price">
-
-            <small>
-              Precio
-            </small>
-
-            <strong
-              id="propertyPrice"
-            >
-              Consultar
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        <!-- DETALLES -->
-
-        <div class="details">
-
-
-          <div class="detail">
-
-            <span class="detail-icon">
-              🛏️
-            </span>
-
-            <strong
-              id="bedrooms"
-            >
-              —
-            </strong>
-
-            <span>
-              Habitaciones
-            </span>
-
-          </div>
-
-
-          <div class="detail">
-
-            <span class="detail-icon">
-              🚿
-            </span>
-
-            <strong
-              id="bathrooms"
-            >
-              —
-            </strong>
-
-            <span>
-              Baños
-            </span>
-
-          </div>
-
-
-          <div class="detail">
-
-            <span class="detail-icon">
-              📐
-            </span>
-
-            <strong
-              id="squareMeters"
-            >
-              —
-            </strong>
-
-            <span>
-              Metros cuadrados
-            </span>
-
-          </div>
-
-
-        </div>
-
-
-        <!-- DESCRIPCIÓN -->
-
-        <section class="description">
-
-          <h2>
-            Sobre esta propiedad
-          </h2>
-
-          <p
-            id="description"
-          >
-            Sin descripción disponible.
-          </p>
-
-        </section>
-
-
-        <!-- CONTACTO -->
-
-        <section class="contact-box">
-
-          <div>
-
-            <h2>
-              ¿Te interesa esta propiedad?
-            </h2>
-
-            <p>
-              Ponte en contacto con NEXO
-              para obtener más información.
-            </p>
-
-          </div>
-
-          <a
-            href="mailto:"
-            id="contactButton"
-            class="contact-button"
-          >
-            Contactar con NEXO
-          </a>
-
-        </section>
-
-
-      </div>
+      <div
+        id="thumbnails"
+        class="thumbnails"
+      ></div>
 
     </div>
 
 
-    <!-- =========================
-         ERROR
-    ========================= -->
+    <!-- CONTENIDO -->
 
-    <div
-      id="error"
-      class="error"
-    >
+    <div class="property-content">
 
-      <div class="error-inner">
 
-        <h1>
-          Propiedad no encontrada
-        </h1>
+      <div class="property-top">
 
-        <p>
-          La propiedad que buscas no está
-          disponible o el enlace no es válido.
+        <div>
+
+          <h1
+            id="propertyTitle"
+            class="property-title"
+          >
+            Propiedad
+          </h1>
+
+          <div
+            id="propertyLocation"
+            class="location"
+          >
+            Ubicación
+          </div>
+
+        </div>
+
+
+        <div class="price">
+
+          <small>
+            Precio
+          </small>
+
+          <strong
+            id="propertyPrice"
+          >
+            Consultar
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- DETALLES -->
+
+      <div class="details">
+
+
+        <div class="detail">
+
+          <span class="detail-icon">
+            🛏️
+          </span>
+
+          <strong
+            id="bedrooms"
+          >
+            —
+          </strong>
+
+          <span>
+            Habitaciones
+          </span>
+
+        </div>
+
+
+        <div class="detail">
+
+          <span class="detail-icon">
+            🚿
+          </span>
+
+          <strong
+            id="bathrooms"
+          >
+            —
+          </strong>
+
+          <span>
+            Baños
+          </span>
+
+        </div>
+
+
+        <div class="detail">
+
+          <span class="detail-icon">
+            📐
+          </span>
+
+          <strong
+            id="squareMeters"
+          >
+            —
+          </strong>
+
+          <span>
+            Metros cuadrados
+          </span>
+
+        </div>
+
+
+      </div>
+
+
+      <!-- DESCRIPCIÓN -->
+
+      <section class="description">
+
+        <h2>
+          Sobre esta propiedad
+        </h2>
+
+        <p id="description">
+          Sin descripción disponible.
         </p>
 
-        <a href="/">
-          Volver a NEXO
+      </section>
+
+
+      <!-- CONTACTO -->
+
+      <section class="contact-box">
+
+        <div>
+
+          <h2>
+            ¿Te interesa esta propiedad?
+          </h2>
+
+          <p>
+            Ponte en contacto con NEXO
+            para obtener más información.
+          </p>
+
+        </div>
+
+
+        <a
+          href="mailto:"
+          class="contact-button"
+        >
+          Contactar con NEXO
         </a>
 
-      </div>
+      </section>
+
 
     </div>
 
-
-  </main>
-
-
-  <script>
-
-    const API_URL =
-      "https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev";
+  </div>
 
 
-    /* =========================
-       ELEMENTOS
-    ========================= */
+  <!-- ERROR -->
 
-    const loading =
-      document.querySelector(
-        "#loading"
-      );
+  <div
+    id="error"
+    class="error"
+  >
 
-    const propertyContainer =
-      document.querySelector(
-        "#property"
-      );
+    <div class="error-inner">
 
-    const errorContainer =
-      document.querySelector(
-        "#error"
-      );
+      <h1>
+        Propiedad no encontrada
+      </h1>
+
+      <p>
+        La propiedad que buscas no está
+        disponible o el enlace no es válido.
+      </p>
+
+      <a href="/">
+        Volver a NEXO
+      </a>
+
+    </div>
+
+  </div>
+
+</main>
 
 
-    /* =========================
-       ESCAPAR HTML
-    ========================= */
+<!-- LIGHTBOX -->
 
-    function escapeHTML(value) {
+<div
+  id="lightbox"
+  class="lightbox"
+>
 
-      return String(value)
+  <button
+    id="lightboxClose"
+    class="lightbox-close"
+    type="button"
+    aria-label="Cerrar"
+  >
+    ×
+  </button>
 
-        .replaceAll(
-          "&",
-          "&amp;"
-        )
+  <img
+    id="lightboxImage"
+    src=""
+    alt="Fotografía de propiedad"
+  >
 
-        .replaceAll(
-          "<",
-          "&lt;"
-        )
+</div>
 
-        .replaceAll(
-          ">",
-          "&gt;"
-        )
 
-        .replaceAll(
-          '"',
-          "&quot;"
-        )
+<script>
 
-        .replaceAll(
-          "'",
-          "&#039;"
-        );
+const API_URL =
+  "https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev";
 
+
+let photos = [];
+
+let currentPhoto = 0;
+
+
+/* =========================
+   ELEMENTOS
+========================= */
+
+const loading =
+  document.querySelector("#loading");
+
+const propertyContainer =
+  document.querySelector("#property");
+
+const errorContainer =
+  document.querySelector("#error");
+
+const galleryContent =
+  document.querySelector("#galleryContent");
+
+const prevButton =
+  document.querySelector("#prevButton");
+
+const nextButton =
+  document.querySelector("#nextButton");
+
+const photoCounter =
+  document.querySelector("#photoCounter");
+
+const thumbnails =
+  document.querySelector("#thumbnails");
+
+const lightbox =
+  document.querySelector("#lightbox");
+
+const lightboxImage =
+  document.querySelector("#lightboxImage");
+
+const lightboxClose =
+  document.querySelector("#lightboxClose");
+
+
+/* =========================
+   PRECIO
+========================= */
+
+function formatPrice(price) {
+
+  if (
+    price === null ||
+    price === undefined ||
+    price === ""
+  ) {
+    return "Consultar";
+  }
+
+  const number =
+    Number(price);
+
+  if (!Number.isFinite(number)) {
+    return "Consultar";
+  }
+
+  return number.toLocaleString(
+    "en-US",
+    {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0
+    }
+  );
+
+}
+
+
+/* =========================
+   FOTOS
+========================= */
+
+function parsePhotos(value) {
+
+  if (!value) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+
+    return value.filter(
+      photo =>
+        typeof photo === "string" &&
+        photo.trim()
+    );
+
+  }
+
+  if (typeof value === "string") {
+
+    const clean =
+      value.trim();
+
+    if (!clean) {
+      return [];
     }
 
+    try {
 
-    /* =========================
-       PRECIO
-    ========================= */
+      const parsed =
+        JSON.parse(clean);
 
-    function formatPrice(price) {
+      if (Array.isArray(parsed)) {
 
-      if (
-        price === null ||
-        price === undefined ||
-        price === ""
-      ) {
-
-        return "Consultar";
-
-      }
-
-
-      const number =
-        Number(price);
-
-
-      if (!Number.isFinite(number)) {
-
-        return "Consultar";
-
-      }
-
-
-      return number.toLocaleString(
-        "en-US",
-        {
-          style: "currency",
-          currency: "USD",
-          maximumFractionDigits: 0
-        }
-      );
-
-    }
-
-
-    /* =========================
-       FOTOS
-    ========================= */
-
-    function parsePhotos(value) {
-
-      if (!value) {
-        return [];
-      }
-
-
-      if (Array.isArray(value)) {
-
-        return value.filter(
+        return parsed.filter(
           photo =>
             typeof photo === "string" &&
             photo.trim()
@@ -1084,295 +1151,595 @@
 
       }
 
+    } catch (error) {
 
-      if (typeof value === "string") {
+      if (
+        clean.startsWith("http://") ||
+        clean.startsWith("https://")
+      ) {
 
-        const clean =
-          value.trim();
-
-
-        if (!clean) {
-          return [];
-        }
-
-
-        try {
-
-          const parsed =
-            JSON.parse(clean);
-
-
-          if (Array.isArray(parsed)) {
-
-            return parsed.filter(
-              photo =>
-                typeof photo === "string" &&
-                photo.trim()
-            );
-
-          }
-
-        } catch (error) {
-
-          if (
-            clean.startsWith("http://") ||
-            clean.startsWith("https://")
-          ) {
-
-            return [clean];
-
-          }
-
-        }
-
-      }
-
-
-      return [];
-
-    }
-
-
-    /* =========================
-       ID
-    ========================= */
-
-    function getPropertyId() {
-
-      const params =
-        new URLSearchParams(
-          window.location.search
-        );
-
-
-      return params.get("id");
-
-    }
-
-
-    /* =========================
-       CARGAR PROPIEDAD
-    ========================= */
-
-    async function loadProperty() {
-
-      const id =
-        getPropertyId();
-
-
-      if (!id) {
-
-        showError();
-
-        return;
-
-      }
-
-
-      try {
-
-        const response =
-          await fetch(
-            `${API_URL}/api/properties/${encodeURIComponent(id)}`
-          );
-
-
-        if (!response.ok) {
-
-          throw new Error(
-            "Propiedad no encontrada."
-          );
-
-        }
-
-
-        const data =
-          await response.json();
-
-
-        if (
-          !data.success ||
-          !data.property
-        ) {
-
-          throw new Error(
-            data.error ||
-            "Propiedad no encontrada."
-          );
-
-        }
-
-
-        renderProperty(
-          data.property
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "NEXO:",
-          error
-        );
-
-        showError();
+        return [clean];
 
       }
 
     }
 
+  }
 
-    /* =========================
-       MOSTRAR PROPIEDAD
-    ========================= */
+  return [];
 
-    function renderProperty(
-      property
-    ) {
-
-      document.title =
-        `NEXO | ${
-          property.property_type ||
-          "Propiedad"
-        }`;
+}
 
 
-      document.querySelector(
-        "#propertyTitle"
-      ).textContent =
-        property.city ||
-        "Propiedad";
+/* =========================
+   ID
+========================= */
 
+function getPropertyId() {
 
-      const locationParts =
-        [
-          property.city,
-          property.neighborhood
-        ]
-        .filter(Boolean);
-
-
-      document.querySelector(
-        "#propertyLocation"
-      ).textContent =
-        locationParts.join(" · ");
-
-
-      document.querySelector(
-        "#propertyPrice"
-      ).textContent =
-        formatPrice(
-          property.price
-        );
-
-
-      document.querySelector(
-        "#bedrooms"
-      ).textContent =
-        property.bedrooms ??
-        "—";
-
-
-      document.querySelector(
-        "#bathrooms"
-      ).textContent =
-        property.bathrooms ??
-        "—";
-
-
-      document.querySelector(
-        "#squareMeters"
-      ).textContent =
-        property.square_meters != null
-          ? `${property.square_meters} m²`
-          : "—";
-
-
-      document.querySelector(
-        "#description"
-      ).textContent =
-        property.description ||
-        "Sin descripción disponible.";
-
-
-      document.querySelector(
-        "#typeBadge"
-      ).textContent =
-        property.property_type ||
-        "Propiedad";
-
-
-      /* FOTO */
-
-      const photos =
-        parsePhotos(
-          property.photos
-        );
-
-
-      const gallery =
-        document.querySelector(
-          "#galleryContent"
-        );
-
-
-      if (photos.length > 0) {
-
-        gallery.outerHTML = `
-          <img
-            id="galleryContent"
-            src="${escapeHTML(photos[0])}"
-            alt="${escapeHTML(
-              property.property_type ||
-              "Propiedad"
-            )}"
-          >
-        `;
-
-      }
-
-
-      loading.style.display =
-        "none";
-
-
-      propertyContainer.classList.add(
-        "visible"
-      );
-
-    }
-
-
-    /* =========================
-       ERROR
-    ========================= */
-
-    function showError() {
-
-      loading.style.display =
-        "none";
-
-      propertyContainer.classList.remove(
-        "visible"
-      );
-
-      errorContainer.classList.add(
-        "visible"
-      );
-
-    }
-
-
-    /* =========================
-       INICIAR
-    ========================= */
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      loadProperty
+  const params =
+    new URLSearchParams(
+      window.location.search
     );
 
-  </script>
+  return params.get("id");
+
+}
+
+
+/* =========================
+   CARGAR
+========================= */
+
+async function loadProperty() {
+
+  const id =
+    getPropertyId();
+
+  if (!id) {
+
+    showError();
+
+    return;
+
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        `${API_URL}/api/properties/${encodeURIComponent(id)}`
+      );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Propiedad no encontrada."
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !data.success ||
+      !data.property
+    ) {
+
+      throw new Error(
+        data.error ||
+        "Propiedad no encontrada."
+      );
+
+    }
+
+
+    renderProperty(
+      data.property
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "NEXO:",
+      error
+    );
+
+    showError();
+
+  }
+
+}
+
+
+/* =========================
+   MOSTRAR
+========================= */
+
+function renderProperty(
+  property
+) {
+
+  document.title =
+    `NEXO | ${
+      property.property_type ||
+      "Propiedad"
+    }`;
+
+
+  document.querySelector(
+    "#propertyTitle"
+  ).textContent =
+    property.city ||
+    "Propiedad";
+
+
+  document.querySelector(
+    "#propertyLocation"
+  ).textContent =
+    [
+      property.city,
+      property.neighborhood
+    ]
+    .filter(Boolean)
+    .join(" · ");
+
+
+  document.querySelector(
+    "#propertyPrice"
+  ).textContent =
+    formatPrice(
+      property.price
+    );
+
+
+  document.querySelector(
+    "#bedrooms"
+  ).textContent =
+    property.bedrooms ??
+    "—";
+
+
+  document.querySelector(
+    "#bathrooms"
+  ).textContent =
+    property.bathrooms ??
+    "—";
+
+
+  document.querySelector(
+    "#squareMeters"
+  ).textContent =
+    property.square_meters != null
+      ? `${property.square_meters} m²`
+      : "—";
+
+
+  document.querySelector(
+    "#description"
+  ).textContent =
+    property.description ||
+    "Sin descripción disponible.";
+
+
+  document.querySelector(
+    "#typeBadge"
+  ).textContent =
+    property.property_type ||
+    "Propiedad";
+
+
+  photos =
+    parsePhotos(
+      property.photos
+    );
+
+
+  setupGallery();
+
+
+  loading.style.display =
+    "none";
+
+  propertyContainer.classList.add(
+    "visible"
+  );
+
+}
+
+
+/* =========================
+   GALERÍA
+========================= */
+
+function setupGallery() {
+
+  if (!photos.length) {
+
+    galleryContent.innerHTML =
+      "NEXO";
+
+    return;
+
+  }
+
+
+  if (photos.length === 1) {
+
+    prevButton.style.display =
+      "none";
+
+    nextButton.style.display =
+      "none";
+
+    photoCounter.style.display =
+      "none";
+
+    thumbnails.classList.remove(
+      "visible"
+    );
+
+  }
+
+
+  if (photos.length > 1) {
+
+    prevButton.style.display =
+      "flex";
+
+    nextButton.style.display =
+      "flex";
+
+    photoCounter.style.display =
+      "block";
+
+    thumbnails.classList.add(
+      "visible"
+    );
+
+    renderThumbnails();
+
+  }
+
+
+  showPhoto(0);
+
+}
+
+
+/* =========================
+   MOSTRAR FOTO
+========================= */
+
+function showPhoto(
+  index
+) {
+
+  if (!photos.length) {
+    return;
+  }
+
+
+  currentPhoto =
+    (index + photos.length) %
+    photos.length;
+
+
+  galleryContent.outerHTML = `
+
+    <img
+      id="galleryContent"
+      class="gallery-image"
+      src="${escapeAttribute(
+        photos[currentPhoto]
+      )}"
+      alt="Fotografía de propiedad"
+    >
+
+  `;
+
+
+  const newImage =
+    document.querySelector(
+      "#galleryContent"
+    );
+
+
+  newImage.addEventListener(
+    "click",
+    openLightbox
+  );
+
+
+  if (photos.length > 1) {
+
+    photoCounter.textContent =
+      `${currentPhoto + 1} / ${photos.length}`;
+
+  }
+
+
+  updateThumbnails();
+
+}
+
+
+/* =========================
+   MINIATURAS
+========================= */
+
+function renderThumbnails() {
+
+  thumbnails.innerHTML =
+    photos
+      .map(
+        (photo, index) => `
+
+          <button
+            type="button"
+            class="thumbnail ${
+              index === 0
+                ? "active"
+                : ""
+            }"
+            onclick="
+              showPhoto(${index})
+            "
+          >
+
+            <img
+              src="${escapeAttribute(photo)}"
+              alt="Miniatura ${index + 1}"
+              loading="lazy"
+            >
+
+          </button>
+
+        `
+      )
+      .join("");
+
+}
+
+
+/* =========================
+   ACTUALIZAR MINIATURAS
+========================= */
+
+function updateThumbnails() {
+
+  const items =
+    thumbnails.querySelectorAll(
+      ".thumbnail"
+    );
+
+
+  items.forEach(
+    (item, index) => {
+
+      item.classList.toggle(
+        "active",
+        index === currentPhoto
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   ANTERIOR
+========================= */
+
+prevButton.addEventListener(
+  "click",
+  () => {
+
+    showPhoto(
+      currentPhoto - 1
+    );
+
+  }
+);
+
+
+/* =========================
+   SIGUIENTE
+========================= */
+
+nextButton.addEventListener(
+  "click",
+  () => {
+
+    showPhoto(
+      currentPhoto + 1
+    );
+
+  }
+);
+
+
+/* =========================
+   LIGHTBOX
+========================= */
+
+function openLightbox() {
+
+  if (!photos.length) {
+    return;
+  }
+
+  lightboxImage.src =
+    photos[currentPhoto];
+
+  lightbox.classList.add(
+    "visible"
+  );
+
+}
+
+
+function closeLightbox() {
+
+  lightbox.classList.remove(
+    "visible"
+  );
+
+  lightboxImage.src = "";
+
+}
+
+
+lightboxClose.addEventListener(
+  "click",
+  closeLightbox
+);
+
+
+lightbox.addEventListener(
+  "click",
+  event => {
+
+    if (
+      event.target === lightbox
+    ) {
+
+      closeLightbox();
+
+    }
+
+  }
+);
+
+
+/* =========================
+   TECLADO
+========================= */
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Escape"
+    ) {
+
+      closeLightbox();
+
+    }
+
+
+    if (
+      event.key === "ArrowLeft" &&
+      photos.length > 1
+    ) {
+
+      showPhoto(
+        currentPhoto - 1
+      );
+
+    }
+
+
+    if (
+      event.key === "ArrowRight" &&
+      photos.length > 1
+    ) {
+
+      showPhoto(
+        currentPhoto + 1
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================
+   ERROR
+========================= */
+
+function showError() {
+
+  loading.style.display =
+    "none";
+
+  propertyContainer.classList.remove(
+    "visible"
+  );
+
+  errorContainer.classList.add(
+    "visible"
+  );
+
+}
+
+
+/* =========================
+   SEGURIDAD HTML
+========================= */
+
+function escapeHTML(
+  value
+) {
+
+  return String(value)
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
+}
+
+
+function escapeAttribute(
+  value
+) {
+
+  return escapeHTML(value);
+
+}
+
+
+/* =========================
+   INICIAR
+========================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  loadProperty
+);
+
+</script>
 
 </body>
 </html>
