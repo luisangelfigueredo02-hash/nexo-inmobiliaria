@@ -33,7 +33,7 @@ async function loadProperties() {
 
 function renderProperties(properties) {
   const container =
-    document.querySelector("#properties");
+    document.querySelector("#propiedades");
 
   if (!container) {
     console.error(
