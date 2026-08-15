@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>NEXO</title>
+
+  <meta
+    name="description"
+    content="NEXO — Propiedades inmobiliarias"
+  >
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      background: #f7f7f5;
+      color: #171717;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(12px);
+
+      border-bottom:
+        1px solid #e8e8e8;
+    }
+
+    .nav {
+      max-width: 1200px;
+      margin: auto;
+
+      padding: 18px 20px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 3px;
+    }
+
+    .hero {
+      max-width: 1200px;
+      margin: auto;
+
+      padding: 80px 20px 60px;
+    }
+
+    .hero h1 {
+      max-width: 800px;
+
+      font-size:
+        clamp(42px, 8vw, 82px);
+
+      line-height: .95;
+      letter-spacing: -3px;
+
+      margin-bottom: 24px;
+    }
+
+    .hero p {
+      max-width: 600px;
+
+      color: #666;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .properties-section {
+      max-width: 1200px;
+      margin: auto;
+
+      padding:
+        20px 20px 80px;
+    }
+
+    .section-title {
+      margin-bottom: 30px;
+    }
+
+    .section-title h2 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .section-title p {
+      color: #777;
+    }
+
+    .properties-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(auto-fit, minmax(280px, 1fr));
+
+      gap: 24px;
+    }
+
+    .property-card {
+      background: white;
+
+      border-radius: 20px;
+      overflow: hidden;
+
+      border: 1px solid #e8e8e8;
+
+      box-shadow:
+        0 10px 30px
+        rgba(0,0,0,.06);
+
+      transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+    }
+
+    .property-card:hover {
+      transform: translateY(-4px);
+
+      box-shadow:
+        0 18px 40px
+        rgba(0,0,0,.10);
+    }
+
+    .property-image {
+      height: 230px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #202020,
+          #555
+        );
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .property-placeholder {
+      color: white;
+
+      font-size: 28px;
+      font-weight: 800;
+
+      letter-spacing: 4px;
+    }
+
+    .property-content {
+      padding: 22px;
+    }
+
+    .property-type {
+      display: inline-block;
+
+      font-size: 12px;
+      font-weight: 700;
+
+      text-transform: uppercase;
+      letter-spacing: 1px;
+
+      color: #777;
+
+      margin-bottom: 8px;
+    }
+
+    .property-content h3 {
+      font-size: 25px;
+      margin-bottom: 5px;
+    }
+
+    .property-location {
+      color: #777;
+      margin-bottom: 18px;
+    }
+
+    .property-details {
+      display: flex;
+      gap: 15px;
+
+      color: #555;
+      font-size: 14px;
+
+      margin-bottom: 22px;
+    }
+
+    .property-bottom {
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 15px;
+    }
+
+    .property-bottom strong {
+      font-size: 20px;
+    }
+
+    .property-bottom button {
+      border: none;
+
+      background: #171717;
+      color: white;
+
+      padding: 11px 15px;
+
+      border-radius: 10px;
+
+      cursor: pointer;
+
+      font-weight: 600;
+    }
+
+    .property-bottom button:hover {
+      opacity: .85;
+    }
+
+    .nexo-empty {
+      padding: 50px 20px;
+
+      text-align: center;
+
+      color: #777;
+
+      background: white;
+
+      border-radius: 18px;
+
+      border: 1px solid #e8e8e8;
+    }
+
+    footer {
+      border-top:
+        1px solid #e8e8e8;
+
+      padding: 30px 20px;
+
+      text-align: center;
+
+      color: #888;
+
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+
+      .hero {
+        padding:
+          55px 20px 45px;
+      }
+
+      .hero h1 {
+        letter-spacing: -2px;
+      }
+
+      .properties-grid {
+        grid-template-columns: 1fr;
+      }
+
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <header>
+
+    <nav class="nav">
+
+      <div class="logo">
+        NEXO
+      </div>
+
+    </nav>
+
+  </header>
+
+
+  <main>
+
+    <section class="hero">
+
+      <h1>
+        Encuentra tu próximo lugar.
+      </h1>
+
+      <p>
+        Explora propiedades seleccionadas
+        y encuentra el espacio que conecta
+        contigo.
+      </p>
+
+    </section>
+
+
+    <section
+      id="propiedades"
+      class="properties-section"
+    >
+
+      <div class="section-title">
+
+        <h2>
+          Propiedades
+        </h2>
+
+        <p>
+          Descubre las propiedades
+          disponibles en NEXO.
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+
+    © 2026 NEXO
+
+  </footer>
+
+
+  <script src="app.js"></script>
+
+</body>
+</html>
