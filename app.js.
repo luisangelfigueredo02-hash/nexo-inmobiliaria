@@ -1,124 +1,219 @@
 const API_URL =
   "https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev";
 
-async function loadProperties() {
-  try {
-    const response = await fetch(
-      `${API_URL}/api/properties`
-    );
 
-    const data = await response.json();
+// ==========================================
+// CARGAR PROPIEDADES
+// ==========================================
+
+async function loadProperties() {
+
+  try {
+
+    const response =
+      await fetch(`${API_URL}/api/properties`);
+
+    const data =
+      await response.json();
 
     if (!data.success) {
-      throw new Error(data.error || "Error al cargar propiedades");
+      throw new Error(
+        data.error || "Error al cargar propiedades"
+      );
     }
 
-    renderProperties(data.properties);
+    renderProperties(
+      data.properties || []
+    );
 
   } catch (error) {
+
     console.error("NEXO:", error);
 
     const container =
       document.querySelector("#propiedades");
 
     if (container) {
+
       container.innerHTML = `
-        <div class="empty-state">
-          <p>No se pudieron cargar las propiedades.</p>
+        <div class="nexo-empty">
+          <p>
+            No se pudieron cargar las propiedades.
+          </p>
         </div>
       `;
+
     }
+
   }
+
 }
 
+
+// ==========================================
+// MOSTRAR PROPIEDADES
+// ==========================================
+
 function renderProperties(properties) {
-  const container =
+
+  const section =
     document.querySelector("#propiedades");
 
-  if (!container) {
+  if (!section) {
+
     console.error(
-      "No existe un elemento #properties en index.html"
+      "NEXO: No existe #propiedades"
     );
+
     return;
   }
 
-  if (!properties || properties.length === 0) {
+
+  // Buscamos un contenedor existente
+  // dentro de la sección.
+
+  let container =
+    section.querySelector(
+      ".properties-grid"
+    );
+
+
+  // Si no existe, lo creamos.
+
+  if (!container) {
+
+    container =
+      document.createElement("div");
+
+    container.className =
+      "properties-grid";
+
+    section.appendChild(container);
+
+  }
+
+
+  // Sin propiedades
+
+  if (!properties.length) {
+
     container.innerHTML = `
-      <div class="empty-state">
-        <p>Actualmente no hay propiedades disponibles.</p>
+      <div class="nexo-empty">
+        <p>
+          Actualmente no hay propiedades disponibles.
+        </p>
       </div>
     `;
+
     return;
   }
 
-  container.innerHTML = properties
-    .map(property => {
+
+  // Crear tarjetas
+
+  container.innerHTML =
+    properties.map(property => {
 
       const price =
-        property.price !== null
-          ? Number(property.price).toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-              maximumFractionDigits: 0
-            })
+        property.price !== null &&
+        property.price !== undefined
+          ? Number(property.price)
+              .toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD",
+                maximumFractionDigits: 0
+              })
           : "Consultar precio";
 
+
       return `
+
         <article class="property-card">
 
           <div class="property-image">
+
             <div class="property-placeholder">
               NEXO
             </div>
+
           </div>
+
 
           <div class="property-content">
 
             <span class="property-type">
-              ${escapeHTML(property.property_type || "")}
+              ${escapeHTML(
+                property.property_type || ""
+              )}
             </span>
 
+
             <h3>
-              ${escapeHTML(property.city || "")}
+              ${escapeHTML(
+                property.city || ""
+              )}
             </h3>
+
 
             ${
               property.neighborhood
                 ? `
                   <p class="property-location">
-                    ${escapeHTML(property.neighborhood)}
+                    ${escapeHTML(
+                      property.neighborhood
+                    )}
                   </p>
                 `
                 : ""
             }
 
+
             <div class="property-details">
 
               ${
-                property.bedrooms !== null
-                  ? `<span>🛏 ${property.bedrooms}</span>`
+                property.bedrooms !== null &&
+                property.bedrooms !== undefined
+                  ? `
+                    <span>
+                      🛏 ${property.bedrooms}
+                    </span>
+                  `
                   : ""
               }
 
+
               ${
-                property.bathrooms !== null
-                  ? `<span>🚿 ${property.bathrooms}</span>`
+                property.bathrooms !== null &&
+                property.bathrooms !== undefined
+                  ? `
+                    <span>
+                      🚿 ${property.bathrooms}
+                    </span>
+                  `
                   : ""
               }
 
+
               ${
-                property.square_meters !== null
-                  ? `<span>📐 ${property.square_meters} m²</span>`
+                property.square_meters !== null &&
+                property.square_meters !== undefined
+                  ? `
+                    <span>
+                      📐 ${property.square_meters} m²
+                    </span>
+                  `
                   : ""
               }
 
             </div>
+
 
             <div class="property-bottom">
 
               <strong>
                 ${price}
               </strong>
+
 
               <button
                 type="button"
@@ -132,12 +227,20 @@ function renderProperties(properties) {
           </div>
 
         </article>
+
       `;
-    })
-    .join("");
+
+    }).join("");
+
 }
 
+
+// ==========================================
+// VER UNA PROPIEDAD
+// ==========================================
+
 async function viewProperty(id) {
+
   try {
 
     const response =
@@ -145,45 +248,97 @@ async function viewProperty(id) {
         `${API_URL}/api/properties/${id}`
       );
 
+
     const data =
       await response.json();
 
+
     if (!data.success) {
+
       alert(
         data.error ||
         "No se pudo cargar la propiedad."
       );
+
       return;
     }
+
 
     const property =
       data.property;
 
+
     alert(
-      `${property.property_type}\n` +
-      `${property.city}\n\n` +
+
+      `${property.property_type || ""}\n` +
+      `${property.city || ""}` +
+      `${
+        property.neighborhood
+          ? " — " +
+            property.neighborhood
+          : ""
+      }\n\n` +
       `${property.description || ""}`
+
     );
+
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "NEXO:",
+      error
+    );
+
 
     alert(
       "No se pudo cargar la propiedad."
     );
 
   }
+
 }
 
+
+// ==========================================
+// SEGURIDAD BÁSICA PARA TEXTO HTML
+// ==========================================
+
 function escapeHTML(value) {
+
   return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
 }
+
+
+// ==========================================
+// INICIAR NEXO
+// ==========================================
 
 document.addEventListener(
   "DOMContentLoaded",
