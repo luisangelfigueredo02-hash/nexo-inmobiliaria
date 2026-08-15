@@ -1,1314 +1,1745 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta charset="UTF-8">
+<title>NEXO | Propiedad</title>
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+<style>
 
-  <meta
-    name="robots"
-    content="noindex, nofollow"
-  >
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-  <title>NEXO | Administración</title>
+body {
+  background: #f5f5f2;
+  color: #151515;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+}
 
-  <style>
+button,
+a {
+  font: inherit;
+}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
 
-    body {
-      min-height: 100vh;
+  height: 68px;
 
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Helvetica,
-        Arial,
-        sans-serif;
+  background: rgba(255,255,255,.9);
 
-      background: #f5f5f2;
-      color: #151515;
-    }
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 
-    button,
-    input,
-    textarea,
-    select {
-      font: inherit;
-    }
+  border-bottom: 1px solid #e5e5e1;
+}
 
-    /* =========================
-       HEADER
-    ========================= */
+.header-inner {
+  max-width: 1200px;
+  height: 100%;
+  margin: auto;
+  padding: 0 20px;
 
-    .admin-header {
-      position: sticky;
-      top: 0;
-      z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-      background:
-        rgba(255,255,255,0.94);
+.logo {
+  text-decoration: none;
+  color: #111;
 
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
 
-      border-bottom:
-        1px solid #e7e7e4;
-    }
+.logo span {
+  font-weight: 400;
+}
 
-    .header-inner {
-      max-width: 1000px;
+.back-link {
+  text-decoration: none;
 
-      min-height: 70px;
+  padding: 9px 14px;
 
-      margin: 0 auto;
+  border-radius: 999px;
 
-      padding:
-        0 20px;
+  background: #eeeeeb;
 
-      display: flex;
+  color: #444;
 
-      align-items: center;
-      justify-content: space-between;
-    }
+  font-size: 13px;
+  font-weight: 700;
+}
 
-    .logo {
-      font-size: 24px;
+main {
+  max-width: 1200px;
 
-      font-weight: 800;
+  margin: auto;
 
-      letter-spacing: -1px;
-    }
+  padding:
+    105px 20px 80px;
+}
 
-    .logo span {
-      font-weight: 400;
-    }
+.loading {
+  min-height: 60vh;
 
-    .back-link {
-      color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-      text-decoration: none;
+  color: #777;
+}
 
-      font-size: 13px;
+.property {
+  display: none;
+}
 
-      font-weight: 600;
+.property.visible {
+  display: block;
+}
 
-      padding:
-        9px 13px;
 
-      border-radius: 999px;
+/* =========================
+   GALERÍA
+========================= */
 
-      transition:
-        background 0.2s ease;
-    }
+.gallery-wrapper {
+  position: relative;
+}
 
-    .back-link:hover {
-      background: #eeeeeb;
-    }
+.gallery {
+  position: relative;
 
+  width: 100%;
+  height: 56vh;
 
-    /* =========================
-       MAIN
-    ========================= */
+  min-height: 350px;
+  max-height: 650px;
 
-    .admin-main {
-      max-width: 1000px;
+  overflow: hidden;
 
-      margin: 0 auto;
+  border-radius: 28px;
 
-      padding:
-        55px 20px
-        90px;
-    }
+  background: #202020;
+}
 
-    .intro {
-      margin-bottom: 35px;
-    }
+.gallery-image {
+  width: 100%;
+  height: 100%;
 
-    .eyebrow {
-      display: inline-block;
+  object-fit: cover;
 
-      margin-bottom: 10px;
+  display: block;
 
-      font-size: 11px;
+  cursor: zoom-in;
+}
 
-      font-weight: 800;
+.gallery-placeholder {
+  width: 100%;
+  height: 100%;
 
-      letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-      text-transform: uppercase;
+  background:
+    linear-gradient(
+      135deg,
+      #191919,
+      #444
+    );
 
-      color: #777;
-    }
+  color: white;
 
-    .intro h1 {
-      font-size:
-        clamp(
-          36px,
-          7vw,
-          58px
-        );
+  font-size: 52px;
+  font-weight: 800;
 
-      line-height: 1;
+  letter-spacing: -4px;
+}
 
-      letter-spacing: -3px;
+.type-badge {
+  position: absolute;
 
-      margin-bottom: 14px;
-    }
+  top: 20px;
+  left: 20px;
 
-    .intro p {
-      max-width: 600px;
+  z-index: 5;
 
-      color: #777;
+  padding: 8px 13px;
 
-      font-size: 15px;
+  border-radius: 999px;
 
-      line-height: 1.6;
-    }
+  background: rgba(255,255,255,.94);
 
+  font-size: 11px;
+  font-weight: 800;
 
-    /* =========================
-       FORM CARD
-    ========================= */
+  text-transform: uppercase;
 
-    .form-card {
-      background: white;
+  letter-spacing: .7px;
+}
 
-      border:
-        1px solid #e5e5e1;
+.gallery-button {
+  position: absolute;
 
-      border-radius: 24px;
+  top: 50%;
 
-      padding:
-        30px;
+  transform: translateY(-50%);
 
-      box-shadow:
-        0 12px 40px
-        rgba(0,0,0,0.05);
-    }
+  z-index: 10;
 
+  width: 44px;
+  height: 44px;
 
-    .form-section {
-      margin-bottom: 35px;
+  border: 0;
 
-      padding-bottom: 35px;
+  border-radius: 50%;
 
-      border-bottom:
-        1px solid #eeeeeb;
-    }
+  background: rgba(0,0,0,.55);
 
-    .form-section:last-of-type {
-      border-bottom: 0;
+  color: white;
 
-      margin-bottom: 0;
+  cursor: pointer;
 
-      padding-bottom: 0;
-    }
+  font-size: 22px;
 
-    .form-section-title {
-      margin-bottom: 20px;
+  display: none;
 
-      font-size: 18px;
+  align-items: center;
+  justify-content: center;
+}
 
-      font-weight: 750;
+.gallery-button:hover {
+  background: rgba(0,0,0,.75);
+}
 
-      letter-spacing: -0.5px;
-    }
+.gallery-button.prev {
+  left: 18px;
+}
 
+.gallery-button.next {
+  right: 18px;
+}
 
-    /* =========================
-       GRID
-    ========================= */
+.photo-counter {
+  position: absolute;
 
-    .form-grid {
-      display: grid;
+  bottom: 18px;
+  right: 18px;
 
-      grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+  z-index: 10;
 
-      gap: 18px;
-    }
+  padding: 7px 11px;
 
-    .field {
-      display: flex;
+  border-radius: 999px;
 
-      flex-direction: column;
+  background: rgba(0,0,0,.65);
 
-      gap: 7px;
-    }
+  color: white;
 
-    .field.full {
-      grid-column:
-        1 / -1;
-    }
+  font-size: 11px;
+  font-weight: 700;
 
-    label {
-      font-size: 12px;
+  display: none;
+}
 
-      font-weight: 700;
 
-      color: #444;
-    }
+/* =========================
+   MINIATURAS
+========================= */
 
-    label span {
-      color: #b00020;
-    }
+.thumbnails {
+  display: none;
 
+  gap: 9px;
 
-    input,
-    select,
-    textarea {
+  margin-top: 12px;
 
-      width: 100%;
+  overflow-x: auto;
 
-      border:
-        1px solid #deded9;
+  padding-bottom: 3px;
+}
 
-      border-radius: 12px;
+.thumbnails.visible {
+  display: flex;
+}
 
-      background: #fafaf8;
+.thumbnail {
+  flex: 0 0 72px;
 
-      color: #151515;
+  width: 72px;
+  height: 55px;
 
-      outline: none;
+  padding: 0;
 
-      transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background 0.2s ease;
+  border: 2px solid transparent;
 
-    }
+  border-radius: 9px;
 
-    input,
-    select {
+  overflow: hidden;
 
-      min-height: 48px;
+  background: #ddd;
 
-      padding:
-        0 14px;
-    }
+  cursor: pointer;
+}
 
-    textarea {
+.thumbnail.active {
+  border-color: #111;
+}
 
-      min-height: 130px;
+.thumbnail img {
+  width: 100%;
+  height: 100%;
 
-      padding:
-        13px 14px;
+  object-fit: cover;
+}
 
-      resize: vertical;
 
-      line-height: 1.5;
-    }
+/* =========================
+   FULLSCREEN
+========================= */
 
+.lightbox {
+  position: fixed;
 
-    input:focus,
-    select:focus,
-    textarea:focus {
+  inset: 0;
 
-      background: white;
+  z-index: 100;
 
-      border-color: #222;
+  display: none;
 
-      box-shadow:
-        0 0 0 3px
-        rgba(0,0,0,0.06);
-    }
+  align-items: center;
+  justify-content: center;
 
+  background: rgba(0,0,0,.96);
 
-    .field-help {
+  padding: 25px;
+}
 
-      color: #888;
+.lightbox.visible {
+  display: flex;
+}
 
-      font-size: 11px;
+.lightbox img {
+  max-width: 95vw;
+  max-height: 90vh;
 
-      line-height: 1.5;
-    }
+  object-fit: contain;
+}
 
+.lightbox-close {
+  position: absolute;
 
-    /* =========================
-       PHOTOS
-    ========================= */
+  top: 18px;
+  right: 20px;
 
-    .photos-box {
+  width: 45px;
+  height: 45px;
 
-      padding: 18px;
+  border: 0;
 
-      background: #f7f7f4;
+  border-radius: 50%;
 
-      border:
-        1px solid #e7e7e2;
+  background: rgba(255,255,255,.12);
 
-      border-radius: 16px;
-    }
+  color: white;
 
-    .photos-box textarea {
+  font-size: 26px;
 
-      background: white;
-    }
+  cursor: pointer;
+}
 
 
-    /* =========================
-       PRIVATE
-    ========================= */
+/* =========================
+   CONTENIDO
+========================= */
 
-    .private-section {
+.property-content {
+  max-width: 900px;
 
-      padding:
-        20px;
+  margin: auto;
 
-      border-radius: 16px;
+  padding-top: 38px;
+}
 
-      background:
-        #f7f7f4;
-    }
+.property-top {
+  display: flex;
 
-    .private-title {
+  justify-content: space-between;
 
-      display: flex;
+  gap: 30px;
 
-      align-items: center;
+  margin-bottom: 30px;
+}
 
-      gap: 8px;
+.property-title {
+  font-size:
+    clamp(38px, 7vw, 64px);
 
-      margin-bottom: 18px;
+  line-height: .95;
 
-      font-size: 14px;
+  letter-spacing: -3px;
 
-      font-weight: 750;
-    }
+  margin-bottom: 13px;
+}
 
-    .private-badge {
+.location {
+  color: #777;
 
-      display: inline-flex;
+  font-size: 16px;
 
-      padding:
-        4px 8px;
+  line-height: 1.5;
+}
 
-      border-radius: 999px;
+.price {
+  flex-shrink: 0;
 
-      background: #222;
+  text-align: right;
+}
 
-      color: white;
+.price small {
+  display: block;
 
-      font-size: 9px;
+  margin-bottom: 4px;
 
-      font-weight: 800;
+  color: #888;
 
-      letter-spacing: 0.8px;
+  font-size: 11px;
 
-      text-transform: uppercase;
-    }
+  text-transform: uppercase;
 
+  letter-spacing: 1px;
 
-    /* =========================
-       BUTTON
-    ========================= */
+  font-weight: 700;
+}
 
-    .form-actions {
+.price strong {
+  font-size:
+    clamp(26px,5vw,38px);
 
-      display: flex;
+  letter-spacing: -1.5px;
+}
 
-      align-items: center;
 
-      justify-content: flex-end;
+/* =========================
+   DETALLES
+========================= */
 
-      gap: 12px;
+.details {
+  display: grid;
 
-      margin-top: 30px;
+  grid-template-columns:
+    repeat(3,1fr);
 
-      padding-top: 25px;
+  border-top: 1px solid #deded9;
+  border-bottom: 1px solid #deded9;
 
-      border-top:
-        1px solid #eeeeeb;
-    }
+  margin-bottom: 38px;
+}
 
-    .submit-button {
+.detail {
+  padding: 21px 15px;
 
-      min-height: 52px;
+  text-align: center;
 
-      padding:
-        0 25px;
+  border-right: 1px solid #deded9;
+}
 
-      border: 0;
+.detail:last-child {
+  border-right: 0;
+}
 
-      border-radius: 999px;
+.detail-icon {
+  display: block;
 
-      background: #111;
+  margin-bottom: 6px;
 
-      color: white;
+  font-size: 19px;
+}
 
-      cursor: pointer;
+.detail strong {
+  display: block;
 
-      font-size: 14px;
+  font-size: 17px;
+}
 
-      font-weight: 750;
+.detail span:last-child {
+  display: block;
 
-      transition:
-        transform 0.2s ease,
-        background 0.2s ease;
-    }
+  margin-top: 3px;
 
-    .submit-button:hover {
+  color: #888;
 
-      transform:
-        translateY(-1px);
+  font-size: 11px;
+}
 
-      background: #333;
-    }
 
-    .submit-button:disabled {
+/* =========================
+   DESCRIPCIÓN
+========================= */
 
-      opacity: 0.55;
+.description {
+  margin-bottom: 40px;
+}
 
-      cursor:
-        not-allowed;
+.description h2 {
+  margin-bottom: 14px;
 
-      transform:
-        none;
-    }
+  font-size: 23px;
 
+  letter-spacing: -.7px;
+}
 
-    /* =========================
-       MESSAGE
-    ========================= */
+.description p {
+  color: #555;
 
-    .message {
+  font-size: 16px;
 
-      display: none;
+  line-height: 1.75;
 
-      margin-top: 20px;
+  white-space: pre-line;
+}
 
-      padding:
-        15px 17px;
 
-      border-radius: 13px;
+/* =========================
+   CONTACTO
+========================= */
 
-      font-size: 13px;
+.contact-box {
+  padding: 25px;
 
-      line-height: 1.5;
-    }
+  border-radius: 20px;
 
-    .message.show {
-      display: block;
-    }
+  background: #111;
 
-    .message.success {
+  color: white;
 
-      background:
-        #eaf7ed;
+  display: flex;
 
-      color:
-        #17652a;
+  align-items: center;
 
-      border:
-        1px solid #c8e8cf;
-    }
+  justify-content: space-between;
 
-    .message.error {
+  gap: 20px;
+}
 
-      background:
-        #fff0f0;
+.contact-box h2 {
+  margin-bottom: 6px;
 
-      color:
-        #a32121;
+  font-size: 20px;
+}
 
-      border:
-        1px solid #f0caca;
-    }
+.contact-box p {
+  color: #aaa;
 
+  font-size: 13px;
 
-    /* =========================
-       MOBILE
-    ========================= */
+  line-height: 1.5;
+}
 
-    @media (max-width: 650px) {
+.contact-button {
+  flex-shrink: 0;
 
-      .header-inner {
+  min-height: 48px;
 
-        min-height:
-          62px;
+  padding: 0 20px;
 
-        padding:
-          0 16px;
-      }
+  border-radius: 999px;
 
-      .logo {
-        font-size: 21px;
-      }
+  background: white;
 
-      .admin-main {
+  color: #111;
 
-        padding:
-          40px 15px
-          70px;
-      }
+  text-decoration: none;
 
-      .intro h1 {
+  display: inline-flex;
 
-        letter-spacing:
-          -2px;
-      }
+  align-items: center;
+  justify-content: center;
 
-      .form-card {
+  font-size: 13px;
+  font-weight: 800;
+}
 
-        padding:
-          20px;
 
-        border-radius:
-          19px;
-      }
+/* =========================
+   ERROR
+========================= */
 
-      .form-grid {
+.error {
+  display: none;
 
-        grid-template-columns:
-          1fr;
+  min-height: 60vh;
 
-        gap:
-          16px;
-      }
+  align-items: center;
+  justify-content: center;
 
-      .field.full {
+  text-align: center;
+}
 
-        grid-column:
-          auto;
-      }
+.error.visible {
+  display: flex;
+}
 
-      .form-actions {
+.error-inner {
+  max-width: 450px;
+}
 
-        display: block;
-      }
+.error h1 {
+  margin-bottom: 10px;
 
-      .submit-button {
+  font-size: 34px;
+}
 
-        width: 100%;
-      }
+.error p {
+  margin-bottom: 22px;
 
-    }
+  color: #777;
 
-  </style>
+  line-height: 1.6;
+}
 
+.error a {
+  display: inline-flex;
+
+  padding: 12px 18px;
+
+  border-radius: 999px;
+
+  background: #111;
+
+  color: white;
+
+  text-decoration: none;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+
+  header {
+    height: 62px;
+  }
+
+  .header-inner {
+    padding: 0 15px;
+  }
+
+  .logo {
+    font-size: 21px;
+  }
+
+  main {
+    padding:
+      82px 15px 60px;
+  }
+
+  .gallery {
+    height: 52vh;
+    min-height: 300px;
+
+    border-radius: 20px;
+  }
+
+  .property-content {
+    padding-top: 28px;
+  }
+
+  .property-top {
+    display: block;
+  }
+
+  .property-title {
+    letter-spacing: -2px;
+  }
+
+  .price {
+    margin-top: 20px;
+
+    text-align: left;
+  }
+
+  .details {
+    margin-bottom: 30px;
+  }
+
+  .detail {
+    padding: 17px 5px;
+  }
+
+  .detail strong {
+    font-size: 15px;
+  }
+
+  .contact-box {
+    display: block;
+
+    padding: 22px;
+  }
+
+  .contact-button {
+    width: 100%;
+
+    margin-top: 18px;
+  }
+
+}
+
+</style>
 </head>
 
 
 <body>
 
 
-  <!-- =========================
-       HEADER
-  ========================= -->
+<header>
 
-  <header class="admin-header">
+  <div class="header-inner">
 
-    <div class="header-inner">
-
-      <div class="logo">
-        NEXO<span>.</span>
-      </div>
-
-      <a
-        href="/"
-        class="back-link"
-      >
-        Ver página pública →
-      </a>
-
-    </div>
-
-  </header>
-
-
-  <!-- =========================
-       MAIN
-  ========================= -->
-
-  <main class="admin-main">
-
-
-    <div class="intro">
-
-      <div class="eyebrow">
-        NEXO · ADMIN
-      </div>
-
-      <h1>
-        Nueva propiedad
-      </h1>
-
-      <p>
-        Añade una propiedad a NEXO.
-        La información pública aparecerá
-        automáticamente en la página.
-      </p>
-
-    </div>
-
-
-    <!-- =========================
-         FORM
-    ========================= -->
-
-    <form
-      id="propertyForm"
-      class="form-card"
+    <a
+      href="/"
+      class="logo"
     >
+      NEXO<span>.</span>
+    </a>
+
+    <a
+      href="/"
+      class="back-link"
+    >
+      ← Volver
+    </a>
+
+  </div>
+
+</header>
 
 
-      <!-- INFORMACIÓN -->
-
-      <section class="form-section">
-
-        <h2 class="form-section-title">
-          Información de la propiedad
-        </h2>
-
-        <div class="form-grid">
+<main>
 
 
-          <div class="field">
-
-            <label for="property_type">
-              Tipo de propiedad
-              <span>*</span>
-            </label>
-
-            <select
-              id="property_type"
-              name="property_type"
-              required
-            >
-
-              <option value="">
-                Seleccionar
-              </option>
-
-              <option value="Casa">
-                Casa
-              </option>
-
-              <option value="Apartamento">
-                Apartamento
-              </option>
-
-              <option value="Villa">
-                Villa
-              </option>
-
-              <option value="Terreno">
-                Terreno
-              </option>
-
-              <option value="Local">
-                Local comercial
-              </option>
-
-              <option value="Oficina">
-                Oficina
-              </option>
-
-              <option value="Otro">
-                Otro
-              </option>
-
-            </select>
-
-          </div>
+  <div
+    id="loading"
+    class="loading"
+  >
+    Cargando propiedad...
+  </div>
 
 
-          <div class="field">
-
-            <label for="city">
-              Ciudad
-              <span>*</span>
-            </label>
-
-            <input
-              id="city"
-              name="city"
-              type="text"
-              placeholder="Ej. La Habana"
-              required
-            >
-
-          </div>
+  <div
+    id="property"
+    class="property"
+  >
 
 
-          <div class="field">
+    <!-- GALERÍA -->
 
-            <label for="neighborhood">
-              Zona / Barrio
-            </label>
+    <div class="gallery-wrapper">
 
-            <input
-              id="neighborhood"
-              name="neighborhood"
-              type="text"
-              placeholder="Ej. Marianao"
-            >
+      <div class="gallery">
 
-          </div>
-
-
-          <div class="field">
-
-            <label for="address">
-              Dirección exacta
-            </label>
-
-            <input
-              id="address"
-              name="address"
-              type="text"
-              placeholder="Información privada"
-            >
-
-            <div class="field-help">
-              Esta información no se mostrará
-              públicamente.
-            </div>
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="bedrooms">
-              Habitaciones
-            </label>
-
-            <input
-              id="bedrooms"
-              name="bedrooms"
-              type="number"
-              min="0"
-              step="1"
-              placeholder="Ej. 3"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="bathrooms">
-              Baños
-            </label>
-
-            <input
-              id="bathrooms"
-              name="bathrooms"
-              type="number"
-              min="0"
-              step="1"
-              placeholder="Ej. 2"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="square_meters">
-              Metros cuadrados
-            </label>
-
-            <input
-              id="square_meters"
-              name="square_meters"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="Ej. 120"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="price">
-              Precio
-            </label>
-
-            <input
-              id="price"
-              name="price"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="Ej. 150000"
-            >
-
-          </div>
-
-
-          <div class="field full">
-
-            <label for="description">
-              Descripción
-            </label>
-
-            <textarea
-              id="description"
-              name="description"
-              placeholder="Describe la propiedad, sus características y aspectos destacados..."
-            ></textarea>
-
-          </div>
-
-
+        <div
+          id="galleryContent"
+          class="gallery-placeholder"
+        >
+          NEXO
         </div>
 
-      </section>
 
-
-      <!-- =========================
-           FOTOS
-      ========================= -->
-
-      <section class="form-section">
-
-        <h2 class="form-section-title">
-          Fotografías
-        </h2>
-
-        <div class="photos-box">
-
-          <div class="field">
-
-            <label for="photos">
-              URLs de las fotografías
-            </label>
-
-            <textarea
-              id="photos"
-              name="photos"
-              placeholder="https://ejemplo.com/foto1.jpg
-https://ejemplo.com/foto2.jpg
-https://ejemplo.com/foto3.jpg"
-            ></textarea>
-
-            <div class="field-help">
-              Coloca una URL por línea.
-              La primera fotografía será utilizada
-              como imagen principal.
-            </div>
-
-          </div>
-
+        <div
+          id="typeBadge"
+          class="type-badge"
+        >
+          Propiedad
         </div>
 
-      </section>
-
-
-      <!-- =========================
-           INFORMACIÓN PRIVADA
-      ========================= -->
-
-      <section class="form-section">
-
-        <div class="private-section">
-
-          <div class="private-title">
-
-            Información privada
-
-            <span class="private-badge">
-              Privado
-            </span>
-
-          </div>
-
-
-          <div class="form-grid">
-
-
-            <div class="field">
-
-              <label for="owner_name">
-                Nombre del propietario
-              </label>
-
-              <input
-                id="owner_name"
-                name="owner_name"
-                type="text"
-                placeholder="Nombre completo"
-              >
-
-            </div>
-
-
-            <div class="field">
-
-              <label for="owner_phone">
-                Teléfono del propietario
-              </label>
-
-              <input
-                id="owner_phone"
-                name="owner_phone"
-                type="tel"
-                placeholder="Número de teléfono"
-              >
-
-            </div>
-
-
-            <div class="field full">
-
-              <label for="notes">
-                Notas privadas
-              </label>
-
-              <textarea
-                id="notes"
-                name="notes"
-                placeholder="Información interna para NEXO..."
-              ></textarea>
-
-              <div class="field-help">
-                Estas notas no se mostrarán
-                a los visitantes.
-              </div>
-
-            </div>
-
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- =========================
-           ESTADO
-      ========================= -->
-
-      <input
-        type="hidden"
-        id="status"
-        name="status"
-        value="available"
-      >
-
-
-      <!-- =========================
-           ACTIONS
-      ========================= -->
-
-      <div class="form-actions">
 
         <button
-          type="submit"
-          class="submit-button"
-          id="submitButton"
+          id="prevButton"
+          class="gallery-button prev"
+          type="button"
+          aria-label="Foto anterior"
         >
-          Añadir propiedad
+          ‹
         </button>
+
+
+        <button
+          id="nextButton"
+          class="gallery-button next"
+          type="button"
+          aria-label="Foto siguiente"
+        >
+          ›
+        </button>
+
+
+        <div
+          id="photoCounter"
+          class="photo-counter"
+        >
+          1 / 1
+        </div>
 
       </div>
 
 
       <div
-        id="message"
-        class="message"
-        role="status"
+        id="thumbnails"
+        class="thumbnails"
       ></div>
 
-
-    </form>
-
-  </main>
+    </div>
 
 
-  <!-- =========================
-       JAVASCRIPT
-  ========================= -->
+    <!-- CONTENIDO -->
 
-  <script>
-
-    const API_URL =
-      "https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev";
+    <div class="property-content">
 
 
-    const form =
-      document.querySelector(
-        "#propertyForm"
-      );
+      <div class="property-top">
+
+        <div>
+
+          <h1
+            id="propertyTitle"
+            class="property-title"
+          >
+            Propiedad
+          </h1>
+
+          <div
+            id="propertyLocation"
+            class="location"
+          >
+            Ubicación
+          </div>
+
+        </div>
 
 
-    const button =
-      document.querySelector(
-        "#submitButton"
-      );
+        <div class="price">
+
+          <small>
+            Precio
+          </small>
+
+          <strong
+            id="propertyPrice"
+          >
+            Consultar
+          </strong>
+
+        </div>
+
+      </div>
 
 
-    const message =
-      document.querySelector(
-        "#message"
-      );
+      <!-- DETALLES -->
+
+      <div class="details">
 
 
-    function showMessage(
-      text,
-      type
-    ) {
+        <div class="detail">
 
-      message.textContent =
-        text;
+          <span class="detail-icon">
+            🛏️
+          </span>
 
-      message.className =
-        `message show ${type}`;
+          <strong
+            id="bedrooms"
+          >
+            —
+          </strong>
 
+          <span>
+            Habitaciones
+          </span>
+
+        </div>
+
+
+        <div class="detail">
+
+          <span class="detail-icon">
+            🚿
+          </span>
+
+          <strong
+            id="bathrooms"
+          >
+            —
+          </strong>
+
+          <span>
+            Baños
+          </span>
+
+        </div>
+
+
+        <div class="detail">
+
+          <span class="detail-icon">
+            📐
+          </span>
+
+          <strong
+            id="squareMeters"
+          >
+            —
+          </strong>
+
+          <span>
+            Metros cuadrados
+          </span>
+
+        </div>
+
+
+      </div>
+
+
+      <!-- DESCRIPCIÓN -->
+
+      <section class="description">
+
+        <h2>
+          Sobre esta propiedad
+        </h2>
+
+        <p id="description">
+          Sin descripción disponible.
+        </p>
+
+      </section>
+
+
+      <!-- CONTACTO -->
+
+      <section class="contact-box">
+
+        <div>
+
+          <h2>
+            ¿Te interesa esta propiedad?
+          </h2>
+
+          <p>
+            Ponte en contacto con NEXO
+            para obtener más información.
+          </p>
+
+        </div>
+
+
+        <a
+          href="mailto:"
+          class="contact-button"
+        >
+          Contactar con NEXO
+        </a>
+
+      </section>
+
+
+    </div>
+
+  </div>
+
+
+  <!-- ERROR -->
+
+  <div
+    id="error"
+    class="error"
+  >
+
+    <div class="error-inner">
+
+      <h1>
+        Propiedad no encontrada
+      </h1>
+
+      <p>
+        La propiedad que buscas no está
+        disponible o el enlace no es válido.
+      </p>
+
+      <a href="/">
+        Volver a NEXO
+      </a>
+
+    </div>
+
+  </div>
+
+</main>
+
+
+<!-- LIGHTBOX -->
+
+<div
+  id="lightbox"
+  class="lightbox"
+>
+
+  <button
+    id="lightboxClose"
+    class="lightbox-close"
+    type="button"
+    aria-label="Cerrar"
+  >
+    ×
+  </button>
+
+  <img
+    id="lightboxImage"
+    src=""
+    alt="Fotografía de propiedad"
+  >
+
+</div>
+
+
+<script>
+
+const API_URL =
+  "https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev";
+
+
+let photos = [];
+
+let currentPhoto = 0;
+
+
+/* =========================
+   ELEMENTOS
+========================= */
+
+const loading =
+  document.querySelector("#loading");
+
+const propertyContainer =
+  document.querySelector("#property");
+
+const errorContainer =
+  document.querySelector("#error");
+
+const galleryContent =
+  document.querySelector("#galleryContent");
+
+const prevButton =
+  document.querySelector("#prevButton");
+
+const nextButton =
+  document.querySelector("#nextButton");
+
+const photoCounter =
+  document.querySelector("#photoCounter");
+
+const thumbnails =
+  document.querySelector("#thumbnails");
+
+const lightbox =
+  document.querySelector("#lightbox");
+
+const lightboxImage =
+  document.querySelector("#lightboxImage");
+
+const lightboxClose =
+  document.querySelector("#lightboxClose");
+
+
+/* =========================
+   PRECIO
+========================= */
+
+function formatPrice(price) {
+
+  if (
+    price === null ||
+    price === undefined ||
+    price === ""
+  ) {
+    return "Consultar";
+  }
+
+  const number =
+    Number(price);
+
+  if (!Number.isFinite(number)) {
+    return "Consultar";
+  }
+
+  return number.toLocaleString(
+    "en-US",
+    {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0
     }
+  );
 
+}
 
-    function getNumber(
-      value
-    ) {
 
-      if (
-        value === "" ||
-        value === null ||
-        value === undefined
-      ) {
+/* =========================
+   FOTOS
+========================= */
 
-        return null;
+function parsePhotos(value) {
 
-      }
+  if (!value) {
+    return [];
+  }
 
+  if (Array.isArray(value)) {
 
-      const number =
-        Number(value);
-
-
-      return Number.isFinite(number)
-        ? number
-        : null;
-
-    }
-
-
-    function getPhotos() {
-
-      const value =
-        document.querySelector(
-          "#photos"
-        ).value.trim();
-
-
-      if (!value) {
-
-        return [];
-
-      }
-
-
-      return value
-        .split("\n")
-        .map(
-          url => url.trim()
-        )
-        .filter(
-          url => url.length > 0
-        );
-
-    }
-
-
-    form.addEventListener(
-      "submit",
-      async function(event) {
-
-        event.preventDefault();
-
-
-        button.disabled =
-          true;
-
-        button.textContent =
-          "Guardando...";
-
-
-        message.className =
-          "message";
-
-
-        try {
-
-          const body = {
-
-            property_type:
-              document.querySelector(
-                "#property_type"
-              ).value.trim(),
-
-            city:
-              document.querySelector(
-                "#city"
-              ).value.trim(),
-
-            neighborhood:
-              document.querySelector(
-                "#neighborhood"
-              ).value.trim(),
-
-            address:
-              document.querySelector(
-                "#address"
-              ).value.trim(),
-
-            bedrooms:
-              getNumber(
-                document.querySelector(
-                  "#bedrooms"
-                ).value
-              ),
-
-            bathrooms:
-              getNumber(
-                document.querySelector(
-                  "#bathrooms"
-                ).value
-              ),
-
-            square_meters:
-              getNumber(
-                document.querySelector(
-                  "#square_meters"
-                ).value
-              ),
-
-            price:
-              getNumber(
-                document.querySelector(
-                  "#price"
-                ).value
-              ),
-
-            description:
-              document.querySelector(
-                "#description"
-              ).value.trim(),
-
-            photos:
-              getPhotos(),
-
-            owner_name:
-              document.querySelector(
-                "#owner_name"
-              ).value.trim(),
-
-            owner_phone:
-              document.querySelector(
-                "#owner_phone"
-              ).value.trim(),
-
-            notes:
-              document.querySelector(
-                "#notes"
-              ).value.trim(),
-
-            status:
-              "available"
-
-          };
-
-
-          const response =
-            await fetch(
-              `${API_URL}/api/properties`,
-              {
-
-                method:
-                  "POST",
-
-                headers: {
-                  "Content-Type":
-                    "application/json",
-
-                  "Accept":
-                    "application/json"
-                },
-
-                body:
-                  JSON.stringify(body)
-
-              }
-            );
-
-
-          const data =
-            await response.json();
-
-
-          if (
-            !response.ok ||
-            !data.success
-          ) {
-
-            throw new Error(
-              data.error ||
-              "No se pudo crear la propiedad."
-            );
-
-          }
-
-
-          showMessage(
-            "✓ Propiedad añadida correctamente a NEXO.",
-            "success"
-          );
-
-
-          form.reset();
-
-
-          document.querySelector(
-            "#status"
-          ).value =
-            "available";
-
-
-        } catch (error) {
-
-          console.error(
-            "NEXO:",
-            error
-          );
-
-
-          showMessage(
-            error.message ||
-            "Ocurrió un error al guardar la propiedad.",
-            "error"
-          );
-
-        } finally {
-
-          button.disabled =
-            false;
-
-          button.textContent =
-            "Añadir propiedad";
-
-        }
-
-      }
+    return value.filter(
+      photo =>
+        typeof photo === "string" &&
+        photo.trim()
     );
 
-  </script>
+  }
+
+  if (typeof value === "string") {
+
+    const clean =
+      value.trim();
+
+    if (!clean) {
+      return [];
+    }
+
+    try {
+
+      const parsed =
+        JSON.parse(clean);
+
+      if (Array.isArray(parsed)) {
+
+        return parsed.filter(
+          photo =>
+            typeof photo === "string" &&
+            photo.trim()
+        );
+
+      }
+
+    } catch (error) {
+
+      if (
+        clean.startsWith("http://") ||
+        clean.startsWith("https://")
+      ) {
+
+        return [clean];
+
+      }
+
+    }
+
+  }
+
+  return [];
+
+}
+
+
+/* =========================
+   ID
+========================= */
+
+function getPropertyId() {
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  return params.get("id");
+
+}
+
+
+/* =========================
+   CARGAR
+========================= */
+
+async function loadProperty() {
+
+  const id =
+    getPropertyId();
+
+  if (!id) {
+
+    showError();
+
+    return;
+
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        `${API_URL}/api/properties/${encodeURIComponent(id)}`
+      );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Propiedad no encontrada."
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !data.success ||
+      !data.property
+    ) {
+
+      throw new Error(
+        data.error ||
+        "Propiedad no encontrada."
+      );
+
+    }
+
+
+    renderProperty(
+      data.property
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "NEXO:",
+      error
+    );
+
+    showError();
+
+  }
+
+}
+
+
+/* =========================
+   MOSTRAR
+========================= */
+
+function renderProperty(
+  property
+) {
+
+  document.title =
+    `NEXO | ${
+      property.property_type ||
+      "Propiedad"
+    }`;
+
+
+  document.querySelector(
+    "#propertyTitle"
+  ).textContent =
+    property.city ||
+    "Propiedad";
+
+
+  document.querySelector(
+    "#propertyLocation"
+  ).textContent =
+    [
+      property.city,
+      property.neighborhood
+    ]
+    .filter(Boolean)
+    .join(" · ");
+
+
+  document.querySelector(
+    "#propertyPrice"
+  ).textContent =
+    formatPrice(
+      property.price
+    );
+
+
+  document.querySelector(
+    "#bedrooms"
+  ).textContent =
+    property.bedrooms ??
+    "—";
+
+
+  document.querySelector(
+    "#bathrooms"
+  ).textContent =
+    property.bathrooms ??
+    "—";
+
+
+  document.querySelector(
+    "#squareMeters"
+  ).textContent =
+    property.square_meters != null
+      ? `${property.square_meters} m²`
+      : "—";
+
+
+  document.querySelector(
+    "#description"
+  ).textContent =
+    property.description ||
+    "Sin descripción disponible.";
+
+
+  document.querySelector(
+    "#typeBadge"
+  ).textContent =
+    property.property_type ||
+    "Propiedad";
+
+
+  photos =
+    parsePhotos(
+      property.photos
+    );
+
+
+  setupGallery();
+
+
+  loading.style.display =
+    "none";
+
+  propertyContainer.classList.add(
+    "visible"
+  );
+
+}
+
+
+/* =========================
+   GALERÍA
+========================= */
+
+function setupGallery() {
+
+  if (!photos.length) {
+
+    galleryContent.innerHTML =
+      "NEXO";
+
+    return;
+
+  }
+
+
+  if (photos.length === 1) {
+
+    prevButton.style.display =
+      "none";
+
+    nextButton.style.display =
+      "none";
+
+    photoCounter.style.display =
+      "none";
+
+    thumbnails.classList.remove(
+      "visible"
+    );
+
+  }
+
+
+  if (photos.length > 1) {
+
+    prevButton.style.display =
+      "flex";
+
+    nextButton.style.display =
+      "flex";
+
+    photoCounter.style.display =
+      "block";
+
+    thumbnails.classList.add(
+      "visible"
+    );
+
+    renderThumbnails();
+
+  }
+
+
+  showPhoto(0);
+
+}
+
+
+/* =========================
+   MOSTRAR FOTO
+========================= */
+
+function showPhoto(
+  index
+) {
+
+  if (!photos.length) {
+    return;
+  }
+
+
+  currentPhoto =
+    (index + photos.length) %
+    photos.length;
+
+
+  galleryContent.outerHTML = `
+
+    <img
+      id="galleryContent"
+      class="gallery-image"
+      src="${escapeAttribute(
+        photos[currentPhoto]
+      )}"
+      alt="Fotografía de propiedad"
+    >
+
+  `;
+
+
+  const newImage =
+    document.querySelector(
+      "#galleryContent"
+    );
+
+
+  newImage.addEventListener(
+    "click",
+    openLightbox
+  );
+
+
+  if (photos.length > 1) {
+
+    photoCounter.textContent =
+      `${currentPhoto + 1} / ${photos.length}`;
+
+  }
+
+
+  updateThumbnails();
+
+}
+
+
+/* =========================
+   MINIATURAS
+========================= */
+
+function renderThumbnails() {
+
+  thumbnails.innerHTML =
+    photos
+      .map(
+        (photo, index) => `
+
+          <button
+            type="button"
+            class="thumbnail ${
+              index === 0
+                ? "active"
+                : ""
+            }"
+            onclick="
+              showPhoto(${index})
+            "
+          >
+
+            <img
+              src="${escapeAttribute(photo)}"
+              alt="Miniatura ${index + 1}"
+              loading="lazy"
+            >
+
+          </button>
+
+        `
+      )
+      .join("");
+
+}
+
+
+/* =========================
+   ACTUALIZAR MINIATURAS
+========================= */
+
+function updateThumbnails() {
+
+  const items =
+    thumbnails.querySelectorAll(
+      ".thumbnail"
+    );
+
+
+  items.forEach(
+    (item, index) => {
+
+      item.classList.toggle(
+        "active",
+        index === currentPhoto
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   ANTERIOR
+========================= */
+
+prevButton.addEventListener(
+  "click",
+  () => {
+
+    showPhoto(
+      currentPhoto - 1
+    );
+
+  }
+);
+
+
+/* =========================
+   SIGUIENTE
+========================= */
+
+nextButton.addEventListener(
+  "click",
+  () => {
+
+    showPhoto(
+      currentPhoto + 1
+    );
+
+  }
+);
+
+
+/* =========================
+   LIGHTBOX
+========================= */
+
+function openLightbox() {
+
+  if (!photos.length) {
+    return;
+  }
+
+  lightboxImage.src =
+    photos[currentPhoto];
+
+  lightbox.classList.add(
+    "visible"
+  );
+
+}
+
+
+function closeLightbox() {
+
+  lightbox.classList.remove(
+    "visible"
+  );
+
+  lightboxImage.src = "";
+
+}
+
+
+lightboxClose.addEventListener(
+  "click",
+  closeLightbox
+);
+
+
+lightbox.addEventListener(
+  "click",
+  event => {
+
+    if (
+      event.target === lightbox
+    ) {
+
+      closeLightbox();
+
+    }
+
+  }
+);
+
+
+/* =========================
+   TECLADO
+========================= */
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Escape"
+    ) {
+
+      closeLightbox();
+
+    }
+
+
+    if (
+      event.key === "ArrowLeft" &&
+      photos.length > 1
+    ) {
+
+      showPhoto(
+        currentPhoto - 1
+      );
+
+    }
+
+
+    if (
+      event.key === "ArrowRight" &&
+      photos.length > 1
+    ) {
+
+      showPhoto(
+        currentPhoto + 1
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================
+   ERROR
+========================= */
+
+function showError() {
+
+  loading.style.display =
+    "none";
+
+  propertyContainer.classList.remove(
+    "visible"
+  );
+
+  errorContainer.classList.add(
+    "visible"
+  );
+
+}
+
+
+/* =========================
+   SEGURIDAD HTML
+========================= */
+
+function escapeHTML(
+  value
+) {
+
+  return String(value)
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
+}
+
+
+function escapeAttribute(
+  value
+) {
+
+  return escapeHTML(value);
+
+}
+
+
+/* =========================
+   INICIAR
+========================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  loadProperty
+);
+
+</script>
 
 </body>
 </html>
