@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="robots"
+    content="index, follow"
+  >
+
+  <title>NEXO | Propiedad</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: #f5f5f2;
+      color: #151515;
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    a {
+      color: inherit;
+    }
+
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    header {
+      position: fixed;
+
+      top: 0;
+      left: 0;
+      right: 0;
+
+      z-index: 50;
+
+      height: 68px;
+
+      display: flex;
+      align-items: center;
+
+      background:
+        rgba(255,255,255,0.88);
+
+      backdrop-filter:
+        blur(18px);
+
+      -webkit-backdrop-filter:
+        blur(18px);
+
+      border-bottom:
+        1px solid rgba(0,0,0,0.07);
+    }
+
+    .header-inner {
+      width: 100%;
+
+      max-width: 1200px;
+
+      margin: 0 auto;
+
+      padding:
+        0 22px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+    }
+
+    .logo {
+      text-decoration: none;
+
+      font-size: 24px;
+
+      font-weight: 800;
+
+      letter-spacing: -1px;
+    }
+
+    .logo span {
+      font-weight: 400;
+    }
+
+    .back-link {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 7px;
+
+      text-decoration: none;
+
+      font-size: 13px;
+
+      font-weight: 700;
+
+      color: #444;
+
+      padding:
+        9px 13px;
+
+      border-radius: 999px;
+
+      background: #eeeeeb;
+    }
+
+
+    /* =========================
+       MAIN
+    ========================= */
+
+    main {
+      max-width: 1200px;
+
+      margin: 0 auto;
+
+      padding:
+        105px 20px
+        80px;
+    }
+
+
+    /* =========================
+       LOADING
+    ========================= */
+
+    .loading {
+      min-height: 60vh;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      color: #777;
+
+      font-size: 14px;
+    }
+
+
+    /* =========================
+       PROPERTY
+    ========================= */
+
+    .property {
+      display: none;
+    }
+
+    .property.visible {
+      display: block;
+    }
+
+
+    /* =========================
+       GALLERY
+    ========================= */
+
+    .gallery {
+      width: 100%;
+
+      height: 55vh;
+
+      min-height: 360px;
+
+      max-height: 650px;
+
+      overflow: hidden;
+
+      border-radius: 28px;
+
+      background: #deded9;
+
+      position: relative;
+    }
+
+    .gallery img {
+      width: 100%;
+      height: 100%;
+
+      display: block;
+
+      object-fit: cover;
+    }
+
+    .gallery-placeholder {
+      width: 100%;
+      height: 100%;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      background:
+        linear-gradient(
+          135deg,
+          #202020,
+          #444
+        );
+
+      color: white;
+
+      font-size: 50px;
+
+      font-weight: 800;
+
+      letter-spacing: -3px;
+    }
+
+    .gallery-placeholder span {
+      opacity: .9;
+    }
+
+    .type-badge {
+      position: absolute;
+
+      top: 20px;
+      left: 20px;
+
+      padding:
+        8px 13px;
+
+      border-radius: 999px;
+
+      background:
+        rgba(255,255,255,.94);
+
+      font-size: 11px;
+
+      font-weight: 800;
+
+      text-transform: uppercase;
+
+      letter-spacing: .7px;
+    }
+
+
+    /* =========================
+       CONTENT
+    ========================= */
+
+    .property-content {
+      max-width: 900px;
+
+      margin: 0 auto;
+
+      padding:
+        38px 0 0;
+    }
+
+    .property-top {
+      display: flex;
+
+      align-items: flex-start;
+
+      justify-content: space-between;
+
+      gap: 30px;
+
+      margin-bottom: 30px;
+    }
+
+    .property-title {
+
+      font-size:
+        clamp(
+          36px,
+          7vw,
+          64px
+        );
+
+      line-height: .95;
+
+      letter-spacing: -3px;
+
+      margin-bottom: 13px;
+    }
+
+    .location {
+
+      color: #777;
+
+      font-size: 16px;
+
+      line-height: 1.5;
+    }
+
+    .price {
+
+      flex-shrink: 0;
+
+      text-align: right;
+    }
+
+    .price small {
+
+      display: block;
+
+      margin-bottom: 4px;
+
+      color: #888;
+
+      font-size: 11px;
+
+      text-transform: uppercase;
+
+      letter-spacing: 1px;
+
+      font-weight: 700;
+    }
+
+    .price strong {
+
+      font-size:
+        clamp(
+          25px,
+          5vw,
+          38px
+        );
+
+      letter-spacing: -1.5px;
+    }
+
+
+    /* =========================
+       DETAILS
+    ========================= */
+
+    .details {
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      border-top:
+        1px solid #deded9;
+
+      border-bottom:
+        1px solid #deded9;
+
+      margin-bottom: 38px;
+    }
+
+    .detail {
+
+      padding:
+        21px 15px;
+
+      text-align: center;
+
+      border-right:
+        1px solid #deded9;
+    }
+
+    .detail:last-child {
+      border-right: 0;
+    }
+
+    .detail-icon {
+
+      display: block;
+
+      margin-bottom: 6px;
+
+      font-size: 19px;
+    }
+
+    .detail strong {
+
+      display: block;
+
+      font-size: 17px;
+    }
+
+    .detail span {
+
+      display: block;
+
+      margin-top: 3px;
+
+      color: #888;
+
+      font-size: 11px;
+    }
+
+
+    /* =========================
+       DESCRIPTION
+    ========================= */
+
+    .description {
+
+      margin-bottom: 40px;
+    }
+
+    .description h2 {
+
+      margin-bottom: 14px;
+
+      font-size: 23px;
+
+      letter-spacing: -.7px;
+    }
+
+    .description p {
+
+      color: #555;
+
+      font-size: 16px;
+
+      line-height: 1.75;
+
+      white-space: pre-line;
+    }
+
+
+    /* =========================
+       CONTACT
+    ========================= */
+
+    .contact-box {
+
+      padding:
+        25px;
+
+      border-radius: 20px;
+
+      background: #111;
+
+      color: white;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 20px;
+    }
+
+    .contact-box h2 {
+
+      margin-bottom: 6px;
+
+      font-size: 20px;
+
+      letter-spacing: -.5px;
+    }
+
+    .contact-box p {
+
+      color: #aaa;
+
+      font-size: 13px;
+
+      line-height: 1.5;
+    }
+
+    .contact-button {
+
+      flex-shrink: 0;
+
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      min-height: 48px;
+
+      padding:
+        0 20px;
+
+      border-radius: 999px;
+
+      background: white;
+
+      color: #111;
+
+      text-decoration: none;
+
+      font-size: 13px;
+
+      font-weight: 800;
+    }
+
+
+    /* =========================
+       ERROR
+    ========================= */
+
+    .error {
+
+      display: none;
+
+      min-height: 60vh;
+
+      align-items: center;
+
+      justify-content: center;
+
+      text-align: center;
+    }
+
+    .error.visible {
+      display: flex;
+    }
+
+    .error-inner {
+      max-width: 450px;
+    }
+
+    .error h1 {
+
+      margin-bottom: 10px;
+
+      font-size: 34px;
+
+      letter-spacing: -1.5px;
+    }
+
+    .error p {
+
+      margin-bottom: 22px;
+
+      color: #777;
+
+      line-height: 1.6;
+    }
+
+    .error a {
+
+      display: inline-flex;
+
+      padding:
+        12px 18px;
+
+      border-radius: 999px;
+
+      background: #111;
+
+      color: white;
+
+      text-decoration: none;
+
+      font-size: 13px;
+
+      font-weight: 700;
+    }
+
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 700px) {
+
+      header {
+        height: 62px;
+      }
+
+      .header-inner {
+        padding:
+          0 15px;
+      }
+
+      .logo {
+        font-size: 21px;
+      }
+
+      main {
+
+        padding:
+          82px 15px
+          60px;
+      }
+
+      .gallery {
+
+        height:
+          52vh;
+
+        min-height:
+          300px;
+
+        border-radius:
+          20px;
+      }
+
+      .property-content {
+
+        padding-top:
+          28px;
+      }
+
+      .property-top {
+
+        display: block;
+
+        margin-bottom:
+          25px;
+      }
+
+      .property-title {
+
+        margin-bottom:
+          10px;
+
+        letter-spacing:
+          -2px;
+      }
+
+      .price {
+
+        margin-top:
+          20px;
+
+        text-align:
+          left;
+      }
+
+      .details {
+
+        margin-bottom:
+          30px;
+      }
+
+      .detail {
+
+        padding:
+          17px 5px;
+      }
+
+      .detail strong {
+        font-size:
+          15px;
+      }
+
+      .detail span {
+        font-size:
+          10px;
+      }
+
+      .contact-box {
+
+        display: block;
+
+        padding:
+          22px;
+      }
+
+      .contact-button {
+
+        width: 100%;
+
+        margin-top:
+          18px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+  <!-- =========================
+       HEADER
+  ========================= -->
+
+  <header>
+
+    <div class="header-inner">
+
+      <a
+        href="/"
+        class="logo"
+      >
+        NEXO<span>.</span>
+      </a>
+
+      <a
+        href="/"
+        class="back-link"
+      >
+        ← Volver
+      </a>
+
+    </div>
+
+  </header>
+
+
+  <!-- =========================
+       MAIN
+  ========================= -->
+
+  <main>
+
+
+    <div
+      id="loading"
+      class="loading"
+    >
+      Cargando propiedad...
+    </div>
+
+
+    <div
+      id="property"
+      class="property"
+    >
+
+
+      <!-- GALERÍA -->
+
+      <div class="gallery">
+
+        <div
+          id="galleryContent"
+          class="gallery-placeholder"
+        >
+          <span>NEXO</span>
+        </div>
+
+        <div
+          id="typeBadge"
+          class="type-badge"
+        >
+          Propiedad
+        </div>
+
+      </div>
+
+
+      <!-- CONTENIDO -->
+
+      <div class="property-content">
+
+
+        <div class="property-top">
+
+          <div>
+
+            <h1
+              id="propertyTitle"
+              class="property-title"
+            >
+              Propiedad
+            </h1>
+
+            <div
+              id="propertyLocation"
+              class="location"
+            >
+              Ubicación
+            </div>
+
+          </div>
+
+
+          <div class="price">
+
+            <small>
+              Precio
+            </small>
+
+            <strong
+              id="propertyPrice"
+            >
+              Consultar
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <!-- DETALLES -->
+
+        <div class="details">
+
+
+          <div class="detail">
+
+            <span class="detail-icon">
+              🛏️
+            </span>
+
+            <strong
+              id="bedrooms"
+            >
+              —
+            </strong>
+
+            <span>
+              Habitaciones
+            </span>
+
+          </div>
+
+
+          <div class="detail">
+
+            <span class="detail-icon">
+              🚿
+            </span>
+
+            <strong
+              id="bathrooms"
+            >
+              —
+            </strong>
+
+            <span>
+              Baños
+            </span>
+
+          </div>
+
+
+          <div class="detail">
+
+            <span class="detail-icon">
+              📐
+            </span>
+
+            <strong
+              id="squareMeters"
+            >
+              —
+            </strong>
+
+            <span>
+              Metros cuadrados
+            </span>
+
+          </div>
+
+
+        </div>
+
+
+        <!-- DESCRIPCIÓN -->
+
+        <section class="description">
+
+          <h2>
+            Sobre esta propiedad
+          </h2>
+
+          <p
+            id="description"
+          >
+            Sin descripción disponible.
+          </p>
+
+        </section>
+
+
+        <!-- CONTACTO -->
+
+        <section class="contact-box">
+
+          <div>
+
+            <h2>
+              ¿Te interesa esta propiedad?
+            </h2>
+
+            <p>
+              Ponte en contacto con NEXO
+              para obtener más información.
+            </p>
+
+          </div>
+
+          <a
+            href="mailto:"
+            id="contactButton"
+            class="contact-button"
+          >
+            Contactar con NEXO
+          </a>
+
+        </section>
+
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         ERROR
+    ========================= -->
+
+    <div
+      id="error"
+      class="error"
+    >
+
+      <div class="error-inner">
+
+        <h1>
+          Propiedad no encontrada
+        </h1>
+
+        <p>
+          La propiedad que buscas no está
+          disponible o el enlace no es válido.
+        </p>
+
+        <a href="/">
+          Volver a NEXO
+        </a>
+
+      </div>
+
+    </div>
+
+
+  </main>
+
+
+  <script>
+
+    const API_URL =
+      "https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev";
+
+
+    /* =========================
+       ELEMENTOS
+    ========================= */
+
+    const loading =
+      document.querySelector(
+        "#loading"
+      );
+
+    const propertyContainer =
+      document.querySelector(
+        "#property"
+      );
+
+    const errorContainer =
+      document.querySelector(
+        "#error"
+      );
+
+
+    /* =========================
+       ESCAPAR HTML
+    ========================= */
+
+    function escapeHTML(value) {
+
+      return String(value)
+
+        .replaceAll(
+          "&",
+          "&amp;"
+        )
+
+        .replaceAll(
+          "<",
+          "&lt;"
+        )
+
+        .replaceAll(
+          ">",
+          "&gt;"
+        )
+
+        .replaceAll(
+          '"',
+          "&quot;"
+        )
+
+        .replaceAll(
+          "'",
+          "&#039;"
+        );
+
+    }
+
+
+    /* =========================
+       PRECIO
+    ========================= */
+
+    function formatPrice(price) {
+
+      if (
+        price === null ||
+        price === undefined ||
+        price === ""
+      ) {
+
+        return "Consultar";
+
+      }
+
+
+      const number =
+        Number(price);
+
+
+      if (!Number.isFinite(number)) {
+
+        return "Consultar";
+
+      }
+
+
+      return number.toLocaleString(
+        "en-US",
+        {
+          style: "currency",
+          currency: "USD",
+          maximumFractionDigits: 0
+        }
+      );
+
+    }
+
+
+    /* =========================
+       FOTOS
+    ========================= */
+
+    function parsePhotos(value) {
+
+      if (!value) {
+        return [];
+      }
+
+
+      if (Array.isArray(value)) {
+
+        return value.filter(
+          photo =>
+            typeof photo === "string" &&
+            photo.trim()
+        );
+
+      }
+
+
+      if (typeof value === "string") {
+
+        const clean =
+          value.trim();
+
+
+        if (!clean) {
+          return [];
+        }
+
+
+        try {
+
+          const parsed =
+            JSON.parse(clean);
+
+
+          if (Array.isArray(parsed)) {
+
+            return parsed.filter(
+              photo =>
+                typeof photo === "string" &&
+                photo.trim()
+            );
+
+          }
+
+        } catch (error) {
+
+          if (
+            clean.startsWith("http://") ||
+            clean.startsWith("https://")
+          ) {
+
+            return [clean];
+
+          }
+
+        }
+
+      }
+
+
+      return [];
+
+    }
+
+
+    /* =========================
+       ID
+    ========================= */
+
+    function getPropertyId() {
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+
+      return params.get("id");
+
+    }
+
+
+    /* =========================
+       CARGAR PROPIEDAD
+    ========================= */
+
+    async function loadProperty() {
+
+      const id =
+        getPropertyId();
+
+
+      if (!id) {
+
+        showError();
+
+        return;
+
+      }
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${API_URL}/api/properties/${encodeURIComponent(id)}`
+          );
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Propiedad no encontrada."
+          );
+
+        }
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !data.success ||
+          !data.property
+        ) {
+
+          throw new Error(
+            data.error ||
+            "Propiedad no encontrada."
+          );
+
+        }
+
+
+        renderProperty(
+          data.property
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "NEXO:",
+          error
+        );
+
+        showError();
+
+      }
+
+    }
+
+
+    /* =========================
+       MOSTRAR PROPIEDAD
+    ========================= */
+
+    function renderProperty(
+      property
+    ) {
+
+      document.title =
+        `NEXO | ${
+          property.property_type ||
+          "Propiedad"
+        }`;
+
+
+      document.querySelector(
+        "#propertyTitle"
+      ).textContent =
+        property.city ||
+        "Propiedad";
+
+
+      const locationParts =
+        [
+          property.city,
+          property.neighborhood
+        ]
+        .filter(Boolean);
+
+
+      document.querySelector(
+        "#propertyLocation"
+      ).textContent =
+        locationParts.join(" · ");
+
+
+      document.querySelector(
+        "#propertyPrice"
+      ).textContent =
+        formatPrice(
+          property.price
+        );
+
+
+      document.querySelector(
+        "#bedrooms"
+      ).textContent =
+        property.bedrooms ??
+        "—";
+
+
+      document.querySelector(
+        "#bathrooms"
+      ).textContent =
+        property.bathrooms ??
+        "—";
+
+
+      document.querySelector(
+        "#squareMeters"
+      ).textContent =
+        property.square_meters != null
+          ? `${property.square_meters} m²`
+          : "—";
+
+
+      document.querySelector(
+        "#description"
+      ).textContent =
+        property.description ||
+        "Sin descripción disponible.";
+
+
+      document.querySelector(
+        "#typeBadge"
+      ).textContent =
+        property.property_type ||
+        "Propiedad";
+
+
+      /* FOTO */
+
+      const photos =
+        parsePhotos(
+          property.photos
+        );
+
+
+      const gallery =
+        document.querySelector(
+          "#galleryContent"
+        );
+
+
+      if (photos.length > 0) {
+
+        gallery.outerHTML = `
+          <img
+            id="galleryContent"
+            src="${escapeHTML(photos[0])}"
+            alt="${escapeHTML(
+              property.property_type ||
+              "Propiedad"
+            )}"
+          >
+        `;
+
+      }
+
+
+      loading.style.display =
+        "none";
+
+
+      propertyContainer.classList.add(
+        "visible"
+      );
+
+    }
+
+
+    /* =========================
+       ERROR
+    ========================= */
+
+    function showError() {
+
+      loading.style.display =
+        "none";
+
+      propertyContainer.classList.remove(
+        "visible"
+      );
+
+      errorContainer.classList.add(
+        "visible"
+      );
+
+    }
+
+
+    /* =========================
+       INICIAR
+    ========================= */
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      loadProperty
+    );
+
+  </script>
+
+</body>
+</html>
