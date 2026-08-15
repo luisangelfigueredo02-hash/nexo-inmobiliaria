@@ -1,184 +1,182 @@
 const API_URL =
   "https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev";
 
-document.addEventListener("DOMContentLoaded", () => {
-  loadProperties();
-});
-
 async function loadProperties() {
-  const propertyGrid =
-    document.getElementById("propertyGrid");
-
-  if (!propertyGrid) {
-    return;
-  }
-
-  propertyGrid.innerHTML = `
-    <div class="empty-state">
-      <strong>Cargando propiedades...</strong>
-      <span>Estamos buscando las propiedades disponibles.</span>
-    </div>
-  `;
-
   try {
     const response = await fetch(
       `${API_URL}/api/properties`
     );
 
-    if (!response.ok) {
-      throw new Error(
-        `HTTP ${response.status}`
-      );
-    }
-
     const data = await response.json();
 
-    if (
-      !data.success ||
-      !Array.isArray(data.properties)
-    ) {
-      throw new Error(
-        "Respuesta inválida de NEXO API."
-      );
+    if (!data.success) {
+      throw new Error(data.error || "Error al cargar propiedades");
     }
 
-    if (data.properties.length === 0) {
-      propertyGrid.innerHTML = `
+    renderProperties(data.properties);
+
+  } catch (error) {
+    console.error("NEXO:", error);
+
+    const container =
+      document.querySelector("#properties");
+
+    if (container) {
+      container.innerHTML = `
         <div class="empty-state">
-          <strong>No hay propiedades disponibles</strong>
-          <span>
-            Las nuevas propiedades aparecerán aquí automáticamente.
-          </span>
+          <p>No se pudieron cargar las propiedades.</p>
         </div>
       `;
+    }
+  }
+}
 
+function renderProperties(properties) {
+  const container =
+    document.querySelector("#properties");
+
+  if (!container) {
+    console.error(
+      "No existe un elemento #properties en index.html"
+    );
+    return;
+  }
+
+  if (!properties || properties.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <p>Actualmente no hay propiedades disponibles.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = properties
+    .map(property => {
+
+      const price =
+        property.price !== null
+          ? Number(property.price).toLocaleString("en-US", {
+              style: "currency",
+              currency: "USD",
+              maximumFractionDigits: 0
+            })
+          : "Consultar precio";
+
+      return `
+        <article class="property-card">
+
+          <div class="property-image">
+            <div class="property-placeholder">
+              NEXO
+            </div>
+          </div>
+
+          <div class="property-content">
+
+            <span class="property-type">
+              ${escapeHTML(property.property_type || "")}
+            </span>
+
+            <h3>
+              ${escapeHTML(property.city || "")}
+            </h3>
+
+            ${
+              property.neighborhood
+                ? `
+                  <p class="property-location">
+                    ${escapeHTML(property.neighborhood)}
+                  </p>
+                `
+                : ""
+            }
+
+            <div class="property-details">
+
+              ${
+                property.bedrooms !== null
+                  ? `<span>🛏 ${property.bedrooms}</span>`
+                  : ""
+              }
+
+              ${
+                property.bathrooms !== null
+                  ? `<span>🚿 ${property.bathrooms}</span>`
+                  : ""
+              }
+
+              ${
+                property.square_meters !== null
+                  ? `<span>📐 ${property.square_meters} m²</span>`
+                  : ""
+              }
+
+            </div>
+
+            <div class="property-bottom">
+
+              <strong>
+                ${price}
+              </strong>
+
+              <button
+                type="button"
+                onclick="viewProperty(${property.id})"
+              >
+                Ver propiedad
+              </button>
+
+            </div>
+
+          </div>
+
+        </article>
+      `;
+    })
+    .join("");
+}
+
+async function viewProperty(id) {
+  try {
+
+    const response =
+      await fetch(
+        `${API_URL}/api/properties/${id}`
+      );
+
+    const data =
+      await response.json();
+
+    if (!data.success) {
+      alert(
+        data.error ||
+        "No se pudo cargar la propiedad."
+      );
       return;
     }
 
-    propertyGrid.innerHTML =
-      data.properties
-        .map(property => createPropertyCard(property))
-        .join("");
+    const property =
+      data.property;
+
+    alert(
+      `${property.property_type}\n` +
+      `${property.city}\n\n` +
+      `${property.description || ""}`
+    );
 
   } catch (error) {
 
-    console.error(
-      "NEXO API ERROR:",
-      error
+    console.error(error);
+
+    alert(
+      "No se pudo cargar la propiedad."
     );
 
-    propertyGrid.innerHTML = `
-      <div class="empty-state">
-        <strong>No pudimos cargar las propiedades</strong>
-        <span>
-          Inténtalo nuevamente más tarde.
-        </span>
-      </div>
-    `;
   }
 }
-
-
-function createPropertyCard(property) {
-
-  const price = formatPrice(
-    property.price
-  );
-
-  const location = [
-    property.city,
-    property.neighborhood
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  const details = [];
-
-  if (property.bedrooms !== null) {
-    details.push(
-      `${property.bedrooms} habitaciones`
-    );
-  }
-
-  if (property.bathrooms !== null) {
-    details.push(
-      `${property.bathrooms} baños`
-    );
-  }
-
-  if (property.square_meters !== null) {
-    details.push(
-      `${property.square_meters} m²`
-    );
-  }
-
-  return `
-    <article class="property-card">
-
-      <div class="property-image">
-        NEXO
-      </div>
-
-      <div class="property-info">
-
-        <h3>
-          ${escapeHTML(
-            property.property_type || "Propiedad"
-          )}
-        </h3>
-
-        <div class="property-location">
-          ${escapeHTML(
-            location || "Ubicación disponible"
-          )}
-        </div>
-
-        <div class="property-price">
-          ${price}
-        </div>
-
-        <div class="property-details">
-          ${escapeHTML(
-            details.join(" · ")
-          )}
-        </div>
-
-      </div>
-
-    </article>
-  `;
-}
-
-
-function formatPrice(price) {
-
-  if (
-    price === null ||
-    price === undefined ||
-    price === ""
-  ) {
-    return "Precio a consultar";
-  }
-
-  const number = Number(price);
-
-  if (Number.isNaN(number)) {
-    return "Precio a consultar";
-  }
-
-  return new Intl.NumberFormat(
-    "en-US",
-    {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0
-    }
-  ).format(number);
-}
-
 
 function escapeHTML(value) {
-
   return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -186,3 +184,8 @@ function escapeHTML(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
+document.addEventListener(
+  "DOMContentLoaded",
+  loadProperties
+);
