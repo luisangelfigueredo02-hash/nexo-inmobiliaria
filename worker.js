@@ -26,34 +26,15 @@ export default {
     };
 
     // ==========================================
-    // INICIO / ESTADO DE NEXO
+    // API: ESTADO
     // ==========================================
 
     if (url.pathname === "/" && request.method === "GET") {
-      return new Response(
-        `<!DOCTYPE html>
-        <html lang="es">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>NEXO</title>
-        </head>
-        <body>
-          <h1>NEXO</h1>
-          <p>Plataforma funcionando correctamente.</p>
-        </body>
-        </html>`,
-        {
-          status: 200,
-          headers: {
-            "Content-Type": "text/html; charset=UTF-8"
-          }
-        }
-      );
+      return env.ASSETS.fetch(request);
     }
 
     // ==========================================
-    // OBTENER PROPIEDADES
+    // API: OBTENER PROPIEDADES
     // ==========================================
 
     if (
@@ -98,7 +79,7 @@ export default {
     }
 
     // ==========================================
-    // CREAR PROPIEDAD
+    // API: CREAR PROPIEDAD
     // ==========================================
 
     if (
@@ -136,26 +117,6 @@ export default {
             ? body.address.trim()
             : null;
 
-        const description =
-          typeof body.description === "string"
-            ? body.description.trim()
-            : null;
-
-        const ownerName =
-          typeof body.owner_name === "string"
-            ? body.owner_name.trim()
-            : null;
-
-        const ownerPhone =
-          typeof body.owner_phone === "string"
-            ? body.owner_phone.trim()
-            : null;
-
-        const notes =
-          typeof body.notes === "string"
-            ? body.notes.trim()
-            : null;
-
         const bedrooms =
           body.bedrooms === "" ||
           body.bedrooms === null ||
@@ -183,6 +144,26 @@ export default {
           body.price === undefined
             ? null
             : Number(body.price);
+
+        const description =
+          typeof body.description === "string"
+            ? body.description.trim()
+            : null;
+
+        const ownerName =
+          typeof body.owner_name === "string"
+            ? body.owner_name.trim()
+            : null;
+
+        const ownerPhone =
+          typeof body.owner_phone === "string"
+            ? body.owner_phone.trim()
+            : null;
+
+        const notes =
+          typeof body.notes === "string"
+            ? body.notes.trim()
+            : null;
 
         const status =
           typeof body.status === "string" &&
@@ -242,10 +223,8 @@ export default {
 
         return json({
           success: true,
-          message:
-            "Propiedad creada correctamente.",
-          id:
-            result.meta?.last_row_id || null
+          message: "Propiedad creada correctamente.",
+          id: result.meta?.last_row_id || null
         }, 201);
 
       } catch (error) {
@@ -253,63 +232,55 @@ export default {
 
         return json({
           success: false,
-          error:
-            "No se pudo crear la propiedad."
+          error: "No se pudo crear la propiedad."
         }, 500);
       }
     }
 
     // ==========================================
-    // OBTENER UNA PROPIEDAD
+    // API: PROPIEDAD INDIVIDUAL
     // ==========================================
 
     if (
       url.pathname.startsWith("/api/properties/") &&
       request.method === "GET"
     ) {
-      const id =
-        url.pathname.split("/").pop();
+      const id = url.pathname.split("/").pop();
 
-      if (
-        !id ||
-        !/^\d+$/.test(id)
-      ) {
+      if (!id || !/^\d+$/.test(id)) {
         return json({
           success: false,
-          error:
-            "ID de propiedad inválido."
+          error: "ID de propiedad inválido."
         }, 400);
       }
 
       try {
-        const property =
-          await env.DB
-            .prepare(`
-              SELECT
-                id,
-                property_type,
-                city,
-                neighborhood,
-                bedrooms,
-                bathrooms,
-                square_meters,
-                price,
-                description,
-                photos,
-                status,
-                created_at
-              FROM properties
-              WHERE id = ?
-                AND status = 'available'
-            `)
-            .bind(Number(id))
-            .first();
+        const property = await env.DB
+          .prepare(`
+            SELECT
+              id,
+              property_type,
+              city,
+              neighborhood,
+              bedrooms,
+              bathrooms,
+              square_meters,
+              price,
+              description,
+              photos,
+              status,
+              created_at
+            FROM properties
+            WHERE id = ?
+              AND status = 'available'
+          `)
+          .bind(Number(id))
+          .first();
 
         if (!property) {
           return json({
             success: false,
-            error:
-              "Propiedad no encontrada."
+            error: "Propiedad no encontrada."
           }, 404);
         }
 
@@ -323,19 +294,15 @@ export default {
 
         return json({
           success: false,
-          error:
-            "Error al consultar la propiedad."
+          error: "Error al consultar la propiedad."
         }, 500);
       }
     }
 
     // ==========================================
-    // RUTA NO ENCONTRADA
+    // ARCHIVOS DEL FRONTEND
     // ==========================================
 
-    return json({
-      success: false,
-      error: "Ruta no encontrada."
-    }, 404);
+    return env.ASSETS.fetch(request);
   }
 };
