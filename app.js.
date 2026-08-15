@@ -1,0 +1,188 @@
+const API_URL =
+  "https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev";
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadProperties();
+});
+
+async function loadProperties() {
+  const propertyGrid =
+    document.getElementById("propertyGrid");
+
+  if (!propertyGrid) {
+    return;
+  }
+
+  propertyGrid.innerHTML = `
+    <div class="empty-state">
+      <strong>Cargando propiedades...</strong>
+      <span>Estamos buscando las propiedades disponibles.</span>
+    </div>
+  `;
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/properties`
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status}`
+      );
+    }
+
+    const data = await response.json();
+
+    if (
+      !data.success ||
+      !Array.isArray(data.properties)
+    ) {
+      throw new Error(
+        "Respuesta inválida de NEXO API."
+      );
+    }
+
+    if (data.properties.length === 0) {
+      propertyGrid.innerHTML = `
+        <div class="empty-state">
+          <strong>No hay propiedades disponibles</strong>
+          <span>
+            Las nuevas propiedades aparecerán aquí automáticamente.
+          </span>
+        </div>
+      `;
+
+      return;
+    }
+
+    propertyGrid.innerHTML =
+      data.properties
+        .map(property => createPropertyCard(property))
+        .join("");
+
+  } catch (error) {
+
+    console.error(
+      "NEXO API ERROR:",
+      error
+    );
+
+    propertyGrid.innerHTML = `
+      <div class="empty-state">
+        <strong>No pudimos cargar las propiedades</strong>
+        <span>
+          Inténtalo nuevamente más tarde.
+        </span>
+      </div>
+    `;
+  }
+}
+
+
+function createPropertyCard(property) {
+
+  const price = formatPrice(
+    property.price
+  );
+
+  const location = [
+    property.city,
+    property.neighborhood
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const details = [];
+
+  if (property.bedrooms !== null) {
+    details.push(
+      `${property.bedrooms} habitaciones`
+    );
+  }
+
+  if (property.bathrooms !== null) {
+    details.push(
+      `${property.bathrooms} baños`
+    );
+  }
+
+  if (property.square_meters !== null) {
+    details.push(
+      `${property.square_meters} m²`
+    );
+  }
+
+  return `
+    <article class="property-card">
+
+      <div class="property-image">
+        NEXO
+      </div>
+
+      <div class="property-info">
+
+        <h3>
+          ${escapeHTML(
+            property.property_type || "Propiedad"
+          )}
+        </h3>
+
+        <div class="property-location">
+          ${escapeHTML(
+            location || "Ubicación disponible"
+          )}
+        </div>
+
+        <div class="property-price">
+          ${price}
+        </div>
+
+        <div class="property-details">
+          ${escapeHTML(
+            details.join(" · ")
+          )}
+        </div>
+
+      </div>
+
+    </article>
+  `;
+}
+
+
+function formatPrice(price) {
+
+  if (
+    price === null ||
+    price === undefined ||
+    price === ""
+  ) {
+    return "Precio a consultar";
+  }
+
+  const number = Number(price);
+
+  if (Number.isNaN(number)) {
+    return "Precio a consultar";
+  }
+
+  return new Intl.NumberFormat(
+    "en-US",
+    {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0
+    }
+  ).format(number);
+}
+
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
