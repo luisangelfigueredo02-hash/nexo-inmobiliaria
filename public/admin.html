@@ -2,11 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>NEXO — Administración</title>
 
@@ -17,20 +13,6 @@
       padding: 0;
     }
 
-    :root {
-      --bg: #f5f5f3;
-      --card: #ffffff;
-      --text: #171717;
-      --muted: #777;
-      --border: #e5e5e5;
-      --success-bg: #e8f7ed;
-      --success: #176b35;
-      --error-bg: #fdeaea;
-      --error: #9b1c1c;
-      --danger-bg: #fff0f0;
-      --danger: #a11;
-    }
-
     body {
       font-family:
         -apple-system,
@@ -38,104 +20,234 @@
         "Segoe UI",
         sans-serif;
 
-      background: var(--bg);
-      color: var(--text);
+      background: #f5f5f3;
+      color: #171717;
+      min-height: 100vh;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* =========================
+       LOGIN
+    ========================= */
+
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       padding: 20px;
     }
 
-    .container {
+    .login-card {
       width: 100%;
-      max-width: 900px;
-      margin: 0 auto;
+      max-width: 400px;
+      background: white;
+      border-radius: 24px;
+      padding: 32px 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.08);
+      border: 1px solid #e8e8e8;
     }
 
-    header {
-      padding: 10px 0 25px;
+    .login-logo {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 5px;
+      text-align: center;
     }
 
-    .brand-row {
+    .login-title {
+      text-align: center;
+      font-size: 22px;
+      margin-top: 25px;
+    }
+
+    .login-subtitle {
+      text-align: center;
+      color: #777;
+      margin-top: 8px;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .login-field {
+      margin-bottom: 16px;
+    }
+
+    .login-field label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 7px;
+    }
+
+    .login-field input {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 14px;
+      outline: none;
+    }
+
+    .login-field input:focus {
+      border-color: #111;
+    }
+
+    .login-button {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 15px;
+      background: #171717;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    .login-button:disabled {
+      opacity: .6;
+    }
+
+    .login-error {
+      margin-top: 15px;
+      background: #fdeaea;
+      color: #9b1c1c;
+      border-radius: 10px;
+      padding: 12px;
+      line-height: 1.4;
+      display: none;
+    }
+
+    /* =========================
+       APP
+    ========================= */
+
+    #adminApp {
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(15px);
+      border-bottom: 1px solid #e7e7e7;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-inner {
+      width: 100%;
+      max-width: 1100px;
+      margin: auto;
+      padding: 16px 20px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       gap: 15px;
     }
 
-    .logo {
-      font-size: 28px;
+    .brand {
+      font-size: 22px;
       font-weight: 800;
       letter-spacing: 3px;
     }
 
-    .subtitle {
-      color: var(--muted);
-      margin-top: 5px;
-      font-size: 14px;
+    .top-actions {
+      display: flex;
+      gap: 8px;
     }
 
-    .site-link {
-      text-decoration: none;
-      color: var(--text);
-      border: 1px solid var(--border);
+    .secondary-button {
+      border: 1px solid #ddd;
       background: white;
-      padding: 10px 13px;
       border-radius: 10px;
-      font-size: 13px;
-      font-weight: 700;
+      padding: 9px 13px;
+      cursor: pointer;
     }
 
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 22px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.05);
-      margin-bottom: 20px;
+    .logout-button {
+      border: 0;
+      background: #171717;
+      color: white;
+      border-radius: 10px;
+      padding: 9px 13px;
+      cursor: pointer;
     }
 
-    h1 {
-      font-size: 26px;
-      margin-bottom: 5px;
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 25px 20px 60px;
     }
 
-    .section-title {
-      font-size: 20px;
-      margin-bottom: 5px;
+    .hero {
+      margin-bottom: 25px;
     }
 
-    .section-description {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 20px;
+    .hero h1 {
+      font-size: 32px;
+      letter-spacing: -.5px;
     }
 
-    /* ESTADÍSTICAS */
+    .hero p {
+      color: #777;
+      margin-top: 6px;
+    }
 
     .stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
 
     .stat {
       background: white;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 17px;
+      border: 1px solid #e5e5e5;
+      border-radius: 18px;
+      padding: 18px;
     }
 
     .stat-label {
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 6px;
+      color: #777;
+      font-size: 13px;
     }
 
     .stat-number {
-      font-size: 25px;
+      font-size: 28px;
       font-weight: 800;
+      margin-top: 5px;
     }
 
-    /* FORMULARIO */
+    .card {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.04);
+      margin-bottom: 25px;
+    }
+
+    .card h2 {
+      font-size: 21px;
+      margin-bottom: 5px;
+    }
+
+    .card-description {
+      color: #777;
+      margin-bottom: 22px;
+    }
 
     .grid {
       display: grid;
@@ -144,7 +256,7 @@
     }
 
     .field {
-      margin-bottom: 2px;
+      margin-bottom: 4px;
     }
 
     .full {
@@ -153,13 +265,9 @@
 
     label {
       display: block;
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 14px;
+      font-weight: 600;
       margin-bottom: 7px;
-    }
-
-    .required {
-      color: #b00000;
     }
 
     input,
@@ -170,10 +278,8 @@
       border: 1px solid #ddd;
       border-radius: 10px;
       background: white;
-      color: var(--text);
-      font-size: 16px;
+      color: #171717;
       outline: none;
-      font-family: inherit;
     }
 
     textarea {
@@ -184,232 +290,143 @@
     input:focus,
     textarea:focus,
     select:focus {
-      border-color: var(--text);
+      border-color: #171717;
     }
 
-    .help {
-      display: block;
-      color: var(--muted);
-      font-size: 11px;
-      margin-top: 6px;
-    }
-
-    /* BOTONES */
-
-    .button-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    button {
+    .primary-button {
+      width: 100%;
       border: 0;
       border-radius: 12px;
-      padding: 13px 16px;
-      background: var(--text);
+      padding: 15px;
+      background: #171717;
       color: white;
-      font-size: 14px;
       font-weight: 700;
       cursor: pointer;
-      font-family: inherit;
+      margin-top: 18px;
     }
 
-    button:disabled {
+    .primary-button:disabled {
       opacity: .6;
-      cursor: not-allowed;
     }
 
-    .secondary {
-      background: #ededeb;
-      color: var(--text);
-    }
-
-    .danger {
-      background: var(--danger-bg);
-      color: var(--danger);
-    }
-
-    /* MENSAJE */
-
-    #message {
-      margin-bottom: 20px;
+    .message {
+      margin-top: 15px;
       padding: 13px;
       border-radius: 10px;
       display: none;
       line-height: 1.4;
-      font-size: 14px;
-      font-weight: 600;
     }
 
     .success {
       display: block !important;
-      background: var(--success-bg);
-      color: var(--success);
-    }
-
-    .error {
-      display: block !important;
-      background: var(--error-bg);
-      color: var(--error);
-    }
-
-    /* LISTADO */
-
-    .property-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .property {
-      border: 1px solid var(--border);
-      border-radius: 15px;
-      padding: 16px;
-      background: #fff;
-    }
-
-    .property-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 15px;
-    }
-
-    .property-title {
-      font-size: 17px;
-      font-weight: 800;
-    }
-
-    .property-location {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 4px;
-    }
-
-    .status {
-      display: inline-block;
-      border-radius: 999px;
-      padding: 5px 9px;
-      font-size: 11px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .available {
       background: #e8f7ed;
       color: #176b35;
     }
 
-    .unavailable {
-      background: #eee;
+    .error {
+      display: block !important;
+      background: #fdeaea;
+      color: #9b1c1c;
+    }
+
+    /* =========================
+       PROPERTIES
+    ========================= */
+
+    .property-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .property {
+      border: 1px solid #e5e5e5;
+      border-radius: 16px;
+      padding: 17px;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .property-main {
+      min-width: 0;
+    }
+
+    .property-type {
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 5px;
+    }
+
+    .property-title {
+      font-size: 19px;
+      font-weight: 750;
+    }
+
+    .property-location {
       color: #666;
+      margin-top: 5px;
     }
 
     .property-details {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
+      color: #666;
+      margin-top: 8px;
+      font-size: 14px;
     }
 
-    .detail {
-      background: #f5f5f3;
-      border-radius: 8px;
-      padding: 7px 9px;
+    .property-price {
+      font-size: 18px;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+
+    .property-status {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #e8f7ed;
+      color: #176b35;
       font-size: 12px;
-      color: #444;
-    }
-
-    .property-description {
-      color: #555;
-      font-size: 13px;
-      line-height: 1.5;
-      margin-top: 12px;
+      font-weight: 700;
     }
 
     .property-actions {
       display: flex;
       gap: 8px;
-      margin-top: 14px;
+      flex-shrink: 0;
     }
 
-    .property-actions button {
+    .edit-button,
+    .delete-button {
+      border-radius: 10px;
       padding: 9px 12px;
-      font-size: 12px;
+      cursor: pointer;
     }
 
-    .loading,
+    .edit-button {
+      border: 1px solid #ddd;
+      background: white;
+    }
+
+    .delete-button {
+      border: 0;
+      background: #fdeaea;
+      color: #9b1c1c;
+    }
+
     .empty {
       text-align: center;
-      padding: 25px 10px;
-      color: var(--muted);
-      font-size: 14px;
+      padding: 30px;
+      color: #777;
     }
 
-    /* MODAL DE CONFIRMACIÓN */
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.45);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 100;
+    .loading {
+      color: #777;
+      padding: 20px 0;
     }
 
-    .modal.show {
-      display: flex;
-    }
-
-    .modal-box {
-      width: 100%;
-      max-width: 380px;
-      background: white;
-      border-radius: 18px;
-      padding: 22px;
-    }
-
-    .modal-box h3 {
-      margin-bottom: 8px;
-    }
-
-    .modal-box p {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
-      margin-bottom: 20px;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-    }
-
-    .modal-actions button {
-      flex: 1;
-    }
-
-    /* MOBILE */
-
-    @media (max-width: 600px) {
-
-      body {
-        padding: 13px;
-      }
-
-      .brand-row {
-        align-items: flex-start;
-      }
-
-      .site-link {
-        padding: 8px 10px;
-      }
-
-      .stats {
-        grid-template-columns: 1fr;
-      }
+    @media (max-width: 700px) {
 
       .grid {
         grid-template-columns: 1fr;
@@ -419,653 +436,837 @@
         grid-column: auto;
       }
 
-      .card {
-        padding: 17px;
+      .stats {
+        grid-template-columns: 1fr 1fr;
       }
 
-      .property-top {
+      .property {
         flex-direction: column;
-      }
-
-      .button-row {
-        flex-direction: column;
-      }
-
-      .button-row button {
-        width: 100%;
+        align-items: stretch;
       }
 
       .property-actions {
-        flex-direction: column;
-      }
-
-      .property-actions button {
         width: 100%;
       }
 
+      .property-actions button {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 450px) {
+
+      .topbar-inner {
+        padding: 13px 15px;
+      }
+
+      .container {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+
+      .brand {
+        font-size: 19px;
+      }
+
+      .top-actions .secondary-button {
+        display: none;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 
-
 <body>
 
-  <div class="container">
+  <!-- =====================================================
+       LOGIN
+  ====================================================== -->
 
-    <header>
+  <section id="loginScreen">
 
-      <div class="brand-row">
+    <div class="login-card">
 
-        <div>
-          <div class="logo">NEXO</div>
+      <div class="login-logo">
+        NEXO
+      </div>
 
-          <div class="subtitle">
-            Panel de administración
-          </div>
+      <h1 class="login-title">
+        Administración
+      </h1>
+
+      <p class="login-subtitle">
+        Acceso exclusivo para administradores de NEXO.
+      </p>
+
+      <form id="loginForm">
+
+        <div class="login-field">
+
+          <label for="password">
+            Contraseña
+          </label>
+
+          <input
+            id="password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Introduce tu contraseña"
+            required
+          >
+
         </div>
 
-        <a
-          href="/"
-          class="site-link"
+        <button
+          id="loginButton"
+          class="login-button"
+          type="submit"
         >
-          Ver sitio
-        </a>
+          Entrar
+        </button>
+
+      </form>
+
+      <div
+        id="loginError"
+        class="login-error"
+      ></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       ADMIN APP
+  ====================================================== -->
+
+  <section
+    id="adminApp"
+    class="hidden"
+  >
+
+    <header class="topbar">
+
+      <div class="topbar-inner">
+
+        <div class="brand">
+          NEXO
+        </div>
+
+        <div class="top-actions">
+
+          <button
+            class="secondary-button"
+            onclick="window.location.href='/'"
+          >
+            Ver sitio
+          </button>
+
+          <button
+            id="logoutButton"
+            class="logout-button"
+          >
+            Salir
+          </button>
+
+        </div>
 
       </div>
 
     </header>
 
 
-    <!-- MENSAJES -->
+    <main class="container">
 
-    <div id="message"></div>
+      <section class="hero">
 
+        <h1>
+          Administración
+        </h1>
 
-    <!-- ESTADÍSTICAS -->
+        <p>
+          Gestiona las propiedades que aparecen en NEXO Inmueble.
+        </p>
 
-    <section class="stats">
-
-      <div class="stat">
-        <div class="stat-label">
-          Propiedades
-        </div>
-
-        <div
-          class="stat-number"
-          id="totalProperties"
-        >
-          0
-        </div>
-      </div>
+      </section>
 
 
-      <div class="stat">
-        <div class="stat-label">
-          Disponibles
-        </div>
+      <!-- ESTADÍSTICAS -->
 
-        <div
-          class="stat-number"
-          id="availableProperties"
-        >
-          0
-        </div>
-      </div>
+      <section class="stats">
 
+        <div class="stat">
 
-      <div class="stat">
-        <div class="stat-label">
-          No disponibles
-        </div>
-
-        <div
-          class="stat-number"
-          id="unavailableProperties"
-        >
-          0
-        </div>
-      </div>
-
-    </section>
-
-
-    <!-- FORMULARIO -->
-
-    <main class="card">
-
-      <h1 id="formTitle">
-        Agregar propiedad
-      </h1>
-
-      <p class="section-description">
-        Añade una nueva propiedad a NEXO.
-      </p>
-
-
-      <form id="propertyForm">
-
-        <input
-          type="hidden"
-          id="propertyId"
-        >
-
-
-        <div class="grid">
-
-
-          <div class="field">
-
-            <label for="property_type">
-              Tipo de propiedad
-              <span class="required">*</span>
-            </label>
-
-            <select
-              id="property_type"
-              required
-            >
-
-              <option value="">
-                Seleccionar
-              </option>
-
-              <option value="Casa">
-                Casa
-              </option>
-
-              <option value="Apartamento">
-                Apartamento
-              </option>
-
-              <option value="Villa">
-                Villa
-              </option>
-
-              <option value="Terreno">
-                Terreno
-              </option>
-
-              <option value="Local">
-                Local
-              </option>
-
-              <option value="Oficina">
-                Oficina
-              </option>
-
-              <option value="Otro">
-                Otro
-              </option>
-
-            </select>
-
+          <div class="stat-label">
+            Propiedades
           </div>
 
-
-          <div class="field">
-
-            <label for="city">
-              Ciudad
-              <span class="required">*</span>
-            </label>
-
-            <input
-              id="city"
-              type="text"
-              placeholder="Ej. La Habana"
-              required
-            >
-
+          <div
+            id="totalCount"
+            class="stat-number"
+          >
+            0
           </div>
-
-
-          <div class="field">
-
-            <label for="neighborhood">
-              Zona / Barrio
-            </label>
-
-            <input
-              id="neighborhood"
-              type="text"
-              placeholder="Ej. Marianao"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="address">
-              Dirección exacta
-            </label>
-
-            <input
-              id="address"
-              type="text"
-              placeholder="Ej. Ave 23"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="bedrooms">
-              Habitaciones
-            </label>
-
-            <input
-              id="bedrooms"
-              type="number"
-              min="0"
-              placeholder="Ej. 3"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="bathrooms">
-              Baños
-            </label>
-
-            <input
-              id="bathrooms"
-              type="number"
-              min="0"
-              placeholder="Ej. 2"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="square_meters">
-              Metros cuadrados
-            </label>
-
-            <input
-              id="square_meters"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="Ej. 120"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="price">
-              Precio
-            </label>
-
-            <input
-              id="price"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="Ej. 150000"
-            >
-
-          </div>
-
-
-          <div class="field full">
-
-            <label for="description">
-              Descripción
-            </label>
-
-            <textarea
-              id="description"
-              placeholder="Describe la propiedad..."
-            ></textarea>
-
-          </div>
-
-
-          <div class="field full">
-
-            <label for="photos">
-              Fotos
-            </label>
-
-            <input
-              id="photos"
-              type="text"
-              placeholder="https://foto1.jpg, https://foto2.jpg"
-            >
-
-            <span class="help">
-              Puedes introducir varias URLs separadas por comas.
-            </span>
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="owner_name">
-              Nombre del propietario
-            </label>
-
-            <input
-              id="owner_name"
-              type="text"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="owner_phone">
-              Teléfono del propietario
-            </label>
-
-            <input
-              id="owner_phone"
-              type="tel"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label for="status">
-              Estado
-            </label>
-
-            <select id="status">
-
-              <option value="available">
-                Disponible
-              </option>
-
-              <option value="unavailable">
-                No disponible
-              </option>
-
-            </select>
-
-          </div>
-
-
-          <div class="field full">
-
-            <label for="notes">
-              Notas privadas
-            </label>
-
-            <textarea
-              id="notes"
-              placeholder="Información interna de NEXO..."
-            ></textarea>
-
-          </div>
-
 
         </div>
 
+        <div class="stat">
 
-        <div class="button-row">
+          <div class="stat-label">
+            Disponibles
+          </div>
+
+          <div
+            id="availableCount"
+            class="stat-number"
+          >
+            0
+          </div>
+
+        </div>
+
+        <div class="stat">
+
+          <div class="stat-label">
+            No disponibles
+          </div>
+
+          <div
+            id="unavailableCount"
+            class="stat-number"
+          >
+            0
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- FORMULARIO -->
+
+      <section class="card">
+
+        <h2 id="formTitle">
+          Agregar propiedad
+        </h2>
+
+        <p class="card-description">
+          Añade una nueva propiedad a NEXO.
+        </p>
+
+        <form id="propertyForm">
+
+          <input
+            type="hidden"
+            id="editingId"
+          >
+
+          <div class="grid">
+
+            <div class="field">
+
+              <label for="property_type">
+                Tipo de propiedad *
+              </label>
+
+              <select
+                id="property_type"
+                required
+              >
+
+                <option value="">
+                  Seleccionar
+                </option>
+
+                <option value="Casa">
+                  Casa
+                </option>
+
+                <option value="Apartamento">
+                  Apartamento
+                </option>
+
+                <option value="Villa">
+                  Villa
+                </option>
+
+                <option value="Terreno">
+                  Terreno
+                </option>
+
+                <option value="Local">
+                  Local
+                </option>
+
+                <option value="Oficina">
+                  Oficina
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="city">
+                Ciudad *
+              </label>
+
+              <input
+                id="city"
+                type="text"
+                required
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="neighborhood">
+                Zona / Barrio
+              </label>
+
+              <input
+                id="neighborhood"
+                type="text"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="address">
+                Dirección exacta
+              </label>
+
+              <input
+                id="address"
+                type="text"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="bedrooms">
+                Habitaciones
+              </label>
+
+              <input
+                id="bedrooms"
+                type="number"
+                min="0"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="bathrooms">
+                Baños
+              </label>
+
+              <input
+                id="bathrooms"
+                type="number"
+                min="0"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="square_meters">
+                Metros cuadrados
+              </label>
+
+              <input
+                id="square_meters"
+                type="number"
+                min="0"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="price">
+                Precio
+              </label>
+
+              <input
+                id="price"
+                type="number"
+                min="0"
+                step="0.01"
+              >
+
+            </div>
+
+
+            <div class="field full">
+
+              <label for="description">
+                Descripción
+              </label>
+
+              <textarea
+                id="description"
+              ></textarea>
+
+            </div>
+
+
+            <div class="field full">
+
+              <label for="photos">
+                Fotos
+              </label>
+
+              <input
+                id="photos"
+                type="text"
+                placeholder="URLs separadas por comas"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="owner_name">
+                Nombre del propietario
+              </label>
+
+              <input
+                id="owner_name"
+                type="text"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="owner_phone">
+                Teléfono del propietario
+              </label>
+
+              <input
+                id="owner_phone"
+                type="tel"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="status">
+                Estado
+              </label>
+
+              <select id="status">
+
+                <option value="available">
+                  Disponible
+                </option>
+
+                <option value="unavailable">
+                  No disponible
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="field full">
+
+              <label for="notes">
+                Notas privadas
+              </label>
+
+              <textarea
+                id="notes"
+              ></textarea>
+
+            </div>
+
+          </div>
+
 
           <button
             id="submitButton"
+            class="primary-button"
             type="submit"
           >
             Añadir propiedad
           </button>
 
+        </form>
 
-          <button
-            id="cancelButton"
-            type="button"
-            class="secondary"
-            style="display:none;"
-          >
-            Cancelar edición
-          </button>
 
+        <div
+          id="message"
+          class="message"
+        ></div>
+
+      </section>
+
+
+      <!-- PROPIEDADES -->
+
+      <section class="card">
+
+        <h2>
+          Propiedades
+        </h2>
+
+        <p class="card-description">
+          Propiedades registradas actualmente en NEXO.
+        </p>
+
+        <button
+          id="refreshButton"
+          class="secondary-button"
+          style="margin-bottom:18px;"
+        >
+          Actualizar propiedades
+        </button>
+
+        <div
+          id="propertyList"
+          class="property-list"
+        >
+          <div class="loading">
+            Cargando propiedades...
+          </div>
         </div>
 
-      </form>
+      </section>
 
     </main>
 
-
-    <!-- LISTADO -->
-
-    <section class="card">
-
-      <h2 class="section-title">
-        Propiedades
-      </h2>
-
-      <p class="section-description">
-        Propiedades registradas actualmente en NEXO.
-      </p>
-
-
-      <button
-        id="refreshButton"
-        type="button"
-        class="secondary"
-        style="margin-bottom:15px;"
-      >
-        Actualizar propiedades
-      </button>
-
-
-      <div
-        id="loading"
-        class="loading"
-      >
-        Cargando propiedades...
-      </div>
-
-
-      <div
-        id="empty"
-        class="empty"
-        style="display:none;"
-      >
-        No hay propiedades registradas.
-      </div>
-
-
-      <div
-        id="propertyList"
-        class="property-list"
-      ></div>
-
-    </section>
-
-  </div>
-
-
-  <!-- MODAL -->
-
-  <div
-    id="deleteModal"
-    class="modal"
-  >
-
-    <div class="modal-box">
-
-      <h3>
-        Eliminar propiedad
-      </h3>
-
-      <p>
-        ¿Estás seguro de que quieres eliminar esta propiedad?
-        Esta acción no se puede deshacer.
-      </p>
-
-      <div class="modal-actions">
-
-        <button
-          id="cancelDelete"
-          class="secondary"
-          type="button"
-        >
-          Cancelar
-        </button>
-
-        <button
-          id="confirmDelete"
-          class="danger"
-          type="button"
-        >
-          Eliminar
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
+  </section>
 
 
   <script>
 
-    /*
-     * NEXO INMUEBLE
-     *
-     * Este archivo está diseñado para trabajar
-     * directamente con el Worker actual.
-     *
-     * API:
-     *
-     * GET    /api/properties
-     * POST   /api/properties
-     * GET    /api/properties/:id
-     * PUT    /api/properties/:id
-     * DELETE /api/properties/:id
-     */
+    const API_URL = "";
 
-    const API_URL = "/api/properties";
+    const loginScreen =
+      document.getElementById(
+        "loginScreen"
+      );
 
+    const adminApp =
+      document.getElementById(
+        "adminApp"
+      );
 
-    const form =
-      document.getElementById("propertyForm");
+    const loginForm =
+      document.getElementById(
+        "loginForm"
+      );
 
-    const message =
-      document.getElementById("message");
+    const loginButton =
+      document.getElementById(
+        "loginButton"
+      );
 
-    const submitButton =
-      document.getElementById("submitButton");
+    const loginError =
+      document.getElementById(
+        "loginError"
+      );
 
-    const cancelButton =
-      document.getElementById("cancelButton");
+    const logoutButton =
+      document.getElementById(
+        "logoutButton"
+      );
 
-    const refreshButton =
-      document.getElementById("refreshButton");
+    const propertyForm =
+      document.getElementById(
+        "propertyForm"
+      );
 
     const propertyList =
-      document.getElementById("propertyList");
+      document.getElementById(
+        "propertyList"
+      );
 
-    const loading =
-      document.getElementById("loading");
+    const message =
+      document.getElementById(
+        "message"
+      );
 
-    const empty =
-      document.getElementById("empty");
+    const submitButton =
+      document.getElementById(
+        "submitButton"
+      );
 
-    const totalProperties =
-      document.getElementById("totalProperties");
+    const formTitle =
+      document.getElementById(
+        "formTitle"
+      );
 
-    const availableProperties =
-      document.getElementById("availableProperties");
-
-    const unavailableProperties =
-      document.getElementById("unavailableProperties");
-
-
-    let properties = [];
-
-    let propertyToDelete = null;
+    const editingId =
+      document.getElementById(
+        "editingId"
+      );
 
 
-    /* ==========================
-       MENSAJES
-    ========================== */
+    // =====================================================
+    // MOSTRAR LOGIN
+    // =====================================================
 
-    function showMessage(
-      text,
-      type = "success"
-    ) {
+    function showLogin() {
 
-      message.className = type;
+      loginScreen.classList.remove(
+        "hidden"
+      );
 
-      message.textContent = text;
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
+      adminApp.classList.add(
+        "hidden"
+      );
 
     }
 
 
-    function clearMessage() {
+    // =====================================================
+    // MOSTRAR ADMIN
+    // =====================================================
 
-      message.className = "";
+    function showAdmin() {
 
-      message.textContent = "";
+      loginScreen.classList.add(
+        "hidden"
+      );
+
+      adminApp.classList.remove(
+        "hidden"
+      );
+
+      loadProperties();
 
     }
 
 
-    /* ==========================
-       ESCAPE HTML
-    ========================== */
+    // =====================================================
+    // LOGIN
+    // =====================================================
 
-    function escapeHtml(value) {
+    loginForm.addEventListener(
+      "submit",
+      async function(event) {
 
-      if (
-        value === null ||
-        value === undefined
-      ) {
-        return "";
+        event.preventDefault();
+
+        loginError.style.display =
+          "none";
+
+        loginError.textContent =
+          "";
+
+        loginButton.disabled =
+          true;
+
+        loginButton.textContent =
+          "Entrando...";
+
+        const password =
+          document
+            .getElementById(
+              "password"
+            )
+            .value;
+
+        try {
+
+          const response =
+            await fetch(
+              "/api/admin/login",
+              {
+                method: "POST",
+
+                credentials: "include",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify({
+                    password
+                  })
+              }
+            );
+
+          const result =
+            await response.json();
+
+          if (
+            !response.ok ||
+            !result.success
+          ) {
+
+            throw new Error(
+              result.error ||
+              "No se pudo iniciar sesión."
+            );
+
+          }
+
+          document
+            .getElementById(
+              "password"
+            )
+            .value = "";
+
+          showAdmin();
+
+        } catch (error) {
+
+          console.error(
+            "NEXO LOGIN:",
+            error
+          );
+
+          loginError.textContent =
+            error.message ||
+            "Error al iniciar sesión.";
+
+          loginError.style.display =
+            "block";
+
+        } finally {
+
+          loginButton.disabled =
+            false;
+
+          loginButton.textContent =
+            "Entrar";
+
+        }
+
       }
-
-      return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-    }
+    );
 
 
-    /* ==========================
-       CARGAR PROPIEDADES
-    ========================== */
+    // =====================================================
+    // COMPROBAR SESIÓN
+    // =====================================================
 
-    async function loadProperties() {
-
-      loading.style.display = "block";
-
-      empty.style.display = "none";
-
-      propertyList.innerHTML = "";
+    async function checkSession() {
 
       try {
 
         const response =
-          await fetch(API_URL);
-
+          await fetch(
+            "/api/admin/session",
+            {
+              method: "GET",
+              credentials: "include"
+            }
+          );
 
         const result =
           await response.json();
 
+        if (
+          result.authenticated
+        ) {
+
+          showAdmin();
+
+        } else {
+
+          showLogin();
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "SESSION:",
+          error
+        );
+
+        showLogin();
+
+      }
+
+    }
+
+
+    // =====================================================
+    // LOGOUT
+    // =====================================================
+
+    logoutButton.addEventListener(
+      "click",
+      async function() {
+
+        try {
+
+          await fetch(
+            "/api/admin/logout",
+            {
+              method: "POST",
+              credentials: "include"
+            }
+          );
+
+        } catch (error) {
+
+          console.error(error);
+
+        }
+
+        showLogin();
+
+      }
+    );
+
+
+    // =====================================================
+    // CARGAR PROPIEDADES
+    // =====================================================
+
+    async function loadProperties() {
+
+      propertyList.innerHTML =
+        '<div class="loading">Cargando propiedades...</div>';
+
+      try {
+
+        const response =
+          await fetch(
+            "/api/properties",
+            {
+              credentials: "include"
+            }
+          );
+
+        const result =
+          await response.json();
 
         if (
           !response.ok ||
@@ -1079,324 +1280,218 @@
 
         }
 
+        const properties =
+          result.properties || [];
 
-        properties =
-          Array.isArray(result.properties)
-            ? result.properties
-            : [];
+        updateStats(properties);
 
-
-        renderProperties();
+        renderProperties(
+          properties
+        );
 
       } catch (error) {
 
         console.error(
-          "NEXO:",
+          "LOAD PROPERTIES:",
           error
         );
 
-
-        showMessage(
-          error.message ||
-          "No se pudieron cargar las propiedades.",
-          "error"
-        );
-
-      } finally {
-
-        loading.style.display = "none";
+        propertyList.innerHTML =
+          `<div class="error">${escapeHtml(
+            error.message
+          )}</div>`;
 
       }
 
     }
 
 
-    /* ==========================
-       RENDERIZAR PROPIEDADES
-    ========================== */
+    // =====================================================
+    // ESTADÍSTICAS
+    // =====================================================
 
-    function renderProperties() {
+    function updateStats(
+      properties
+    ) {
 
-      propertyList.innerHTML = "";
-
-
-      totalProperties.textContent =
+      const total =
         properties.length;
 
-
-      availableProperties.textContent =
+      const available =
         properties.filter(
           property =>
-            property.status === "available"
+            property.status ===
+            "available"
         ).length;
 
+      const unavailable =
+        total - available;
 
-      unavailableProperties.textContent =
-        properties.filter(
-          property =>
-            property.status !== "available"
-        ).length;
+      document.getElementById(
+        "totalCount"
+      ).textContent = total;
 
+      document.getElementById(
+        "availableCount"
+      ).textContent = available;
+
+      document.getElementById(
+        "unavailableCount"
+      ).textContent = unavailable;
+
+    }
+
+
+    // =====================================================
+    // RENDER PROPIEDADES
+    // =====================================================
+
+    function renderProperties(
+      properties
+    ) {
 
       if (!properties.length) {
 
-        empty.style.display = "block";
+        propertyList.innerHTML =
+          '<div class="empty">No hay propiedades registradas.</div>';
 
         return;
 
       }
 
+      propertyList.innerHTML =
+        properties
+          .map(
+            property =>
+              propertyCard(
+                property
+              )
+          )
+          .join("");
 
-      empty.style.display = "none";
-
-
-      properties.forEach(
-        property => {
-
-          const card =
-            document.createElement("div");
-
-          card.className =
-            "property";
-
-
-          const statusClass =
-            property.status === "available"
-              ? "available"
-              : "unavailable";
+    }
 
 
-          const statusText =
-            property.status === "available"
-              ? "Disponible"
-              : "No disponible";
+    function propertyCard(
+      property
+    ) {
 
+      const location =
+        [
+          property.city,
+          property.neighborhood
+        ]
+          .filter(Boolean)
+          .join(" · ");
 
-          const locationParts = [
-            property.city,
-            property.neighborhood
-          ].filter(Boolean);
+      const details =
+        [
+          property.bedrooms != null
+            ? `🛏 ${property.bedrooms} habitaciones`
+            : "",
 
+          property.bathrooms != null
+            ? `🚿 ${property.bathrooms} baños`
+            : "",
 
-          const location =
-            locationParts.join(" · ");
+          property.square_meters != null
+            ? `${property.square_meters} m²`
+            : ""
+        ]
+          .filter(Boolean)
+          .join(" · ");
 
+      const statusText =
+        property.status ===
+        "available"
+          ? "Disponible"
+          : "No disponible";
 
-          const photos =
-            parsePhotos(property.photos);
+      return `
 
+        <article class="property">
 
-          const photoCount =
-            photos.length;
+          <div class="property-main">
 
-
-          card.innerHTML = `
-
-            <div class="property-top">
-
-              <div>
-
-                <div class="property-title">
-
-                  ${escapeHtml(
-                    property.property_type ||
-                    "Propiedad"
-                  )}
-
-                </div>
-
-                <div class="property-location">
-
-                  ${escapeHtml(
-                    location ||
-                    "Ubicación no especificada"
-                  )}
-
-                </div>
-
-              </div>
-
-
-              <span
-                class="status ${statusClass}"
-              >
-                ${statusText}
-              </span>
-
+            <div class="property-type">
+              ${escapeHtml(
+                property.property_type ||
+                "Propiedad"
+              )}
             </div>
 
+            <div class="property-title">
+              ${escapeHtml(
+                property.city ||
+                "Sin ciudad"
+              )}
+            </div>
+
+            <div class="property-location">
+              ${escapeHtml(
+                location || "—"
+              )}
+            </div>
 
             <div class="property-details">
-
-              ${
-                property.bedrooms !== null &&
-                property.bedrooms !== undefined &&
-                property.bedrooms !== ""
-                  ? `
-                    <span class="detail">
-                      🛏 ${escapeHtml(property.bedrooms)} habitaciones
-                    </span>
-                  `
-                  : ""
-              }
-
-
-              ${
-                property.bathrooms !== null &&
-                property.bathrooms !== undefined &&
-                property.bathrooms !== ""
-                  ? `
-                    <span class="detail">
-                      🚿 ${escapeHtml(property.bathrooms)} baños
-                    </span>
-                  `
-                  : ""
-              }
-
-
-              ${
-                property.square_meters !== null &&
-                property.square_meters !== undefined &&
-                property.square_meters !== ""
-                  ? `
-                    <span class="detail">
-                      ${escapeHtml(property.square_meters)} m²
-                    </span>
-                  `
-                  : ""
-              }
-
-
-              ${
-                property.price !== null &&
-                property.price !== undefined &&
-                property.price !== ""
-                  ? `
-                    <span class="detail">
-                      $${escapeHtml(property.price)}
-                    </span>
-                  `
-                  : ""
-              }
-
-
-              ${
-                photoCount
-                  ? `
-                    <span class="detail">
-                      📷 ${photoCount} foto${photoCount === 1 ? "" : "s"}
-                    </span>
-                  `
-                  : ""
-              }
-
+              ${escapeHtml(
+                details || "Sin detalles"
+              )}
             </div>
 
-
-            ${
-              property.description
-                ? `
-                  <div class="property-description">
-                    ${escapeHtml(property.description)}
-                  </div>
-                `
-                : ""
-            }
-
-
-            ${
-              property.address
-                ? `
-                  <div class="property-description">
-                    📍 ${escapeHtml(property.address)}
-                  </div>
-                `
-                : ""
-            }
-
-
-            <div class="property-actions">
-
-              <button
-                type="button"
-                class="secondary"
-                onclick="editProperty(${Number(property.id)})"
-              >
-                Editar
-              </button>
-
-
-              <button
-                type="button"
-                class="danger"
-                onclick="openDeleteModal(${Number(property.id)})"
-              >
-                Eliminar
-              </button>
-
+            <div class="property-price">
+              ${
+                property.price != null
+                  ? "$" +
+                    Number(
+                      property.price
+                    ).toLocaleString(
+                      "en-US"
+                    )
+                  : "Precio no indicado"
+              }
             </div>
 
-          `;
+            <span class="property-status">
+              ${statusText}
+            </span>
 
+          </div>
 
-          propertyList.appendChild(card);
+          <div class="property-actions">
 
-        }
-      );
+            <button
+              class="edit-button"
+              onclick="editProperty(${Number(
+                property.id
+              )})"
+            >
+              Editar
+            </button>
+
+            <button
+              class="delete-button"
+              onclick="deleteProperty(${Number(
+                property.id
+              )})"
+            >
+              Eliminar
+            </button>
+
+          </div>
+
+        </article>
+
+      `;
 
     }
 
 
-    /* ==========================
-       FOTOS
-    ========================== */
+    // =====================================================
+    // GUARDAR / EDITAR
+    // =====================================================
 
-    function parsePhotos(value) {
-
-      if (!value) {
-        return [];
-      }
-
-
-      if (Array.isArray(value)) {
-        return value;
-      }
-
-
-      try {
-
-        const parsed =
-          JSON.parse(value);
-
-        if (Array.isArray(parsed)) {
-          return parsed;
-        }
-
-      } catch (error) {
-
-        /*
-         * Si no es JSON,
-         * intentamos separarlo por comas.
-         */
-
-      }
-
-
-      return String(value)
-        .split(",")
-        .map(
-          item => item.trim()
-        )
-        .filter(Boolean);
-
-    }
-
-
-    /* ==========================
-       FORMULARIO
-    ========================== */
-
-    form.addEventListener(
+    propertyForm.addEventListener(
       "submit",
       async function(event) {
 
@@ -1404,24 +1499,21 @@
 
         clearMessage();
 
-
-        submitButton.disabled = true;
+        submitButton.disabled =
+          true;
 
         submitButton.textContent =
-          "Guardando...";
-
-
-        const id =
-          document.getElementById(
-            "propertyId"
-          ).value;
-
+          editingId.value
+            ? "Guardando cambios..."
+            : "Guardando...";
 
         const photosText =
-          document.getElementById(
-            "photos"
-          ).value.trim();
-
+          document
+            .getElementById(
+              "photos"
+            )
+            .value
+            .trim();
 
         const photos =
           photosText
@@ -1434,87 +1526,73 @@
                 .filter(Boolean)
             : [];
 
-
         const data = {
 
           property_type:
             document.getElementById(
               "property_type"
-            ).value.trim(),
-
+            ).value,
 
           city:
             document.getElementById(
               "city"
-            ).value.trim(),
-
+            ).value,
 
           neighborhood:
             document.getElementById(
               "neighborhood"
-            ).value.trim(),
-
+            ).value,
 
           address:
             document.getElementById(
               "address"
-            ).value.trim(),
-
+            ).value,
 
           bedrooms:
             document.getElementById(
               "bedrooms"
             ).value,
 
-
           bathrooms:
             document.getElementById(
               "bathrooms"
             ).value,
-
 
           square_meters:
             document.getElementById(
               "square_meters"
             ).value,
 
-
           price:
             document.getElementById(
               "price"
             ).value,
 
-
           description:
             document.getElementById(
               "description"
-            ).value.trim(),
-
+            ).value,
 
           photos,
-
 
           owner_name:
             document.getElementById(
               "owner_name"
-            ).value.trim(),
-
+            ).value,
 
           owner_phone:
             document.getElementById(
               "owner_phone"
-            ).value.trim(),
-
-
-          notes:
-            document.getElementById(
-              "notes"
-            ).value.trim(),
-
+            ).value,
 
           status:
             document.getElementById(
               "status"
+            ).value,
+
+          notes:
+            document.getElementById(
+              "notes"
             ).value
 
         };
@@ -1522,51 +1600,54 @@
 
         try {
 
-          let response;
+          const id =
+            editingId.value;
 
+          const url =
+            id
+              ? `/api/properties/${id}`
+              : "/api/properties";
 
-          if (id) {
+          const method =
+            id
+              ? "PUT"
+              : "POST";
 
-            response =
-              await fetch(
-                `${API_URL}/${id}`,
-                {
-                  method: "PUT",
+          const response =
+            await fetch(
+              url,
+              {
+                method,
 
-                  headers: {
-                    "Content-Type":
-                      "application/json"
-                  },
+                credentials:
+                  "include",
 
-                  body:
-                    JSON.stringify(data)
-                }
-              );
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
 
-          } else {
-
-            response =
-              await fetch(
-                API_URL,
-                {
-                  method: "POST",
-
-                  headers: {
-                    "Content-Type":
-                      "application/json"
-                  },
-
-                  body:
-                    JSON.stringify(data)
-                }
-              );
-
-          }
-
+                body:
+                  JSON.stringify(
+                    data
+                  )
+              }
+            );
 
           const result =
             await response.json();
 
+          if (
+            response.status === 401
+          ) {
+
+            showLogin();
+
+            throw new Error(
+              "Tu sesión ha expirado. Vuelve a entrar."
+            );
+
+          }
 
           if (
             !response.ok ||
@@ -1580,32 +1661,27 @@
 
           }
 
-
           showMessage(
             id
               ? "Propiedad actualizada correctamente."
-              : `Propiedad añadida correctamente a NEXO. ID: ${result.id}`,
+              : "Propiedad añadida correctamente.",
             "success"
           );
 
-
           resetForm();
 
-
           await loadProperties();
-
 
         } catch (error) {
 
           console.error(
-            "NEXO:",
+            "SAVE PROPERTY:",
             error
           );
 
-
           showMessage(
             error.message ||
-            "Ocurrió un error al guardar la propiedad.",
+            "Ocurrió un error.",
             "error"
           );
 
@@ -1615,7 +1691,9 @@
             false;
 
           submitButton.textContent =
-            "Añadir propiedad";
+            editingId.value
+              ? "Guardar cambios"
+              : "Añadir propiedad";
 
         }
 
@@ -1623,26 +1701,27 @@
     );
 
 
-    /* ==========================
-       EDITAR
-    ========================== */
+    // =====================================================
+    // EDITAR
+    // =====================================================
 
-    async function editProperty(id) {
-
-      clearMessage();
-
+    async function editProperty(
+      id
+    ) {
 
       try {
 
         const response =
           await fetch(
-            `${API_URL}/${id}`
+            `/api/properties/${id}`,
+            {
+              credentials:
+                "include"
+            }
           );
-
 
         const result =
           await response.json();
-
 
         if (
           !response.ok ||
@@ -1656,136 +1735,129 @@
 
         }
 
-
         const property =
           result.property;
 
-
-        document.getElementById(
-          "propertyId"
-        ).value =
+        editingId.value =
           property.id;
-
 
         document.getElementById(
           "property_type"
         ).value =
-          property.property_type || "";
-
+          property.property_type ||
+          "";
 
         document.getElementById(
           "city"
         ).value =
           property.city || "";
 
-
         document.getElementById(
           "neighborhood"
         ).value =
-          property.neighborhood || "";
-
+          property.neighborhood ||
+          "";
 
         document.getElementById(
           "address"
         ).value =
-          property.address || "";
-
+          property.address ||
+          "";
 
         document.getElementById(
           "bedrooms"
         ).value =
-          property.bedrooms ?? "";
-
+          property.bedrooms ??
+          "";
 
         document.getElementById(
           "bathrooms"
         ).value =
-          property.bathrooms ?? "";
-
+          property.bathrooms ??
+          "";
 
         document.getElementById(
           "square_meters"
         ).value =
-          property.square_meters ?? "";
-
+          property.square_meters ??
+          "";
 
         document.getElementById(
           "price"
         ).value =
-          property.price ?? "";
-
+          property.price ??
+          "";
 
         document.getElementById(
           "description"
         ).value =
-          property.description || "";
+          property.description ||
+          "";
 
+        let photos = [];
 
-        const photos =
-          parsePhotos(property.photos);
+        try {
 
+          photos =
+            property.photos
+              ? JSON.parse(
+                  property.photos
+                )
+              : [];
+
+        } catch {
+
+          photos = [];
+
+        }
 
         document.getElementById(
           "photos"
         ).value =
-          photos.join(", ");
-
+          Array.isArray(photos)
+            ? photos.join(", ")
+            : "";
 
         document.getElementById(
           "owner_name"
         ).value =
-          property.owner_name || "";
-
+          property.owner_name ||
+          "";
 
         document.getElementById(
           "owner_phone"
         ).value =
-          property.owner_phone || "";
-
-
-        document.getElementById(
-          "notes"
-        ).value =
-          property.notes || "";
-
+          property.owner_phone ||
+          "";
 
         document.getElementById(
           "status"
         ).value =
-          property.status || "available";
-
+          property.status ||
+          "available";
 
         document.getElementById(
-          "formTitle"
-        ).textContent =
-          "Editar propiedad";
+          "notes"
+        ).value =
+          property.notes ||
+          "";
 
+        formTitle.textContent =
+          "Editar propiedad";
 
         submitButton.textContent =
           "Guardar cambios";
-
-
-        cancelButton.style.display =
-          "block";
-
 
         window.scrollTo({
           top: 0,
           behavior: "smooth"
         });
 
-
       } catch (error) {
-
-        console.error(
-          "NEXO:",
-          error
-        );
-
 
         showMessage(
           error.message ||
-          "No se pudo cargar la propiedad.",
+          "No se pudo editar.",
           "error"
         );
 
@@ -1794,189 +1866,183 @@
     }
 
 
-    /* ==========================
-       CANCELAR EDICIÓN
-    ========================== */
+    // =====================================================
+    // ELIMINAR
+    // =====================================================
 
-    cancelButton.addEventListener(
-      "click",
-      function() {
+    async function deleteProperty(
+      id
+    ) {
 
-        resetForm();
+      const confirmed =
+        confirm(
+          "¿Seguro que quieres eliminar esta propiedad?"
+        );
 
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth"
-        });
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+
+        const response =
+          await fetch(
+            `/api/properties/${id}`,
+            {
+              method: "DELETE",
+              credentials: "include"
+            }
+          );
+
+        const result =
+          await response.json();
+
+        if (
+          response.status === 401
+        ) {
+
+          showLogin();
+
+          throw new Error(
+            "Tu sesión ha expirado."
+          );
+
+        }
+
+        if (
+          !response.ok ||
+          !result.success
+        ) {
+
+          throw new Error(
+            result.error ||
+            "No se pudo eliminar."
+          );
+
+        }
+
+        showMessage(
+          "Propiedad eliminada correctamente.",
+          "success"
+        );
+
+        await loadProperties();
+
+      } catch (error) {
+
+        console.error(
+          "DELETE:",
+          error
+        );
+
+        showMessage(
+          error.message ||
+          "Ocurrió un error.",
+          "error"
+        );
 
       }
-    );
 
+    }
+
+
+    // =====================================================
+    // RESET FORM
+    // =====================================================
 
     function resetForm() {
 
-      form.reset();
+      propertyForm.reset();
 
+      editingId.value =
+        "";
 
-      document.getElementById(
-        "propertyId"
-      ).value = "";
+      formTitle.textContent =
+        "Agregar propiedad";
 
+      submitButton.textContent =
+        "Añadir propiedad";
 
       document.getElementById(
         "status"
       ).value =
         "available";
 
-
-      document.getElementById(
-        "formTitle"
-      ).textContent =
-        "Agregar propiedad";
+    }
 
 
-      submitButton.textContent =
-        "Añadir propiedad";
+    // =====================================================
+    // REFRESH
+    // =====================================================
+
+    document
+      .getElementById(
+        "refreshButton"
+      )
+      .addEventListener(
+        "click",
+        loadProperties
+      );
 
 
-      cancelButton.style.display =
+    // =====================================================
+    // MENSAJES
+    // =====================================================
+
+    function showMessage(
+      text,
+      type
+    ) {
+
+      message.className =
+        "message " + type;
+
+      message.textContent =
+        text;
+
+      message.style.display =
+        "block";
+
+    }
+
+
+    function clearMessage() {
+
+      message.className =
+        "message";
+
+      message.textContent =
+        "";
+
+      message.style.display =
         "none";
 
     }
 
 
-    /* ==========================
-       ELIMINAR
-    ========================== */
+    // =====================================================
+    // SEGURIDAD HTML
+    // =====================================================
 
-    function openDeleteModal(id) {
+    function escapeHtml(
+      value
+    ) {
 
-      propertyToDelete = id;
-
-      document.getElementById(
-        "deleteModal"
-      ).classList.add("show");
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 
     }
 
 
-    document.getElementById(
-      "cancelDelete"
-    ).addEventListener(
-      "click",
-      function() {
+    // =====================================================
+    // INICIO
+    // =====================================================
 
-        propertyToDelete = null;
-
-        document.getElementById(
-          "deleteModal"
-        ).classList.remove("show");
-
-      }
-    );
-
-
-    document.getElementById(
-      "confirmDelete"
-    ).addEventListener(
-      "click",
-      async function() {
-
-        if (!propertyToDelete) {
-          return;
-        }
-
-
-        const id =
-          propertyToDelete;
-
-
-        propertyToDelete = null;
-
-
-        document.getElementById(
-          "deleteModal"
-        ).classList.remove("show");
-
-
-        try {
-
-          const response =
-            await fetch(
-              `${API_URL}/${id}`,
-              {
-                method: "DELETE"
-              }
-            );
-
-
-          const result =
-            await response.json();
-
-
-          if (
-            !response.ok ||
-            !result.success
-          ) {
-
-            throw new Error(
-              result.error ||
-              "No se pudo eliminar la propiedad."
-            );
-
-          }
-
-
-          showMessage(
-            "Propiedad eliminada correctamente.",
-            "success"
-          );
-
-
-          await loadProperties();
-
-
-        } catch (error) {
-
-          console.error(
-            "NEXO:",
-            error
-          );
-
-
-          showMessage(
-            error.message ||
-            "No se pudo eliminar la propiedad.",
-            "error"
-          );
-
-        }
-
-      }
-    );
-
-
-    /* ==========================
-       ACTUALIZAR
-    ========================== */
-
-    refreshButton.addEventListener(
-      "click",
-      async function() {
-
-        clearMessage();
-
-        await loadProperties();
-
-      }
-    );
-
-
-    /* ==========================
-       INICIO
-    ========================== */
-
-    loadProperties();
+    checkSession();
 
   </script>
 
