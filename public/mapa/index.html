@@ -12,15 +12,14 @@
 
   <title>NEXO — Mapa de propiedades</title>
 
-  <!-- LEAFLET CSS -->
+  <!-- MAPTILER SDK -->
   <link
+    href="https://cdn.maptiler.com/maptiler-sdk-js/v4.0.2/maptiler-sdk.css"
     rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
   >
 
   <style>
+
     :root {
       --bg: #f5f5f7;
       --white: #fff;
@@ -28,7 +27,6 @@
       --text: #171717;
       --muted: #777;
       --border: rgba(0,0,0,.08);
-      --radius: 22px;
     }
 
     * {
@@ -57,8 +55,7 @@
     }
 
     button,
-    input,
-    select {
+    input {
       font: inherit;
     }
 
@@ -74,12 +71,8 @@
     #map {
       position: fixed;
       inset: 0;
-      z-index: 1;
-    }
-
-    .leaflet-container {
-      font-family: inherit;
-      background: #e9ecef;
+      width: 100%;
+      height: 100%;
     }
 
     /* =====================================================
@@ -88,6 +81,7 @@
 
     .topbar {
       position: fixed;
+
       top: 0;
       left: 0;
       right: 0;
@@ -97,7 +91,7 @@
       padding:
         calc(12px + env(safe-area-inset-top, 0px))
         14px
-        12px;
+        10px;
 
       pointer-events: none;
     }
@@ -108,6 +102,7 @@
 
       display: flex;
       align-items: center;
+
       gap: 10px;
 
       pointer-events: auto;
@@ -120,10 +115,14 @@
 
       border-radius: 16px;
 
-      background: rgba(255,255,255,.92);
+      background:
+        rgba(255,255,255,.94);
 
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter:
+        blur(20px);
+
+      -webkit-backdrop-filter:
+        blur(20px);
 
       box-shadow:
         0 8px 30px rgba(0,0,0,.10);
@@ -135,12 +134,14 @@
 
     .search {
       flex: 1;
+
       min-width: 0;
 
       display: flex;
       align-items: center;
 
-      background: rgba(255,255,255,.94);
+      background:
+        rgba(255,255,255,.94);
 
       border-radius: 16px;
 
@@ -151,7 +152,6 @@
     }
 
     .search-icon {
-      flex: 0 0 auto;
       padding-left: 14px;
       font-size: 16px;
     }
@@ -167,6 +167,7 @@
       background: transparent;
 
       color: #111;
+
       font-size: 13px;
     }
 
@@ -236,12 +237,17 @@
 
       border-radius: 999px;
 
-      border: 1px solid rgba(0,0,0,.06);
+      border:
+        1px solid rgba(0,0,0,.06);
 
-      background: rgba(255,255,255,.93);
+      background:
+        rgba(255,255,255,.93);
 
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
+      backdrop-filter:
+        blur(15px);
+
+      -webkit-backdrop-filter:
+        blur(15px);
 
       color: #444;
 
@@ -255,6 +261,112 @@
     .filter.active {
       background: #111;
       color: #fff;
+    }
+
+    /* =====================================================
+       CONTROLES DE MAPA NEXO
+       ===================================================== */
+
+    .map-style-controls {
+      position: fixed;
+
+      right: 14px;
+
+      top:
+        calc(140px + env(safe-area-inset-top, 0px));
+
+      z-index: 1000;
+
+      display: flex;
+      flex-direction: column;
+
+      gap: 7px;
+    }
+
+    .style-button {
+      min-width: 78px;
+
+      padding: 10px 12px;
+
+      border-radius: 13px;
+
+      background:
+        rgba(255,255,255,.95);
+
+      backdrop-filter:
+        blur(18px);
+
+      -webkit-backdrop-filter:
+        blur(18px);
+
+      box-shadow:
+        0 7px 25px rgba(0,0,0,.12);
+
+      color: #222;
+
+      font-size: 10px;
+      font-weight: 800;
+
+      text-align: center;
+    }
+
+    .style-button.active {
+      background: #111;
+      color: #fff;
+    }
+
+    .style-button:active {
+      transform: scale(.95);
+    }
+
+    /* =====================================================
+       BOTONES INFERIORES
+       ===================================================== */
+
+    .map-buttons {
+      position: fixed;
+
+      right: 14px;
+
+      bottom:
+        calc(18px + env(safe-area-inset-bottom, 0px));
+
+      z-index: 1000;
+
+      display: flex;
+      flex-direction: column;
+
+      gap: 8px;
+    }
+
+    .map-button {
+      width: 46px;
+      height: 46px;
+
+      border-radius: 15px;
+
+      background:
+        rgba(255,255,255,.95);
+
+      backdrop-filter:
+        blur(18px);
+
+      -webkit-backdrop-filter:
+        blur(18px);
+
+      box-shadow:
+        0 8px 30px rgba(0,0,0,.12);
+
+      font-size: 18px;
+    }
+
+    .map-button.active {
+      background: #111;
+      color: #fff;
+    }
+
+    .map-button:active {
+      transform: scale(.94);
     }
 
     /* =====================================================
@@ -275,53 +387,20 @@
 
       border-radius: 999px;
 
-      background: rgba(255,255,255,.94);
+      background:
+        rgba(255,255,255,.94);
 
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      backdrop-filter:
+        blur(18px);
+
+      -webkit-backdrop-filter:
+        blur(18px);
 
       box-shadow:
         0 8px 30px rgba(0,0,0,.12);
 
       font-size: 11px;
       font-weight: 750;
-    }
-
-    /* =====================================================
-       BOTONES DEL MAPA
-       ===================================================== */
-
-    .map-buttons {
-      position: fixed;
-
-      right: 14px;
-
-      bottom:
-        calc(18px + env(safe-area-inset-bottom, 0px));
-
-      z-index: 1000;
-
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .map-button {
-      width: 44px;
-      height: 44px;
-
-      border-radius: 15px;
-
-      background: rgba(255,255,255,.95);
-
-      box-shadow:
-        0 8px 30px rgba(0,0,0,.12);
-
-      font-size: 17px;
-    }
-
-    .map-button:active {
-      transform: scale(.94);
     }
 
     /* =====================================================
@@ -336,15 +415,18 @@
 
       z-index: 2000;
 
-      transform: translate(-50%, -50%);
+      transform:
+        translate(-50%, -50%);
 
-      width: min(320px, calc(100% - 40px));
+      width:
+        min(320px, calc(100% - 40px));
 
       padding: 20px;
 
       border-radius: 20px;
 
-      background: rgba(255,255,255,.96);
+      background:
+        rgba(255,255,255,.97);
 
       box-shadow:
         0 20px 60px rgba(0,0,0,.16);
@@ -372,26 +454,28 @@
        POPUP
        ===================================================== */
 
-    .leaflet-popup-content-wrapper {
-      padding: 0;
+    .maplibregl-popup-content {
+      padding: 0 !important;
+
       border-radius: 20px;
+
       overflow: hidden;
 
       box-shadow:
         0 15px 45px rgba(0,0,0,.16);
     }
 
-    .leaflet-popup-content {
-      margin: 0;
-      width: min(300px, 76vw) !important;
-    }
-
-    .leaflet-popup-tip {
-      box-shadow: none;
+    .maplibregl-popup {
+      max-width:
+        min(330px, 86vw);
     }
 
     .property-card {
       overflow: hidden;
+
+      width:
+        min(300px, 76vw);
+
       background: #fff;
     }
 
@@ -411,6 +495,7 @@
       justify-content: center;
 
       color: #999;
+
       font-size: 11px;
     }
 
@@ -434,6 +519,7 @@
       font-weight: 800;
 
       text-transform: uppercase;
+
       letter-spacing: .1em;
     }
 
@@ -467,6 +553,7 @@
       flex-wrap: wrap;
 
       gap: 6px;
+
       margin-top: 12px;
     }
 
@@ -513,19 +600,22 @@
        ===================================================== */
 
     .nexo-marker {
-      width: 34px;
-      height: 34px;
+      width: 38px;
+      height: 38px;
 
-      border-radius: 50% 50% 50% 0;
+      border-radius:
+        50% 50% 50% 0;
 
       background: #111;
 
-      border: 3px solid #fff;
+      border:
+        3px solid #fff;
 
-      transform: rotate(-45deg);
+      transform:
+        rotate(-45deg);
 
       box-shadow:
-        0 5px 15px rgba(0,0,0,.25);
+        0 6px 18px rgba(0,0,0,.30);
 
       position: relative;
     }
@@ -535,15 +625,31 @@
 
       position: absolute;
 
-      width: 9px;
-      height: 9px;
+      width: 10px;
+      height: 10px;
 
-      left: 9px;
-      top: 9px;
+      left: 11px;
+      top: 11px;
 
       border-radius: 50%;
 
       background: #fff;
+    }
+
+    /* =====================================================
+       LOGO MAPTILER / CONTROLES
+       ===================================================== */
+
+    .maplibregl-ctrl-bottom-left,
+    .maplibregl-ctrl-bottom-right {
+      z-index: 20;
+    }
+
+    .maplibregl-ctrl-group {
+      border-radius: 12px !important;
+      overflow: hidden;
+      box-shadow:
+        0 5px 20px rgba(0,0,0,.12) !important;
     }
 
     /* =====================================================
@@ -566,10 +672,24 @@
           calc(65px + env(safe-area-inset-top, 0px));
       }
 
+      .map-style-controls {
+        top:
+          calc(125px + env(safe-area-inset-top, 0px));
+
+        right: 10px;
+      }
+
+      .style-button {
+        min-width: 70px;
+        padding: 9px 10px;
+      }
+
       .property-image {
         height: 145px;
       }
+
     }
+
   </style>
 </head>
 
@@ -580,6 +700,7 @@
        ===================================================== -->
 
   <div id="map"></div>
+
 
   <!-- =====================================================
        BARRA SUPERIOR
@@ -620,6 +741,7 @@
     </div>
 
   </div>
+
 
   <!-- =====================================================
        FILTROS
@@ -681,6 +803,48 @@
 
   </div>
 
+
+  <!-- =====================================================
+       CAMBIO DE VISTA
+       ===================================================== -->
+
+  <div class="map-style-controls">
+
+    <button
+      id="streetsButton"
+      class="style-button active"
+      type="button"
+    >
+      🗺️ Mapa
+    </button>
+
+    <button
+      id="hybridButton"
+      class="style-button"
+      type="button"
+    >
+      🌍 Híbrido
+    </button>
+
+    <button
+      id="satelliteButton"
+      class="style-button"
+      type="button"
+    >
+      🛰️ Satélite
+    </button>
+
+    <button
+      id="terrainButton"
+      class="style-button"
+      type="button"
+    >
+      🧊 3D
+    </button>
+
+  </div>
+
+
   <!-- =====================================================
        CONTADOR
        ===================================================== -->
@@ -691,6 +855,7 @@
   >
     Cargando propiedades...
   </div>
+
 
   <!-- =====================================================
        BOTONES
@@ -720,6 +885,7 @@
 
   </div>
 
+
   <!-- =====================================================
        ESTADO
        ===================================================== -->
@@ -740,100 +906,171 @@
       id="statusText"
       class="status-text"
     >
-      Buscando propiedades.
+      Conectando con las propiedades.
     </div>
 
   </div>
 
-  <!-- LEAFLET JS -->
+
+  <!-- =====================================================
+       MAPTILER SDK
+       ===================================================== -->
 
   <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
+    src="https://cdn.maptiler.com/maptiler-sdk-js/v4.0.2/maptiler-sdk.umd.min.js"
   ></script>
 
+
   <script>
+
     "use strict";
+
+
+    /* =====================================================
+       CONFIGURACIÓN
+       ===================================================== */
+
+    /*
+     * CLAVE MAPTILER
+     *
+     * Sustituye el texto entre comillas por tu Default key.
+     *
+     * La clave que me proporcionaste debe ir aquí.
+     */
+
+    const MAPTILER_KEY =
+      "1NdLFdUeZVfKpdAWdd6K";
+
+
+    maptilersdk.config.apiKey =
+      MAPTILER_KEY;
+
 
     /* =====================================================
        ELEMENTOS
        ===================================================== */
 
-    const mapElement =
-      document.getElementById("map");
-
     const searchInput =
-      document.getElementById("searchInput");
+      document.getElementById(
+        "searchInput"
+      );
 
     const clearSearch =
-      document.getElementById("clearSearch");
+      document.getElementById(
+        "clearSearch"
+      );
 
     const counter =
-      document.getElementById("counter");
+      document.getElementById(
+        "counter"
+      );
 
     const status =
-      document.getElementById("status");
+      document.getElementById(
+        "status"
+      );
 
     const statusTitle =
-      document.getElementById("statusTitle");
+      document.getElementById(
+        "statusTitle"
+      );
 
     const statusText =
-      document.getElementById("statusText");
+      document.getElementById(
+        "statusText"
+      );
 
     const fitButton =
-      document.getElementById("fitButton");
+      document.getElementById(
+        "fitButton"
+      );
 
     const locationButton =
-      document.getElementById("locationButton");
+      document.getElementById(
+        "locationButton"
+      );
+
+    const streetsButton =
+      document.getElementById(
+        "streetsButton"
+      );
+
+    const hybridButton =
+      document.getElementById(
+        "hybridButton"
+      );
+
+    const satelliteButton =
+      document.getElementById(
+        "satelliteButton"
+      );
+
+    const terrainButton =
+      document.getElementById(
+        "terrainButton"
+      );
+
 
     /* =====================================================
        ESTADO
        ===================================================== */
 
     let allProperties = [];
+
     let filteredProperties = [];
+
     let activeType = "all";
+
+    let currentStyle = "streets";
+
+    let terrainEnabled = false;
+
+    let userMarker = null;
+
 
     /* =====================================================
        MAPA
        ===================================================== */
 
     const map =
-      L.map(mapElement, {
-        zoomControl: false,
-        preferCanvas: true
+      new maptilersdk.Map({
+
+        container: "map",
+
+        style:
+          maptilersdk.MapStyle.STREETS,
+
+        center: [
+          -82.3666,
+          23.1136
+        ],
+
+        zoom: 11,
+
+        pitch: 0,
+
+        maxPitch: 85,
+
+        attributionControl: true,
+
+        navigationControl: false,
+
+        geolocateControl: false
+
       });
 
-    L.control.zoom({
-      position: "bottomright"
-    }).addTo(map);
-
-    /*
-     * Vista inicial de La Habana/Cuba.
-     */
-
-    map.setView(
-      [23.1136, -82.3666],
-      11
-    );
-
-    L.tileLayer(
-      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      {
-        maxZoom: 19,
-
-        attribution:
-          '&copy; OpenStreetMap contributors'
-      }
-    ).addTo(map);
 
     /* =====================================================
-       CAPA DE MARCADORES
+       CONTROLES NATIVOS
        ===================================================== */
 
-    const markerLayer =
-      L.layerGroup().addTo(map);
+    map.addControl(
+      new maptilersdk.NavigationControl({
+        visualizePitch: true
+      }),
+      "bottom-right"
+    );
+
 
     /* =====================================================
        UTILIDADES
@@ -842,12 +1079,29 @@
     function escapeHTML(value) {
 
       return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replace(
+          /&/g,
+          "&amp;"
+        )
+        .replace(
+          /</g,
+          "&lt;"
+        )
+        .replace(
+          />/g,
+          "&gt;"
+        )
+        .replace(
+          /"/g,
+          "&quot;"
+        )
+        .replace(
+          /'/g,
+          "&#039;"
+        );
+
     }
+
 
     function money(value) {
 
@@ -862,10 +1116,15 @@
       const number =
         Number(
           String(value)
-            .replace(/[$,\s]/g, "")
+            .replace(
+              /[$,\s]/g,
+              ""
+            )
         );
 
-      if (!Number.isFinite(number)) {
+      if (
+        !Number.isFinite(number)
+      ) {
         return String(value);
       }
 
@@ -876,40 +1135,57 @@
             maximumFractionDigits: 0
           }
         );
+
     }
+
 
     function normalize(value) {
 
       return String(value ?? "")
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
+        .replace(
+          /[\u0300-\u036f]/g,
+          ""
+        )
         .toLowerCase()
         .trim();
+
     }
+
 
     function parsePhotos(property) {
 
       if (
-        Array.isArray(property.photos)
+        Array.isArray(
+          property.photos
+        )
       ) {
+
         return property.photos
           .filter(Boolean);
+
       }
 
+
       if (
-        typeof property.photos === "string"
+        typeof property.photos ===
+        "string"
       ) {
 
         try {
 
           const parsed =
-            JSON.parse(property.photos);
+            JSON.parse(
+              property.photos
+            );
 
           if (
             Array.isArray(parsed)
           ) {
+
             return parsed
               .filter(Boolean);
+
           }
 
         } catch (error) {
@@ -920,10 +1196,13 @@
           );
 
         }
+
       }
 
       return [];
+
     }
+
 
     /* =====================================================
        ESTADO
@@ -943,34 +1222,41 @@
       status.classList.remove(
         "hidden"
       );
+
     }
+
 
     function hideStatus() {
 
       status.classList.add(
         "hidden"
       );
+
     }
 
+
     /* =====================================================
-       ICONO
+       MARCADORES
        ===================================================== */
 
-    const nexoIcon =
-      L.divIcon({
-        className: "",
-        html:
-          '<div class="nexo-marker"></div>',
+    const markers = new Map();
 
-        iconSize: [34, 34],
 
-        iconAnchor: [17, 34],
+    function clearMarkers() {
 
-        popupAnchor: [0, -32]
-      });
+      markers.forEach(
+        marker => {
+          marker.remove();
+        }
+      );
+
+      markers.clear();
+
+    }
+
 
     /* =====================================================
-       TARJETA DE PROPIEDAD
+       TARJETA
        ===================================================== */
 
     function buildPropertyCard(
@@ -985,10 +1271,12 @@
           ? photos[0]
           : "";
 
+
       const title =
         property.title ||
         property.property_type ||
         "Propiedad";
+
 
       const location =
         [
@@ -998,7 +1286,9 @@
           .filter(Boolean)
           .join(" · ");
 
+
       const stats = [];
+
 
       if (
         property.bedrooms !== null &&
@@ -1007,9 +1297,13 @@
       ) {
 
         stats.push(
-          `🛏 ${escapeHTML(property.bedrooms)}`
+          `🛏 ${escapeHTML(
+            property.bedrooms
+          )}`
         );
+
       }
+
 
       if (
         property.bathrooms !== null &&
@@ -1018,9 +1312,13 @@
       ) {
 
         stats.push(
-          `🚿 ${escapeHTML(property.bathrooms)}`
+          `🚿 ${escapeHTML(
+            property.bathrooms
+          )}`
         );
+
       }
+
 
       if (
         property.square_meters !== null &&
@@ -1029,80 +1327,125 @@
       ) {
 
         stats.push(
-          `${escapeHTML(property.square_meters)} m²`
+          `${escapeHTML(
+            property.square_meters
+          )} m²`
         );
+
       }
+
 
       const statsHTML =
         stats.length
           ? `
             <div class="property-stats">
+
               ${stats
                 .map(
                   item =>
-                    `<span class="property-stat">${item}</span>`
+                    `
+                    <span
+                      class="property-stat"
+                    >
+                      ${item}
+                    </span>
+                    `
                 )
                 .join("")}
+
             </div>
           `
           : "";
 
+
       const imageHTML =
         image
           ? `
-            <div class="property-image">
+            <div
+              class="property-image"
+            >
+
               <img
-                src="${escapeHTML(image)}"
-                alt="${escapeHTML(title)}"
+                src="${escapeHTML(
+                  image
+                )}"
+                alt="${escapeHTML(
+                  title
+                )}"
                 onerror="
                   this.style.display='none';
                   this.parentElement.textContent='Sin fotografía';
                 "
               >
+
             </div>
           `
           : `
-            <div class="property-image">
+            <div
+              class="property-image"
+            >
               Sin fotografía
             </div>
           `;
 
+
       const addressHTML =
         property.address
           ? `
-            <div class="property-address">
-              📍 ${escapeHTML(property.address)}
+            <div
+              class="property-address"
+            >
+              📍 ${escapeHTML(
+                property.address
+              )}
             </div>
           `
           : "";
 
+
       return `
-        <div class="property-card">
+        <div
+          class="property-card"
+        >
 
           ${imageHTML}
 
-          <div class="property-content">
+          <div
+            class="property-content"
+          >
 
-            <div class="property-type">
+            <div
+              class="property-type"
+            >
               ${escapeHTML(
                 property.property_type ||
                 "Propiedad"
               )}
             </div>
 
-            <div class="property-title">
+            <div
+              class="property-title"
+            >
               ${escapeHTML(title)}
             </div>
 
-            <div class="property-price">
-              ${money(property.price)}
+            <div
+              class="property-price"
+            >
+              ${money(
+                property.price
+              )}
             </div>
 
             ${
               location
                 ? `
-                  <div class="property-location">
-                    ${escapeHTML(location)}
+                  <div
+                    class="property-location"
+                  >
+                    ${escapeHTML(
+                      location
+                    )}
                   </div>
                 `
                 : ""
@@ -1115,7 +1458,9 @@
             <button
               type="button"
               class="view-property"
-              onclick="openProperty(${Number(property.id)})"
+              data-property-id="${Number(
+                property.id
+              )}"
             >
               Ver propiedad
             </button>
@@ -1124,192 +1469,113 @@
 
         </div>
       `;
+
     }
 
+
     /* =====================================================
-       ABRIR PROPIEDAD
+       CREAR MARCADOR
        ===================================================== */
 
-    window.openProperty =
-      function(id) {
+    function createMarker(
+      property
+    ) {
 
-        const property =
-          allProperties.find(
-            item =>
-              Number(item.id) ===
-              Number(id)
-          );
-
-        if (!property) {
-          return;
-        }
-
-        const latitude =
-          Number(property.latitude);
-
-        const longitude =
-          Number(property.longitude);
-
-        if (
-          !Number.isFinite(latitude) ||
-          !Number.isFinite(longitude)
-        ) {
-          return;
-        }
-
-        map.setView(
-          [
-            latitude,
-            longitude
-          ],
-          Math.max(
-            map.getZoom(),
-            16
-          ),
-          {
-            animate: true
-          }
+      const latitude =
+        Number(
+          property.latitude
         );
-      };
+
+      const longitude =
+        Number(
+          property.longitude
+        );
+
+
+      if (
+        !Number.isFinite(
+          latitude
+        ) ||
+        !Number.isFinite(
+          longitude
+        )
+      ) {
+
+        return null;
+
+      }
+
+
+      const element =
+        document.createElement(
+          "div"
+        );
+
+
+      element.className =
+        "nexo-marker";
+
+
+      const marker =
+        new maptilersdk.Marker({
+          element,
+          anchor: "bottom"
+        })
+          .setLngLat([
+            longitude,
+            latitude
+          ])
+          .setPopup(
+            new maptilersdk.Popup({
+              offset: 30,
+              closeButton: true,
+              closeOnClick: true,
+              maxWidth: "330px"
+            })
+              .setHTML(
+                buildPropertyCard(
+                  property
+                )
+              )
+          )
+          .addTo(map);
+
+
+      markers.set(
+        Number(property.id),
+        marker
+      );
+
+
+      return marker;
+
+    }
+
 
     /* =====================================================
-       CREAR MARCADORES
+       RENDER MARCADORES
        ===================================================== */
 
     function renderMarkers() {
 
-      markerLayer.clearLayers();
+      clearMarkers();
+
 
       filteredProperties.forEach(
         property => {
 
-          const latitude =
-            Number(property.latitude);
-
-          const longitude =
-            Number(property.longitude);
-
-          /*
-           * Solo mostrar propiedades
-           * que tengan coordenadas válidas.
-           */
-
-          if (
-            !Number.isFinite(latitude) ||
-            !Number.isFinite(longitude)
-          ) {
-            return;
-          }
-
-          const marker =
-            L.marker(
-              [
-                latitude,
-                longitude
-              ],
-              {
-                icon: nexoIcon
-              }
-            );
-
-          marker.bindPopup(
-            buildPropertyCard(property),
-            {
-              maxWidth: 320,
-              closeButton: true,
-              autoPan: true
-            }
+          createMarker(
+            property
           );
 
-          marker.addTo(
-            markerLayer
-          );
         }
       );
+
 
       updateCounter();
+
     }
 
-    /* =====================================================
-       AJUSTAR MAPA
-       ===================================================== */
-
-    function fitVisibleProperties() {
-
-      const coordinates =
-        filteredProperties
-          .map(property => {
-
-            const latitude =
-              Number(property.latitude);
-
-            const longitude =
-              Number(property.longitude);
-
-            if (
-              !Number.isFinite(latitude) ||
-              !Number.isFinite(longitude)
-            ) {
-              return null;
-            }
-
-            return [
-              latitude,
-              longitude
-            ];
-          })
-          .filter(Boolean);
-
-      if (!coordinates.length) {
-
-        map.setView(
-          [
-            23.1136,
-            -82.3666
-          ],
-          11
-        );
-
-        return;
-      }
-
-      if (coordinates.length === 1) {
-
-        map.setView(
-          coordinates[0],
-          15,
-          {
-            animate: true
-          }
-        );
-
-        return;
-      }
-
-      const bounds =
-        L.latLngBounds(
-          coordinates
-        );
-
-      map.fitBounds(
-        bounds,
-        {
-          paddingTopLeft: [
-            25,
-            150
-          ],
-
-          paddingBottomRight: [
-            25,
-            100
-          ],
-
-          maxZoom: 16,
-
-          animate: true
-        }
-      );
-    }
 
     /* =====================================================
        CONTADOR
@@ -1317,27 +1583,36 @@
 
     function updateCounter() {
 
-      const valid =
+      const located =
         filteredProperties.filter(
           property => {
 
             const lat =
-              Number(property.latitude);
+              Number(
+                property.latitude
+              );
 
             const lng =
-              Number(property.longitude);
+              Number(
+                property.longitude
+              );
 
             return (
               Number.isFinite(lat) &&
               Number.isFinite(lng)
             );
+
           }
         ).length;
+
 
       const total =
         filteredProperties.length;
 
-      if (total === valid) {
+
+      if (
+        total === located
+      ) {
 
         counter.textContent =
           `${total} ${
@@ -1349,12 +1624,133 @@
       } else {
 
         counter.textContent =
-          `${total} propiedades · ${valid} ubicadas`;
+          `${total} propiedades · ${located} ubicadas`;
+
       }
+
     }
 
+
     /* =====================================================
-       FILTRAR
+       AJUSTAR MAPA
+       ===================================================== */
+
+    function fitVisibleProperties() {
+
+      const coordinates =
+        filteredProperties
+          .map(
+            property => {
+
+              const lat =
+                Number(
+                  property.latitude
+                );
+
+              const lng =
+                Number(
+                  property.longitude
+                );
+
+
+              if (
+                !Number.isFinite(lat) ||
+                !Number.isFinite(lng)
+              ) {
+
+                return null;
+
+              }
+
+
+              return [
+                lng,
+                lat
+              ];
+
+            }
+          )
+          .filter(Boolean);
+
+
+      if (
+        coordinates.length === 0
+      ) {
+
+        map.flyTo({
+          center: [
+            -82.3666,
+            23.1136
+          ],
+          zoom: 11,
+          pitch:
+            terrainEnabled
+              ? 45
+              : 0,
+          duration: 900
+        });
+
+        return;
+
+      }
+
+
+      if (
+        coordinates.length === 1
+      ) {
+
+        map.flyTo({
+          center:
+            coordinates[0],
+          zoom: 15,
+          pitch:
+            terrainEnabled
+              ? 45
+              : 0,
+          duration: 900
+        });
+
+        return;
+
+      }
+
+
+      const bounds =
+        new maptilersdk.LngLatBounds();
+
+
+      coordinates.forEach(
+        coordinate => {
+
+          bounds.extend(
+            coordinate
+          );
+
+        }
+      );
+
+
+      map.fitBounds(
+        bounds,
+        {
+          padding: {
+            top: 170,
+            bottom: 120,
+            left: 40,
+            right: 100
+          },
+
+          maxZoom: 16,
+
+          duration: 1000
+        }
+      );
+
+    }
+
+
+    /* =====================================================
+       FILTROS
        ===================================================== */
 
     function applyFilters() {
@@ -1364,23 +1760,35 @@
           searchInput.value
         );
 
+
       filteredProperties =
         allProperties.filter(
           property => {
+
 
             if (
               activeType !== "all" &&
               normalize(
                 property.property_type
               ) !==
-                normalize(activeType)
+              normalize(
+                activeType
+              )
             ) {
+
               return false;
+
             }
 
-            if (!search) {
+
+            if (
+              !search
+            ) {
+
               return true;
+
             }
+
 
             const searchable =
               [
@@ -1395,18 +1803,21 @@
                 .map(normalize)
                 .join(" ");
 
+
             return searchable.includes(
               search
             );
+
           }
         );
 
+
       renderMarkers();
 
-      fitVisibleProperties();
 
       if (
-        filteredProperties.length === 0
+        filteredProperties.length ===
+        0
       ) {
 
         showStatus(
@@ -1417,41 +1828,58 @@
       } else {
 
         hideStatus();
+
       }
+
+
+      fitVisibleProperties();
+
     }
 
+
     /* =====================================================
-       FILTROS
+       BOTONES DE FILTRO
        ===================================================== */
 
     document
       .querySelectorAll(".filter")
-      .forEach(button => {
+      .forEach(
+        button => {
 
-        button.addEventListener(
-          "click",
-          () => {
+          button.addEventListener(
+            "click",
+            () => {
 
-            document
-              .querySelectorAll(".filter")
-              .forEach(item =>
-                item.classList.remove(
-                  "active"
+              document
+                .querySelectorAll(
+                  ".filter"
                 )
+                .forEach(
+                  item =>
+                    item.classList.remove(
+                      "active"
+                    )
+                );
+
+
+              button.classList.add(
+                "active"
               );
 
-            button.classList.add(
-              "active"
-            );
 
-            activeType =
-              button.dataset.type ||
-              "all";
+              activeType =
+                button.dataset.type ||
+                "all";
 
-            applyFilters();
-          }
-        );
-      });
+
+              applyFilters();
+
+            }
+          );
+
+        }
+      );
+
 
     /* =====================================================
        BUSCADOR
@@ -1468,9 +1896,12 @@
           )
         );
 
+
         applyFilters();
+
       }
     );
+
 
     clearSearch.addEventListener(
       "click",
@@ -1485,11 +1916,270 @@
         applyFilters();
 
         searchInput.focus();
+
       }
     );
 
+
     /* =====================================================
-       AJUSTAR MAPA
+       CAMBIO DE VISTA
+       ===================================================== */
+
+    function updateStyleButtons() {
+
+      streetsButton.classList.toggle(
+        "active",
+        currentStyle === "streets"
+      );
+
+      hybridButton.classList.toggle(
+        "active",
+        currentStyle === "hybrid"
+      );
+
+      satelliteButton.classList.toggle(
+        "active",
+        currentStyle === "satellite"
+      );
+
+      terrainButton.classList.toggle(
+        "active",
+        terrainEnabled
+      );
+
+    }
+
+
+    function changeStyle(
+      style
+    ) {
+
+      currentStyle =
+        style;
+
+
+      if (
+        style === "streets"
+      ) {
+
+        map.setStyle(
+          maptilersdk.MapStyle.STREETS
+        );
+
+      }
+
+
+      if (
+        style === "hybrid"
+      ) {
+
+        map.setStyle(
+          maptilersdk.MapStyle.HYBRID
+        );
+
+      }
+
+
+      if (
+        style === "satellite"
+      ) {
+
+        map.setStyle(
+          maptilersdk.MapStyle.SATELLITE
+        );
+
+      }
+
+
+      updateStyleButtons();
+
+    }
+
+
+    streetsButton.addEventListener(
+      "click",
+      () => {
+
+        changeStyle(
+          "streets"
+        );
+
+      }
+    );
+
+
+    hybridButton.addEventListener(
+      "click",
+      () => {
+
+        changeStyle(
+          "hybrid"
+        );
+
+      }
+    );
+
+
+    satelliteButton.addEventListener(
+      "click",
+      () => {
+
+        changeStyle(
+          "satellite"
+        );
+
+      }
+    );
+
+
+    /* =====================================================
+       TERRENO 3D
+       ===================================================== */
+
+    function setupTerrain() {
+
+      if (
+        !map.getSource(
+          "nexo-terrain"
+        )
+      ) {
+
+        map.addSource(
+          "nexo-terrain",
+          {
+            type: "raster-dem",
+
+            url:
+              `https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=${MAPTILER_KEY}`,
+
+            tileSize: 512,
+
+            maxzoom: 14
+          }
+        );
+
+      }
+
+
+      map.setTerrain({
+        source:
+          "nexo-terrain",
+
+        exaggeration: 1.15
+      });
+
+    }
+
+
+    function removeTerrain() {
+
+      try {
+
+        map.setTerrain(
+          null
+        );
+
+      } catch (
+        error
+      ) {
+
+        console.warn(
+          "NEXO: no se pudo quitar el terreno",
+          error
+        );
+
+      }
+
+    }
+
+
+    function toggleTerrain() {
+
+      terrainEnabled =
+        !terrainEnabled;
+
+
+      if (
+        terrainEnabled
+      ) {
+
+        /*
+         * El terreno se configura
+         * después de cargar el estilo.
+         */
+
+        if (
+          map.isStyleLoaded()
+        ) {
+
+          setupTerrain();
+
+        }
+
+
+        map.easeTo({
+          pitch: 55,
+          bearing: -15,
+          duration: 900
+        });
+
+      } else {
+
+        removeTerrain();
+
+
+        map.easeTo({
+          pitch: 0,
+          bearing: 0,
+          duration: 900
+        });
+
+      }
+
+
+      updateStyleButtons();
+
+    }
+
+
+    terrainButton.addEventListener(
+      "click",
+      () => {
+
+        toggleTerrain();
+
+      }
+    );
+
+
+    /* =====================================================
+       CUANDO CAMBIA EL ESTILO
+       ===================================================== */
+
+    map.on(
+      "style.load",
+      () => {
+
+        if (
+          terrainEnabled
+        ) {
+
+          setupTerrain();
+
+          map.easeTo({
+            pitch: 55,
+            bearing: -15,
+            duration: 700
+          });
+
+        }
+
+      }
+    );
+
+
+    /* =====================================================
+       BOTÓN AJUSTAR
        ===================================================== */
 
     fitButton.addEventListener(
@@ -1497,11 +2187,13 @@
       () => {
 
         fitVisibleProperties();
+
       }
     );
 
+
     /* =====================================================
-       UBICACIÓN DEL USUARIO
+       MI UBICACIÓN
        ===================================================== */
 
     locationButton.addEventListener(
@@ -1517,12 +2209,16 @@
           );
 
           return;
+
         }
+
 
         locationButton.disabled =
           true;
 
+
         navigator.geolocation.getCurrentPosition(
+
           position => {
 
             const latitude =
@@ -1531,35 +2227,82 @@
             const longitude =
               position.coords.longitude;
 
-            L.circleMarker(
-              [
-                latitude,
-                longitude
-              ],
-              {
-                radius: 8,
-                weight: 3
-              }
-            )
-              .addTo(map)
-              .bindPopup(
-                "Tu ubicación"
-              )
-              .openPopup();
 
-            map.setView(
-              [
-                latitude,
-                longitude
+            if (
+              userMarker
+            ) {
+
+              userMarker.remove();
+
+            }
+
+
+            const element =
+              document.createElement(
+                "div"
+              );
+
+
+            element.style.width =
+              "18px";
+
+            element.style.height =
+              "18px";
+
+            element.style.borderRadius =
+              "50%";
+
+            element.style.background =
+              "#111";
+
+            element.style.border =
+              "4px solid white";
+
+            element.style.boxShadow =
+              "0 3px 15px rgba(0,0,0,.35)";
+
+
+            userMarker =
+              new maptilersdk.Marker({
+                element
+              })
+                .setLngLat([
+                  longitude,
+                  latitude
+                ])
+                .setPopup(
+                  new maptilersdk.Popup({
+                    offset: 12
+                  })
+                    .setText(
+                      "Tu ubicación"
+                    )
+                )
+                .addTo(map);
+
+
+            map.flyTo({
+
+              center: [
+                longitude,
+                latitude
               ],
-              15,
-              {
-                animate: true
-              }
-            );
+
+              zoom: 15,
+
+              pitch:
+                terrainEnabled
+                  ? 50
+                  : 0,
+
+              duration: 1000
+
+            });
+
 
             locationButton.disabled =
               false;
+
           },
 
           error => {
@@ -1569,22 +2312,31 @@
               error
             );
 
+
             alert(
               "No se pudo obtener tu ubicación."
             );
 
+
             locationButton.disabled =
               false;
+
           },
 
           {
             enableHighAccuracy: true,
+
             timeout: 10000,
+
             maximumAge: 60000
+
           }
+
         );
+
       }
     );
+
 
     /* =====================================================
        CARGAR PROPIEDADES
@@ -1596,6 +2348,7 @@
         "Cargando propiedades",
         "Conectando con NEXO..."
       );
+
 
       try {
 
@@ -1615,10 +2368,13 @@
             }
           );
 
+
         const text =
           await response.text();
 
+
         let data;
+
 
         try {
 
@@ -1630,7 +2386,9 @@
           throw new Error(
             "La respuesta del servidor no es JSON."
           );
+
         }
+
 
         if (
           !response.ok ||
@@ -1641,7 +2399,9 @@
             data.error ||
             `HTTP ${response.status}`
           );
+
         }
+
 
         allProperties =
           Array.isArray(
@@ -1650,9 +2410,6 @@
             ? data.properties
             : [];
 
-        /*
-         * Solo propiedades disponibles.
-         */
 
         allProperties =
           allProperties.filter(
@@ -1662,51 +2419,70 @@
                 "available"
           );
 
+
         filteredProperties =
           [...allProperties];
 
+
         renderMarkers();
 
+
         hideStatus();
+
 
         const located =
           allProperties.filter(
             property => {
 
               const lat =
-                Number(property.latitude);
+                Number(
+                  property.latitude
+                );
 
               const lng =
-                Number(property.longitude);
+                Number(
+                  property.longitude
+                );
+
 
               return (
                 Number.isFinite(lat) &&
                 Number.isFinite(lng)
               );
+
             }
           );
 
-        if (located.length) {
+
+        if (
+          located.length
+        ) {
 
           fitVisibleProperties();
 
         } else {
 
-          map.setView(
-            [
-              23.1136,
-              -82.3666
+          map.flyTo({
+            center: [
+              -82.3666,
+              23.1136
             ],
-            11
-          );
+            zoom: 11,
+            duration: 700
+          });
+
         }
 
-      } catch (error) {
+
+      } catch (
+        error
+      ) {
 
         console.error(
           "NEXO MAP:",
           error
         );
+
 
         showStatus(
           "No se pudieron cargar las propiedades",
@@ -1714,39 +2490,131 @@
           "Comprueba la conexión con NEXO."
         );
 
+
         counter.textContent =
           "Error";
+
       }
+
     }
+
+
+    /* =====================================================
+       CLICK EN "VER PROPIEDAD"
+       ===================================================== */
+
+    document.addEventListener(
+      "click",
+      event => {
+
+        const button =
+          event.target.closest(
+            ".view-property"
+          );
+
+
+        if (
+          !button
+        ) {
+
+          return;
+
+        }
+
+
+        const id =
+          Number(
+            button.dataset.propertyId
+          );
+
+
+        const property =
+          allProperties.find(
+            item =>
+              Number(item.id) ===
+              id
+          );
+
+
+        if (
+          !property
+        ) {
+
+          return;
+
+        }
+
+
+        const lat =
+          Number(
+            property.latitude
+          );
+
+        const lng =
+          Number(
+            property.longitude
+          );
+
+
+        if (
+          !Number.isFinite(lat) ||
+          !Number.isFinite(lng)
+        ) {
+
+          return;
+
+        }
+
+
+        map.flyTo({
+
+          center: [
+            lng,
+            lat
+          ],
+
+          zoom: 17,
+
+          pitch:
+            terrainEnabled
+              ? 55
+              : 0,
+
+          duration: 900
+
+        });
+
+      }
+    );
+
 
     /* =====================================================
        INICIO
        ===================================================== */
 
-    loadProperties();
-
-    /*
-     * Leaflet necesita recalcular
-     * el tamaño del mapa.
-     */
-
-    setTimeout(
+    map.once(
+      "load",
       () => {
 
-        map.invalidateSize();
+        loadProperties();
 
-      },
-      300
+      }
     );
+
+
+    /* =====================================================
+       RESPONSIVE
+       ===================================================== */
 
     window.addEventListener(
       "resize",
       () => {
 
-        map.invalidateSize();
+        map.resize();
 
       }
     );
+
 
   </script>
 
