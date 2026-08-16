@@ -10,12 +10,13 @@
 
   <meta
     name="description"
-    content="NEXO Inmueble — Encuentra propiedades en venta y alquiler."
+    content="NEXO Inmueble — Propiedades seleccionadas para encontrar tu próximo lugar."
   >
 
-  <title>NEXO Inmueble</title>
+  <title>NEXO — Inmueble</title>
 
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -23,13 +24,12 @@
     }
 
     :root {
-      --black: #111111;
-      --dark: #1b1b1b;
-      --gray: #6f6f6f;
-      --light-gray: #f5f5f3;
-      --border: #e8e8e5;
+      --black: #101010;
       --white: #ffffff;
-      --green: #176b35;
+      --cream: #f7f7f4;
+      --gray: #777;
+      --light: #ededeb;
+      --border: #e4e4e0;
     }
 
     html {
@@ -43,8 +43,9 @@
         "Segoe UI",
         sans-serif;
 
-      background: #fafaf8;
+      background: var(--cream);
       color: var(--black);
+
       min-height: 100vh;
     }
 
@@ -58,145 +59,274 @@
       cursor: pointer;
     }
 
-    /* ==========================================
+    /* ==================================================
        HEADER
-    ========================================== */
+    ================================================== */
 
     header {
-      position: sticky;
+      position: absolute;
+
       top: 0;
+      left: 0;
+      right: 0;
+
       z-index: 50;
 
-      background: rgba(250,250,248,.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-
-      border-bottom: 1px solid rgba(0,0,0,.06);
+      color: white;
     }
 
     .header-inner {
-      width: 100%;
-      max-width: 1180px;
-      margin: 0 auto;
+      max-width: 1240px;
 
-      min-height: 72px;
+      margin: auto;
 
-      padding: 0 20px;
+      padding:
+        22px 22px;
 
       display: flex;
+
       align-items: center;
       justify-content: space-between;
-
-      gap: 20px;
     }
 
     .logo {
-      color: var(--black);
+      color: white;
+
       text-decoration: none;
 
       font-size: 27px;
+
       font-weight: 900;
-      letter-spacing: 4px;
+
+      letter-spacing: 5px;
     }
 
     .admin-link {
-      color: var(--black);
+      color: white;
+
       text-decoration: none;
 
-      border: 1px solid var(--border);
-      background: var(--white);
+      border:
+        1px solid
+        rgba(255,255,255,.45);
 
-      padding: 9px 13px;
-      border-radius: 10px;
+      background:
+        rgba(0,0,0,.18);
 
-      font-size: 12px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+
+      padding:
+        9px 14px;
+
+      border-radius: 999px;
+
+      font-size: 11px;
+
       font-weight: 700;
     }
 
-    /* ==========================================
+    /* ==================================================
        HERO
-    ========================================== */
+    ================================================== */
 
     .hero {
-      width: 100%;
-      max-width: 1180px;
+      position: relative;
 
-      margin: 0 auto;
+      min-height: 720px;
 
-      padding:
-        70px 20px
-        45px;
+      display: flex;
+
+      align-items: flex-end;
+
+      overflow: hidden;
+
+      background: #222;
     }
 
-    .eyebrow {
-      color: var(--gray);
+    .hero-background {
+      position: absolute;
 
-      font-size: 12px;
+      inset: 0;
+
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(0,0,0,.20),
+          rgba(0,0,0,.30) 45%,
+          rgba(0,0,0,.82)
+        );
+
+      z-index: 2;
+    }
+
+    .hero-image {
+      position: absolute;
+
+      inset: 0;
+
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+
+      z-index: 1;
+
+      transform: scale(1.01);
+    }
+
+    .hero-placeholder {
+      position: absolute;
+
+      inset: 0;
+
+      z-index: 1;
+
+      background:
+        linear-gradient(
+          135deg,
+          #242424,
+          #575757
+        );
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      color:
+        rgba(255,255,255,.15);
+
+      font-size: 100px;
+
+      font-weight: 900;
+
+      letter-spacing: 8px;
+    }
+
+    .hero-content {
+      position: relative;
+
+      z-index: 5;
+
+      width: 100%;
+
+      max-width: 1240px;
+
+      margin: auto;
+
+      padding:
+        0 22px
+        90px;
+    }
+
+    .hero-label {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      color:
+        rgba(255,255,255,.9);
+
+      font-size: 11px;
+
       font-weight: 800;
 
-      text-transform: uppercase;
       letter-spacing: 2px;
 
-      margin-bottom: 15px;
+      text-transform: uppercase;
+
+      margin-bottom: 18px;
+    }
+
+    .hero-label::before {
+      content: "";
+
+      width: 7px;
+      height: 7px;
+
+      background: white;
+
+      border-radius: 50%;
     }
 
     .hero h1 {
-      max-width: 760px;
+      color: white;
 
-      font-size: clamp(38px, 7vw, 70px);
-      line-height: .98;
+      max-width: 850px;
 
-      letter-spacing: -2.5px;
+      font-size:
+        clamp(48px, 8vw, 92px);
+
+      line-height: .94;
+
+      letter-spacing: -4px;
+
       font-weight: 800;
     }
 
     .hero h1 span {
-      color: #777;
+      color:
+        rgba(255,255,255,.60);
     }
 
-    .hero-text {
-      max-width: 580px;
+    .hero-description {
+      color:
+        rgba(255,255,255,.78);
 
-      color: var(--gray);
+      max-width: 560px;
 
-      font-size: 16px;
+      margin-top: 23px;
+
+      font-size: 15px;
+
       line-height: 1.6;
-
-      margin-top: 22px;
     }
 
-    /* ==========================================
+    /* ==================================================
        SEARCH
-    ========================================== */
+    ================================================== */
+
+    .search-wrapper {
+      position: relative;
+
+      z-index: 10;
+
+      max-width: 1080px;
+
+      margin:
+        -38px auto
+        0;
+
+      padding:
+        0 22px;
+    }
 
     .search-box {
-      width: 100%;
-      max-width: 1180px;
+      background: white;
 
-      margin: 0 auto;
+      border:
+        1px solid
+        rgba(0,0,0,.08);
 
-      padding: 0 20px 45px;
-    }
-
-    .search-panel {
-      background: var(--white);
-
-      border: 1px solid var(--border);
-      border-radius: 18px;
+      border-radius: 20px;
 
       padding: 10px;
 
       box-shadow:
-        0 12px 40px rgba(0,0,0,.06);
+        0 20px 60px
+        rgba(0,0,0,.12);
 
       display: grid;
 
       grid-template-columns:
         1fr
         190px
-        auto;
+        125px;
 
-      gap: 10px;
+      gap: 9px;
     }
 
     .search-input,
@@ -204,107 +334,133 @@
       width: 100%;
 
       border: 0;
+
       outline: none;
 
-      background: #f5f5f3;
+      background: #f4f4f1;
 
-      border-radius: 11px;
+      border-radius: 12px;
 
-      padding: 14px;
+      padding:
+        15px;
 
-      font-size: 15px;
       color: var(--black);
+
+      font-size: 14px;
     }
 
     .search-button {
       border: 0;
 
+      border-radius: 12px;
+
       background: var(--black);
-      color: var(--white);
 
-      border-radius: 11px;
+      color: white;
 
-      padding: 0 22px;
+      font-size: 13px;
 
-      font-size: 14px;
       font-weight: 800;
     }
 
-    /* ==========================================
+    /* ==================================================
        MAIN
-    ========================================== */
+    ================================================== */
 
     main {
-      width: 100%;
-      max-width: 1180px;
+      max-width: 1240px;
 
-      margin: 0 auto;
+      margin: auto;
 
       padding:
-        0 20px
-        80px;
+        100px 22px
+        90px;
     }
 
-    .section-heading {
+    .section-header {
       display: flex;
 
-      justify-content: space-between;
       align-items: flex-end;
+
+      justify-content: space-between;
 
       gap: 20px;
 
-      margin-bottom: 22px;
+      margin-bottom: 30px;
     }
 
-    .section-heading h2 {
-      font-size: 26px;
-      letter-spacing: -.7px;
+    .section-kicker {
+      color: var(--gray);
+
+      font-size: 10px;
+
+      font-weight: 800;
+
+      letter-spacing: 2px;
+
+      text-transform: uppercase;
+
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: 34px;
+
+      letter-spacing: -1.5px;
+
+      line-height: 1;
     }
 
     .results-count {
       color: var(--gray);
-      font-size: 13px;
+
+      font-size: 12px;
     }
 
-    /* ==========================================
-       PROPERTIES GRID
-    ========================================== */
+    /* ==================================================
+       PROPERTY GRID
+    ================================================== */
 
     .properties-grid {
       display: grid;
 
       grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+        repeat(3, 1fr);
 
-      gap: 22px;
+      gap: 20px;
     }
 
-    /* ==========================================
+    /* ==================================================
        PROPERTY CARD
-    ========================================== */
+    ================================================== */
 
     .property-card {
-      background: var(--white);
+      background: white;
 
-      border: 1px solid var(--border);
+      border:
+        1px solid
+        var(--border);
 
       border-radius: 18px;
 
       overflow: hidden;
 
       transition:
-        transform .2s ease,
-        box-shadow .2s ease;
+        transform .25s ease,
+        box-shadow .25s ease;
 
       display: flex;
+
       flex-direction: column;
     }
 
     .property-card:hover {
-      transform: translateY(-3px);
+      transform:
+        translateY(-5px);
 
       box-shadow:
-        0 18px 45px rgba(0,0,0,.08);
+        0 25px 60px
+        rgba(0,0,0,.09);
     }
 
     .property-image {
@@ -314,7 +470,7 @@
 
       aspect-ratio: 4 / 3;
 
-      background: #e9e9e6;
+      background: #dededb;
 
       overflow: hidden;
     }
@@ -328,72 +484,109 @@
       display: block;
 
       transition:
-        transform .35s ease;
+        transform .45s ease;
     }
 
     .property-card:hover
     .property-image img {
-      transform: scale(1.035);
+      transform: scale(1.045);
     }
 
-    .no-image {
+    .image-placeholder {
       width: 100%;
       height: 100%;
 
       display: flex;
+
       align-items: center;
       justify-content: center;
 
+      background:
+        linear-gradient(
+          135deg,
+          #ddd,
+          #f1f1ee
+        );
+
       color: #999;
 
-      font-size: 13px;
+      font-size: 12px;
     }
 
-    .status-badge {
+    .available {
       position: absolute;
 
-      top: 12px;
-      left: 12px;
+      top: 13px;
+      left: 13px;
 
-      background: rgba(255,255,255,.94);
+      background:
+        rgba(255,255,255,.94);
+
+      color: #111;
+
+      padding:
+        7px 10px;
 
       border-radius: 999px;
 
-      padding: 6px 9px;
+      font-size: 9px;
 
-      font-size: 10px;
       font-weight: 800;
 
       text-transform: uppercase;
-      letter-spacing: .6px;
+
+      letter-spacing: .7px;
     }
 
-    .property-content {
-      padding: 17px;
+    .photo-count {
+      position: absolute;
 
-      display: flex;
-      flex-direction: column;
+      right: 13px;
+      bottom: 13px;
+
+      background:
+        rgba(0,0,0,.62);
+
+      color: white;
+
+      padding:
+        6px 9px;
+
+      border-radius: 999px;
+
+      font-size: 10px;
+    }
+
+    .property-body {
+      padding: 18px;
 
       flex: 1;
+
+      display: flex;
+
+      flex-direction: column;
     }
 
     .property-type {
       color: var(--gray);
 
-      font-size: 11px;
+      font-size: 10px;
+
       font-weight: 800;
+
+      letter-spacing: 1.4px;
 
       text-transform: uppercase;
-      letter-spacing: 1px;
 
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
-    .property-title {
-      font-size: 20px;
+    .property-name {
+      font-size: 21px;
+
       font-weight: 800;
 
-      letter-spacing: -.4px;
+      letter-spacing: -.5px;
 
       margin-bottom: 5px;
     }
@@ -403,36 +596,41 @@
 
       font-size: 13px;
 
-      margin-bottom: 15px;
+      margin-bottom: 16px;
     }
 
     .property-price {
-      font-size: 22px;
+      font-size: 24px;
+
       font-weight: 850;
 
-      margin-bottom: 13px;
+      letter-spacing: -.8px;
+
+      margin-bottom: 14px;
     }
 
-    .property-details {
+    .property-info {
       display: flex;
+
+      gap: 7px;
 
       flex-wrap: wrap;
 
-      gap: 6px;
-
-      margin-bottom: 17px;
+      margin-bottom: 18px;
     }
 
-    .detail {
-      color: #555;
+    .info-pill {
+      background: #f3f3f0;
 
-      background: #f5f5f3;
+      color: #555;
 
       border-radius: 7px;
 
-      padding: 6px 8px;
+      padding:
+        7px 9px;
 
-      font-size: 11px;
+      font-size: 10px;
+
       font-weight: 600;
     }
 
@@ -443,20 +641,85 @@
 
       border: 0;
 
-      background: var(--black);
-      color: var(--white);
-
       border-radius: 11px;
 
-      padding: 13px;
+      background: var(--black);
 
-      font-size: 13px;
+      color: white;
+
+      padding:
+        14px;
+
+      font-size: 12px;
+
       font-weight: 800;
     }
 
-    /* ==========================================
-       EMPTY / LOADING
-    ========================================== */
+    /* ==================================================
+       FEATURE STRIP
+    ================================================== */
+
+    .feature-strip {
+      margin-top: 80px;
+
+      padding:
+        45px;
+
+      background:
+        #111;
+
+      color: white;
+
+      border-radius: 24px;
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 35px;
+    }
+
+    .feature {
+      border-right:
+        1px solid
+        rgba(255,255,255,.15);
+
+      padding-right: 30px;
+    }
+
+    .feature:last-child {
+      border-right: 0;
+      padding-right: 0;
+    }
+
+    .feature-number {
+      font-size: 12px;
+
+      color:
+        rgba(255,255,255,.45);
+
+      margin-bottom: 18px;
+    }
+
+    .feature h3 {
+      font-size: 18px;
+
+      margin-bottom: 8px;
+    }
+
+    .feature p {
+      color:
+        rgba(255,255,255,.58);
+
+      font-size: 12px;
+
+      line-height: 1.6;
+    }
+
+    /* ==================================================
+       EMPTY / ERROR
+    ================================================== */
 
     .loading,
     .empty,
@@ -465,7 +728,7 @@
 
       text-align: center;
 
-      padding: 55px 20px;
+      padding: 70px 20px;
 
       color: var(--gray);
 
@@ -476,9 +739,9 @@
       color: #9b1c1c;
     }
 
-    /* ==========================================
-       PROPERTY MODAL
-    ========================================== */
+    /* ==================================================
+       MODAL
+    ================================================== */
 
     .modal {
       position: fixed;
@@ -488,7 +751,7 @@
       z-index: 100;
 
       background:
-        rgba(0,0,0,.62);
+        rgba(0,0,0,.70);
 
       display: none;
 
@@ -503,14 +766,17 @@
     }
 
     .modal-box {
+      position: relative;
+
       width: 100%;
+
       max-width: 920px;
 
       max-height: 94vh;
 
       overflow-y: auto;
 
-      background: var(--white);
+      background: white;
 
       border-radius: 22px;
 
@@ -520,24 +786,24 @@
     .modal-close {
       position: absolute;
 
-      top: 18px;
-      right: 18px;
+      top: 14px;
+      right: 14px;
 
-      width: 38px;
-      height: 38px;
+      z-index: 10;
+
+      width: 40px;
+      height: 40px;
 
       border: 0;
 
       border-radius: 50%;
 
       background:
-        rgba(255,255,255,.92);
+        rgba(255,255,255,.94);
 
-      color: var(--black);
+      font-size: 23px;
 
-      font-size: 22px;
-
-      z-index: 10;
+      line-height: 1;
     }
 
     .modal-image {
@@ -545,7 +811,7 @@
 
       aspect-ratio: 16 / 9;
 
-      background: #e9e9e6;
+      background: #ddd;
 
       overflow: hidden;
     }
@@ -560,28 +826,31 @@
     }
 
     .modal-body {
-      padding: 25px;
+      padding: 28px;
     }
 
     .modal-type {
       color: var(--gray);
 
-      font-size: 11px;
+      font-size: 10px;
+
       font-weight: 800;
 
       text-transform: uppercase;
-      letter-spacing: 1.2px;
 
-      margin-bottom: 7px;
+      letter-spacing: 1.5px;
+
+      margin-bottom: 8px;
     }
 
     .modal-title {
-      font-size: 30px;
-      line-height: 1.05;
+      font-size: 34px;
 
-      letter-spacing: -1px;
+      line-height: 1;
 
-      margin-bottom: 7px;
+      letter-spacing: -1.5px;
+
+      margin-bottom: 8px;
     }
 
     .modal-location {
@@ -589,14 +858,15 @@
 
       font-size: 14px;
 
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
 
     .modal-price {
-      font-size: 28px;
+      font-size: 29px;
+
       font-weight: 850;
 
-      margin-bottom: 20px;
+      margin-bottom: 22px;
     }
 
     .modal-details {
@@ -605,18 +875,25 @@
       grid-template-columns:
         repeat(3, 1fr);
 
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
+      border-top:
+        1px solid
+        var(--border);
 
-      margin-bottom: 20px;
+      border-bottom:
+        1px solid
+        var(--border);
+
+      margin-bottom: 22px;
     }
 
     .modal-detail {
-      padding: 15px 10px;
-
       text-align: center;
 
-      border-right: 1px solid var(--border);
+      padding: 16px 8px;
+
+      border-right:
+        1px solid
+        var(--border);
     }
 
     .modal-detail:last-child {
@@ -626,7 +903,7 @@
     .modal-detail strong {
       display: block;
 
-      font-size: 17px;
+      font-size: 18px;
 
       margin-bottom: 3px;
     }
@@ -634,58 +911,62 @@
     .modal-detail span {
       color: var(--gray);
 
-      font-size: 11px;
+      font-size: 10px;
     }
 
     .modal-description {
-      color: #4e4e4e;
+      color: #555;
 
       font-size: 14px;
-      line-height: 1.65;
+
+      line-height: 1.7;
 
       white-space: pre-line;
 
-      margin-bottom: 22px;
+      margin-bottom: 25px;
     }
 
     .contact-button {
       width: 100%;
 
+      display: block;
+
+      text-align: center;
+
+      text-decoration: none;
+
       border: 0;
 
       background: var(--black);
-      color: var(--white);
+
+      color: white;
 
       border-radius: 12px;
 
       padding: 15px;
 
-      font-size: 14px;
+      font-size: 13px;
+
       font-weight: 800;
-
-      text-decoration: none;
-
-      display: block;
-
-      text-align: center;
     }
 
-    /* ==========================================
+    /* ==================================================
        FOOTER
-    ========================================== */
+    ================================================== */
 
     footer {
-      border-top: 1px solid var(--border);
+      background: #111;
 
-      background: var(--white);
+      color: white;
     }
 
     .footer-inner {
-      max-width: 1180px;
+      max-width: 1240px;
 
-      margin: 0 auto;
+      margin: auto;
 
-      padding: 30px 20px;
+      padding:
+        38px 22px;
 
       display: flex;
 
@@ -693,34 +974,56 @@
 
       gap: 20px;
 
-      color: var(--gray);
+      color:
+        rgba(255,255,255,.45);
 
-      font-size: 12px;
+      font-size: 11px;
     }
 
     .footer-logo {
-      color: var(--black);
+      color: white;
 
       font-weight: 900;
 
-      letter-spacing: 2px;
+      letter-spacing: 3px;
     }
 
-    /* ==========================================
-       MOBILE
-    ========================================== */
+    /* ==================================================
+       TABLET
+    ================================================== */
 
-    @media (max-width: 800px) {
+    @media (max-width: 850px) {
 
       .properties-grid {
         grid-template-columns:
-          repeat(2, minmax(0, 1fr));
-
-        gap: 15px;
+          repeat(2, 1fr);
       }
 
-      .search-panel {
-        grid-template-columns: 1fr;
+      .feature-strip {
+        grid-template-columns:
+          1fr;
+      }
+
+      .feature {
+        border-right: 0;
+
+        border-bottom:
+          1px solid
+          rgba(255,255,255,.15);
+
+        padding:
+          0 0 25px;
+      }
+
+      .feature:last-child {
+        border-bottom: 0;
+
+        padding-bottom: 0;
+      }
+
+      .search-box {
+        grid-template-columns:
+          1fr;
       }
 
       .search-button {
@@ -729,55 +1032,98 @@
 
     }
 
+    /* ==================================================
+       MOBILE
+    ================================================== */
 
     @media (max-width: 560px) {
 
+      header {
+        position: absolute;
+      }
+
       .header-inner {
-        min-height: 65px;
+        padding:
+          17px 16px;
       }
 
       .logo {
         font-size: 23px;
+
+        letter-spacing: 4px;
+      }
+
+      .admin-link {
+        padding:
+          8px 11px;
+
+        font-size: 9px;
       }
 
       .hero {
+        min-height: 680px;
+      }
+
+      .hero-content {
         padding:
-          48px 16px
-          30px;
+          0 17px
+          80px;
       }
 
       .hero h1 {
-        letter-spacing: -1.8px;
+        font-size:
+          clamp(45px, 13vw, 65px);
+
+        letter-spacing:
+          -2.8px;
       }
 
-      .hero-text {
-        font-size: 14px;
+      .hero-description {
+        font-size: 13px;
+
+        max-width: 370px;
+      }
+
+      .search-wrapper {
+        margin:
+          -35px auto
+          0;
+
+        padding:
+          0 16px;
       }
 
       .search-box {
-        padding:
-          0 16px
-          30px;
+        padding: 9px;
       }
 
       main {
         padding:
-          0 16px
-          60px;
+          90px 16px
+          65px;
+      }
+
+      .section-title {
+        font-size: 29px;
       }
 
       .properties-grid {
         grid-template-columns: 1fr;
+
+        gap: 17px;
       }
 
       .property-image {
         aspect-ratio: 4 / 3;
       }
 
-      .section-heading {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 5px;
+      .feature-strip {
+        margin-top: 55px;
+
+        padding:
+          28px 24px;
+
+        border-radius: 19px;
       }
 
       .modal {
@@ -785,9 +1131,9 @@
       }
 
       .modal-box {
-        max-height: 100vh;
-
         height: 100vh;
+
+        max-height: 100vh;
 
         border-radius: 0;
       }
@@ -797,11 +1143,11 @@
       }
 
       .modal-body {
-        padding: 20px;
+        padding: 22px;
       }
 
       .modal-title {
-        font-size: 27px;
+        font-size: 29px;
       }
 
       .footer-inner {
@@ -809,15 +1155,16 @@
       }
 
     }
+
   </style>
 </head>
 
 
 <body>
 
-  <!-- ==========================================
+  <!-- ==================================================
        HEADER
-  ========================================== -->
+  ================================================== -->
 
   <header>
 
@@ -829,7 +1176,6 @@
       >
         NEXO
       </a>
-
 
       <a
         href="/admin.html"
@@ -843,45 +1189,70 @@
   </header>
 
 
-  <!-- ==========================================
+  <!-- ==================================================
        HERO
-  ========================================== -->
+  ================================================== -->
 
-  <section class="hero">
+  <section
+    id="hero"
+    class="hero"
+  >
 
-    <div class="eyebrow">
-      NEXO INMUEBLE
+    <div
+      id="heroPlaceholder"
+      class="hero-placeholder"
+    >
+      NEXO
     </div>
 
 
-    <h1>
-      Encuentra un lugar
-      <span>para lo que sigue.</span>
-    </h1>
+    <img
+      id="heroImage"
+      class="hero-image"
+      alt="Propiedad destacada de NEXO"
+      style="display:none;"
+    >
 
 
-    <p class="hero-text">
-      Explora propiedades seleccionadas por NEXO.
-      Encuentra casas, apartamentos, villas y espacios
-      disponibles en diferentes ubicaciones.
-    </p>
+    <div class="hero-background"></div>
+
+
+    <div class="hero-content">
+
+      <div class="hero-label">
+        NEXO INMUEBLE
+      </div>
+
+
+      <h1>
+        Encuentra
+        <span>tu próximo lugar.</span>
+      </h1>
+
+
+      <p class="hero-description">
+        Propiedades seleccionadas para quienes buscan
+        algo más que una dirección.
+      </p>
+
+    </div>
 
   </section>
 
 
-  <!-- ==========================================
+  <!-- ==================================================
        SEARCH
-  ========================================== -->
+  ================================================== -->
 
-  <section class="search-box">
+  <section class="search-wrapper">
 
-    <div class="search-panel">
+    <div class="search-box">
 
       <input
         id="searchInput"
         class="search-input"
         type="search"
-        placeholder="Buscar por ciudad, zona o tipo de propiedad..."
+        placeholder="Ciudad, zona o tipo de propiedad..."
       >
 
 
@@ -918,10 +1289,6 @@
           Oficinas
         </option>
 
-        <option value="Otro">
-          Otros
-        </option>
-
       </select>
 
 
@@ -938,18 +1305,22 @@
   </section>
 
 
-  <!-- ==========================================
+  <!-- ==================================================
        PROPERTIES
-  ========================================== -->
+  ================================================== -->
 
   <main>
 
-    <div class="section-heading">
+    <div class="section-header">
 
       <div>
 
-        <h2>
-          Propiedades disponibles
+        <div class="section-kicker">
+          Descubre
+        </div>
+
+        <h2 class="section-title">
+          Propiedades
         </h2>
 
       </div>
@@ -976,12 +1347,74 @@
 
     </div>
 
+
+    <!-- ==================================================
+         FEATURES
+    ================================================== -->
+
+    <section class="feature-strip">
+
+      <div class="feature">
+
+        <div class="feature-number">
+          01
+        </div>
+
+        <h3>
+          Selección
+        </h3>
+
+        <p>
+          Descubre propiedades publicadas
+          cuidadosamente dentro de NEXO.
+        </p>
+
+      </div>
+
+
+      <div class="feature">
+
+        <div class="feature-number">
+          02
+        </div>
+
+        <h3>
+          Información clara
+        </h3>
+
+        <p>
+          Precio, ubicación, dimensiones y
+          características principales en un solo lugar.
+        </p>
+
+      </div>
+
+
+      <div class="feature">
+
+        <div class="feature-number">
+          03
+        </div>
+
+        <h3>
+          Contacto directo
+        </h3>
+
+        <p>
+          Cuando encuentres una propiedad que
+          te interese, conecta con NEXO.
+        </p>
+
+      </div>
+
+    </section>
+
   </main>
 
 
-  <!-- ==========================================
-       PROPERTY MODAL
-  ========================================== -->
+  <!-- ==================================================
+       MODAL
+  ================================================== -->
 
   <div
     id="propertyModal"
@@ -994,7 +1427,6 @@
         id="closeModal"
         class="modal-close"
         type="button"
-        aria-label="Cerrar"
       >
         ×
       </button>
@@ -1066,9 +1498,9 @@
   </div>
 
 
-  <!-- ==========================================
+  <!-- ==================================================
        FOOTER
-  ========================================== -->
+  ================================================== -->
 
   <footer>
 
@@ -1078,11 +1510,9 @@
         NEXO
       </div>
 
-
       <div>
         NEXO Inmueble
       </div>
-
 
       <div>
         © 2026 NEXO
@@ -1093,30 +1523,35 @@
   </footer>
 
 
+  <!-- ==================================================
+       JAVASCRIPT
+  ================================================== -->
+
   <script>
 
-    /* ==========================================
+    /* ==================================================
        CONFIGURACIÓN
-    ========================================== */
+    ================================================== */
 
     const API_URL =
       "/api/properties";
 
 
     /*
-     * Cambia solamente este número cuando
-     * quieras utilizar otro teléfono de NEXO.
+     * Cuando tengamos el teléfono oficial de NEXO,
+     * se coloca aquí.
      *
-     * Por ahora dejamos un número genérico.
+     * Ejemplo:
+     *
+     * const NEXO_PHONE = "15551234567";
      */
 
-    const NEXO_PHONE =
-      "";
+    const NEXO_PHONE = "";
 
 
-    /* ==========================================
+    /* ==================================================
        ELEMENTOS
-    ========================================== */
+    ================================================== */
 
     const propertiesGrid =
       document.getElementById(
@@ -1160,12 +1595,24 @@
       );
 
 
+    const heroImage =
+      document.getElementById(
+        "heroImage"
+      );
+
+
+    const heroPlaceholder =
+      document.getElementById(
+        "heroPlaceholder"
+      );
+
+
     let properties = [];
 
 
-    /* ==========================================
+    /* ==================================================
        ESCAPE HTML
-    ========================================== */
+    ================================================== */
 
     function escapeHtml(value) {
 
@@ -1173,8 +1620,11 @@
         value === null ||
         value === undefined
       ) {
+
         return "";
+
       }
+
 
       return String(value)
         .replace(
@@ -1201,9 +1651,9 @@
     }
 
 
-    /* ==========================================
+    /* ==================================================
        FOTOS
-    ========================================== */
+    ================================================== */
 
     function parsePhotos(value) {
 
@@ -1232,10 +1682,6 @@
         }
 
       } catch (error) {
-        /*
-         * Si no es JSON,
-         * intentamos separarlo por comas.
-         */
       }
 
 
@@ -1250,48 +1696,9 @@
     }
 
 
-    /* ==========================================
-       IMAGEN SEGURA
-    ========================================== */
-
-    function createImage(
-      url,
-      alt
-    ) {
-
-      if (!url) {
-
-        return `
-          <div class="no-image">
-            Sin imagen disponible
-          </div>
-        `;
-
-      }
-
-
-      return `
-        <img
-          src="${escapeHtml(url)}"
-          alt="${escapeHtml(alt)}"
-          loading="lazy"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-        >
-
-        <div
-          class="no-image"
-          style="display:none;"
-        >
-          Imagen no disponible
-        </div>
-      `;
-
-    }
-
-
-    /* ==========================================
+    /* ==================================================
        PRECIO
-    ========================================== */
+    ================================================== */
 
     function formatPrice(price) {
 
@@ -1332,9 +1739,122 @@
     }
 
 
-    /* ==========================================
+    /* ==================================================
+       IMAGEN
+    ================================================== */
+
+    function createImage(
+      url,
+      alt
+    ) {
+
+      if (!url) {
+
+        return `
+          <div class="image-placeholder">
+            Sin imagen
+          </div>
+        `;
+
+      }
+
+
+      return `
+        <img
+          src="${escapeHtml(url)}"
+          alt="${escapeHtml(alt)}"
+          loading="lazy"
+          onerror="
+            this.style.display='none';
+            this.nextElementSibling.style.display='flex';
+          "
+        >
+
+        <div
+          class="image-placeholder"
+          style="display:none;"
+        >
+          Imagen no disponible
+        </div>
+      `;
+
+    }
+
+
+    /* ==================================================
+       HERO DINÁMICO
+    ================================================== */
+
+    function setupHero(list) {
+
+      if (!list.length) {
+        return;
+      }
+
+
+      /*
+       * Buscamos primero una propiedad
+       * que tenga fotografía.
+       */
+
+      const property =
+        list.find(
+          item =>
+            parsePhotos(
+              item.photos
+            ).length > 0
+        );
+
+
+      if (!property) {
+        return;
+      }
+
+
+      const photos =
+        parsePhotos(
+          property.photos
+        );
+
+
+      const image =
+        photos[0];
+
+
+      if (!image) {
+        return;
+      }
+
+
+      heroImage.src =
+        image;
+
+
+      heroImage.style.display =
+        "block";
+
+
+      heroPlaceholder.style.display =
+        "none";
+
+
+      heroImage.onerror =
+        function() {
+
+          heroImage.style.display =
+            "none";
+
+          heroPlaceholder.style.display =
+            "flex";
+
+        };
+
+    }
+
+
+    /* ==================================================
        CARGAR PROPIEDADES
-    ========================================== */
+    ================================================== */
 
     async function loadProperties() {
 
@@ -1378,17 +1898,17 @@
             : [];
 
 
-        /*
-         * Solo mostramos propiedades
-         * disponibles en la página pública.
-         */
-
         properties =
           properties.filter(
             property =>
               property.status ===
               "available"
           );
+
+
+        setupHero(
+          properties
+        );
 
 
         renderProperties(
@@ -1410,6 +1930,7 @@
           </div>
         `;
 
+
         resultsCount.textContent =
           "Error";
 
@@ -1418,9 +1939,9 @@
     }
 
 
-    /* ==========================================
-       RENDERIZAR
-    ========================================== */
+    /* ==================================================
+       RENDERIZAR PROPIEDADES
+    ================================================== */
 
     function renderProperties(
       list
@@ -1429,8 +1950,8 @@
       resultsCount.textContent =
         `${list.length} ${
           list.length === 1
-            ? "propiedad"
-            : "propiedades"
+            ? "propiedad disponible"
+            : "propiedades disponibles"
         }`;
 
 
@@ -1460,9 +1981,9 @@
     }
 
 
-    /* ==========================================
+    /* ==================================================
        TARJETA
-    ========================================== */
+    ================================================== */
 
     function createPropertyCard(
       property
@@ -1475,21 +1996,16 @@
 
 
       const mainPhoto =
-        photos.length
-          ? photos[0]
-          : "";
-
-
-      const locationParts = [
-        property.city,
-        property.neighborhood
-      ].filter(Boolean);
+        photos[0] || "";
 
 
       const location =
-        locationParts.join(
-          " · "
-        );
+        [
+          property.city,
+          property.neighborhood
+        ]
+          .filter(Boolean)
+          .join(" · ");
 
 
       return `
@@ -1509,17 +2025,26 @@
             )}
 
 
-            <div
-              class="status-badge"
-            >
+            <div class="available">
               Disponible
             </div>
+
+
+            ${
+              photos.length
+                ? `
+                  <div class="photo-count">
+                    📷 ${photos.length}
+                  </div>
+                `
+                : ""
+            }
 
           </div>
 
 
           <div
-            class="property-content"
+            class="property-body"
           >
 
             <div
@@ -1533,14 +2058,12 @@
 
 
             <h3
-              class="property-title"
+              class="property-name"
             >
-              ${
-                escapeHtml(
-                  property.city ||
-                  "Propiedad"
-                )
-              }
+              ${escapeHtml(
+                property.city ||
+                "Propiedad"
+              )}
             </h3>
 
 
@@ -1564,7 +2087,7 @@
 
 
             <div
-              class="property-details"
+              class="property-info"
             >
 
               ${
@@ -1572,7 +2095,7 @@
                 property.bedrooms !== undefined &&
                 property.bedrooms !== ""
                   ? `
-                    <span class="detail">
+                    <span class="info-pill">
                       🛏 ${escapeHtml(
                         property.bedrooms
                       )} habitaciones
@@ -1587,7 +2110,7 @@
                 property.bathrooms !== undefined &&
                 property.bathrooms !== ""
                   ? `
-                    <span class="detail">
+                    <span class="info-pill">
                       🚿 ${escapeHtml(
                         property.bathrooms
                       )} baños
@@ -1602,7 +2125,7 @@
                 property.square_meters !== undefined &&
                 property.square_meters !== ""
                   ? `
-                    <span class="detail">
+                    <span class="info-pill">
                       ${escapeHtml(
                         property.square_meters
                       )} m²
@@ -1633,9 +2156,9 @@
     }
 
 
-    /* ==========================================
+    /* ==================================================
        ABRIR PROPIEDAD
-    ========================================== */
+    ================================================== */
 
     async function openProperty(
       id
@@ -1678,6 +2201,7 @@
           error
         );
 
+
         alert(
           error.message ||
           "No se pudo abrir la propiedad."
@@ -1688,9 +2212,9 @@
     }
 
 
-    /* ==========================================
+    /* ==================================================
        MODAL
-    ========================================== */
+    ================================================== */
 
     function showPropertyModal(
       property
@@ -1703,21 +2227,16 @@
 
 
       const mainPhoto =
-        photos.length
-          ? photos[0]
-          : "";
-
-
-      const locationParts = [
-        property.city,
-        property.neighborhood
-      ].filter(Boolean);
+        photos[0] || "";
 
 
       const location =
-        locationParts.join(
-          " · "
-        );
+        [
+          property.city,
+          property.neighborhood
+        ]
+          .filter(Boolean)
+          .join(" · ");
 
 
       document.getElementById(
@@ -1845,11 +2364,6 @@
 
       } else {
 
-        /*
-         * Mientras no configuremos el teléfono,
-         * el botón simplemente muestra un aviso.
-         */
-
         contactButton.href =
           "#";
 
@@ -1879,9 +2393,9 @@
     }
 
 
-    /* ==========================================
+    /* ==================================================
        CERRAR MODAL
-    ========================================== */
+    ================================================== */
 
     function closePropertyModal() {
 
@@ -1936,9 +2450,9 @@
     );
 
 
-    /* ==========================================
-       BÚSQUEDA
-    ========================================== */
+    /* ==================================================
+       FILTROS
+    ================================================== */
 
     function filterProperties() {
 
@@ -1982,7 +2496,8 @@
               String(
                 property.property_type ||
                 ""
-              ).toLowerCase() ===
+              )
+                .toLowerCase() ===
               type;
 
 
@@ -2020,9 +2535,9 @@
     );
 
 
-    /* ==========================================
+    /* ==================================================
        INICIO
-    ========================================== */
+    ================================================== */
 
     loadProperties();
 
