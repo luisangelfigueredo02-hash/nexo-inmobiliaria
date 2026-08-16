@@ -1,12 +1,61 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<meta
+  name="theme-color"
+  content="#f5f5f2"
+>
+
+<meta
+  name="description"
+  id="metaDescription"
+  content="Consulta los detalles de esta propiedad en NEXO."
+>
+
+<meta
+  property="og:type"
+  content="website"
+>
+
+<meta
+  property="og:site_name"
+  content="NEXO"
+>
+
+<meta
+  property="og:title"
+  id="ogTitle"
+  content="NEXO | Propiedad"
+>
+
+<meta
+  property="og:description"
+  id="ogDescription"
+  content="Consulta los detalles de esta propiedad en NEXO."
+>
+
+<meta
+  property="og:image"
+  id="ogImage"
+  content=""
+>
 
 <title>NEXO | Propiedad</title>
 
+
 <style>
+
+/* =========================================================
+   RESET
+========================================================= */
 
 * {
   box-sizing: border-box;
@@ -14,9 +63,14 @@
   padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: #f5f5f2;
   color: #151515;
+
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -25,6 +79,13 @@ body {
     Helvetica,
     Arial,
     sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body.no-scroll {
+  overflow: hidden;
 }
 
 button,
@@ -32,16 +93,31 @@ a {
   font: inherit;
 }
 
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+img {
+  max-width: 100%;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
 header {
   position: fixed;
+
   top: 0;
   left: 0;
   right: 0;
+
   z-index: 50;
 
   height: 68px;
 
-  background: rgba(255,255,255,.9);
+  background: rgba(255,255,255,.90);
 
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -51,21 +127,29 @@ header {
 
 .header-inner {
   max-width: 1200px;
+
   height: 100%;
+
   margin: auto;
+
   padding: 0 20px;
 
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
 }
 
 .logo {
   text-decoration: none;
+
   color: #111;
 
   font-size: 24px;
+
   font-weight: 800;
+
   letter-spacing: -1px;
 }
 
@@ -85,8 +169,30 @@ header {
   color: #444;
 
   font-size: 13px;
+
   font-weight: 700;
+
+  transition:
+    background .2s ease,
+    transform .2s ease;
 }
+
+.back-link:hover {
+  background: #e4e4df;
+
+  transform: translateY(-1px);
+}
+
+.back-link:focus-visible {
+  outline: 3px solid rgba(17,17,17,.18);
+
+  outline-offset: 3px;
+}
+
+
+/* =========================================================
+   MAIN
+========================================================= */
 
 main {
   max-width: 1200px;
@@ -97,15 +203,52 @@ main {
     105px 20px 80px;
 }
 
+
+/* =========================================================
+   LOADING
+========================================================= */
+
 .loading {
   min-height: 60vh;
 
   display: flex;
+
+  flex-direction: column;
+
   align-items: center;
   justify-content: center;
 
+  gap: 14px;
+
   color: #777;
+
+  font-size: 14px;
 }
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+
+  border: 3px solid #deded9;
+
+  border-top-color: #111;
+
+  border-radius: 50%;
+
+  animation:
+    spin .8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   PROPERTY
+========================================================= */
 
 .property {
   display: none;
@@ -116,9 +259,9 @@ main {
 }
 
 
-/* =========================
+/* =========================================================
    GALERÍA
-========================= */
+========================================================= */
 
 .gallery-wrapper {
   position: relative;
@@ -128,7 +271,8 @@ main {
   position: relative;
 
   width: 100%;
-  height: 56vh;
+
+  aspect-ratio: 16 / 9;
 
   min-height: 350px;
   max-height: 650px;
@@ -138,6 +282,8 @@ main {
   border-radius: 28px;
 
   background: #202020;
+
+  touch-action: pan-y;
 }
 
 .gallery-image {
@@ -149,6 +295,22 @@ main {
   display: block;
 
   cursor: zoom-in;
+
+  user-select: none;
+
+  -webkit-user-drag: none;
+
+  animation: imageFade .25s ease;
+}
+
+@keyframes imageFade {
+  from {
+    opacity: .35;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .gallery-placeholder {
@@ -156,6 +318,7 @@ main {
   height: 100%;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -169,10 +332,34 @@ main {
   color: white;
 
   font-size: 52px;
+
   font-weight: 800;
 
   letter-spacing: -4px;
 }
+
+.gallery-placeholder.error {
+  flex-direction: column;
+
+  gap: 8px;
+
+  font-size: 15px;
+
+  letter-spacing: 0;
+
+  color: #aaa;
+}
+
+.gallery-placeholder.error strong {
+  color: white;
+
+  font-size: 18px;
+}
+
+
+/* =========================================================
+   TYPE BADGE
+========================================================= */
 
 .type-badge {
   position: absolute;
@@ -182,19 +369,35 @@ main {
 
   z-index: 5;
 
+  max-width: calc(100% - 40px);
+
   padding: 8px 13px;
 
   border-radius: 999px;
 
   background: rgba(255,255,255,.94);
 
+  color: #111;
+
   font-size: 11px;
+
   font-weight: 800;
 
   text-transform: uppercase;
 
   letter-spacing: .7px;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
 }
+
+
+/* =========================================================
+   GALERÍA BUTTONS
+========================================================= */
 
 .gallery-button {
   position: absolute;
@@ -205,8 +408,8 @@ main {
 
   z-index: 10;
 
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
 
   border: 0;
 
@@ -218,16 +421,30 @@ main {
 
   cursor: pointer;
 
-  font-size: 22px;
+  font-size: 27px;
 
   display: none;
 
   align-items: center;
   justify-content: center;
+
+  transition:
+    background .2s ease,
+    transform .2s ease;
 }
 
 .gallery-button:hover {
-  background: rgba(0,0,0,.75);
+  background: rgba(0,0,0,.78);
+
+  transform:
+    translateY(-50%)
+    scale(1.04);
+}
+
+.gallery-button:focus-visible {
+  outline: 3px solid white;
+
+  outline-offset: 3px;
 }
 
 .gallery-button.prev {
@@ -237,6 +454,11 @@ main {
 .gallery-button.next {
   right: 18px;
 }
+
+
+/* =========================================================
+   PHOTO COUNTER
+========================================================= */
 
 .photo-counter {
   position: absolute;
@@ -255,15 +477,57 @@ main {
   color: white;
 
   font-size: 11px;
+
   font-weight: 700;
 
   display: none;
+
+  pointer-events: none;
 }
 
 
-/* =========================
+/* =========================================================
+   MOBILE GALLERY HINT
+========================================================= */
+
+.swipe-hint {
+  position: absolute;
+
+  left: 50%;
+
+  bottom: 18px;
+
+  transform: translateX(-50%);
+
+  z-index: 9;
+
+  padding: 7px 12px;
+
+  border-radius: 999px;
+
+  background: rgba(0,0,0,.55);
+
+  color: white;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  pointer-events: none;
+
+  opacity: 0;
+
+  transition: opacity .3s ease;
+}
+
+.swipe-hint.visible {
+  opacity: 1;
+}
+
+
+/* =========================================================
    MINIATURAS
-========================= */
+========================================================= */
 
 .thumbnails {
   display: none;
@@ -274,7 +538,9 @@ main {
 
   overflow-x: auto;
 
-  padding-bottom: 3px;
+  padding-bottom: 4px;
+
+  scrollbar-width: thin;
 }
 
 .thumbnails.visible {
@@ -282,10 +548,10 @@ main {
 }
 
 .thumbnail {
-  flex: 0 0 72px;
+  flex: 0 0 78px;
 
-  width: 72px;
-  height: 55px;
+  width: 78px;
+  height: 58px;
 
   padding: 0;
 
@@ -298,10 +564,27 @@ main {
   background: #ddd;
 
   cursor: pointer;
+
+  transition:
+    border-color .2s ease,
+    opacity .2s ease,
+    transform .2s ease;
+}
+
+.thumbnail:hover {
+  transform: translateY(-1px);
+
+  opacity: .9;
 }
 
 .thumbnail.active {
   border-color: #111;
+}
+
+.thumbnail:focus-visible {
+  outline: 3px solid rgba(17,17,17,.2);
+
+  outline-offset: 2px;
 }
 
 .thumbnail img {
@@ -309,12 +592,14 @@ main {
   height: 100%;
 
   object-fit: cover;
+
+  display: block;
 }
 
 
-/* =========================
-   FULLSCREEN
-========================= */
+/* =========================================================
+   LIGHTBOX
+========================================================= */
 
 .lightbox {
   position: fixed;
@@ -342,6 +627,10 @@ main {
   max-height: 90vh;
 
   object-fit: contain;
+
+  user-select: none;
+
+  -webkit-user-drag: none;
 }
 
 .lightbox-close {
@@ -349,6 +638,8 @@ main {
 
   top: 18px;
   right: 20px;
+
+  z-index: 110;
 
   width: 45px;
   height: 45px;
@@ -364,12 +655,94 @@ main {
   font-size: 26px;
 
   cursor: pointer;
+
+  transition:
+    background .2s ease,
+    transform .2s ease;
+}
+
+.lightbox-close:hover {
+  background: rgba(255,255,255,.2);
+
+  transform: scale(1.04);
+}
+
+.lightbox-close:focus-visible {
+  outline: 3px solid white;
+
+  outline-offset: 3px;
+}
+
+.lightbox-button {
+  position: absolute;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  z-index: 110;
+
+  width: 48px;
+  height: 48px;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,.12);
+
+  color: white;
+
+  font-size: 28px;
+
+  cursor: pointer;
+
+  display: none;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-button:hover {
+  background: rgba(255,255,255,.2);
+}
+
+.lightbox-button.prev {
+  left: 20px;
+}
+
+.lightbox-button.next {
+  right: 20px;
+}
+
+.lightbox-counter {
+  position: absolute;
+
+  bottom: 20px;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  z-index: 110;
+
+  padding: 7px 11px;
+
+  border-radius: 999px;
+
+  background: rgba(255,255,255,.12);
+
+  color: white;
+
+  font-size: 11px;
+
+  font-weight: 700;
 }
 
 
-/* =========================
-   CONTENIDO
-========================= */
+/* =========================================================
+   PROPERTY CONTENT
+========================================================= */
 
 .property-content {
   max-width: 900px;
@@ -398,6 +771,8 @@ main {
   letter-spacing: -3px;
 
   margin-bottom: 13px;
+
+  overflow-wrap: anywhere;
 }
 
 .location {
@@ -435,12 +810,14 @@ main {
     clamp(26px,5vw,38px);
 
   letter-spacing: -1.5px;
+
+  white-space: nowrap;
 }
 
 
-/* =========================
-   DETALLES
-========================= */
+/* =========================================================
+   DETAILS
+========================================================= */
 
 .details {
   display: grid;
@@ -449,6 +826,7 @@ main {
     repeat(3,1fr);
 
   border-top: 1px solid #deded9;
+
   border-bottom: 1px solid #deded9;
 
   margin-bottom: 38px;
@@ -478,6 +856,8 @@ main {
   display: block;
 
   font-size: 17px;
+
+  font-weight: 750;
 }
 
 .detail span:last-child {
@@ -491,9 +871,9 @@ main {
 }
 
 
-/* =========================
-   DESCRIPCIÓN
-========================= */
+/* =========================================================
+   DESCRIPTION
+========================================================= */
 
 .description {
   margin-bottom: 40px;
@@ -518,9 +898,9 @@ main {
 }
 
 
-/* =========================
-   CONTACTO
-========================= */
+/* =========================================================
+   CONTACT
+========================================================= */
 
 .contact-box {
   padding: 25px;
@@ -554,20 +934,23 @@ main {
   line-height: 1.5;
 }
 
-.contact-button {
-  flex-shrink: 0;
+.contact-actions {
+  display: flex;
 
+  align-items: center;
+
+  gap: 9px;
+
+  flex-shrink: 0;
+}
+
+.contact-button,
+.share-button {
   min-height: 48px;
 
   padding: 0 20px;
 
   border-radius: 999px;
-
-  background: white;
-
-  color: #111;
-
-  text-decoration: none;
 
   display: inline-flex;
 
@@ -575,13 +958,50 @@ main {
   justify-content: center;
 
   font-size: 13px;
+
   font-weight: 800;
+
+  cursor: pointer;
+
+  text-decoration: none;
+
+  transition:
+    transform .2s ease,
+    opacity .2s ease;
+}
+
+.contact-button {
+  background: white;
+
+  color: #111;
+}
+
+.share-button {
+  border: 1px solid rgba(255,255,255,.25);
+
+  background: transparent;
+
+  color: white;
+}
+
+.contact-button:hover,
+.share-button:hover {
+  transform: translateY(-1px);
+
+  opacity: .9;
+}
+
+.contact-button:focus-visible,
+.share-button:focus-visible {
+  outline: 3px solid rgba(255,255,255,.45);
+
+  outline-offset: 3px;
 }
 
 
-/* =========================
+/* =========================================================
    ERROR
-========================= */
+========================================================= */
 
 .error {
   display: none;
@@ -602,10 +1022,26 @@ main {
   max-width: 450px;
 }
 
+.error-code {
+  margin-bottom: 10px;
+
+  color: #999;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+
+  text-transform: uppercase;
+}
+
 .error h1 {
   margin-bottom: 10px;
 
   font-size: 34px;
+
+  letter-spacing: -1.5px;
 }
 
 .error p {
@@ -630,13 +1066,59 @@ main {
   text-decoration: none;
 
   font-size: 13px;
+
   font-weight: 700;
 }
 
 
-/* =========================
+/* =========================================================
+   TOAST
+========================================================= */
+
+.toast {
+  position: fixed;
+
+  left: 50%;
+
+  bottom: 25px;
+
+  z-index: 200;
+
+  transform:
+    translate(-50%, 20px);
+
+  padding: 11px 16px;
+
+  border-radius: 999px;
+
+  background: #111;
+
+  color: white;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition:
+    opacity .25s ease,
+    transform .25s ease;
+}
+
+.toast.visible {
+  opacity: 1;
+
+  transform:
+    translate(-50%, 0);
+}
+
+
+/* =========================================================
    MOBILE
-========================= */
+========================================================= */
 
 @media (max-width: 700px) {
 
@@ -652,16 +1134,50 @@ main {
     font-size: 21px;
   }
 
+  .back-link {
+    padding: 8px 12px;
+
+    font-size: 12px;
+  }
+
   main {
     padding:
       82px 15px 60px;
   }
 
   .gallery {
-    height: 52vh;
+    aspect-ratio: 4 / 3;
+
     min-height: 300px;
 
+    max-height: none;
+
     border-radius: 20px;
+  }
+
+  .gallery-button {
+    width: 40px;
+    height: 40px;
+
+    font-size: 23px;
+  }
+
+  .gallery-button.prev {
+    left: 10px;
+  }
+
+  .gallery-button.next {
+    right: 10px;
+  }
+
+  .type-badge {
+    top: 13px;
+    left: 13px;
+  }
+
+  .photo-counter {
+    right: 12px;
+    bottom: 12px;
   }
 
   .property-content {
@@ -682,6 +1198,10 @@ main {
     text-align: left;
   }
 
+  .price strong {
+    font-size: 30px;
+  }
+
   .details {
     margin-bottom: 30px;
   }
@@ -690,8 +1210,16 @@ main {
     padding: 17px 5px;
   }
 
+  .detail-icon {
+    font-size: 17px;
+  }
+
   .detail strong {
     font-size: 15px;
+  }
+
+  .detail span:last-child {
+    font-size: 10px;
   }
 
   .contact-box {
@@ -700,10 +1228,63 @@ main {
     padding: 22px;
   }
 
-  .contact-button {
+  .contact-actions {
     width: 100%;
 
     margin-top: 18px;
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .contact-button,
+  .share-button {
+    width: 100%;
+
+    padding: 0 10px;
+  }
+
+  .lightbox {
+    padding: 15px;
+  }
+
+  .lightbox-button {
+    width: 42px;
+    height: 42px;
+
+    font-size: 23px;
+  }
+
+  .lightbox-button.prev {
+    left: 10px;
+  }
+
+  .lightbox-button.next {
+    right: 10px;
+  }
+
+}
+
+
+/* =========================================================
+   REDUCE MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+
+    animation-iteration-count: 1 !important;
+
+    transition-duration: .01ms !important;
   }
 
 }
@@ -715,6 +1296,10 @@ main {
 <body>
 
 
+<!-- =======================================================
+     HEADER
+======================================================= -->
+
 <header>
 
   <div class="header-inner">
@@ -722,6 +1307,7 @@ main {
     <a
       href="/"
       class="logo"
+      aria-label="NEXO - Inicio"
     >
       NEXO<span>.</span>
     </a>
@@ -738,16 +1324,34 @@ main {
 </header>
 
 
+<!-- =======================================================
+     MAIN
+======================================================= -->
+
 <main>
 
+
+  <!-- LOADING -->
 
   <div
     id="loading"
     class="loading"
+    aria-live="polite"
   >
-    Cargando propiedad...
+
+    <div
+      class="loading-spinner"
+      aria-hidden="true"
+    ></div>
+
+    <span>
+      Cargando propiedad...
+    </span>
+
   </div>
 
+
+  <!-- PROPERTY -->
 
   <div
     id="property"
@@ -755,11 +1359,17 @@ main {
   >
 
 
-    <!-- GALERÍA -->
+    <!-- =================================================
+         GALERÍA
+    ================================================== -->
 
     <div class="gallery-wrapper">
 
-      <div class="gallery">
+      <div
+        id="gallery"
+        class="gallery"
+        aria-label="Galería de fotografías"
+      >
 
         <div
           id="galleryContent"
@@ -781,7 +1391,8 @@ main {
           id="prevButton"
           class="gallery-button prev"
           type="button"
-          aria-label="Foto anterior"
+          aria-label="Fotografía anterior"
+          title="Fotografía anterior"
         >
           ‹
         </button>
@@ -791,7 +1402,8 @@ main {
           id="nextButton"
           class="gallery-button next"
           type="button"
-          aria-label="Foto siguiente"
+          aria-label="Fotografía siguiente"
+          title="Fotografía siguiente"
         >
           ›
         </button>
@@ -800,8 +1412,18 @@ main {
         <div
           id="photoCounter"
           class="photo-counter"
+          aria-live="polite"
         >
           1 / 1
+        </div>
+
+
+        <div
+          id="swipeHint"
+          class="swipe-hint"
+          aria-hidden="true"
+        >
+          Desliza para ver más
         </div>
 
       </div>
@@ -810,17 +1432,21 @@ main {
       <div
         id="thumbnails"
         class="thumbnails"
+        aria-label="Miniaturas de fotografías"
       ></div>
 
     </div>
 
 
-    <!-- CONTENIDO -->
+    <!-- =================================================
+         CONTENIDO
+    ================================================== -->
 
     <div class="property-content">
 
 
       <div class="property-top">
+
 
         <div>
 
@@ -830,6 +1456,7 @@ main {
           >
             Propiedad
           </h1>
+
 
           <div
             id="propertyLocation"
@@ -855,17 +1482,26 @@ main {
 
         </div>
 
+
       </div>
 
 
-      <!-- DETALLES -->
+      <!-- =================================================
+           DETALLES
+      ================================================== -->
 
-      <div class="details">
+      <div
+        class="details"
+        aria-label="Características de la propiedad"
+      >
 
 
         <div class="detail">
 
-          <span class="detail-icon">
+          <span
+            class="detail-icon"
+            aria-hidden="true"
+          >
             🛏️
           </span>
 
@@ -884,7 +1520,10 @@ main {
 
         <div class="detail">
 
-          <span class="detail-icon">
+          <span
+            class="detail-icon"
+            aria-hidden="true"
+          >
             🚿
           </span>
 
@@ -903,7 +1542,10 @@ main {
 
         <div class="detail">
 
-          <span class="detail-icon">
+          <span
+            class="detail-icon"
+            aria-hidden="true"
+          >
             📐
           </span>
 
@@ -923,7 +1565,9 @@ main {
       </div>
 
 
-      <!-- DESCRIPCIÓN -->
+      <!-- =================================================
+           DESCRIPCIÓN
+      ================================================== -->
 
       <section class="description">
 
@@ -931,14 +1575,18 @@ main {
           Sobre esta propiedad
         </h2>
 
-        <p id="description">
+        <p
+          id="description"
+        >
           Sin descripción disponible.
         </p>
 
       </section>
 
 
-      <!-- CONTACTO -->
+      <!-- =================================================
+           CONTACTO
+      ================================================== -->
 
       <section class="contact-box">
 
@@ -956,12 +1604,26 @@ main {
         </div>
 
 
-        <a
-          href="mailto:"
-          class="contact-button"
-        >
-          Contactar con NEXO
-        </a>
+        <div class="contact-actions">
+
+          <a
+            id="contactButton"
+            href="#"
+            class="contact-button"
+          >
+            Contactar con NEXO
+          </a>
+
+
+          <button
+            id="shareButton"
+            type="button"
+            class="share-button"
+          >
+            Compartir
+          </button>
+
+        </div>
 
       </section>
 
@@ -971,7 +1633,9 @@ main {
   </div>
 
 
-  <!-- ERROR -->
+  <!-- =====================================================
+       ERROR
+  ====================================================== -->
 
   <div
     id="error"
@@ -979,6 +1643,10 @@ main {
   >
 
     <div class="error-inner">
+
+      <div class="error-code">
+        NEXO
+      </div>
 
       <h1>
         Propiedad no encontrada
@@ -1000,21 +1668,39 @@ main {
 </main>
 
 
-<!-- LIGHTBOX -->
+<!-- =======================================================
+     LIGHTBOX
+======================================================= -->
 
 <div
   id="lightbox"
   class="lightbox"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Fotografía ampliada"
+  aria-hidden="true"
 >
+
 
   <button
     id="lightboxClose"
     class="lightbox-close"
     type="button"
-    aria-label="Cerrar"
+    aria-label="Cerrar fotografía"
   >
     ×
   </button>
+
+
+  <button
+    id="lightboxPrev"
+    class="lightbox-button prev"
+    type="button"
+    aria-label="Fotografía anterior"
+  >
+    ‹
+  </button>
+
 
   <img
     id="lightboxImage"
@@ -1022,23 +1708,73 @@ main {
     alt="Fotografía de propiedad"
   >
 
+
+  <button
+    id="lightboxNext"
+    class="lightbox-button next"
+    type="button"
+    aria-label="Fotografía siguiente"
+  >
+    ›
+  </button>
+
+
+  <div
+    id="lightboxCounter"
+    class="lightbox-counter"
+    aria-live="polite"
+  >
+    1 / 1
+  </div>
+
+
 </div>
 
 
+<!-- =======================================================
+     TOAST
+======================================================= -->
+
+<div
+  id="toast"
+  class="toast"
+  role="status"
+  aria-live="polite"
+></div>
+
+
 <script>
+
+/* =========================================================
+   CONFIGURACIÓN
+========================================================= */
 
 const API_URL =
   "https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev";
 
 
+/* =========================================================
+   ESTADO
+========================================================= */
+
 let photos = [];
 
 let currentPhoto = 0;
 
+let currentProperty = null;
 
-/* =========================
+let touchStartX = 0;
+
+let touchStartY = 0;
+
+let touchStartTime = 0;
+
+let toastTimer = null;
+
+
+/* =========================================================
    ELEMENTOS
-========================= */
+========================================================= */
 
 const loading =
   document.querySelector("#loading");
@@ -1048,6 +1784,9 @@ const propertyContainer =
 
 const errorContainer =
   document.querySelector("#error");
+
+const gallery =
+  document.querySelector("#gallery");
 
 const galleryContent =
   document.querySelector("#galleryContent");
@@ -1064,6 +1803,9 @@ const photoCounter =
 const thumbnails =
   document.querySelector("#thumbnails");
 
+const swipeHint =
+  document.querySelector("#swipeHint");
+
 const lightbox =
   document.querySelector("#lightbox");
 
@@ -1073,10 +1815,40 @@ const lightboxImage =
 const lightboxClose =
   document.querySelector("#lightboxClose");
 
+const lightboxPrev =
+  document.querySelector("#lightboxPrev");
 
-/* =========================
+const lightboxNext =
+  document.querySelector("#lightboxNext");
+
+const lightboxCounter =
+  document.querySelector("#lightboxCounter");
+
+const contactButton =
+  document.querySelector("#contactButton");
+
+const shareButton =
+  document.querySelector("#shareButton");
+
+const toast =
+  document.querySelector("#toast");
+
+const metaDescription =
+  document.querySelector("#metaDescription");
+
+const ogTitle =
+  document.querySelector("#ogTitle");
+
+const ogDescription =
+  document.querySelector("#ogDescription");
+
+const ogImage =
+  document.querySelector("#ogImage");
+
+
+/* =========================================================
    PRECIO
-========================= */
+========================================================= */
 
 function formatPrice(price) {
 
@@ -1085,15 +1857,25 @@ function formatPrice(price) {
     price === undefined ||
     price === ""
   ) {
+
     return "Consultar";
+
   }
+
 
   const number =
-    Number(price);
+    Number(
+      String(price)
+        .replace(/[$,\s]/g, "")
+    );
+
 
   if (!Number.isFinite(number)) {
+
     return "Consultar";
+
   }
+
 
   return number.toLocaleString(
     "en-US",
@@ -1107,73 +1889,200 @@ function formatPrice(price) {
 }
 
 
-/* =========================
+/* =========================================================
    FOTOS
-========================= */
+========================================================= */
 
 function parsePhotos(value) {
 
   if (!value) {
+
     return [];
+
   }
+
 
   if (Array.isArray(value)) {
 
-    return value.filter(
-      photo =>
-        typeof photo === "string" &&
-        photo.trim()
-    );
+    return normalizePhotos(value);
 
   }
+
 
   if (typeof value === "string") {
 
     const clean =
       value.trim();
 
+
     if (!clean) {
+
       return [];
+
     }
+
 
     try {
 
       const parsed =
         JSON.parse(clean);
 
+
       if (Array.isArray(parsed)) {
 
-        return parsed.filter(
-          photo =>
-            typeof photo === "string" &&
-            photo.trim()
-        );
+        return normalizePhotos(parsed);
+
+      }
+
+
+      if (
+        parsed &&
+        typeof parsed === "object"
+      ) {
+
+        if (
+          Array.isArray(parsed.photos)
+        ) {
+
+          return normalizePhotos(
+            parsed.photos
+          );
+
+        }
 
       }
 
     } catch (error) {
 
+      /*
+       * No es JSON.
+       * Puede ser una sola URL o una lista
+       * separada por saltos de línea/comas.
+       */
+
       if (
-        clean.startsWith("http://") ||
-        clean.startsWith("https://")
+        isValidImageURL(clean)
       ) {
 
         return [clean];
 
       }
 
+
+      const separated =
+        clean
+          .split(/\r?\n|,/)
+          .map(
+            item => item.trim()
+          )
+          .filter(Boolean);
+
+
+      return normalizePhotos(
+        separated
+      );
+
     }
 
   }
+
 
   return [];
 
 }
 
 
-/* =========================
-   ID
-========================= */
+/* =========================================================
+   NORMALIZAR FOTOS
+========================================================= */
+
+function normalizePhotos(value) {
+
+  if (!Array.isArray(value)) {
+
+    return [];
+
+  }
+
+
+  return value
+    .map(photo => {
+
+      if (
+        typeof photo === "string"
+      ) {
+
+        return photo.trim();
+
+      }
+
+
+      if (
+        photo &&
+        typeof photo === "object"
+      ) {
+
+        return String(
+          photo.url ||
+          photo.src ||
+          photo.image_url ||
+          photo.image ||
+          ""
+        ).trim();
+
+      }
+
+
+      return "";
+
+    })
+    .filter(
+      photo =>
+        isValidImageURL(photo)
+    );
+
+}
+
+
+/* =========================================================
+   VALIDAR URL
+========================================================= */
+
+function isValidImageURL(value) {
+
+  if (!value) {
+
+    return false;
+
+  }
+
+
+  try {
+
+    const url =
+      new URL(
+        value,
+        window.location.origin
+      );
+
+
+    return (
+      url.protocol === "http:" ||
+      url.protocol === "https:"
+    );
+
+  } catch {
+
+    return false;
+
+  }
+
+}
+
+
+/* =========================================================
+   PROPERTY ID
+========================================================= */
 
 function getPropertyId() {
 
@@ -1182,19 +2091,32 @@ function getPropertyId() {
       window.location.search
     );
 
-  return params.get("id");
+
+  const id =
+    params.get("id");
+
+
+  if (!id) {
+
+    return null;
+
+  }
+
+
+  return id.trim();
 
 }
 
 
-/* =========================
-   CARGAR
-========================= */
+/* =========================================================
+   CARGAR PROPIEDAD
+========================================================= */
 
 async function loadProperty() {
 
   const id =
     getPropertyId();
+
 
   if (!id) {
 
@@ -1209,14 +2131,23 @@ async function loadProperty() {
 
     const response =
       await fetch(
-        `${API_URL}/api/properties/${encodeURIComponent(id)}`
+        `${API_URL}/api/properties/${encodeURIComponent(id)}`,
+        {
+          method: "GET",
+
+          headers: {
+            "Accept": "application/json"
+          },
+
+          cache: "no-store"
+        }
       );
 
 
     if (!response.ok) {
 
       throw new Error(
-        "Propiedad no encontrada."
+        `HTTP ${response.status}`
       );
 
     }
@@ -1227,29 +2158,35 @@ async function loadProperty() {
 
 
     if (
+      !data ||
       !data.success ||
       !data.property
     ) {
 
       throw new Error(
-        data.error ||
+        data?.error ||
         "Propiedad no encontrada."
       );
 
     }
 
 
+    currentProperty =
+      data.property;
+
+
     renderProperty(
-      data.property
+      currentProperty
     );
 
 
   } catch (error) {
 
     console.error(
-      "NEXO:",
+      "NEXO - Error cargando propiedad:",
       error
     );
+
 
     showError();
 
@@ -1258,37 +2195,74 @@ async function loadProperty() {
 }
 
 
-/* =========================
-   MOSTRAR
-========================= */
+/* =========================================================
+   MOSTRAR PROPIEDAD
+========================================================= */
 
 function renderProperty(
   property
 ) {
 
+  const propertyType =
+    property.property_type ||
+    "Propiedad";
+
+
+  const city =
+    property.city ||
+    "";
+
+
+  const neighborhood =
+    property.neighborhood ||
+    "";
+
+
+  const location =
+    [
+      city,
+      neighborhood
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
+
+  const title =
+    city ||
+    propertyType ||
+    "Propiedad";
+
+
+  const description =
+    property.description ||
+    "Sin descripción disponible.";
+
+
+  const imageList =
+    parsePhotos(
+      property.photos
+    );
+
+
+  photos =
+    imageList;
+
+
   document.title =
-    `NEXO | ${
-      property.property_type ||
-      "Propiedad"
-    }`;
+    `NEXO | ${title}`;
 
 
   document.querySelector(
     "#propertyTitle"
   ).textContent =
-    property.city ||
-    "Propiedad";
+    title;
 
 
   document.querySelector(
     "#propertyLocation"
   ).textContent =
-    [
-      property.city,
-      property.neighborhood
-    ]
-    .filter(Boolean)
-    .join(" · ");
+    location ||
+    "Ubicación no disponible";
 
 
   document.querySelector(
@@ -1302,21 +2276,25 @@ function renderProperty(
   document.querySelector(
     "#bedrooms"
   ).textContent =
-    property.bedrooms ??
-    "—";
+    formatValue(
+      property.bedrooms
+    );
 
 
   document.querySelector(
     "#bathrooms"
   ).textContent =
-    property.bathrooms ??
-    "—";
+    formatValue(
+      property.bathrooms
+    );
 
 
   document.querySelector(
     "#squareMeters"
   ).textContent =
-    property.square_meters != null
+    property.square_meters !== null &&
+    property.square_meters !== undefined &&
+    property.square_meters !== ""
       ? `${property.square_meters} m²`
       : "—";
 
@@ -1324,21 +2302,27 @@ function renderProperty(
   document.querySelector(
     "#description"
   ).textContent =
-    property.description ||
-    "Sin descripción disponible.";
+    description;
 
 
   document.querySelector(
     "#typeBadge"
   ).textContent =
-    property.property_type ||
-    "Propiedad";
+    propertyType;
 
 
-  photos =
-    parsePhotos(
-      property.photos
-    );
+  updateSEO(
+    property,
+    title,
+    description
+  );
+
+
+  setupContact(
+    property,
+    title,
+    location
+  );
 
 
   setupGallery();
@@ -1347,6 +2331,7 @@ function renderProperty(
   loading.style.display =
     "none";
 
+
   propertyContainer.classList.add(
     "visible"
   );
@@ -1354,16 +2339,167 @@ function renderProperty(
 }
 
 
-/* =========================
+/* =========================================================
+   VALORES
+========================================================= */
+
+function formatValue(value) {
+
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+
+    return "—";
+
+  }
+
+
+  return String(value);
+
+}
+
+
+/* =========================================================
+   SEO
+========================================================= */
+
+function updateSEO(
+  property,
+  title,
+  description
+) {
+
+  const cleanDescription =
+    String(description)
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 160);
+
+
+  const fullTitle =
+    `NEXO | ${title}`;
+
+
+  metaDescription.setAttribute(
+    "content",
+    cleanDescription
+  );
+
+
+  ogTitle.setAttribute(
+    "content",
+    fullTitle
+  );
+
+
+  ogDescription.setAttribute(
+    "content",
+    cleanDescription
+  );
+
+
+  const propertyPhotos =
+    parsePhotos(
+      property.photos
+    );
+
+
+  if (propertyPhotos.length) {
+
+    ogImage.setAttribute(
+      "content",
+      propertyPhotos[0]
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   CONTACTO
+========================================================= */
+
+function setupContact(
+  property,
+  title,
+  location
+) {
+
+  /*
+   * No se inventa un correo ni un teléfono.
+   *
+   * El botón queda preparado para utilizar
+   * el sistema de contacto cuando NEXO tenga
+   * configurado el destinatario.
+   */
+
+
+  const message =
+    [
+      "Hola, estoy interesado en esta propiedad de NEXO.",
+      "",
+      `Propiedad: ${title}`,
+      location
+        ? `Ubicación: ${location}`
+        : "",
+      property.price
+        ? `Precio: ${formatPrice(property.price)}`
+        : "",
+      "",
+      `Enlace: ${window.location.href}`
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+
+  /*
+   * Por ahora el botón utiliza el enlace
+   * de compartir/contacto de forma segura.
+   *
+   * No ponemos un teléfono ficticio.
+   */
+
+  contactButton.href =
+    `mailto:?subject=${encodeURIComponent(
+      `Interés en propiedad - ${title}`
+    )}&body=${encodeURIComponent(
+      message
+    )}`;
+
+}
+
+
+/* =========================================================
    GALERÍA
-========================= */
+========================================================= */
 
 function setupGallery() {
 
   if (!photos.length) {
 
-    galleryContent.innerHTML =
-      "NEXO";
+    showGalleryPlaceholder();
+
+    prevButton.style.display =
+      "none";
+
+    nextButton.style.display =
+      "none";
+
+    photoCounter.style.display =
+      "none";
+
+    thumbnails.classList.remove(
+      "visible"
+    );
+
+    lightboxPrev.style.display =
+      "none";
+
+    lightboxNext.style.display =
+      "none";
 
     return;
 
@@ -1385,6 +2521,12 @@ function setupGallery() {
       "visible"
     );
 
+    lightboxPrev.style.display =
+      "none";
+
+    lightboxNext.style.display =
+      "none";
+
   }
 
 
@@ -1403,7 +2545,15 @@ function setupGallery() {
       "visible"
     );
 
+    lightboxPrev.style.display =
+      "flex";
+
+    lightboxNext.style.display =
+      "flex";
+
     renderThumbnails();
+
+    showSwipeHint();
 
   }
 
@@ -1413,56 +2563,90 @@ function setupGallery() {
 }
 
 
-/* =========================
+/* =========================================================
    MOSTRAR FOTO
-========================= */
+========================================================= */
 
 function showPhoto(
   index
 ) {
 
   if (!photos.length) {
+
     return;
+
   }
 
 
   currentPhoto =
-    (index + photos.length) %
-    photos.length;
+    (
+      index + photos.length
+    ) % photos.length;
 
 
-  galleryContent.outerHTML = `
-
-    <img
-      id="galleryContent"
-      class="gallery-image"
-      src="${escapeAttribute(
-        photos[currentPhoto]
-      )}"
-      alt="Fotografía de propiedad"
-    >
-
-  `;
+  const photo =
+    photos[currentPhoto];
 
 
-  const newImage =
+  const oldImage =
     document.querySelector(
-      "#galleryContent"
+      "#galleryContent.gallery-image"
     );
 
 
-  newImage.addEventListener(
-    "click",
-    openLightbox
-  );
+  if (oldImage) {
+
+    oldImage.src =
+      photo;
+
+    oldImage.alt =
+      `Fotografía ${currentPhoto + 1} de ${photos.length} de la propiedad`;
+
+  } else {
+
+    const image =
+      document.createElement(
+        "img"
+      );
 
 
-  if (photos.length > 1) {
+    image.id =
+      "galleryContent";
 
-    photoCounter.textContent =
-      `${currentPhoto + 1} / ${photos.length}`;
+
+    image.className =
+      "gallery-image";
+
+
+    image.alt =
+      `Fotografía ${currentPhoto + 1} de ${photos.length} de la propiedad`;
+
+
+    image.src =
+      photo;
+
+
+    image.addEventListener(
+      "click",
+      openLightbox
+    );
+
+
+    image.addEventListener(
+      "error",
+      handleMainImageError
+    );
+
+
+    galleryContent.replaceWith(
+      image
+    );
 
   }
+
+
+  photoCounter.textContent =
+    `${currentPhoto + 1} / ${photos.length}`;
 
 
   updateThumbnails();
@@ -1470,47 +2654,209 @@ function showPhoto(
 }
 
 
-/* =========================
-   MINIATURAS
-========================= */
+/* =========================================================
+   ERROR IMAGEN PRINCIPAL
+========================================================= */
 
-function renderThumbnails() {
+function handleMainImageError() {
 
-  thumbnails.innerHTML =
-    photos
-      .map(
-        (photo, index) => `
-
-          <button
-            type="button"
-            class="thumbnail ${
-              index === 0
-                ? "active"
-                : ""
-            }"
-            onclick="
-              showPhoto(${index})
-            "
-          >
-
-            <img
-              src="${escapeAttribute(photo)}"
-              alt="Miniatura ${index + 1}"
-              loading="lazy"
-            >
-
-          </button>
-
-        `
-      )
-      .join("");
+  showGalleryPlaceholder(
+    "Fotografía no disponible"
+  );
 
 }
 
 
-/* =========================
+/* =========================================================
+   PLACEHOLDER
+========================================================= */
+
+function showGalleryPlaceholder(
+  message = "NEXO"
+) {
+
+  const current =
+    document.querySelector(
+      "#galleryContent"
+    );
+
+
+  if (
+    current &&
+    current.classList.contains(
+      "gallery-placeholder"
+    )
+  ) {
+
+    current.textContent =
+      message;
+
+    return;
+
+  }
+
+
+  const placeholder =
+    document.createElement(
+      "div"
+    );
+
+
+  placeholder.id =
+    "galleryContent";
+
+
+  placeholder.className =
+    "gallery-placeholder";
+
+
+  if (
+    message === "NEXO"
+  ) {
+
+    placeholder.textContent =
+      "NEXO";
+
+  } else {
+
+    placeholder.classList.add(
+      "error"
+    );
+
+
+    const strong =
+      document.createElement(
+        "strong"
+      );
+
+
+    strong.textContent =
+      "NEXO";
+
+
+    const span =
+      document.createElement(
+        "span"
+      );
+
+
+    span.textContent =
+      message;
+
+
+    placeholder.append(
+      strong,
+      span
+    );
+
+  }
+
+
+  current.replaceWith(
+    placeholder
+  );
+
+}
+
+
+/* =========================================================
+   MINIATURAS
+========================================================= */
+
+function renderThumbnails() {
+
+  thumbnails.innerHTML =
+    "";
+
+
+  photos.forEach(
+    (photo, index) => {
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+
+      button.type =
+        "button";
+
+
+      button.className =
+        "thumbnail";
+
+
+      button.setAttribute(
+        "aria-label",
+        `Ver fotografía ${index + 1}`
+      );
+
+
+      button.setAttribute(
+        "aria-current",
+        index === currentPhoto
+          ? "true"
+          : "false"
+      );
+
+
+      const image =
+        document.createElement(
+          "img"
+        );
+
+
+      image.src =
+        photo;
+
+
+      image.alt =
+        `Miniatura ${index + 1}`;
+
+
+      image.loading =
+        "lazy";
+
+
+      image.addEventListener(
+        "error",
+        () => {
+
+          button.style.display =
+            "none";
+
+        }
+      );
+
+
+      button.appendChild(
+        image
+      );
+
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          showPhoto(index);
+
+        }
+      );
+
+
+      thumbnails.appendChild(
+        button
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
    ACTUALIZAR MINIATURAS
-========================= */
+========================================================= */
 
 function updateThumbnails() {
 
@@ -1523,9 +2869,21 @@ function updateThumbnails() {
   items.forEach(
     (item, index) => {
 
+      const active =
+        index === currentPhoto;
+
+
       item.classList.toggle(
         "active",
-        index === currentPhoto
+        active
+      );
+
+
+      item.setAttribute(
+        "aria-current",
+        active
+          ? "true"
+          : "false"
       );
 
     }
@@ -1534,54 +2892,94 @@ function updateThumbnails() {
 }
 
 
-/* =========================
-   ANTERIOR
-========================= */
+/* =========================================================
+   NAVEGACIÓN
+========================================================= */
 
-prevButton.addEventListener(
-  "click",
-  () => {
+function previousPhoto() {
+
+  if (
+    photos.length > 1
+  ) {
 
     showPhoto(
       currentPhoto - 1
     );
 
   }
-);
+
+}
 
 
-/* =========================
-   SIGUIENTE
-========================= */
+function nextPhoto() {
 
-nextButton.addEventListener(
-  "click",
-  () => {
+  if (
+    photos.length > 1
+  ) {
 
     showPhoto(
       currentPhoto + 1
     );
 
   }
+
+}
+
+
+prevButton.addEventListener(
+  "click",
+  previousPhoto
 );
 
 
-/* =========================
+nextButton.addEventListener(
+  "click",
+  nextPhoto
+);
+
+
+/* =========================================================
    LIGHTBOX
-========================= */
+========================================================= */
 
 function openLightbox() {
 
   if (!photos.length) {
+
     return;
+
   }
+
 
   lightboxImage.src =
     photos[currentPhoto];
 
+
+  lightboxImage.alt =
+    `Fotografía ${currentPhoto + 1} de ${photos.length} de la propiedad`;
+
+
+  lightboxCounter.textContent =
+    `${currentPhoto + 1} / ${photos.length}`;
+
+
   lightbox.classList.add(
     "visible"
   );
+
+
+  lightbox.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+
+  document.body.classList.add(
+    "no-scroll"
+  );
+
+
+  lightboxClose.focus();
 
 }
 
@@ -1592,7 +2990,56 @@ function closeLightbox() {
     "visible"
   );
 
-  lightboxImage.src = "";
+
+  lightbox.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+
+  lightboxImage.src =
+    "";
+
+
+  document.body.classList.remove(
+    "no-scroll"
+  );
+
+}
+
+
+function showLightboxPhoto(
+  index
+) {
+
+  if (!photos.length) {
+
+    return;
+
+  }
+
+
+  currentPhoto =
+    (
+      index + photos.length
+    ) % photos.length;
+
+
+  lightboxImage.src =
+    photos[currentPhoto];
+
+
+  lightboxImage.alt =
+    `Fotografía ${currentPhoto + 1} de ${photos.length} de la propiedad`;
+
+
+  lightboxCounter.textContent =
+    `${currentPhoto + 1} / ${photos.length}`;
+
+
+  showPhoto(
+    currentPhoto
+  );
 
 }
 
@@ -1600,6 +3047,30 @@ function closeLightbox() {
 lightboxClose.addEventListener(
   "click",
   closeLightbox
+);
+
+
+lightboxPrev.addEventListener(
+  "click",
+  () => {
+
+    showLightboxPhoto(
+      currentPhoto - 1
+    );
+
+  }
+);
+
+
+lightboxNext.addEventListener(
+  "click",
+  () => {
+
+    showLightboxPhoto(
+      currentPhoto + 1
+    );
+
+  }
 );
 
 
@@ -1619,9 +3090,222 @@ lightbox.addEventListener(
 );
 
 
-/* =========================
+/* =========================================================
+   SWIPE
+========================================================= */
+
+gallery.addEventListener(
+  "touchstart",
+  event => {
+
+    if (
+      event.touches.length !== 1
+    ) {
+
+      return;
+
+    }
+
+
+    touchStartX =
+      event.touches[0].clientX;
+
+
+    touchStartY =
+      event.touches[0].clientY;
+
+
+    touchStartTime =
+      Date.now();
+
+  },
+  {
+    passive: true
+  }
+);
+
+
+gallery.addEventListener(
+  "touchend",
+  event => {
+
+    if (
+      !photos.length ||
+      photos.length < 2 ||
+      !touchStartTime
+    ) {
+
+      return;
+
+    }
+
+
+    const touch =
+      event.changedTouches[0];
+
+
+    const deltaX =
+      touch.clientX -
+      touchStartX;
+
+
+    const deltaY =
+      touch.clientY -
+      touchStartY;
+
+
+    const duration =
+      Date.now() -
+      touchStartTime;
+
+
+    const horizontal =
+      Math.abs(deltaX);
+
+
+    const vertical =
+      Math.abs(deltaY);
+
+
+    if (
+      horizontal > 50 &&
+      horizontal > vertical &&
+      duration < 700
+    ) {
+
+      if (
+        deltaX < 0
+      ) {
+
+        nextPhoto();
+
+      } else {
+
+        previousPhoto();
+
+      }
+
+    }
+
+
+    touchStartTime =
+      0;
+
+  },
+  {
+    passive: true
+  }
+);
+
+
+/* =========================================================
+   SWIPE LIGHTBOX
+========================================================= */
+
+lightbox.addEventListener(
+  "touchstart",
+  event => {
+
+    if (
+      event.touches.length !== 1
+    ) {
+
+      return;
+
+    }
+
+
+    touchStartX =
+      event.touches[0].clientX;
+
+
+    touchStartY =
+      event.touches[0].clientY;
+
+
+    touchStartTime =
+      Date.now();
+
+  },
+  {
+    passive: true
+  }
+);
+
+
+lightbox.addEventListener(
+  "touchend",
+  event => {
+
+    if (
+      !photos.length ||
+      photos.length < 2 ||
+      !touchStartTime
+    ) {
+
+      return;
+
+    }
+
+
+    const touch =
+      event.changedTouches[0];
+
+
+    const deltaX =
+      touch.clientX -
+      touchStartX;
+
+
+    const deltaY =
+      touch.clientY -
+      touchStartY;
+
+
+    const duration =
+      Date.now() -
+      touchStartTime;
+
+
+    if (
+      Math.abs(deltaX) > 50 &&
+      Math.abs(deltaX) >
+        Math.abs(deltaY) &&
+      duration < 700
+    ) {
+
+      if (
+        deltaX < 0
+      ) {
+
+        showLightboxPhoto(
+          currentPhoto + 1
+        );
+
+      } else {
+
+        showLightboxPhoto(
+          currentPhoto - 1
+        );
+
+      }
+
+    }
+
+
+    touchStartTime =
+      0;
+
+  },
+  {
+    passive: true
+  }
+);
+
+
+/* =========================================================
    TECLADO
-========================= */
+========================================================= */
 
 document.addEventListener(
   "keydown",
@@ -1631,17 +3315,37 @@ document.addEventListener(
       event.key === "Escape"
     ) {
 
-      closeLightbox();
+      if (
+        lightbox.classList.contains(
+          "visible"
+        )
+      ) {
+
+        closeLightbox();
+
+      }
+
+      return;
 
     }
 
 
     if (
-      event.key === "ArrowLeft" &&
-      photos.length > 1
+      !lightbox.classList.contains(
+        "visible"
+      )
     ) {
 
-      showPhoto(
+      return;
+
+    }
+
+
+    if (
+      event.key === "ArrowLeft"
+    ) {
+
+      showLightboxPhoto(
         currentPhoto - 1
       );
 
@@ -1649,11 +3353,10 @@ document.addEventListener(
 
 
     if (
-      event.key === "ArrowRight" &&
-      photos.length > 1
+      event.key === "ArrowRight"
     ) {
 
-      showPhoto(
+      showLightboxPhoto(
         currentPhoto + 1
       );
 
@@ -1663,18 +3366,183 @@ document.addEventListener(
 );
 
 
-/* =========================
+/* =========================================================
+   COMPARTIR
+========================================================= */
+
+shareButton.addEventListener(
+  "click",
+  async () => {
+
+    const title =
+      document.querySelector(
+        "#propertyTitle"
+      ).textContent ||
+      "Propiedad NEXO";
+
+
+    const shareData = {
+
+      title:
+        `NEXO | ${title}`,
+
+      text:
+        `Mira esta propiedad en NEXO: ${title}`,
+
+      url:
+        window.location.href
+
+    };
+
+
+    try {
+
+      if (
+        navigator.share
+      ) {
+
+        await navigator.share(
+          shareData
+        );
+
+        return;
+
+      }
+
+
+      if (
+        navigator.clipboard
+      ) {
+
+        await navigator.clipboard.writeText(
+          window.location.href
+        );
+
+
+        showToast(
+          "Enlace copiado"
+        );
+
+
+        return;
+
+      }
+
+
+      showToast(
+        "Copia el enlace de esta página"
+      );
+
+    } catch (error) {
+
+      /*
+       * El usuario puede cancelar el diálogo
+       * nativo de compartir. No mostramos error.
+       */
+
+      if (
+        error?.name !==
+        "AbortError"
+      ) {
+
+        console.error(
+          "NEXO - Compartir:",
+          error
+        );
+
+      }
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showToast(
+  message
+) {
+
+  toast.textContent =
+    message;
+
+
+  toast.classList.add(
+    "visible"
+  );
+
+
+  clearTimeout(
+    toastTimer
+  );
+
+
+  toastTimer =
+    setTimeout(
+      () => {
+
+        toast.classList.remove(
+          "visible"
+        );
+
+      },
+      2500
+    );
+
+}
+
+
+/* =========================================================
+   SWIPE HINT
+========================================================= */
+
+function showSwipeHint() {
+
+  if (
+    window.innerWidth > 700
+  ) {
+
+    return;
+
+  }
+
+
+  swipeHint.classList.add(
+    "visible"
+  );
+
+
+  setTimeout(
+    () => {
+
+      swipeHint.classList.remove(
+        "visible"
+      );
+
+    },
+    2800
+  );
+
+}
+
+
+/* =========================================================
    ERROR
-========================= */
+========================================================= */
 
 function showError() {
 
   loading.style.display =
     "none";
 
+
   propertyContainer.classList.remove(
     "visible"
   );
+
 
   errorContainer.classList.add(
     "visible"
@@ -1683,61 +3551,25 @@ function showError() {
 }
 
 
-/* =========================
-   SEGURIDAD HTML
-========================= */
-
-function escapeHTML(
-  value
-) {
-
-  return String(value)
-
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
-
-}
-
-
-function escapeAttribute(
-  value
-) {
-
-  return escapeHTML(value);
-
-}
-
-
-/* =========================
+/* =========================================================
    INICIAR
-========================= */
+========================================================= */
 
-document.addEventListener(
-  "DOMContentLoaded",
-  loadProperty
-);
+if (
+  document.readyState ===
+  "loading"
+) {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    loadProperty
+  );
+
+} else {
+
+  loadProperty();
+
+}
 
 </script>
 
