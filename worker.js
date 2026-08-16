@@ -27,7 +27,6 @@ export default {
     // =========================================================
 
     function json(data, status = 200, extraHeaders = {}) {
-
       return new Response(
         JSON.stringify(data),
         {
@@ -35,12 +34,53 @@ export default {
           headers: {
             "Content-Type":
               "application/json; charset=UTF-8",
-
             ...corsHeaders,
             ...extraHeaders
           }
         }
       );
+    }
+
+    // =========================================================
+    // UTILIDADES
+    // =========================================================
+
+    function clean(value) {
+
+      if (
+        value === null ||
+        value === undefined
+      ) {
+        return "";
+      }
+
+      return String(value)
+        .trim()
+        .replace(/\s+/g, " ");
+    }
+
+    function normalizeAddress(value) {
+
+      return clean(value)
+        .replace(/\bAv\.\s*/gi, "Avenida ")
+        .replace(/\bAv\s+/gi, "Avenida ")
+        .replace(/\bAve\.\s*/gi, "Avenida ")
+        .replace(/\bAve\s+/gi, "Avenida ")
+        .replace(/\bNo\.\s*/gi, " ")
+        .replace(/\bNro\.\s*/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function unique(values) {
+
+      return [
+        ...new Set(
+          values
+            .map(clean)
+            .filter(Boolean)
+        )
+      ];
     }
 
     // =========================================================
@@ -113,7 +153,7 @@ export default {
     }
 
     // =========================================================
-    // LOGIN
+    // PÁGINA DE LOGIN
     // =========================================================
 
     const loginPage = `
@@ -203,6 +243,10 @@ button{
   font-weight:700;
 }
 
+button:disabled{
+  opacity:.55;
+}
+
 .error{
   display:none;
   margin-top:15px;
@@ -244,7 +288,7 @@ Contraseña
   required
 >
 
-<button id="loginButton">
+<button id="loginButton" type="submit">
 Entrar
 </button>
 
@@ -344,8 +388,7 @@ button.textContent="Entrar";
     // =========================================================
 
     if (
-      url.pathname ===
-        "/api/admin/login" &&
+      url.pathname === "/api/admin/login" &&
       request.method === "POST"
     ) {
 
@@ -376,8 +419,7 @@ button.textContent="Entrar";
           return json(
             {
               success:false,
-              error:
-                "Contraseña incorrecta."
+              error:"Contraseña incorrecta."
             },
             401
           );
@@ -397,7 +439,7 @@ button.textContent="Entrar";
           }
         );
 
-      } catch (error) {
+      } catch(error) {
 
         console.error(
           "NEXO LOGIN:",
@@ -420,8 +462,7 @@ button.textContent="Entrar";
     // =========================================================
 
     if (
-      url.pathname ===
-        "/api/admin/logout" &&
+      url.pathname === "/api/admin/logout" &&
       request.method === "POST"
     ) {
 
@@ -474,9 +515,7 @@ button.textContent="Entrar";
 
     const isPropertyAPI =
       url.pathname === "/api/properties" ||
-      url.pathname.startsWith(
-        "/api/properties/"
-      );
+      url.pathname.startsWith("/api/properties/");
 
     if (
       isWrite &&
@@ -496,48 +535,6 @@ button.textContent="Entrar";
           401
         );
       }
-    }
-
-    // =========================================================
-    // UTILIDADES DE DIRECCIONES
-    // =========================================================
-
-    function clean(value) {
-
-      if (
-        value === null ||
-        value === undefined
-      ) {
-        return "";
-      }
-
-      return String(value)
-        .trim()
-        .replace(/\s+/g," ");
-    }
-
-    function normalizeAddress(value) {
-
-      return clean(value)
-        .replace(/\bAv\.\s*/gi,"Avenida ")
-        .replace(/\bAv\s+/gi,"Avenida ")
-        .replace(/\bAve\.\s*/gi,"Avenida ")
-        .replace(/\bAve\s+/gi,"Avenida ")
-        .replace(/\bNo\.\s*/gi," ")
-        .replace(/\bNro\.\s*/gi," ")
-        .replace(/\s+/g," ")
-        .trim();
-    }
-
-    function unique(values) {
-
-      return [
-        ...new Set(
-          values
-            .map(clean)
-            .filter(Boolean)
-        )
-      ];
     }
 
     // =========================================================
@@ -650,28 +647,25 @@ button.textContent="Entrar";
           .split(/\s+/)
           .filter(x => x.length > 2);
 
-      for(
+      for (
         const word of cityWords
-      ){
-
+      ) {
         if(text.includes(word)){
           score += 5;
         }
       }
 
-      for(
+      for (
         const word of neighborhoodWords
-      ){
-
+      ) {
         if(text.includes(word)){
           score += 8;
         }
       }
 
-      for(
+      for (
         const word of addressWords
-      ){
-
+      ) {
         if(text.includes(word)){
           score += 3;
         }
@@ -713,9 +707,7 @@ button.textContent="Entrar";
 
       const queries = [];
 
-      // -------------------------------------------------------
       // 1. Dirección completa
-      // -------------------------------------------------------
 
       queries.push(
         [
@@ -729,9 +721,7 @@ button.textContent="Entrar";
           .join(", ")
       );
 
-      // -------------------------------------------------------
       // 2. Dirección + municipio + ciudad
-      // -------------------------------------------------------
 
       if(neighborhood){
 
@@ -747,9 +737,7 @@ button.textContent="Entrar";
         );
       }
 
-      // -------------------------------------------------------
       // 3. Dirección + ciudad
-      // -------------------------------------------------------
 
       queries.push(
         [
@@ -761,9 +749,7 @@ button.textContent="Entrar";
           .join(", ")
       );
 
-      // -------------------------------------------------------
-      // 4. Dirección original sin normalizar
-      // -------------------------------------------------------
+      // 4. Forma original
 
       const original =
         clean(address)
@@ -786,9 +772,7 @@ button.textContent="Entrar";
         );
       }
 
-      // -------------------------------------------------------
-      // 5. Calle/avenida + municipio
-      // -------------------------------------------------------
+      // 5. Dirección simplificada
 
       const simplified =
         address
@@ -819,10 +803,6 @@ button.textContent="Entrar";
         );
       }
 
-      // -------------------------------------------------------
-      // Eliminar duplicados
-      // -------------------------------------------------------
-
       const uniqueQueries =
         unique(queries);
 
@@ -830,11 +810,7 @@ button.textContent="Entrar";
       let bestScore = -999;
       let bestQuery = null;
 
-      // -------------------------------------------------------
-      // Buscar
-      // -------------------------------------------------------
-
-      for(
+      for (
         const query
         of uniqueQueries
       ){
@@ -842,7 +818,7 @@ button.textContent="Entrar";
         const results =
           await nominatimSearch(query);
 
-        for(
+        for (
           const result
           of results
         ){
@@ -864,11 +840,6 @@ button.textContent="Entrar";
           }
         }
 
-        /*
-         * Si tenemos una coincidencia bastante buena,
-         * no seguimos haciendo llamadas innecesarias.
-         */
-
         if(bestScore >= 18){
           break;
         }
@@ -879,20 +850,17 @@ button.textContent="Entrar";
         validResult(bestResult)
       ){
 
-        const latitude =
-          Number(bestResult.lat);
-
-        const longitude =
-          Number(bestResult.lon);
-
         return {
           success:true,
-          latitude,
-          longitude,
+          latitude:
+            Number(bestResult.lat),
+          longitude:
+            Number(bestResult.lon),
           display_name:
             bestResult.display_name ||
             null,
-          query:bestQuery,
+          query:
+            bestQuery,
           confidence:
             bestScore >= 18
               ? "high"
@@ -917,8 +885,7 @@ button.textContent="Entrar";
     // =========================================================
 
     if (
-      url.pathname ===
-        "/api/properties" &&
+      url.pathname === "/api/properties" &&
       request.method === "GET"
     ) {
 
@@ -929,6 +896,7 @@ button.textContent="Entrar";
             .prepare(`
               SELECT
                 id,
+                title,
                 property_type,
                 city,
                 neighborhood,
@@ -981,8 +949,7 @@ button.textContent="Entrar";
     // =========================================================
 
     if (
-      url.pathname ===
-        "/api/properties" &&
+      url.pathname === "/api/properties" &&
       request.method === "POST"
     ) {
 
@@ -990,6 +957,14 @@ button.textContent="Entrar";
 
         const body =
           await request.json();
+
+        // -----------------------------------------------------
+        // DATOS PRINCIPALES
+        // -----------------------------------------------------
+
+        const title =
+          clean(body.title) ||
+          null;
 
         const propertyType =
           clean(body.property_type);
@@ -1023,6 +998,10 @@ button.textContent="Entrar";
           );
         }
 
+        // -----------------------------------------------------
+        // CARACTERÍSTICAS
+        // -----------------------------------------------------
+
         const bedrooms =
           body.bedrooms === "" ||
           body.bedrooms === null ||
@@ -1055,6 +1034,27 @@ button.textContent="Entrar";
           clean(body.description) ||
           null;
 
+        // -----------------------------------------------------
+        // FOTOS
+        // -----------------------------------------------------
+
+        let photos = "[]";
+
+        if(
+          body.photos !== null &&
+          body.photos !== undefined
+        ){
+
+          photos =
+            typeof body.photos === "string"
+              ? body.photos
+              : JSON.stringify(body.photos);
+        }
+
+        // -----------------------------------------------------
+        // DATOS PRIVADOS
+        // -----------------------------------------------------
+
         const ownerName =
           clean(
             body.contact_name ??
@@ -1075,23 +1075,8 @@ button.textContent="Entrar";
           clean(body.status) ||
           "available";
 
-        let photos = "[]";
-
-        if(
-          body.photos !== null &&
-          body.photos !== undefined
-        ){
-
-          photos =
-            typeof body.photos === "string"
-              ? body.photos
-              : JSON.stringify(
-                  body.photos
-                );
-        }
-
         // -----------------------------------------------------
-        // GEOCODIFICAR
+        // GEOCODIFICACIÓN
         // -----------------------------------------------------
 
         const geo =
@@ -1120,12 +1105,11 @@ button.textContent="Entrar";
           await env.DB
             .prepare(`
               INSERT INTO properties (
+                title,
                 property_type,
                 city,
                 neighborhood,
                 address,
-                latitude,
-                longitude,
                 bedrooms,
                 bathrooms,
                 square_meters,
@@ -1135,21 +1119,23 @@ button.textContent="Entrar";
                 owner_name,
                 owner_phone,
                 notes,
-                status
+                status,
+                latitude,
+                longitude
               )
               VALUES (
                 ?,?,?,?,?,?,
                 ?,?,?,?,?,?,
-                ?,?,?,?
+                ?,?,?,?,
+                ?,?
               )
             `)
             .bind(
+              title,
               propertyType,
               city,
               neighborhood,
               address,
-              latitude,
-              longitude,
               bedrooms,
               bathrooms,
               squareMeters,
@@ -1159,7 +1145,9 @@ button.textContent="Entrar";
               ownerName,
               ownerPhone,
               notes,
-              status
+              status,
+              latitude,
+              longitude
             )
             .run();
 
@@ -1173,6 +1161,8 @@ button.textContent="Entrar";
             id:
               result.meta?.last_row_id ||
               null,
+
+            title,
 
             geocoded:
               geo.success,
@@ -1213,7 +1203,7 @@ button.textContent="Entrar";
     }
 
     // =========================================================
-    // RE-GEOCODIFICAR PROPIEDAD EXISTENTE
+    // RE-GEOCODIFICAR PROPIEDAD
     // =========================================================
 
     const geocodeMatch =
@@ -1357,6 +1347,14 @@ button.textContent="Entrar";
         const body =
           await request.json();
 
+        // -----------------------------------------------------
+        // DATOS PRINCIPALES
+        // -----------------------------------------------------
+
+        const title =
+          clean(body.title) ||
+          null;
+
         const propertyType =
           clean(body.property_type);
 
@@ -1388,6 +1386,10 @@ button.textContent="Entrar";
         const address =
           clean(body.address) ||
           null;
+
+        // -----------------------------------------------------
+        // CARACTERÍSTICAS
+        // -----------------------------------------------------
 
         const bedrooms =
           body.bedrooms === "" ||
@@ -1421,6 +1423,27 @@ button.textContent="Entrar";
           clean(body.description) ||
           null;
 
+        // -----------------------------------------------------
+        // FOTOS
+        // -----------------------------------------------------
+
+        let photos = "[]";
+
+        if(
+          body.photos !== null &&
+          body.photos !== undefined
+        ){
+
+          photos =
+            typeof body.photos === "string"
+              ? body.photos
+              : JSON.stringify(body.photos);
+        }
+
+        // -----------------------------------------------------
+        // DATOS PRIVADOS
+        // -----------------------------------------------------
+
         const ownerName =
           clean(
             body.contact_name ??
@@ -1441,20 +1464,9 @@ button.textContent="Entrar";
           clean(body.status) ||
           "available";
 
-        let photos = "[]";
-
-        if(
-          body.photos !== null &&
-          body.photos !== undefined
-        ){
-
-          photos =
-            typeof body.photos === "string"
-              ? body.photos
-              : JSON.stringify(
-                  body.photos
-                );
-        }
+        // -----------------------------------------------------
+        // GEOCODIFICAR NUEVAMENTE
+        // -----------------------------------------------------
 
         const geo =
           await geocodeAddress({
@@ -1474,17 +1486,20 @@ button.textContent="Entrar";
             ? geo.longitude
             : null;
 
+        // -----------------------------------------------------
+        // UPDATE
+        // -----------------------------------------------------
+
         const result =
           await env.DB
             .prepare(`
               UPDATE properties
               SET
+                title = ?,
                 property_type = ?,
                 city = ?,
                 neighborhood = ?,
                 address = ?,
-                latitude = ?,
-                longitude = ?,
                 bedrooms = ?,
                 bathrooms = ?,
                 square_meters = ?,
@@ -1494,16 +1509,17 @@ button.textContent="Entrar";
                 owner_name = ?,
                 owner_phone = ?,
                 notes = ?,
-                status = ?
+                status = ?,
+                latitude = ?,
+                longitude = ?
               WHERE id = ?
             `)
             .bind(
+              title,
               propertyType,
               city,
               neighborhood,
               address,
-              latitude,
-              longitude,
               bedrooms,
               bathrooms,
               squareMeters,
@@ -1514,6 +1530,8 @@ button.textContent="Entrar";
               ownerPhone,
               notes,
               status,
+              latitude,
+              longitude,
               id
             )
             .run();
@@ -1532,14 +1550,22 @@ button.textContent="Entrar";
 
         return json({
           success:true,
+
           message:
             "Propiedad actualizada correctamente.",
+
+          id,
+          title,
+
           geocoded:
             geo.success,
+
           latitude,
           longitude,
+
           confidence:
             geo.confidence,
+
           location:
             geo.display_name
         });
@@ -1646,6 +1672,7 @@ button.textContent="Entrar";
             .prepare(`
               SELECT
                 id,
+                title,
                 property_type,
                 city,
                 neighborhood,
