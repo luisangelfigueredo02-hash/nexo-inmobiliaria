@@ -1,6 +1,5 @@
 export default {
   async fetch(request, env) {
-
     const url = new URL(request.url);
 
     // =========================================================
@@ -9,10 +8,8 @@ export default {
 
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods":
-        "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers":
-        "Content-Type, Accept"
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Accept"
     };
 
     if (request.method === "OPTIONS") {
@@ -23,44 +20,32 @@ export default {
     }
 
     // =========================================================
-    // JSON
+    // RESPUESTA JSON
     // =========================================================
 
     function json(data, status = 200, extraHeaders = {}) {
-      return new Response(
-        JSON.stringify(data),
-        {
-          status,
-          headers: {
-            "Content-Type":
-              "application/json; charset=UTF-8",
-            ...corsHeaders,
-            ...extraHeaders
-          }
+      return new Response(JSON.stringify(data), {
+        status,
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          ...corsHeaders,
+          ...extraHeaders
         }
-      );
+      });
     }
 
     // =========================================================
-    // ADMIN TOKEN
+    // AUTENTICACIÓN ADMIN
     // =========================================================
 
     async function createAdminToken() {
+      if (!env.ADMIN) return null;
 
-      if (!env.ADMIN) {
-        return null;
-      }
+      const encoder = new TextEncoder();
 
-      const encoder =
-        new TextEncoder();
-
-      const keyData =
-        encoder.encode(env.ADMIN);
-
+      const keyData = encoder.encode(env.ADMIN);
       const messageData =
-        encoder.encode(
-          "NEXO-ADMIN-SESSION"
-        );
+        encoder.encode("NEXO-ADMIN-SESSION");
 
       const key =
         await crypto.subtle.importKey(
@@ -93,10 +78,7 @@ export default {
     }
 
     async function isAdminAuthenticated(request) {
-
-      if (!env.ADMIN) {
-        return false;
-      }
+      if (!env.ADMIN) return false;
 
       const cookieHeader =
         request.headers.get("Cookie") || "";
@@ -106,20 +88,383 @@ export default {
           /(?:^|;\s*)nexo_admin=([^;]+)/
         );
 
-      if (!match) {
-        return false;
-      }
+      if (!match) return false;
 
       const expectedToken =
         await createAdminToken();
 
-      return (
-        match[1] === expectedToken
-      );
+      return match[1] === expectedToken;
     }
 
     // =========================================================
-    // LOGIN PAGE
+    // GEOCODIFICACIÓN
+    // =========================================================
+
+    /*
+      NEXO utiliza Nominatim / OpenStreetMap.
+
+      Objetivo:
+
+      Dirección
+      +
+      Municipio/Zona
+      +
+      Ciudad
+      +
+      Provincia
+      +
+      Cuba
+
+      -> latitude
+      -> longitude
+
+      Si no encuentra una ubicación fiable:
+      latitude = null
+      longitude = null
+
+      NEXO NO inventará coordenadas.
+    */
+
+    function cleanText(value) {
+      if (
+        value === null ||
+        value === undefined
+      ) {
+        return "";
+      }
+
+      return String(value)
+        .trim()
+        .replace(/\s+/g, " ");
+    }
+
+    function buildAddressQueries(data) {
+      const address =
+        cleanText(data.address);
+
+      const neighborhood =
+        cleanText(data.neighborhood);
+
+      const city =
+        cleanText(data.city);
+
+      const province =
+        cleanText(data.province);
+
+      const queries = [];
+
+      // -------------------------------------------------------
+      // 1. Dirección más completa
+      // -------------------------------------------------------
+
+      if (address) {
+        queries.push(
+          [
+            address,
+            neighborhood,
+            city,
+            province,
+            "Cuba"
+          ]
+            .filter(Boolean)
+            .join(", ")
+        );
+      }
+
+      // -------------------------------------------------------
+      // 2. Dirección + ciudad
+      // -------------------------------------------------------
+
+      if (
+        address &&
+        city
+      ) {
+        queries.push(
+          [
+            address,
+            city,
+            "Cuba"
+          ]
+            .filter(Boolean)
+            .join(", ")
+        );
+      }
+
+      // -------------------------------------------------------
+      // 3. Dirección + zona + Cuba
+      // -------------------------------------------------------
+
+      if (
+        address &&
+        neighborhood
+      ) {
+        queries.push(
+          [
+            address,
+            neighborhood,
+            "Cuba"
+          ]
+            .filter(Boolean)
+            .join(", ")
+        );
+      }
+
+      // -------------------------------------------------------
+      // 4. Zona + ciudad + Cuba
+      // -------------------------------------------------------
+
+      if (
+        neighborhood &&
+        city
+      ) {
+        queries.push(
+          [
+            neighborhood,
+            city,
+            "Cuba"
+          ]
+            .filter(Boolean)
+            .join(", ")
+        );
+      }
+
+      // -------------------------------------------------------
+      // 5. Ciudad + Cuba
+      // -------------------------------------------------------
+
+      if (city) {
+        queries.push(
+          [
+            city,
+            "Cuba"
+          ]
+            .filter(Boolean)
+            .join(", ")
+        );
+      }
+
+      // Eliminar duplicados
+      return [
+        ...new Set(
+          queries.filter(Boolean)
+        )
+      ];
+    }
+
+    function normalizeForComparison(value) {
+      return cleanText(value)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function resultLooksRelevant(result, data) {
+      if (!result) return false;
+
+      const display =
+        normalizeForComparison(
+          result.display_name || ""
+        );
+
+      const city =
+        normalizeForComparison(
+          data.city || ""
+        );
+
+      const neighborhood =
+        normalizeForComparison(
+          data.neighborhood || ""
+        );
+
+      // Debe existir Cuba en el resultado
+      if (
+        !display.includes("cuba")
+      ) {
+        return false;
+      }
+
+      // Si especificamos ciudad,
+      // intentamos comprobar que aparezca.
+      if (
+        city &&
+        !display.includes(city)
+      ) {
+        // No rechazamos completamente porque
+        // Nominatim puede devolver nombres
+        // administrativos diferentes.
+        return true;
+      }
+
+      // Si existe barrio/zona y aparece,
+      // es una señal positiva.
+      if (
+        neighborhood &&
+        display.includes(neighborhood)
+      ) {
+        return true;
+      }
+
+      return true;
+    }
+
+    async function geocodeProperty(data) {
+      const queries =
+        buildAddressQueries(data);
+
+      if (!queries.length) {
+        return {
+          latitude: null,
+          longitude: null,
+          found: false,
+          query: null,
+          display_name: null
+        };
+      }
+
+      /*
+        Nominatim tiene una política de uso limitada.
+        No hacemos búsquedas masivas.
+        Una publicación/actualización = una búsqueda
+        principal. Si falla, usamos alternativas dentro
+        de la misma operación solamente cuando sea necesario.
+      */
+
+      for (
+        let i = 0;
+        i < queries.length;
+        i++
+      ) {
+        const query =
+          queries[i];
+
+        try {
+          const searchURL =
+            new URL(
+              "https://nominatim.openstreetmap.org/search"
+            );
+
+          searchURL.searchParams.set(
+            "q",
+            query
+          );
+
+          searchURL.searchParams.set(
+            "format",
+            "jsonv2"
+          );
+
+          searchURL.searchParams.set(
+            "limit",
+            "3"
+          );
+
+          searchURL.searchParams.set(
+            "addressdetails",
+            "1"
+          );
+
+          searchURL.searchParams.set(
+            "countrycodes",
+            "cu"
+          );
+
+          const response =
+            await fetch(
+              searchURL.toString(),
+              {
+                method: "GET",
+                headers: {
+                  "Accept":
+                    "application/json",
+                  "User-Agent":
+                    "NEXO-Inmueble/1.0 (https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev)"
+                },
+                cf: {
+                  cacheTtl: 3600,
+                  cacheEverything: false
+                }
+              }
+            );
+
+          if (!response.ok) {
+            console.error(
+              "NEXO GEOCODE HTTP:",
+              response.status,
+              query
+            );
+
+            continue;
+          }
+
+          const results =
+            await response.json();
+
+          if (
+            !Array.isArray(results) ||
+            !results.length
+          ) {
+            continue;
+          }
+
+          const validResult =
+            results.find(
+              result =>
+                resultLooksRelevant(
+                  result,
+                  data
+                )
+            );
+
+          if (!validResult) {
+            continue;
+          }
+
+          const latitude =
+            Number(
+              validResult.lat
+            );
+
+          const longitude =
+            Number(
+              validResult.lon
+            );
+
+          if (
+            !Number.isFinite(latitude) ||
+            !Number.isFinite(longitude)
+          ) {
+            continue;
+          }
+
+          return {
+            latitude,
+            longitude,
+            found: true,
+            query,
+            display_name:
+              validResult.display_name ||
+              null
+          };
+        } catch (error) {
+          console.error(
+            "NEXO GEOCODE ERROR:",
+            error
+          );
+        }
+      }
+
+      return {
+        latitude: null,
+        longitude: null,
+        found: false,
+        query:
+          queries[0] || null,
+        display_name: null
+      };
+    }
+
+    // =========================================================
+    // PÁGINA DE LOGIN
     // =========================================================
 
     const loginPage = `
@@ -145,7 +490,6 @@ export default {
 }
 
 body {
-
   min-height: 100vh;
 
   display: flex;
@@ -169,9 +513,10 @@ body {
   width: 100%;
   max-width: 390px;
 
-  background: #fff;
+  background: #ffffff;
 
   border: 1px solid #e7e7e7;
+
   border-radius: 24px;
 
   padding: 32px;
@@ -204,6 +549,7 @@ label {
   display: block;
 
   font-size: 14px;
+
   font-weight: 600;
 
   margin-bottom: 8px;
@@ -216,6 +562,7 @@ input {
   padding: 15px;
 
   border: 1px solid #ddd;
+
   border-radius: 12px;
 
   font-size: 16px;
@@ -224,7 +571,6 @@ input {
 }
 
 input:focus {
-
   border-color: #171717;
 }
 
@@ -237,12 +583,15 @@ button {
   padding: 15px;
 
   border: 0;
+
   border-radius: 12px;
 
   background: #171717;
+
   color: white;
 
   font-size: 16px;
+
   font-weight: 700;
 
   cursor: pointer;
@@ -271,7 +620,6 @@ button:disabled {
 }
 
 .error.show {
-
   display: block;
 }
 
@@ -283,65 +631,57 @@ button:disabled {
 
 <div class="login">
 
-  <div class="logo">
-    NEXO
-  </div>
+<div class="logo">
+NEXO
+</div>
 
-  <div class="subtitle">
-    Acceso al panel de administración
-  </div>
+<div class="subtitle">
+Acceso al panel de administración
+</div>
 
-  <form id="loginForm">
+<form id="loginForm">
 
-    <label for="password">
-      Contraseña
-    </label>
+<label for="password">
+Contraseña
+</label>
 
-    <input
-      id="password"
-      type="password"
-      autocomplete="current-password"
-      placeholder="Introduce tu contraseña"
-      required
-    >
+<input
+  id="password"
+  type="password"
+  autocomplete="current-password"
+  placeholder="Introduce tu contraseña"
+  required
+>
 
-    <button
-      id="loginButton"
-      type="submit"
-    >
-      Entrar
-    </button>
+<button
+  id="loginButton"
+  type="submit"
+>
+Entrar
+</button>
 
-    <div
-      id="error"
-      class="error"
-    ></div>
+<div
+  id="error"
+  class="error"
+></div>
 
-  </form>
+</form>
 
 </div>
 
 <script>
 
 const form =
-  document.getElementById(
-    "loginForm"
-  );
+  document.getElementById("loginForm");
 
 const password =
-  document.getElementById(
-    "password"
-  );
+  document.getElementById("password");
 
 const button =
-  document.getElementById(
-    "loginButton"
-  );
+  document.getElementById("loginButton");
 
 const error =
-  document.getElementById(
-    "error"
-  );
+  document.getElementById("error");
 
 form.addEventListener(
   "submit",
@@ -349,9 +689,7 @@ form.addEventListener(
 
     event.preventDefault();
 
-    error.classList.remove(
-      "show"
-    );
+    error.classList.remove("show");
 
     error.textContent = "";
 
@@ -407,9 +745,7 @@ form.addEventListener(
         err.message ||
         "No se pudo iniciar sesión.";
 
-      error.classList.add(
-        "show"
-      );
+      error.classList.add("show");
 
       password.value = "";
 
@@ -422,8 +758,8 @@ form.addEventListener(
       button.textContent =
         "Entrar";
     }
-
-  });
+  }
+);
 
 </script>
 
@@ -436,8 +772,7 @@ form.addEventListener(
     // =========================================================
 
     if (
-      url.pathname ===
-        "/api/admin/login" &&
+      url.pathname === "/api/admin/login" &&
       request.method === "POST"
     ) {
 
@@ -447,29 +782,34 @@ form.addEventListener(
           await request.json();
 
         const password =
-          typeof body.password ===
-          "string"
+          typeof body.password === "string"
             ? body.password
             : "";
 
         if (!env.ADMIN) {
 
-          return json({
-            success: false,
-            error:
-              "La contraseña de administrador no está configurada."
-          }, 500);
+          return json(
+            {
+              success: false,
+              error:
+                "La contraseña de administrador no está configurada."
+            },
+            500
+          );
         }
 
         if (
           password !== env.ADMIN
         ) {
 
-          return json({
-            success: false,
-            error:
-              "Contraseña incorrecta."
-          }, 401);
+          return json(
+            {
+              success: false,
+              error:
+                "Contraseña incorrecta."
+            },
+            401
+          );
         }
 
         const token =
@@ -493,11 +833,14 @@ form.addEventListener(
           error
         );
 
-        return json({
-          success: false,
-          error:
-            "Solicitud de inicio de sesión inválida."
-        }, 400);
+        return json(
+          {
+            success: false,
+            error:
+              "Solicitud de inicio de sesión inválida."
+          },
+          400
+        );
       }
     }
 
@@ -506,8 +849,7 @@ form.addEventListener(
     // =========================================================
 
     if (
-      url.pathname ===
-        "/api/admin/logout" &&
+      url.pathname === "/api/admin/logout" &&
       request.method === "POST"
     ) {
 
@@ -543,7 +885,6 @@ form.addEventListener(
           loginPage,
           {
             status: 200,
-
             headers: {
               "Content-Type":
                 "text/html; charset=UTF-8"
@@ -585,213 +926,23 @@ form.addEventListener(
 
       if (!authenticated) {
 
-        return json({
-          success: false,
-          error:
-            "No autorizado."
-        }, 401);
+        return json(
+          {
+            success: false,
+            error:
+              "No autorizado."
+          },
+          401
+        );
       }
     }
 
     // =========================================================
-    // GEOCODIFICACIÓN
-    // =========================================================
-
-    async function geocodeProperty(
-      property
-    ) {
-
-      const address =
-        typeof property.address ===
-        "string"
-          ? property.address.trim()
-          : "";
-
-      const neighborhood =
-        typeof property.neighborhood ===
-        "string"
-          ? property.neighborhood.trim()
-          : "";
-
-      const city =
-        typeof property.city ===
-        "string"
-          ? property.city.trim()
-          : "";
-
-      const province =
-        typeof property.province ===
-        "string"
-          ? property.province.trim()
-          : "";
-
-      if (
-        !address &&
-        !neighborhood &&
-        !city
-      ) {
-
-        return {
-          success: false,
-          latitude: null,
-          longitude: null,
-          reason:
-            "No hay suficiente información de ubicación."
-        };
-      }
-
-      /*
-       * IMPORTANTE:
-       * No enviamos datos privados del propietario.
-       */
-
-      const parts = [
-        address,
-        neighborhood,
-        city,
-        province,
-        "Cuba"
-      ].filter(Boolean);
-
-      const query =
-        parts.join(", ");
-
-      const searchURL =
-        new URL(
-          "https://nominatim.openstreetmap.org/search"
-        );
-
-      searchURL.searchParams.set(
-        "q",
-        query
-      );
-
-      searchURL.searchParams.set(
-        "format",
-        "jsonv2"
-      );
-
-      searchURL.searchParams.set(
-        "limit",
-        "1"
-      );
-
-      searchURL.searchParams.set(
-        "addressdetails",
-        "1"
-      );
-
-      searchURL.searchParams.set(
-        "countrycodes",
-        "cu"
-      );
-
-      try {
-
-        const response =
-          await fetch(
-            searchURL.toString(),
-            {
-              method: "GET",
-
-              headers: {
-                "Accept":
-                  "application/json",
-
-                "User-Agent":
-                  "NEXO-Inmobiliaria/1.0"
-              }
-            }
-          );
-
-        if (!response.ok) {
-
-          console.error(
-            "NEXO GEOCODE HTTP:",
-            response.status
-          );
-
-          return {
-            success: false,
-            latitude: null,
-            longitude: null,
-            reason:
-              "El servicio de ubicación no respondió correctamente."
-          };
-        }
-
-        const results =
-          await response.json();
-
-        if (
-          !Array.isArray(results) ||
-          !results.length
-        ) {
-
-          return {
-            success: false,
-            latitude: null,
-            longitude: null,
-            reason:
-              "No se encontró una ubicación suficientemente precisa."
-          };
-        }
-
-        const result =
-          results[0];
-
-        const latitude =
-          Number(result.lat);
-
-        const longitude =
-          Number(result.lon);
-
-        if (
-          !Number.isFinite(latitude) ||
-          !Number.isFinite(longitude)
-        ) {
-
-          return {
-            success: false,
-            latitude: null,
-            longitude: null,
-            reason:
-              "La ubicación encontrada no tiene coordenadas válidas."
-          };
-        }
-
-        return {
-          success: true,
-          latitude,
-          longitude,
-          display_name:
-            result.display_name || null
-        };
-
-      } catch (error) {
-
-        console.error(
-          "NEXO GEOCODE:",
-          error
-        );
-
-        return {
-          success: false,
-          latitude: null,
-          longitude: null,
-          reason:
-            "No fue posible consultar el servicio de ubicación."
-        };
-      }
-    }
-
-    // =========================================================
-    // OBTENER PROPIEDADES
+    // OBTENER TODAS LAS PROPIEDADES
     // =========================================================
 
     if (
-      url.pathname ===
-        "/api/properties" &&
+      url.pathname === "/api/properties" &&
       request.method === "GET"
     ) {
 
@@ -825,12 +976,13 @@ form.addEventListener(
             `)
             .all();
 
-        return json({
-          success: true,
-
-          properties:
-            result.results || []
-        });
+        return json(
+          {
+            success: true,
+            properties:
+              result.results || []
+          }
+        );
 
       } catch (error) {
 
@@ -839,11 +991,14 @@ form.addEventListener(
           error
         );
 
-        return json({
-          success: false,
-          error:
-            "No se pudieron obtener las propiedades."
-        }, 500);
+        return json(
+          {
+            success: false,
+            error:
+              "No se pudieron obtener las propiedades."
+          },
+          500
+        );
       }
     }
 
@@ -852,8 +1007,7 @@ form.addEventListener(
     // =========================================================
 
     if (
-      url.pathname ===
-        "/api/properties" &&
+      url.pathname === "/api/properties" &&
       request.method === "POST"
     ) {
 
@@ -863,46 +1017,48 @@ form.addEventListener(
           await request.json();
 
         const propertyType =
-          typeof body.property_type ===
-          "string"
-            ? body.property_type.trim()
-            : "";
+          cleanText(
+            body.property_type
+          );
 
         const city =
-          typeof body.city ===
-          "string"
-            ? body.city.trim()
-            : "";
+          cleanText(
+            body.city
+          );
+
+        const province =
+          cleanText(
+            body.province
+          );
+
+        const neighborhood =
+          cleanText(
+            body.neighborhood
+          );
+
+        const address =
+          cleanText(
+            body.address
+          );
 
         if (
           !propertyType ||
           !city
         ) {
 
-          return json({
-            success: false,
-            error:
-              "El tipo de propiedad y la ciudad son obligatorios."
-          }, 400);
+          return json(
+            {
+              success: false,
+              error:
+                "El tipo de propiedad y la ciudad son obligatorios."
+            },
+            400
+          );
         }
 
-        const neighborhood =
-          typeof body.neighborhood ===
-          "string"
-            ? body.neighborhood.trim()
-            : null;
-
-        const address =
-          typeof body.address ===
-          "string"
-            ? body.address.trim()
-            : null;
-
-        const province =
-          typeof body.province ===
-          "string"
-            ? body.province.trim()
-            : "";
+        // =====================================================
+        // NÚMEROS
+        // =====================================================
 
         const bedrooms =
           body.bedrooms === "" ||
@@ -932,50 +1088,53 @@ form.addEventListener(
             ? null
             : Number(body.price);
 
+        // =====================================================
+        // TEXTO
+        // =====================================================
+
         const description =
-          typeof body.description ===
-          "string"
-            ? body.description.trim()
-            : null;
+          cleanText(
+            body.description
+          ) || null;
+
+        /*
+          Compatibilidad con el panel actual:
+
+          contact_name
+          contact_phone
+          contact_email
+
+          y también:
+
+          owner_name
+          owner_phone
+        */
 
         const ownerName =
-          typeof body.owner_name ===
-          "string"
-            ? body.owner_name.trim()
-            : (
-                typeof body.contact_name ===
-                "string"
-                  ? body.contact_name.trim()
-                  : null
-              );
+          cleanText(
+            body.owner_name ||
+            body.contact_name
+          ) || null;
 
         const ownerPhone =
-          typeof body.owner_phone ===
-          "string"
-            ? body.owner_phone.trim()
-            : (
-                typeof body.contact_phone ===
-                "string"
-                  ? body.contact_phone.trim()
-                  : null
-              );
+          cleanText(
+            body.owner_phone ||
+            body.contact_phone
+          ) || null;
 
         const notes =
-          typeof body.notes ===
-          "string"
-            ? body.notes.trim()
-            : null;
+          cleanText(
+            body.notes
+          ) || null;
 
         const status =
-          typeof body.status ===
-          "string" &&
-          body.status.trim()
-            ? body.status.trim()
-            : "available";
+          cleanText(
+            body.status
+          ) || "available";
 
-        // -----------------------------------------------------
-        // FOTOGRAFÍAS
-        // -----------------------------------------------------
+        // =====================================================
+        // FOTOS
+        // =====================================================
 
         let photos = "[]";
 
@@ -996,8 +1155,7 @@ form.addEventListener(
               );
 
           } else if (
-            typeof body.photos ===
-            "string"
+            typeof body.photos === "string"
           ) {
 
             try {
@@ -1008,11 +1166,13 @@ form.addEventListener(
                 );
 
               photos =
-                Array.isArray(parsed)
-                  ? JSON.stringify(parsed)
-                  : JSON.stringify(
-                      body.photos
-                    );
+                JSON.stringify(
+                  Array.isArray(
+                    parsed
+                  )
+                    ? parsed
+                    : [body.photos]
+                );
 
             } catch {
 
@@ -1021,43 +1181,51 @@ form.addEventListener(
                   body.photos
                     .split(/\n|,/)
                     .map(
-                      item =>
-                        item.trim()
+                      value =>
+                        value.trim()
                     )
                     .filter(Boolean)
                 );
             }
-
           }
         }
 
-        // -----------------------------------------------------
-        // GEOCODIFICAR
-        // -----------------------------------------------------
+        // =====================================================
+        // GEOCODIFICACIÓN
+        // =====================================================
 
         let latitude = null;
         let longitude = null;
 
-        const geo =
-          await geocodeProperty({
-            address,
-            neighborhood,
-            city,
-            province
-          });
+        let geocodeFound = false;
+        let geocodeDisplayName = null;
 
-        if (geo.success) {
+        if (address) {
+
+          const geocode =
+            await geocodeProperty({
+              address,
+              neighborhood,
+              city,
+              province
+            });
 
           latitude =
-            geo.latitude;
+            geocode.latitude;
 
           longitude =
-            geo.longitude;
+            geocode.longitude;
+
+          geocodeFound =
+            geocode.found;
+
+          geocodeDisplayName =
+            geocode.display_name;
         }
 
-        // -----------------------------------------------------
-        // GUARDAR
-        // -----------------------------------------------------
+        // =====================================================
+        // INSERTAR
+        // =====================================================
 
         const result =
           await env.DB
@@ -1089,8 +1257,8 @@ form.addEventListener(
             .bind(
               propertyType,
               city,
-              neighborhood,
-              address,
+              neighborhood || null,
+              address || null,
               latitude,
               longitude,
               bedrooms,
@@ -1106,32 +1274,33 @@ form.addEventListener(
             )
             .run();
 
-        return json({
-          success: true,
-
-          message:
-            "Propiedad creada correctamente.",
-
-          id:
-            result.meta?.last_row_id ||
-            null,
-
-          location: {
-            latitude,
-            longitude,
-
-            found:
-              geo.success,
+        return json(
+          {
+            success: true,
 
             message:
-              geo.success
-                ? "Ubicación encontrada automáticamente."
-                : (
-                    geo.reason ||
-                    "No se pudo determinar la ubicación."
-                  )
-          }
-        }, 201);
+              geocodeFound
+                ? "Propiedad creada y ubicación encontrada correctamente."
+                : "Propiedad creada. No se pudo determinar automáticamente una ubicación exacta.",
+
+            id:
+              result.meta?.last_row_id ||
+              null,
+
+            location: {
+              found:
+                geocodeFound,
+
+              latitude,
+
+              longitude,
+
+              display_name:
+                geocodeDisplayName
+            }
+          },
+          201
+        );
 
       } catch (error) {
 
@@ -1140,141 +1309,14 @@ form.addEventListener(
           error
         );
 
-        return json({
-          success: false,
-          error:
-            "No se pudo crear la propiedad."
-        }, 500);
-      }
-    }
-
-    // =========================================================
-    // REUBICAR / GEOCODIFICAR PROPIEDAD EXISTENTE
-    // =========================================================
-
-    if (
-      url.pathname.match(
-        /^\\/api\\/properties\\/\\d+\\/geocode$/
-      ) &&
-      request.method === "POST"
-    ) {
-
-      const parts =
-        url.pathname.split("/");
-
-      const id =
-        parts[3];
-
-      if (
-        !id ||
-        !/^\d+$/.test(id)
-      ) {
-
-        return json({
-          success: false,
-          error:
-            "ID de propiedad inválido."
-        }, 400);
-      }
-
-      try {
-
-        const property =
-          await env.DB
-            .prepare(`
-              SELECT
-                id,
-                city,
-                neighborhood,
-                address,
-                latitude,
-                longitude
-              FROM properties
-              WHERE id = ?
-            `)
-            .bind(Number(id))
-            .first();
-
-        if (!property) {
-
-          return json({
+        return json(
+          {
             success: false,
             error:
-              "Propiedad no encontrada."
-          }, 404);
-        }
-
-        const geo =
-          await geocodeProperty({
-            address:
-              property.address,
-            neighborhood:
-              property.neighborhood,
-            city:
-              property.city,
-            province: ""
-          });
-
-        if (!geo.success) {
-
-          return json({
-            success: false,
-
-            error:
-              geo.reason ||
-              "No se encontró la ubicación.",
-
-            latitude: null,
-            longitude: null
-          }, 422);
-        }
-
-        await env.DB
-          .prepare(`
-            UPDATE properties
-            SET
-              latitude = ?,
-              longitude = ?
-            WHERE id = ?
-          `)
-          .bind(
-            geo.latitude,
-            geo.longitude,
-            Number(id)
-          )
-          .run();
-
-        return json({
-          success: true,
-
-          message:
-            "Ubicación actualizada correctamente.",
-
-          property_id:
-            Number(id),
-
-          latitude:
-            geo.latitude,
-
-          longitude:
-            geo.longitude,
-
-          display_name:
-            geo.display_name || null
-        });
-
-      } catch (error) {
-
-        console.error(
-          "NEXO GEOCODE EXISTING:",
-          error
+              "No se pudo crear la propiedad."
+          },
+          500
         );
-
-        return json({
-          success: false,
-          error:
-            "No se pudo actualizar la ubicación."
-        }, 500);
       }
     }
 
@@ -1283,8 +1325,8 @@ form.addEventListener(
     // =========================================================
 
     if (
-      url.pathname.match(
-        /^\\/api\\/properties\\/\\d+$/
+      url.pathname.startsWith(
+        "/api/properties/"
       ) &&
       request.method === "PUT"
     ) {
@@ -1299,11 +1341,14 @@ form.addEventListener(
         !/^\d+$/.test(id)
       ) {
 
-        return json({
-          success: false,
-          error:
-            "ID de propiedad inválido."
-        }, 400);
+        return json(
+          {
+            success: false,
+            error:
+              "ID de propiedad inválido."
+          },
+          400
+        );
       }
 
       try {
@@ -1312,46 +1357,44 @@ form.addEventListener(
           await request.json();
 
         const propertyType =
-          typeof body.property_type ===
-          "string"
-            ? body.property_type.trim()
-            : "";
+          cleanText(
+            body.property_type
+          );
 
         const city =
-          typeof body.city ===
-          "string"
-            ? body.city.trim()
-            : "";
+          cleanText(
+            body.city
+          );
+
+        const province =
+          cleanText(
+            body.province
+          );
+
+        const neighborhood =
+          cleanText(
+            body.neighborhood
+          );
+
+        const address =
+          cleanText(
+            body.address
+          );
 
         if (
           !propertyType ||
           !city
         ) {
 
-          return json({
-            success: false,
-            error:
-              "El tipo de propiedad y la ciudad son obligatorios."
-          }, 400);
+          return json(
+            {
+              success: false,
+              error:
+                "El tipo de propiedad y la ciudad son obligatorios."
+            },
+            400
+          );
         }
-
-        const neighborhood =
-          typeof body.neighborhood ===
-          "string"
-            ? body.neighborhood.trim()
-            : null;
-
-        const address =
-          typeof body.address ===
-          "string"
-            ? body.address.trim()
-            : null;
-
-        const province =
-          typeof body.province ===
-          "string"
-            ? body.province.trim()
-            : "";
 
         const bedrooms =
           body.bedrooms === "" ||
@@ -1382,45 +1425,35 @@ form.addEventListener(
             : Number(body.price);
 
         const description =
-          typeof body.description ===
-          "string"
-            ? body.description.trim()
-            : null;
+          cleanText(
+            body.description
+          ) || null;
 
         const ownerName =
-          typeof body.owner_name ===
-          "string"
-            ? body.owner_name.trim()
-            : (
-                typeof body.contact_name ===
-                "string"
-                  ? body.contact_name.trim()
-                  : null
-              );
+          cleanText(
+            body.owner_name ||
+            body.contact_name
+          ) || null;
 
         const ownerPhone =
-          typeof body.owner_phone ===
-          "string"
-            ? body.owner_phone.trim()
-            : (
-                typeof body.contact_phone ===
-                "string"
-                  ? body.contact_phone.trim()
-                  : null
-              );
+          cleanText(
+            body.owner_phone ||
+            body.contact_phone
+          ) || null;
 
         const notes =
-          typeof body.notes ===
-          "string"
-            ? body.notes.trim()
-            : null;
+          cleanText(
+            body.notes
+          ) || null;
 
         const status =
-          typeof body.status ===
-          "string" &&
-          body.status.trim()
-            ? body.status.trim()
-            : "available";
+          cleanText(
+            body.status
+          ) || "available";
+
+        // =====================================================
+        // FOTOS
+        // =====================================================
 
         let photos = "[]";
 
@@ -1441,8 +1474,7 @@ form.addEventListener(
               );
 
           } else if (
-            typeof body.photos ===
-            "string"
+            typeof body.photos === "string"
           ) {
 
             try {
@@ -1453,11 +1485,13 @@ form.addEventListener(
                 );
 
               photos =
-                Array.isArray(parsed)
-                  ? JSON.stringify(parsed)
-                  : JSON.stringify(
-                      body.photos
-                    );
+                JSON.stringify(
+                  Array.isArray(
+                    parsed
+                  )
+                    ? parsed
+                    : [body.photos]
+                );
 
             } catch {
 
@@ -1466,8 +1500,8 @@ form.addEventListener(
                   body.photos
                     .split(/\n|,/)
                     .map(
-                      item =>
-                        item.trim()
+                      value =>
+                        value.trim()
                     )
                     .filter(Boolean)
                 );
@@ -1475,34 +1509,39 @@ form.addEventListener(
           }
         }
 
-        // -----------------------------------------------------
+        // =====================================================
         // GEOCODIFICAR NUEVAMENTE
-        // -----------------------------------------------------
+        // =====================================================
 
         let latitude = null;
         let longitude = null;
 
-        const geo =
-          await geocodeProperty({
-            address,
-            neighborhood,
-            city,
-            province
-          });
+        if (address) {
 
-        if (geo.success) {
+          const geocode =
+            await geocodeProperty({
+              address,
+              neighborhood,
+              city,
+              province
+            });
 
           latitude =
-            geo.latitude;
+            geocode.latitude;
 
           longitude =
-            geo.longitude;
+            geocode.longitude;
         }
+
+        // =====================================================
+        // UPDATE
+        // =====================================================
 
         const result =
           await env.DB
             .prepare(`
               UPDATE properties
+
               SET
                 property_type = ?,
                 city = ?,
@@ -1520,13 +1559,14 @@ form.addEventListener(
                 owner_phone = ?,
                 notes = ?,
                 status = ?
+
               WHERE id = ?
             `)
             .bind(
               propertyType,
               city,
-              neighborhood,
-              address,
+              neighborhood || null,
+              address || null,
               latitude,
               longitude,
               bedrooms,
@@ -1547,35 +1587,25 @@ form.addEventListener(
           !result.meta?.changes
         ) {
 
-          return json({
-            success: false,
-            error:
-              "Propiedad no encontrada."
-          }, 404);
+          return json(
+            {
+              success: false,
+              error:
+                "Propiedad no encontrada."
+            },
+            404
+          );
         }
 
-        return json({
-          success: true,
-
-          message:
-            "Propiedad actualizada correctamente.",
-
-          location: {
-            latitude,
-            longitude,
-
-            found:
-              geo.success,
-
+        return json(
+          {
+            success: true,
             message:
-              geo.success
-                ? "Ubicación actualizada automáticamente."
-                : (
-                    geo.reason ||
-                    "No se pudo determinar la ubicación."
-                  )
+              "Propiedad actualizada correctamente.",
+            latitude,
+            longitude
           }
-        });
+        );
 
       } catch (error) {
 
@@ -1584,11 +1614,14 @@ form.addEventListener(
           error
         );
 
-        return json({
-          success: false,
-          error:
-            "No se pudo actualizar la propiedad."
-        }, 500);
+        return json(
+          {
+            success: false,
+            error:
+              "No se pudo actualizar la propiedad."
+          },
+          500
+        );
       }
     }
 
@@ -1597,8 +1630,8 @@ form.addEventListener(
     // =========================================================
 
     if (
-      url.pathname.match(
-        /^\\/api\\/properties\\/\\d+$/
+      url.pathname.startsWith(
+        "/api/properties/"
       ) &&
       request.method === "DELETE"
     ) {
@@ -1613,11 +1646,14 @@ form.addEventListener(
         !/^\d+$/.test(id)
       ) {
 
-        return json({
-          success: false,
-          error:
-            "ID de propiedad inválido."
-        }, 400);
+        return json(
+          {
+            success: false,
+            error:
+              "ID de propiedad inválido."
+          },
+          400
+        );
       }
 
       try {
@@ -1637,19 +1673,23 @@ form.addEventListener(
           !result.meta?.changes
         ) {
 
-          return json({
-            success: false,
-            error:
-              "Propiedad no encontrada."
-          }, 404);
+          return json(
+            {
+              success: false,
+              error:
+                "Propiedad no encontrada."
+            },
+            404
+          );
         }
 
-        return json({
-          success: true,
-
-          message:
-            "Propiedad eliminada correctamente."
-        });
+        return json(
+          {
+            success: true,
+            message:
+              "Propiedad eliminada correctamente."
+          }
+        );
 
       } catch (error) {
 
@@ -1658,11 +1698,14 @@ form.addEventListener(
           error
         );
 
-        return json({
-          success: false,
-          error:
-            "No se pudo eliminar la propiedad."
-        }, 500);
+        return json(
+          {
+            success: false,
+            error:
+              "No se pudo eliminar la propiedad."
+          },
+          500
+        );
       }
     }
 
@@ -1671,8 +1714,8 @@ form.addEventListener(
     // =========================================================
 
     if (
-      url.pathname.match(
-        /^\\/api\\/properties\\/\\d+$/
+      url.pathname.startsWith(
+        "/api/properties/"
       ) &&
       request.method === "GET"
     ) {
@@ -1687,11 +1730,14 @@ form.addEventListener(
         !/^\d+$/.test(id)
       ) {
 
-        return json({
-          success: false,
-          error:
-            "ID de propiedad inválido."
-        }, 400);
+        return json(
+          {
+            success: false,
+            error:
+              "ID de propiedad inválido."
+          },
+          400
+        );
       }
 
       try {
@@ -1720,7 +1766,6 @@ form.addEventListener(
                 created_at
               FROM properties
               WHERE id = ?
-                AND status = 'available'
             `)
             .bind(
               Number(id)
@@ -1729,17 +1774,22 @@ form.addEventListener(
 
         if (!property) {
 
-          return json({
-            success: false,
-            error:
-              "Propiedad no encontrada."
-          }, 404);
+          return json(
+            {
+              success: false,
+              error:
+                "Propiedad no encontrada."
+            },
+            404
+          );
         }
 
-        return json({
-          success: true,
-          property
-        });
+        return json(
+          {
+            success: true,
+            property
+          }
+        );
 
       } catch (error) {
 
@@ -1748,11 +1798,14 @@ form.addEventListener(
           error
         );
 
-        return json({
-          success: false,
-          error:
-            "Error al consultar la propiedad."
-        }, 500);
+        return json(
+          {
+            success: false,
+            error:
+              "Error al consultar la propiedad."
+          },
+          500
+        );
       }
     }
 
