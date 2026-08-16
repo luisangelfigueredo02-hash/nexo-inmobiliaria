@@ -21,13 +21,6 @@
   <title>NEXO — Descubre tu próximo lugar</title>
 
   <style>
-
-    /* =========================================================
-       NEXO — HOME
-       Experiencia principal
-       Mapa e IA viven fuera de este archivo
-       ========================================================= */
-
     :root {
       --bg: #f5f5f7;
       --white: #ffffff;
@@ -35,20 +28,16 @@
       --text: #171717;
       --muted: #77777d;
       --soft: #ededf0;
-
-      --glass: rgba(255,255,255,.72);
-
       --border: rgba(0,0,0,.06);
 
-      --shadow:
-        0 25px 70px rgba(0,0,0,.08);
-
-      --ease:
-        cubic-bezier(.22,1,.36,1);
+      --ease: cubic-bezier(.22,1,.36,1);
 
       --radius-xl: 38px;
       --radius-lg: 30px;
       --radius-md: 22px;
+
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     * {
@@ -62,7 +51,7 @@
 
     body {
       margin: 0;
-
+      min-width: 320px;
       background: var(--bg);
       color: var(--text);
 
@@ -76,6 +65,10 @@
         sans-serif;
 
       overflow-x: hidden;
+    }
+
+    body.loading {
+      overflow: hidden;
     }
 
     button,
@@ -92,6 +85,30 @@
       color: inherit;
     }
 
+    img {
+      max-width: 100%;
+    }
+
+    /* =========================================================
+       ACCESSIBILITY
+       ========================================================= */
+
+    :focus-visible {
+      outline: 3px solid rgba(0,0,0,.25);
+      outline-offset: 3px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
 
     /* =========================================================
        BOOT
@@ -100,7 +117,6 @@
     #boot {
       position: fixed;
       inset: 0;
-
       z-index: 99999;
 
       display: grid;
@@ -109,8 +125,8 @@
       background: var(--bg);
 
       transition:
-        opacity .8s var(--ease),
-        visibility .8s;
+        opacity .7s var(--ease),
+        visibility .7s;
     }
 
     #boot.hide {
@@ -122,7 +138,6 @@
     .boot-logo {
       font-size: 43px;
       font-weight: 800;
-
       letter-spacing: -.09em;
 
       animation:
@@ -130,9 +145,7 @@
     }
 
     @keyframes bootPulse {
-
-      0%,
-      100% {
+      0%, 100% {
         opacity: .35;
         transform: scale(.96);
       }
@@ -141,9 +154,7 @@
         opacity: 1;
         transform: scale(1);
       }
-
     }
-
 
     /* =========================================================
        NAV
@@ -151,16 +162,13 @@
 
     .nav {
       position: fixed;
-
-      top: 15px;
+      top: calc(15px + var(--safe-top));
       left: 50%;
-
       transform: translateX(-50%);
 
       z-index: 5000;
 
-      width:
-        min(1120px, calc(100% - 24px));
+      width: min(1120px, calc(100% - 24px));
 
       display: flex;
       align-items: center;
@@ -168,30 +176,21 @@
 
       padding: 10px 11px 10px 18px;
 
-      background:
-        rgba(255,255,255,.70);
+      background: rgba(255,255,255,.72);
 
-      backdrop-filter:
-        blur(30px) saturate(180%);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
 
-      -webkit-backdrop-filter:
-        blur(30px) saturate(180%);
-
-      border:
-        1px solid rgba(255,255,255,.75);
-
+      border: 1px solid rgba(255,255,255,.75);
       border-radius: 999px;
 
-      box-shadow:
-        0 12px 40px rgba(0,0,0,.08);
+      box-shadow: 0 12px 40px rgba(0,0,0,.08);
     }
 
     .logo {
       text-decoration: none;
-
       font-size: 21px;
       font-weight: 800;
-
       letter-spacing: -.09em;
     }
 
@@ -203,11 +202,9 @@
 
     .nav-link {
       padding: 9px 13px;
-
       border-radius: 999px;
 
       background: transparent;
-
       color: #555;
 
       font-size: 12px;
@@ -228,7 +225,6 @@
       transform: scale(.94);
     }
 
-
     /* =========================================================
        HERO
        ========================================================= */
@@ -238,8 +234,7 @@
 
       min-height: 820px;
 
-      padding:
-        150px 20px 75px;
+      padding: 150px 20px 75px;
 
       display: flex;
       align-items: center;
@@ -293,9 +288,7 @@
       position: relative;
       z-index: 2;
 
-      width:
-        min(1120px, 100%);
-
+      width: min(1120px, 100%);
       margin: auto;
 
       display: grid;
@@ -322,11 +315,8 @@
 
       border-radius: 999px;
 
-      background:
-        rgba(255,255,255,.75);
-
-      border:
-        1px solid rgba(0,0,0,.05);
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(0,0,0,.05);
 
       color: #666;
 
@@ -355,17 +345,14 @@
         clamp(55px, 8vw, 96px);
 
       line-height: .91;
-
       letter-spacing: -.085em;
-
       font-weight: 780;
     }
 
     .hero-subtitle {
       max-width: 590px;
 
-      margin:
-        30px 0 0;
+      margin: 30px 0 0;
 
       color: var(--muted);
 
@@ -373,10 +360,8 @@
         clamp(18px, 2.4vw, 23px);
 
       line-height: 1.45;
-
       letter-spacing: -.025em;
     }
-
 
     /* =========================================================
        SEARCH
@@ -384,7 +369,6 @@
 
     .search-area {
       margin-top: 38px;
-
       max-width: 690px;
     }
 
@@ -395,22 +379,15 @@
 
       padding: 8px;
 
-      background:
-        rgba(255,255,255,.84);
+      background: rgba(255,255,255,.84);
 
-      backdrop-filter:
-        blur(25px);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
 
-      -webkit-backdrop-filter:
-        blur(25px);
-
-      border:
-        1px solid rgba(0,0,0,.055);
-
+      border: 1px solid rgba(0,0,0,.055);
       border-radius: 22px;
 
-      box-shadow:
-        0 18px 55px rgba(0,0,0,.08);
+      box-shadow: 0 18px 55px rgba(0,0,0,.08);
 
       transition:
         transform .45s var(--ease),
@@ -432,7 +409,6 @@
       place-items: center;
 
       color: #777;
-
       font-size: 24px;
 
       flex: 0 0 auto;
@@ -446,7 +422,6 @@
       outline: 0;
 
       background: transparent;
-
       color: #111;
 
       font-size: 16px;
@@ -459,13 +434,11 @@
     .search-button {
       height: 44px;
 
-      padding:
-        0 19px;
+      padding: 0 19px;
 
       border-radius: 15px;
 
       background: #111;
-
       color: #fff;
 
       font-size: 13px;
@@ -490,8 +463,7 @@
 
       overflow-x: auto;
 
-      padding:
-        12px 2px 2px;
+      padding: 12px 2px 2px;
 
       scrollbar-width: none;
     }
@@ -503,16 +475,12 @@
     .quick-chip {
       flex: 0 0 auto;
 
-      padding:
-        8px 12px;
+      padding: 8px 12px;
 
       border-radius: 999px;
 
-      background:
-        rgba(255,255,255,.65);
-
-      border:
-        1px solid rgba(0,0,0,.055);
+      background: rgba(255,255,255,.65);
+      border: 1px solid rgba(0,0,0,.055);
 
       color: #555;
 
@@ -531,7 +499,6 @@
     .quick-chip:active {
       transform: scale(.94);
     }
-
 
     /* =========================================================
        HERO VISUAL
@@ -578,7 +545,6 @@
 
     .cuba-shape {
       position: absolute;
-
       inset: 0;
 
       display: grid;
@@ -599,16 +565,13 @@
     }
 
     @keyframes cubaFloat {
-
-      0%,
-      100% {
+      0%, 100% {
         transform: translateY(0);
       }
 
       50% {
         transform: translateY(-8px);
       }
-
     }
 
     .visual-label {
@@ -617,19 +580,14 @@
       top: 22px;
       left: 22px;
 
-      padding:
-        9px 12px;
+      padding: 9px 12px;
 
       border-radius: 999px;
 
-      background:
-        rgba(255,255,255,.65);
+      background: rgba(255,255,255,.65);
 
-      backdrop-filter:
-        blur(15px);
-
-      -webkit-backdrop-filter:
-        blur(15px);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
 
       color: #555;
 
@@ -637,7 +595,6 @@
       font-weight: 700;
 
       text-transform: uppercase;
-
       letter-spacing: .08em;
     }
 
@@ -652,17 +609,12 @@
 
       border-radius: 24px;
 
-      background:
-        rgba(255,255,255,.76);
+      background: rgba(255,255,255,.76);
 
-      backdrop-filter:
-        blur(25px);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
 
-      -webkit-backdrop-filter:
-        blur(25px);
-
-      border:
-        1px solid rgba(255,255,255,.75);
+      border: 1px solid rgba(255,255,255,.75);
 
       box-shadow:
         0 20px 50px rgba(0,0,0,.12);
@@ -675,7 +627,6 @@
       font-weight: 700;
 
       text-transform: uppercase;
-
       letter-spacing: .08em;
     }
 
@@ -697,17 +648,21 @@
       line-height: 1.45;
     }
 
-
     /* =========================================================
-       EXPERIENCE
+       SECTIONS
        ========================================================= */
 
-    .section {
-      width:
-        min(1120px, calc(100% - 32px));
+    .section,
+    .property-section,
+    .final-section,
+    footer {
+      width: min(1120px, calc(100% - 32px));
+      margin-left: auto;
+      margin-right: auto;
+    }
 
-      margin:
-        0 auto 100px;
+    .section {
+      margin-bottom: 100px;
     }
 
     .section-heading {
@@ -721,23 +676,19 @@
         clamp(32px, 5vw, 52px);
 
       line-height: .98;
-
       letter-spacing: -.065em;
     }
 
     .section-description {
       max-width: 600px;
 
-      margin:
-        11px 0 0;
+      margin: 11px 0 0;
 
       color: var(--muted);
 
       font-size: 15px;
-
       line-height: 1.5;
     }
-
 
     /* =========================================================
        EXPERIENCE CARDS
@@ -745,10 +696,7 @@
 
     .experience-grid {
       display: grid;
-
-      grid-template-columns:
-        repeat(3, 1fr);
-
+      grid-template-columns: repeat(3, 1fr);
       gap: 15px;
     }
 
@@ -766,7 +714,6 @@
       border-radius: 30px;
 
       color: white;
-
       background: #111;
 
       box-shadow:
@@ -833,8 +780,7 @@
     }
 
     .explore .experience-icon {
-      background:
-        rgba(0,0,0,.06);
+      background: rgba(0,0,0,.06);
     }
 
     .experience-card h3 {
@@ -847,9 +793,7 @@
       margin: 0;
 
       font-size: 31px;
-
       letter-spacing: -.06em;
-
       line-height: 1;
     }
 
@@ -862,11 +806,9 @@
 
       margin: 0;
 
-      color:
-        rgba(255,255,255,.58);
+      color: rgba(255,255,255,.58);
 
       font-size: 12px;
-
       line-height: 1.45;
     }
 
@@ -897,17 +839,13 @@
         transform .35s var(--ease);
     }
 
-    .experience-card:hover
-    .experience-arrow {
-      transform:
-        translate(3px,-3px);
+    .experience-card:hover .experience-arrow {
+      transform: translate(3px,-3px);
     }
 
     .explore .experience-arrow {
-      background:
-        rgba(0,0,0,.06);
+      background: rgba(0,0,0,.06);
     }
-
 
     /* =========================================================
        PROVINCES
@@ -915,10 +853,7 @@
 
     .province-grid {
       display: grid;
-
-      grid-template-columns:
-        repeat(4, 1fr);
-
+      grid-template-columns: repeat(4, 1fr);
       gap: 11px;
     }
 
@@ -963,27 +898,20 @@
     .province-name {
       font-size: 16px;
       font-weight: 720;
-
       letter-spacing: -.035em;
     }
 
     .province-bottom {
       color: #888;
-
       font-size: 11px;
     }
 
-
     /* =========================================================
-       PROPERTY PREVIEW
+       PROPERTIES
        ========================================================= */
 
     .property-section {
-      width:
-        min(1120px, calc(100% - 32px));
-
-      margin:
-        0 auto 100px;
+      margin-bottom: 100px;
     }
 
     .property-header {
@@ -1003,16 +931,12 @@
       font-weight: 700;
 
       white-space: nowrap;
-
       color: #111;
     }
 
     .properties-grid {
       display: grid;
-
-      grid-template-columns:
-        repeat(3, 1fr);
-
+      grid-template-columns: repeat(3, 1fr);
       gap: 17px;
     }
 
@@ -1047,7 +971,6 @@
       height: 245px;
 
       position: relative;
-
       overflow: hidden;
 
       background:
@@ -1070,8 +993,7 @@
         transform .8s var(--ease);
     }
 
-    .property-card:hover
-    .property-image img {
+    .property-card:hover .property-image img {
       transform: scale(1.045);
     }
 
@@ -1082,8 +1004,11 @@
       display: grid;
       place-items: center;
 
-      color: #999;
+      padding: 20px;
 
+      text-align: center;
+
+      color: #999;
       font-size: 12px;
     }
 
@@ -1106,11 +1031,8 @@
       background:
         rgba(255,255,255,.75);
 
-      backdrop-filter:
-        blur(16px);
-
-      -webkit-backdrop-filter:
-        blur(16px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
 
       color: #222;
 
@@ -1136,7 +1058,6 @@
     .property-price {
       font-size: 24px;
       font-weight: 760;
-
       letter-spacing: -.045em;
     }
 
@@ -1146,10 +1067,12 @@
       color: #777;
 
       font-size: 12px;
+      line-height: 1.4;
     }
 
     .property-stats {
       display: flex;
+      flex-wrap: wrap;
       gap: 12px;
 
       margin-top: 16px;
@@ -1170,19 +1093,19 @@
       border-radius: 999px;
 
       background: #edf9f0;
-
       color: #278340;
 
       font-size: 9px;
       font-weight: 750;
     }
 
-
     /* =========================================================
        EMPTY
        ========================================================= */
 
     .empty {
+      grid-column: 1 / -1;
+
       padding: 50px 20px;
 
       text-align: center;
@@ -1190,7 +1113,6 @@
       border-radius: 25px;
 
       background: #fff;
-
       color: #777;
     }
 
@@ -1202,17 +1124,12 @@
       color: #222;
     }
 
-
     /* =========================================================
        CTA
        ========================================================= */
 
     .final-section {
-      width:
-        min(1120px, calc(100% - 32px));
-
-      margin:
-        0 auto 100px;
+      margin-bottom: 100px;
     }
 
     .final-card {
@@ -1259,54 +1176,48 @@
         );
     }
 
-    .final-kicker {
+    .final-kicker,
+    .final-title,
+    .final-text,
+    .final-actions {
       position: relative;
+      z-index: 1;
+    }
 
-      color:
-        rgba(255,255,255,.45);
+    .final-kicker {
+      color: rgba(255,255,255,.45);
 
       font-size: 10px;
       font-weight: 750;
 
       text-transform: uppercase;
-
       letter-spacing: .12em;
     }
 
     .final-title {
-      position: relative;
-
       max-width: 730px;
 
-      margin:
-        12px 0 0;
+      margin: 12px 0 0;
 
       font-size:
         clamp(35px, 6vw, 62px);
 
       line-height: .97;
-
       letter-spacing: -.07em;
     }
 
     .final-text {
-      position: relative;
-
       max-width: 570px;
 
       margin-top: 18px;
 
-      color:
-        rgba(255,255,255,.58);
+      color: rgba(255,255,255,.58);
 
       font-size: 14px;
-
       line-height: 1.5;
     }
 
     .final-actions {
-      position: relative;
-
       display: flex;
       flex-wrap: wrap;
 
@@ -1316,13 +1227,11 @@
     }
 
     .final-button {
-      padding:
-        13px 17px;
+      padding: 13px 17px;
 
       border-radius: 14px;
 
       background: #fff;
-
       color: #111;
 
       font-size: 12px;
@@ -1333,9 +1242,7 @@
     }
 
     .final-button.secondary {
-      background:
-        rgba(255,255,255,.1);
-
+      background: rgba(255,255,255,.1);
       color: #fff;
 
       border:
@@ -1346,20 +1253,15 @@
       transform: scale(.95);
     }
 
-
     /* =========================================================
        FOOTER
        ========================================================= */
 
     footer {
-      width:
-        min(1120px, calc(100% - 32px));
-
-      margin:
-        0 auto;
+      margin-bottom: 0;
 
       padding:
-        40px 0 100px;
+        40px 0 calc(100px + var(--safe-bottom));
 
       border-top:
         1px solid rgba(0,0,0,.07);
@@ -1370,7 +1272,6 @@
       gap: 25px;
 
       color: #888;
-
       font-size: 11px;
     }
 
@@ -1383,7 +1284,6 @@
       letter-spacing: -.09em;
     }
 
-
     /* =========================================================
        TOAST
        ========================================================= */
@@ -1392,15 +1292,15 @@
       position: fixed;
 
       left: 50%;
-      bottom: 27px;
+      bottom: calc(27px + var(--safe-bottom));
 
       z-index: 12000;
 
-      transform:
-        translate(-50%, 25px);
+      transform: translate(-50%, 25px);
 
-      padding:
-        12px 17px;
+      max-width: calc(100% - 32px);
+
+      padding: 12px 17px;
 
       border-radius: 999px;
 
@@ -1423,11 +1323,8 @@
 
     .toast.show {
       opacity: 1;
-
-      transform:
-        translate(-50%, 0);
+      transform: translate(-50%, 0);
     }
-
 
     /* =========================================================
        RESPONSIVE
@@ -1441,7 +1338,6 @@
 
       .hero-inner {
         grid-template-columns: 1fr;
-
         gap: 45px;
       }
 
@@ -1450,8 +1346,7 @@
       }
 
       .experience-grid {
-        grid-template-columns:
-          repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr);
       }
 
       .experience-card:last-child {
@@ -1459,25 +1354,19 @@
       }
 
       .province-grid {
-        grid-template-columns:
-          repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr);
       }
 
       .properties-grid {
-        grid-template-columns:
-          repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr);
       }
-
     }
-
 
     @media (max-width: 600px) {
 
       .nav {
-        top: 9px;
-
-        width:
-          calc(100% - 16px);
+        top: calc(9px + var(--safe-top));
+        width: calc(100% - 16px);
       }
 
       .nav-link {
@@ -1486,7 +1375,9 @@
 
       .hero {
         padding:
-          115px 16px 55px;
+          calc(115px + var(--safe-top))
+          16px
+          55px;
       }
 
       h1 {
@@ -1502,21 +1393,19 @@
       }
 
       .search-button {
-        padding:
-          0 14px;
+        padding: 0 14px;
       }
 
       .hero-visual {
         min-height: 350px;
-
         border-radius: 30px;
       }
 
       .section,
       .property-section,
-      .final-section {
-        width:
-          calc(100% - 28px);
+      .final-section,
+      footer {
+        width: calc(100% - 28px);
       }
 
       .experience-grid {
@@ -1537,7 +1426,6 @@
 
       .province {
         min-height: 108px;
-
         border-radius: 19px;
       }
 
@@ -1551,7 +1439,6 @@
 
       .property-header {
         align-items: flex-start;
-
         flex-direction: column;
       }
 
@@ -1570,60 +1457,70 @@
       footer {
         flex-direction: column;
       }
-
     }
 
+    @media (prefers-reduced-motion: reduce) {
+
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
   </style>
 </head>
 
-
-<body>
-
+<body class="loading">
 
   <!-- =======================================================
        BOOT
        ======================================================= -->
 
-  <div id="boot">
-    <div class="boot-logo">
-      NEXO
-    </div>
+  <div id="boot" aria-label="Cargando NEXO">
+    <div class="boot-logo">NEXO</div>
   </div>
-
 
   <!-- =======================================================
        NAVIGATION
        ======================================================= -->
 
-  <nav class="nav">
+  <nav class="nav" aria-label="Navegación principal">
 
-    <a
-      href="/"
-      class="logo">
+    <a href="/" class="logo" aria-label="NEXO inicio">
       NEXO
     </a>
 
     <div class="nav-actions">
 
       <button
+        type="button"
         class="nav-link"
         onclick="scrollToSection('experiences')">
         Experiencia
       </button>
 
       <button
+        type="button"
         class="nav-link"
         onclick="openMap()">
         Mapa
       </button>
 
       <button
+        type="button"
         class="nav-link"
         onclick="openAI()">
         NEXO IA
       </button>
 
       <button
+        type="button"
         class="nav-link"
         onclick="scrollToSection('properties')">
         Propiedades
@@ -1633,100 +1530,100 @@
 
   </nav>
 
-
   <!-- =======================================================
-       HERO
+       MAIN
        ======================================================= -->
 
   <main>
+
+    <!-- HERO -->
 
     <section class="hero">
 
       <div class="hero-inner">
 
-
         <div class="hero-copy">
 
           <div class="eyebrow">
-
             <span class="eyebrow-dot"></span>
-
             NEXO · Cuba
-
           </div>
 
-
           <h1>
-
             Encuentra<br>
             dónde quieres estar.
-
           </h1>
 
-
           <p class="hero-subtitle">
-
             Una nueva forma de descubrir propiedades
             en Cuba. Más visual. Más sencilla.
             Más humana.
-
           </p>
-
 
           <div class="search-area">
 
-            <div class="search-shell">
+            <form
+              class="search-shell"
+              id="searchForm"
+              onsubmit="event.preventDefault(); performSearch();">
 
-              <div class="search-icon">
+              <div class="search-icon" aria-hidden="true">
                 ⌕
               </div>
+
+              <label class="sr-only" for="mainSearch">
+                Buscar propiedades
+              </label>
 
               <input
                 id="mainSearch"
                 class="search-input"
                 type="search"
                 autocomplete="off"
+                enterkeyhint="search"
                 placeholder="Busca una ciudad, zona o propiedad..."
               >
 
               <button
-                class="search-button"
-                onclick="performSearch()">
-
+                type="submit"
+                class="search-button">
                 Buscar
-
               </button>
 
-            </div>
-
+            </form>
 
             <div class="quick-search">
 
               <button
+                type="button"
                 class="quick-chip"
                 onclick="quickSearch('La Habana')">
                 La Habana
               </button>
 
               <button
+                type="button"
                 class="quick-chip"
                 onclick="quickSearch('Casa')">
                 Casas
               </button>
 
               <button
+                type="button"
                 class="quick-chip"
                 onclick="quickSearch('Apartamento')">
                 Apartamentos
               </button>
 
               <button
+                type="button"
                 class="quick-chip"
                 onclick="quickSearch('Playa')">
                 Playa
               </button>
 
               <button
+                type="button"
                 class="quick-chip"
                 onclick="quickSearch('150000')">
                 Hasta $150k
@@ -1738,10 +1635,7 @@
 
         </div>
 
-
-        <!-- =================================================
-             HERO VISUAL
-             ================================================= -->
+        <!-- HERO VISUAL -->
 
         <div class="hero-visual">
 
@@ -1751,8 +1645,7 @@
             Cuba · NEXO
           </div>
 
-
-          <div class="cuba-shape">
+          <div class="cuba-shape" aria-hidden="true">
 
             <svg
               viewBox="0 0 700 420"
@@ -1801,7 +1694,6 @@
 
           </div>
 
-
           <div class="visual-card">
 
             <div class="visual-card-label">
@@ -1825,7 +1717,6 @@
 
     </section>
 
-
     <!-- =====================================================
          EXPERIENCES
          ===================================================== -->
@@ -1848,13 +1739,10 @@
 
       </div>
 
-
       <div class="experience-grid">
 
-
-        <!-- MAP -->
-
         <button
+          type="button"
           class="experience-card map"
           onclick="openMap()">
 
@@ -1878,10 +1766,8 @@
 
         </button>
 
-
-        <!-- IA -->
-
         <button
+          type="button"
           class="experience-card ai"
           onclick="openAI()">
 
@@ -1905,10 +1791,8 @@
 
         </button>
 
-
-        <!-- EXPLORE -->
-
         <button
+          type="button"
           class="experience-card explore"
           onclick="scrollToSection('properties')">
 
@@ -1936,9 +1820,8 @@
 
     </section>
 
-
     <!-- =====================================================
-         CUBA
+         PROVINCES
          ===================================================== -->
 
     <section class="section">
@@ -1956,11 +1839,10 @@
 
       </div>
 
-
       <div class="province-grid">
 
-
         <button
+          type="button"
           class="province"
           onclick="searchProvince('Pinar del Río')">
 
@@ -1974,8 +1856,8 @@
 
         </button>
 
-
         <button
+          type="button"
           class="province"
           onclick="searchProvince('La Habana')">
 
@@ -1989,8 +1871,8 @@
 
         </button>
 
-
         <button
+          type="button"
           class="province"
           onclick="searchProvince('Matanzas')">
 
@@ -2004,8 +1886,8 @@
 
         </button>
 
-
         <button
+          type="button"
           class="province"
           onclick="searchProvince('Villa Clara')">
 
@@ -2019,8 +1901,8 @@
 
         </button>
 
-
         <button
+          type="button"
           class="province"
           onclick="searchProvince('Cienfuegos')">
 
@@ -2034,8 +1916,8 @@
 
         </button>
 
-
         <button
+          type="button"
           class="province"
           onclick="searchProvince('Camagüey')">
 
@@ -2049,8 +1931,8 @@
 
         </button>
 
-
         <button
+          type="button"
           class="province"
           onclick="searchProvince('Holguín')">
 
@@ -2064,8 +1946,8 @@
 
         </button>
 
-
         <button
+          type="button"
           class="province"
           onclick="searchProvince('Santiago de Cuba')">
 
@@ -2082,7 +1964,6 @@
       </div>
 
     </section>
-
 
     <!-- =====================================================
          PROPERTIES
@@ -2110,22 +1991,18 @@
         <a
           href="/mapa/"
           class="property-link">
-
           Ver todas en el mapa →
-
         </a>
 
       </div>
 
-
       <div
         id="propertiesGrid"
-        class="properties-grid">
-
+        class="properties-grid"
+        aria-live="polite">
       </div>
 
     </section>
-
 
     <!-- =====================================================
          FINAL CTA
@@ -2151,23 +2028,20 @@
           de encontrar dónde quieres estar.
         </p>
 
-
         <div class="final-actions">
 
           <button
+            type="button"
             class="final-button"
             onclick="openMap()">
-
             Explorar mapa
-
           </button>
 
           <button
+            type="button"
             class="final-button secondary"
             onclick="openAI()">
-
             Hablar con NEXO IA
-
           </button>
 
         </div>
@@ -2178,6 +2052,27 @@
 
   </main>
 
+  <!-- =======================================================
+       FOOTER
+       ======================================================= -->
+
+  <footer>
+
+    <div>
+      <div class="footer-logo">
+        NEXO
+      </div>
+
+      <div style="margin-top:8px;">
+        Descubre dónde quieres estar.
+      </div>
+    </div>
+
+    <div>
+      © <span id="currentYear"></span> NEXO
+    </div>
+
+  </footer>
 
   <!-- =======================================================
        TOAST
@@ -2185,44 +2080,38 @@
 
   <div
     id="toast"
-    class="toast">
+    class="toast"
+    role="status"
+    aria-live="polite">
   </div>
-
 
   <!-- =======================================================
        JAVASCRIPT
        ======================================================= -->
 
   <script>
+    "use strict";
 
     /* ========================================================
        STATE
        ======================================================== */
 
     const state = {
-
       properties: [],
-
-      favorites:
-        JSON.parse(
-          localStorage.getItem(
-            "nexo_favorites"
-          ) || "[]"
-        )
-
+      favorites: loadFavorites()
     };
 
+    let toastTimer = null;
 
     /* ========================================================
        HELPERS
        ======================================================== */
 
-    const $ = selector =>
-      document.querySelector(selector);
-
+    function $(selector) {
+      return document.querySelector(selector);
+    }
 
     function escapeHTML(value) {
-
       if (
         value === null ||
         value === undefined
@@ -2236,9 +2125,15 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
-
     }
 
+    function safeNumber(value) {
+      const number = Number(value);
+
+      return Number.isFinite(number)
+        ? number
+        : null;
+    }
 
     function money(value) {
 
@@ -2250,106 +2145,216 @@
         return "Precio no disponible";
       }
 
-      const number =
-        Number(value);
+      const number = safeNumber(
+        String(value).replace(/[$,\s]/g, "")
+      );
 
-      if (
-        Number.isNaN(number)
-      ) {
+      if (number === null) {
         return escapeHTML(value);
       }
 
-      return "$" +
-        number.toLocaleString(
-          "en-US",
-          {
-            maximumFractionDigits: 0
-          }
-        );
-
+      return "$" + number.toLocaleString(
+        "en-US",
+        {
+          maximumFractionDigits: 0
+        }
+      );
     }
 
+    function loadFavorites() {
+
+      try {
+
+        const stored =
+          localStorage.getItem(
+            "nexo_favorites"
+          );
+
+        const parsed =
+          stored
+            ? JSON.parse(stored)
+            : [];
+
+        if (!Array.isArray(parsed)) {
+          return [];
+        }
+
+        return parsed
+          .map(Number)
+          .filter(Number.isFinite);
+
+      } catch (error) {
+
+        console.warn(
+          "NEXO: no se pudieron cargar favoritos.",
+          error
+        );
+
+        return [];
+      }
+    }
+
+    function saveFavorites() {
+
+      try {
+
+        localStorage.setItem(
+          "nexo_favorites",
+          JSON.stringify(
+            state.favorites
+          )
+        );
+
+      } catch (error) {
+
+        console.warn(
+          "NEXO: no se pudieron guardar favoritos.",
+          error
+        );
+      }
+    }
 
     function getPhotos(property) {
 
-      if (!property.photos) {
+      if (!property) {
+        return [];
+      }
+
+      const raw =
+        property.photos ??
+        property.images ??
+        property.image ??
+        "";
+
+      if (Array.isArray(raw)) {
+
+        return raw
+          .map(item => {
+
+            if (
+              typeof item === "string"
+            ) {
+              return item.trim();
+            }
+
+            if (
+              item &&
+              typeof item === "object"
+            ) {
+              return String(
+                item.url ||
+                item.src ||
+                item.image ||
+                ""
+              ).trim();
+            }
+
+            return "";
+
+          })
+          .filter(Boolean);
+      }
+
+      if (
+        typeof raw !== "string"
+      ) {
+        return [];
+      }
+
+      const text =
+        raw.trim();
+
+      if (!text) {
         return [];
       }
 
       try {
 
-        if (
-          Array.isArray(property.photos)
-        ) {
-          return property.photos;
-        }
-
         const parsed =
-          JSON.parse(
-            property.photos
-          );
+          JSON.parse(text);
 
-        if (
-          Array.isArray(parsed)
-        ) {
-          return parsed;
+        if (Array.isArray(parsed)) {
+
+          return parsed
+            .map(item => {
+
+              if (
+                typeof item === "string"
+              ) {
+                return item.trim();
+              }
+
+              if (
+                item &&
+                typeof item === "object"
+              ) {
+                return String(
+                  item.url ||
+                  item.src ||
+                  item.image ||
+                  ""
+                ).trim();
+              }
+
+              return "";
+
+            })
+            .filter(Boolean);
         }
 
       } catch {
-
-        if (
-          typeof property.photos ===
-          "string"
-        ) {
-
-          return property.photos
-            .split(",")
-            .map(
-              item => item.trim()
-            )
-            .filter(Boolean);
-
-        }
-
+        // No es JSON; continuamos con CSV.
       }
 
-      return [];
-
+      return text
+        .split(",")
+        .map(item => item.trim())
+        .filter(Boolean);
     }
-
 
     function getLocation(property) {
 
-      return [
-        property.neighborhood,
-        property.city
-      ]
-      .filter(Boolean)
-      .join(" · ") ||
-      "Cuba";
+      if (!property) {
+        return "Cuba";
+      }
 
+      const parts = [
+        property.neighborhood,
+        property.city,
+        property.province
+      ]
+        .map(value =>
+          value === null ||
+          value === undefined
+            ? ""
+            : String(value).trim()
+        )
+        .filter(Boolean);
+
+      return parts.length
+        ? parts.join(" · ")
+        : "Cuba";
     }
 
+    function getPropertyId(property) {
+
+      const id =
+        safeNumber(property?.id);
+
+      return id;
+    }
 
     /* ========================================================
        NAVIGATION
        ======================================================== */
 
     function openMap() {
-
-      window.location.href =
-        "/mapa/";
-
+      window.location.href = "/mapa/";
     }
-
 
     function openAI() {
-
-      window.location.href =
-        "/ia/";
-
+      window.location.href = "/ia/";
     }
-
 
     function scrollToSection(id) {
 
@@ -2364,9 +2369,7 @@
         behavior: "smooth",
         block: "start"
       });
-
     }
-
 
     /* ========================================================
        SEARCH
@@ -2377,73 +2380,50 @@
       const input =
         $("#mainSearch");
 
-      const query =
-        input.value
-          .trim()
-          .toLowerCase();
-
-      if (!query) {
-
+      if (!input) {
         openMap();
-
         return;
-
       }
 
+      const query =
+        input.value.trim();
 
-      /*
-        El buscador principal ya no intenta
-        controlar el mapa.
-
-        Envía la búsqueda al mapa independiente.
-      */
+      if (!query) {
+        openMap();
+        return;
+      }
 
       window.location.href =
         "/mapa/?q=" +
-        encodeURIComponent(
-          input.value.trim()
-        );
-
+        encodeURIComponent(query);
     }
-
 
     function quickSearch(value) {
 
-      $("#mainSearch").value =
-        value;
+      const input =
+        $("#mainSearch");
+
+      if (input) {
+        input.value = value;
+      }
 
       performSearch();
-
     }
-
 
     function searchProvince(province) {
 
+      const query =
+        String(province || "").trim();
+
+      if (!query) {
+        openMap();
+        return;
+      }
+
       window.location.href =
         "/mapa/?q=" +
-        encodeURIComponent(
-          province
-        );
-
+        encodeURIComponent(query);
     }
-
-
-    $("#mainSearch")
-      .addEventListener(
-        "keydown",
-        event => {
-
-          if (
-            event.key === "Enter"
-          ) {
-
-            performSearch();
-
-          }
-
-        }
-      );
-
 
     /* ========================================================
        LOAD PROPERTIES
@@ -2455,79 +2435,116 @@
 
         const response =
           await fetch(
-            "/api/properties"
+            "/api/properties",
+            {
+              method: "GET",
+              headers: {
+                "Accept": "application/json"
+              },
+              cache: "no-store"
+            }
           );
 
         if (!response.ok) {
           throw new Error(
-            "No se pudieron cargar las propiedades."
+            `HTTP ${response.status}`
           );
         }
 
         const data =
           await response.json();
 
-        if (
-          !data.success
-        ) {
+        if (!data || data.success === false) {
           throw new Error(
-            data.error ||
+            data?.error ||
             "Error al cargar propiedades."
           );
         }
 
-        state.properties =
-          Array.isArray(
-            data.properties
-          )
-          ? data.properties.filter(
-              property =>
-                property.status ===
-                "available"
-            )
-          : [];
+        const properties =
+          Array.isArray(data.properties)
+            ? data.properties
+            : [];
 
+        /*
+         * No filtramos exclusivamente por
+         * "available" aquí.
+         *
+         * Esto evita que una propiedad válida
+         * desaparezca si D1 utiliza otra
+         * representación del estado.
+         */
+
+        state.properties =
+          properties.filter(
+            property => {
+
+              if (
+                !property ||
+                typeof property !== "object"
+              ) {
+                return false;
+              }
+
+              const status =
+                String(
+                  property.status ??
+                  "available"
+                )
+                .trim()
+                .toLowerCase();
+
+              return (
+                !status ||
+                status === "available" ||
+                status === "disponible" ||
+                status === "active" ||
+                status === "activo" ||
+                status === "published" ||
+                status === "publicada" ||
+                status === "publicado"
+              );
+            }
+          );
 
         renderProperties();
 
       } catch (error) {
 
         console.error(
-          "NEXO:",
+          "NEXO — Error cargando propiedades:",
           error
         );
 
-        $("#propertiesGrid").innerHTML = `
-
-          <div class="empty">
-
-            <strong>
-              NEXO está preparando las propiedades.
-            </strong>
-
-            Inténtalo nuevamente en unos segundos.
-
-          </div>
-
-        `;
+        renderPropertiesError();
 
       } finally {
 
-        setTimeout(
-          () => {
-
-            $("#boot")
-              .classList
-              .add("hide");
-
-          },
-          350
-        );
+        hideBoot();
 
       }
-
     }
 
+    function renderPropertiesError() {
+
+      const grid =
+        $("#propertiesGrid");
+
+      if (!grid) {
+        return;
+      }
+
+      grid.innerHTML = `
+        <div class="empty">
+          <strong>
+            No pudimos cargar las propiedades.
+          </strong>
+
+          Comprueba tu conexión e inténtalo
+          nuevamente.
+        </div>
+      `;
+    }
 
     /* ========================================================
        PROPERTY CARDS
@@ -2538,59 +2555,44 @@
       const grid =
         $("#propertiesGrid");
 
-      if (
-        !state.properties.length
-      ) {
+      if (!grid) {
+        return;
+      }
+
+      if (!state.properties.length) {
 
         grid.innerHTML = `
-
           <div class="empty">
-
             <strong>
               Próximamente.
             </strong>
 
             Las primeras propiedades de NEXO
             aparecerán aquí.
-
           </div>
-
         `;
 
         return;
-
       }
 
-
-      /*
-        En la portada mostramos solamente
-        las primeras propiedades.
-
-        El catálogo completo pertenece
-        a la experiencia del mapa.
-      */
-
       const preview =
-        state.properties.slice(
-          0,
-          6
-        );
-
+        state.properties.slice(0, 6);
 
       grid.innerHTML =
         preview
-          .map(
-            property =>
-              propertyCard(
-                property
-              )
-          )
+          .map(propertyCard)
           .join("");
-
     }
 
-
     function propertyCard(property) {
+
+      const id =
+        getPropertyId(property);
+
+      /*
+       * Si una propiedad no tiene ID válido,
+       * no generamos un enlace roto.
+       */
 
       const photos =
         getPhotos(property);
@@ -2599,89 +2601,110 @@
         photos[0] || "";
 
       const favorite =
-        state.favorites.includes(
-          Number(property.id)
-        );
+        id !== null &&
+        state.favorites.includes(id);
 
+      const propertyType =
+        property.property_type ||
+        property.type ||
+        property.tipo ||
+        "Propiedad";
+
+      const bedrooms =
+        property.bedrooms ??
+        property.habitaciones;
+
+      const bathrooms =
+        property.bathrooms ??
+        property.banos;
+
+      const squareMeters =
+        property.square_meters ??
+        property.area ??
+        property.m2;
+
+      const safeId =
+        id !== null
+          ? String(id)
+          : "";
 
       return `
-
         <article
           class="property-card"
-          onclick="
-            openProperty(
-              ${Number(property.id)}
-            )
-          "
+          ${
+            id !== null
+              ? `onclick="openProperty(${Number(id)})"`
+              : ""
+          }
+          ${
+            id !== null
+              ? `tabindex="0" role="button" aria-label="Ver propiedad"`
+              : ""
+          }
+          ${
+            id !== null
+              ? `onkeydown="handlePropertyKey(event, ${Number(id)})"`
+              : ""
+          }
         >
 
           <div class="property-image">
 
             ${
               image
+                ? `
+                  <img
+                    src="${escapeHTML(image)}"
+                    alt="${escapeHTML(propertyType)}"
+                    loading="lazy"
+                    decoding="async"
+                    onerror="handleImageError(this)"
+                  >
 
-              ? `
-
-                <img
-                  src="${escapeHTML(image)}"
-                  alt="${escapeHTML(
-                    property.property_type ||
-                    "Propiedad NEXO"
-                  )}"
-                  loading="lazy"
-                  onerror="
-                    this.style.display='none';
-                    this.nextElementSibling.style.display='grid';
-                  "
-                >
-
-                <div
-                  class="placeholder"
-                  style="display:none"
-                >
-                  Fotografía no disponible
-                </div>
-
-              `
-
-              : `
-
-                <div class="placeholder">
-                  Fotografía próximamente
-                </div>
-
-              `
+                  <div
+                    class="placeholder"
+                    style="display:none">
+                    Fotografía no disponible
+                  </div>
+                `
+                : `
+                  <div class="placeholder">
+                    Fotografía próximamente
+                  </div>
+                `
             }
 
-
-            <button
-              class="favorite ${
-                favorite
-                  ? "active"
-                  : ""
-              }"
-
-              onclick="
-                event.stopPropagation();
-                toggleFavorite(
-                  ${Number(property.id)},
-                  this
-                );
-              "
-
-              aria-label="Guardar propiedad"
-            >
-
-              ${
-                favorite
-                  ? "♥"
-                  : "♡"
-              }
-
-            </button>
+            ${
+              id !== null
+                ? `
+                  <button
+                    type="button"
+                    class="favorite ${
+                      favorite ? "active" : ""
+                    }"
+                    onclick="
+                      event.stopPropagation();
+                      toggleFavorite(
+                        ${Number(id)},
+                        this
+                      );
+                    "
+                    aria-label="${
+                      favorite
+                        ? "Quitar de favoritos"
+                        : "Guardar propiedad"
+                    }"
+                    aria-pressed="${
+                      favorite ? "true" : "false"
+                    }"
+                  >
+                    ${favorite ? "♥" : "♡"}
+                  </button>
+                `
+                : ""
+            }
 
           </div>
-
 
           <div class="property-content">
 
@@ -2689,80 +2712,51 @@
               ${money(property.price)}
             </div>
 
-
             <div class="property-location">
-
-              ${escapeHTML(
-                property.property_type ||
-                "Propiedad"
-              )}
-
+              ${escapeHTML(propertyType)}
               ·
-
-              ${escapeHTML(
-                getLocation(property)
-              )}
-
+              ${escapeHTML(getLocation(property))}
             </div>
-
 
             <div class="property-stats">
 
               ${
-                property.bedrooms !==
-                  null &&
-                property.bedrooms !==
-                  undefined
-
-                ? `
-
-                  <span>
-                    🛏 ${escapeHTML(
-                      property.bedrooms
-                    )}
-                  </span>
-
-                `
-                : ""
+                bedrooms !== null &&
+                bedrooms !== undefined &&
+                bedrooms !== ""
+                  ? `
+                    <span>
+                      🛏 ${escapeHTML(bedrooms)}
+                    </span>
+                  `
+                  : ""
               }
 
-
               ${
-                property.bathrooms !==
-                  null &&
-                property.bathrooms !==
-                  undefined
-
-                ? `
-
-                  <span>
-                    🚿 ${escapeHTML(
-                      property.bathrooms
-                    )}
-                  </span>
-
-                `
-                : ""
+                bathrooms !== null &&
+                bathrooms !== undefined &&
+                bathrooms !== ""
+                  ? `
+                    <span>
+                      🚿 ${escapeHTML(bathrooms)}
+                    </span>
+                  `
+                  : ""
               }
 
-
               ${
-                property.square_meters
-
-                ? `
-
-                  <span>
-                    ${escapeHTML(
-                      property.square_meters
-                    )} m²
-                  </span>
-
-                `
-                : ""
+                squareMeters !== null &&
+                squareMeters !== undefined &&
+                squareMeters !== ""
+                  ? `
+                    <span>
+                      ${escapeHTML(squareMeters)} m²
+                    </span>
+                  `
+                  : ""
               }
 
             </div>
-
 
             <div class="property-status">
               Disponible
@@ -2771,42 +2765,81 @@
           </div>
 
         </article>
-
       `;
-
     }
 
+    function handleImageError(image) {
+
+      if (!image) {
+        return;
+      }
+
+      image.style.display = "none";
+
+      const placeholder =
+        image.nextElementSibling;
+
+      if (placeholder) {
+        placeholder.style.display = "grid";
+      }
+    }
+
+    function handlePropertyKey(event, id) {
+
+      if (
+        event.key === "Enter" ||
+        event.key === " "
+      ) {
+
+        event.preventDefault();
+
+        openProperty(id);
+      }
+    }
 
     /* ========================================================
        FAVORITES
        ======================================================== */
 
-    function toggleFavorite(
-      id,
-      button
-    ) {
+    function toggleFavorite(id, button) {
 
-      id =
-        Number(id);
-
+      const numericId =
+        safeNumber(id);
 
       if (
-        state.favorites
-          .includes(id)
+        numericId === null ||
+        !button
       ) {
+        return;
+      }
 
-        state.favorites =
-          state.favorites
-            .filter(
-              favorite =>
-                favorite !== id
-            );
+      const index =
+        state.favorites.indexOf(
+          numericId
+        );
 
-        button.classList
-          .remove("active");
+      if (index !== -1) {
 
-        button.textContent =
-          "♡";
+        state.favorites.splice(
+          index,
+          1
+        );
+
+        button.classList.remove(
+          "active"
+        );
+
+        button.textContent = "♡";
+
+        button.setAttribute(
+          "aria-label",
+          "Guardar propiedad"
+        );
+
+        button.setAttribute(
+          "aria-pressed",
+          "false"
+        );
 
         showToast(
           "Eliminada de favoritos"
@@ -2815,31 +2848,32 @@
       } else {
 
         state.favorites.push(
-          id
+          numericId
         );
 
-        button.classList
-          .add("active");
+        button.classList.add(
+          "active"
+        );
 
-        button.textContent =
-          "♥";
+        button.textContent = "♥";
+
+        button.setAttribute(
+          "aria-label",
+          "Quitar de favoritos"
+        );
+
+        button.setAttribute(
+          "aria-pressed",
+          "true"
+        );
 
         showToast(
           "Guardada en favoritos"
         );
-
       }
 
-
-      localStorage.setItem(
-        "nexo_favorites",
-        JSON.stringify(
-          state.favorites
-        )
-      );
-
+      saveFavorites();
     }
-
 
     /* ========================================================
        PROPERTY DETAIL
@@ -2847,38 +2881,37 @@
 
     function openProperty(id) {
 
-      /*
-        El detalle completo de propiedad
-        pertenece a la experiencia del mapa.
+      const numericId =
+        safeNumber(id);
 
-        De esta manera no duplicamos
-        el sistema en index.html.
-      */
+      if (numericId === null) {
+        return;
+      }
 
       window.location.href =
         "/mapa/?property=" +
-        encodeURIComponent(id);
-
+        encodeURIComponent(
+          numericId
+        );
     }
-
 
     /* ========================================================
        TOAST
        ======================================================== */
-
-    let toastTimer;
-
 
     function showToast(message) {
 
       const toast =
         $("#toast");
 
-      toast.textContent =
-        message;
+      if (!toast) {
+        return;
+      }
 
-      toast.classList
-        .add("show");
+      toast.textContent =
+        String(message || "");
+
+      toast.classList.add("show");
 
       clearTimeout(
         toastTimer
@@ -2887,16 +2920,37 @@
       toastTimer =
         setTimeout(
           () => {
-
-            toast.classList
-              .remove("show");
-
+            toast.classList.remove(
+              "show"
+            );
           },
           2400
         );
-
     }
 
+    /* ========================================================
+       BOOT
+       ======================================================== */
+
+    function hideBoot() {
+
+      const boot =
+        $("#boot");
+
+      if (!boot) {
+        document.body.classList.remove(
+          "loading"
+        );
+
+        return;
+      }
+
+      boot.classList.add("hide");
+
+      document.body.classList.remove(
+        "loading"
+      );
+    }
 
     /* ========================================================
        INIT
@@ -2906,8 +2960,53 @@
       "DOMContentLoaded",
       () => {
 
-        loadProperties();
+        const year =
+          $("#currentYear");
 
+        if (year) {
+          year.textContent =
+            new Date().getFullYear();
+        }
+
+        const input =
+          $("#mainSearch");
+
+        if (input) {
+
+          input.addEventListener(
+            "keydown",
+            event => {
+
+              if (
+                event.key === "Enter"
+              ) {
+
+                event.preventDefault();
+
+                performSearch();
+              }
+            }
+          );
+        }
+
+        /*
+         * Evita que el boot quede bloqueado
+         * indefinidamente si el navegador tiene
+         * algún problema con la carga.
+         */
+
+        const bootFailsafe =
+          setTimeout(
+            hideBoot,
+            5000
+          );
+
+        loadProperties()
+          .finally(() => {
+            clearTimeout(
+              bootFailsafe
+            );
+          });
       }
     );
 
