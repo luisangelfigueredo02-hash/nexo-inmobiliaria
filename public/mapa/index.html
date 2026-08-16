@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>NEXO | Mapa</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .nexo-loading {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      color: #111111;
+      font-size: 16px;
+    }
+
+    .nexo-error {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      z-index: 10000;
+      display: none;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #b00020;
+      color: #ffffff;
+      font-size: 14px;
+      line-height: 1.4;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .property-card {
+      min-width: 220px;
+      max-width: 280px;
+      padding: 4px;
+    }
+
+    .property-card h3 {
+      margin-bottom: 6px;
+      font-size: 16px;
+      color: #111111;
+    }
+
+    .property-card p {
+      margin: 3px 0;
+      font-size: 13px;
+      color: #555555;
+    }
+
+    .property-price {
+      margin-top: 8px;
+      font-weight: 700;
+      color: #111111;
+    }
+  </style>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  >
+</head>
+
+<body>
+
+  <div id="loading" class="nexo-loading">
+    Cargando mapa...
+  </div>
+
+  <div id="map"></div>
+
+  <div id="error" class="nexo-error"></div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    crossorigin=""
+  ></script>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const loading = document.getElementById("loading");
+      const errorBox = document.getElementById("error");
+
+      function showError(message) {
+        loading.style.display = "none";
+        errorBox.textContent = message;
+        errorBox.style.display = "block";
+      }
+
+      function hideLoading() {
+        loading.style.display = "none";
+      }
+
+      try {
+        if (typeof L === "undefined") {
+          throw new Error("No se pudo cargar Leaflet.");
+        }
+
+        const map = L.map("map", {
+          zoomControl: true
+        }).setView([23.1136, -82.3666], 6);
+
+        L.tileLayer(
+          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
+          }
+        ).addTo(map);
+
+        const markerLayer = L.layerGroup().addTo(map);
+
+        function addPropertyMarker(property) {
+          const lat = Number(property.lat ?? property.latitude);
+          const lng = Number(property.lng ?? property.longitude);
+
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+            return;
+          }
+
+          const title =
+            property.title ||
+            property.nombre ||
+            property.name ||
+            "Propiedad NEXO";
+
+          const location =
+            property.location ||
+            property.ubicacion ||
+            property.address ||
+            "";
+
+          const price =
+            property.price ||
+            property.precio ||
+            "";
+
+          const marker = L.marker([lat, lng]);
+
+          marker.bindPopup(`
+            <div class="property-card">
+              <h3>${escapeHtml(title)}</h3>
+              ${
+                location
+                  ? `<p>${escapeHtml(location)}</p>`
+                  : ""
+              }
+              ${
+                price
+                  ? `<div class="property-price">${escapeHtml(String(price))}</div>`
+                  : ""
+              }
+            </div>
+          `);
+
+          marker.addTo(markerLayer);
+        }
+
+        function escapeHtml(value) {
+          return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+        }
+
+        /*
+         * El mapa funciona independientemente de la base de datos.
+         * Más adelante conectaremos aquí las propiedades de NEXO.
+         */
+
+        hideLoading();
+
+        window.NEXO_MAP = {
+          map,
+          markerLayer,
+          addPropertyMarker
+        };
+
+      } catch (error) {
+        console.error("NEXO MAP ERROR:", error);
+
+        showError(
+          "No se pudo cargar el mapa. " +
+          (error && error.message
+            ? error.message
+            : "Error desconocido.")
+        );
+      }
+    })();
+  </script>
+
+</body>
+</html>
