@@ -23,21 +23,24 @@ export default {
     // RESPUESTA JSON
     // ==========================================
 
-    const json = (data, status = 200) => {
+    function json(data, status = 200, extraHeaders = {}) {
       return new Response(JSON.stringify(data), {
         status,
         headers: {
           "Content-Type": "application/json; charset=UTF-8",
-          ...corsHeaders
+          ...corsHeaders,
+          ...extraHeaders
         }
       });
-    };
+    }
 
     // ==========================================
     // AUTENTICACIÓN ADMIN
     // ==========================================
 
     async function createAdminToken() {
+      if (!env.ADMIN) return null;
+
       const encoder = new TextEncoder();
 
       const keyData = encoder.encode(env.ADMIN);
@@ -71,21 +74,16 @@ export default {
     }
 
     async function isAdminAuthenticated(request) {
-      if (!env.ADMIN) {
-        return false;
-      }
+      if (!env.ADMIN) return false;
 
       const cookieHeader =
         request.headers.get("Cookie") || "";
 
-      const match =
-        cookieHeader.match(
-          /(?:^|;\s*)nexo_admin=([^;]+)/
-        );
+      const match = cookieHeader.match(
+        /(?:^|;\s*)nexo_admin=([^;]+)/
+      );
 
-      if (!match) {
-        return false;
-      }
+      if (!match) return false;
 
       const expectedToken =
         await createAdminToken();
@@ -102,6 +100,7 @@ export default {
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
@@ -137,14 +136,15 @@ export default {
       width: 100%;
       max-width: 390px;
 
-      background: white;
+      background: #ffffff;
+
       border: 1px solid #e7e7e7;
       border-radius: 24px;
 
       padding: 32px;
 
       box-shadow:
-        0 20px 60px rgba(0,0,0,.08);
+        0 20px 60px rgba(0, 0, 0, .08);
     }
 
     .logo {
@@ -171,9 +171,7 @@ export default {
       width: 100%;
       padding: 15px;
 
-      border:
-        1px solid #ddd;
-
+      border: 1px solid #ddd;
       border-radius: 12px;
 
       font-size: 16px;
@@ -188,7 +186,6 @@ export default {
       width: 100%;
 
       margin-top: 16px;
-
       padding: 15px;
 
       border: 0;
@@ -205,6 +202,7 @@ export default {
 
     button:disabled {
       opacity: .6;
+      cursor: not-allowed;
     }
 
     .error {
@@ -306,9 +304,10 @@ form.addEventListener(
                 "application/json"
             },
 
+            credentials: "same-origin",
+
             body: JSON.stringify({
-              password:
-                password.value
+              password: password.value
             })
           }
         );
@@ -316,9 +315,10 @@ form.addEventListener(
       const result =
         await response.json();
 
-      if (!response.ok ||
-          !result.success) {
-
+      if (
+        !response.ok ||
+        !result.success
+      ) {
         throw new Error(
           result.error ||
           "Contraseña incorrecta."
@@ -355,13 +355,14 @@ form.addEventListener(
 `;
 
     // ==========================================
-    // LOGIN ADMIN
+    // LOGIN
     // ==========================================
 
     if (
       url.pathname === "/api/admin/login" &&
       request.method === "POST"
     ) {
+
       try {
 
         const body =
@@ -372,35 +373,37 @@ form.addEventListener(
             ? body.password
             : "";
 
-        if (
-          !env.ADMIN ||
-          password !== env.ADMIN
-        ) {
+        if (!env.ADMIN) {
+
           return json({
             success: false,
-            error: "Contraseña incorrecta."
+            error:
+              "La contraseña de administrador no está configurada."
+          }, 500);
+
+        }
+
+        if (password !== env.ADMIN) {
+
+          return json({
+            success: false,
+            error:
+              "Contraseña incorrecta."
           }, 401);
+
         }
 
         const token =
           await createAdminToken();
 
-        return new Response(
-          JSON.stringify({
-            success: true
-          }),
+        return json(
           {
-            status: 200,
-
-            headers: {
-              "Content-Type":
-                "application/json; charset=UTF-8",
-
-              "Set-Cookie":
-                `nexo_admin=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400`,
-
-              ...corsHeaders
-            }
+            success: true
+          },
+          200,
+          {
+            "Set-Cookie":
+              `nexo_admin=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400`
           }
         );
 
@@ -413,7 +416,8 @@ form.addEventListener(
 
         return json({
           success: false,
-          error: "Solicitud de inicio de sesión inválida."
+          error:
+            "Solicitud de inicio de sesión inválida."
         }, 400);
       }
     }
@@ -427,22 +431,14 @@ form.addEventListener(
       request.method === "POST"
     ) {
 
-      return new Response(
-        JSON.stringify({
-          success: true
-        }),
+      return json(
         {
-          status: 200,
-
-          headers: {
-            "Content-Type":
-              "application/json; charset=UTF-8",
-
-            "Set-Cookie":
-              "nexo_admin=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0",
-
-            ...corsHeaders
-          }
+          success: true
+        },
+        200,
+        {
+          "Set-Cookie":
+            "nexo_admin=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0"
         }
       );
     }
@@ -465,25 +461,23 @@ form.addEventListener(
           loginPage,
           {
             status: 200,
-
             headers: {
               "Content-Type":
                 "text/html; charset=UTF-8"
             }
           }
         );
-
       }
     }
 
     // ==========================================
-    // PROTEGER OPERACIONES DE ESCRITURA
+    // PROTEGER ESCRITURA
     // ==========================================
 
     const isWriteOperation =
-      request.method === "POST" ||
-      request.method === "PUT" ||
-      request.method === "DELETE";
+      ["POST", "PUT", "DELETE"].includes(
+        request.method
+      );
 
     const isPropertyApi =
       url.pathname === "/api/properties" ||
@@ -501,14 +495,14 @@ form.addEventListener(
 
         return json({
           success: false,
-          error: "No autorizado."
+          error:
+            "No autorizado."
         }, 401);
-
       }
     }
 
     // ==========================================
-    // API: OBTENER TODAS LAS PROPIEDADES
+    // OBTENER PROPIEDADES
     // ==========================================
 
     if (
@@ -566,7 +560,7 @@ form.addEventListener(
     }
 
     // ==========================================
-    // API: CREAR PROPIEDAD
+    // CREAR PROPIEDAD
     // ==========================================
 
     if (
@@ -745,7 +739,7 @@ form.addEventListener(
     }
 
     // ==========================================
-    // API: EDITAR PROPIEDAD
+    // EDITAR PROPIEDAD
     // ==========================================
 
     if (
@@ -870,7 +864,6 @@ form.addEventListener(
             typeof body.photos === "string"
               ? body.photos
               : JSON.stringify(body.photos);
-
         }
 
         const result =
@@ -913,12 +906,19 @@ form.addEventListener(
             )
             .run();
 
+        if (!result.meta?.changes) {
+
+          return json({
+            success: false,
+            error:
+              "Propiedad no encontrada."
+          }, 404);
+        }
+
         return json({
           success: true,
           message:
-            "Propiedad actualizada correctamente.",
-          changes:
-            result.meta?.changes || 0
+            "Propiedad actualizada correctamente."
         });
 
       } catch (error) {
@@ -937,7 +937,7 @@ form.addEventListener(
     }
 
     // ==========================================
-    // API: ELIMINAR PROPIEDAD
+    // ELIMINAR PROPIEDAD
     // ==========================================
 
     if (
@@ -971,9 +971,7 @@ form.addEventListener(
             .bind(Number(id))
             .run();
 
-        if (
-          !result.meta?.changes
-        ) {
+        if (!result.meta?.changes) {
 
           return json({
             success: false,
@@ -1004,7 +1002,7 @@ form.addEventListener(
     }
 
     // ==========================================
-    // API: PROPIEDAD INDIVIDUAL
+    // PROPIEDAD INDIVIDUAL
     // ==========================================
 
     if (
