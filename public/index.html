@@ -3,19 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
   <meta name="theme-color" content="#f5f5f7">
-  <meta name="description" content="NEXO — descubre propiedades en Cuba.">
+  <meta name="description" content="NEXO — descubre propiedades reales en Cuba.">
+
   <title>NEXO — Descubre tu próximo lugar</title>
 
   <style>
     :root{
       --bg:#f5f5f7;
-      --card:#fff;
-      --text:#111;
-      --muted:#777;
-      --line:rgba(0,0,0,.08);
-      --black:#111;
-      --radius:24px;
+      --surface:#ffffff;
+      --surface-soft:rgba(255,255,255,.72);
+      --text:#111113;
+      --muted:#737378;
+      --line:rgba(0,0,0,.075);
+      --black:#111113;
+      --white:#fff;
+      --radius:26px;
+      --shadow:0 18px 60px rgba(0,0,0,.075);
+      --safe-top:env(safe-area-inset-top,0px);
       --safe-bottom:env(safe-area-inset-bottom,0px);
     }
 
@@ -24,17 +30,30 @@
       -webkit-tap-highlight-color:transparent;
     }
 
-    html{scroll-behavior:smooth}
+    html{
+      scroll-behavior:smooth;
+    }
 
     body{
       margin:0;
       background:var(--bg);
       color:var(--text);
-      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Inter,system-ui,sans-serif;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        Inter,
+        system-ui,
+        sans-serif;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
     }
 
-    button,input{
-      font:inherit;
+    body,
+    button,
+    input{
+      font-family:inherit;
     }
 
     button{
@@ -48,66 +67,91 @@
 
     img{
       display:block;
-      width:100%;
+      max-width:100%;
     }
 
-    /* NAV */
+    /* =========================================
+       NAV
+    ========================================= */
 
     .nav{
       position:fixed;
       z-index:1000;
-      top:14px;
+      top:calc(10px + var(--safe-top));
       left:50%;
       transform:translateX(-50%);
-      width:min(1100px,calc(100% - 20px));
-      height:54px;
-      padding:0 10px 0 18px;
+
+      width:min(1120px,calc(100% - 20px));
+      height:56px;
+
       display:flex;
       align-items:center;
       justify-content:space-between;
-      border:1px solid rgba(255,255,255,.8);
+
+      padding:0 10px 0 18px;
+
+      background:rgba(255,255,255,.78);
+      border:1px solid rgba(255,255,255,.9);
       border-radius:999px;
-      background:rgba(255,255,255,.82);
-      backdrop-filter:blur(25px);
-      -webkit-backdrop-filter:blur(25px);
-      box-shadow:0 12px 40px rgba(0,0,0,.08);
+
+      backdrop-filter:blur(28px) saturate(1.35);
+      -webkit-backdrop-filter:blur(28px) saturate(1.35);
+
+      box-shadow:
+        0 12px 45px rgba(0,0,0,.075);
+
+      transition:
+        transform .35s ease,
+        box-shadow .35s ease,
+        background .35s ease;
     }
 
     .logo{
-      font-size:21px;
-      font-weight:800;
-      letter-spacing:-.09em;
+      font-size:22px;
+      line-height:1;
+      font-weight:850;
+      letter-spacing:-.085em;
     }
 
     .nav-links{
       display:flex;
       align-items:center;
-      gap:4px;
+      gap:3px;
     }
 
     .nav-links a{
-      padding:9px 13px;
+      padding:9px 14px;
       border-radius:999px;
-      color:#555;
+      color:#5e5e63;
       font-size:12px;
       font-weight:700;
+      transition:
+        background .25s ease,
+        color .25s ease;
     }
 
     .nav-links a:hover{
       background:#f0f0f2;
+      color:#111;
     }
 
-    /* HERO */
+    /* =========================================
+       HERO
+    ========================================= */
 
     .hero{
-      min-height:650px;
-      padding:145px 18px 70px;
+      min-height:720px;
+      padding:
+        calc(155px + var(--safe-top))
+        18px
+        72px;
+
       display:flex;
       align-items:center;
     }
 
     .hero-inner{
-      width:min(1100px,100%);
+      width:min(1120px,100%);
       margin:auto;
     }
 
@@ -115,13 +159,17 @@
       display:inline-flex;
       align-items:center;
       gap:8px;
+
       padding:8px 12px;
+
+      background:rgba(255,255,255,.82);
       border:1px solid var(--line);
       border-radius:999px;
-      background:#fff;
-      color:#666;
-      font-size:11px;
-      font-weight:700;
+
+      color:#66666b;
+      font-size:10px;
+      font-weight:750;
+      letter-spacing:.055em;
     }
 
     .status-dot{
@@ -129,47 +177,78 @@
       height:7px;
       border-radius:50%;
       background:#34c759;
+      box-shadow:0 0 0 4px rgba(52,199,89,.12);
     }
 
     h1{
-      max-width:850px;
+      max-width:950px;
+
       margin:25px 0 0;
-      font-size:clamp(58px,10vw,105px);
-      line-height:.88;
-      letter-spacing:-.09em;
+
+      font-size:
+        clamp(58px,10vw,108px);
+
+      line-height:.86;
+      letter-spacing:-.095em;
+      font-weight:800;
     }
 
-    .hero p{
-      max-width:620px;
-      margin:27px 0 0;
+    .hero-description{
+      max-width:650px;
+
+      margin:28px 0 0;
+
       color:var(--muted);
+
       font-size:18px;
-      line-height:1.45;
+      line-height:1.5;
+      letter-spacing:-.015em;
     }
 
-    /* SEARCH */
+    /* =========================================
+       SEARCH
+    ========================================= */
 
     .search-area{
-      max-width:760px;
+      width:min(780px,100%);
       margin-top:34px;
     }
 
     .search{
       display:flex;
       align-items:center;
-      gap:8px;
+      gap:7px;
+
       padding:7px;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:20px;
-      box-shadow:0 18px 55px rgba(0,0,0,.08);
+
+      background:rgba(255,255,255,.88);
+      border:1px solid rgba(255,255,255,.95);
+      border-radius:22px;
+
+      box-shadow:
+        0 20px 60px rgba(0,0,0,.085);
+
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+
+      transition:
+        box-shadow .3s ease,
+        transform .3s ease;
+    }
+
+    .search:focus-within{
+      transform:translateY(-1px);
+      box-shadow:
+        0 25px 70px rgba(0,0,0,.11);
     }
 
     .search-icon{
       width:42px;
       height:42px;
+
       display:grid;
       place-items:center;
+
       color:#777;
       font-size:22px;
     }
@@ -177,30 +256,53 @@
     .search input{
       flex:1;
       min-width:0;
+
       height:42px;
+
       border:0;
       outline:0;
+
       background:transparent;
+
       color:#111;
       font-size:15px;
     }
 
+    .search input::placeholder{
+      color:#929297;
+    }
+
     .search button{
       height:42px;
-      padding:0 17px;
+
+      padding:0 18px;
+
       border:0;
-      border-radius:14px;
-      background:#111;
+      border-radius:15px;
+
+      background:#111113;
       color:#fff;
+
       font-size:12px;
       font-weight:750;
+
+      transition:
+        transform .2s ease,
+        opacity .2s ease;
+    }
+
+    .search button:active{
+      transform:scale(.96);
     }
 
     .quick-search{
       display:flex;
       gap:8px;
+
       overflow-x:auto;
-      padding:10px 0;
+
+      padding:10px 1px;
+
       scrollbar-width:none;
     }
 
@@ -210,24 +312,45 @@
 
     .quick-search button{
       flex:none;
-      padding:8px 12px;
+
+      padding:8px 13px;
+
       border:1px solid var(--line);
       border-radius:999px;
-      background:#fff;
-      color:#555;
+
+      background:rgba(255,255,255,.75);
+
+      color:#626267;
+
       font-size:11px;
-      font-weight:650;
+      font-weight:700;
+
+      transition:
+        background .2s ease,
+        color .2s ease,
+        transform .2s ease;
     }
 
-    /* MAIN */
+    .quick-search button:hover{
+      background:#fff;
+      color:#111;
+    }
+
+    .quick-search button:active{
+      transform:scale(.96);
+    }
+
+    /* =========================================
+       MAIN
+    ========================================= */
 
     main{
-      width:min(1100px,calc(100% - 28px));
+      width:min(1120px,calc(100% - 28px));
       margin:auto;
     }
 
     .section{
-      margin-bottom:80px;
+      margin-bottom:88px;
     }
 
     .section-head{
@@ -235,35 +358,48 @@
       align-items:end;
       justify-content:space-between;
       gap:20px;
+
       margin-bottom:22px;
     }
 
     .section h2{
       margin:0;
-      font-size:clamp(34px,5vw,52px);
-      line-height:1;
-      letter-spacing:-.07em;
+
+      font-size:
+        clamp(34px,5vw,54px);
+
+      line-height:.95;
+      letter-spacing:-.075em;
     }
 
     .section-subtitle{
-      margin:8px 0 0;
+      margin:9px 0 0;
+
       color:var(--muted);
+
       font-size:13px;
+      line-height:1.4;
     }
 
     #propertyCount{
       color:#777;
       font-size:11px;
       font-weight:700;
+      white-space:nowrap;
     }
 
-    /* FILTERS */
+    /* =========================================
+       FILTERS
+    ========================================= */
 
     .filters{
       display:flex;
       gap:7px;
+
       overflow-x:auto;
-      padding-bottom:12px;
+
+      padding:0 0 13px;
+
       scrollbar-width:none;
     }
 
@@ -273,135 +409,264 @@
 
     .filter{
       flex:none;
-      padding:9px 13px;
+
+      padding:9px 14px;
+
       border:1px solid var(--line);
       border-radius:999px;
+
       background:#fff;
-      color:#555;
+
+      color:#5d5d62;
+
       font-size:11px;
       font-weight:700;
+
+      transition:
+        background .25s ease,
+        color .25s ease,
+        transform .2s ease;
+    }
+
+    .filter:active{
+      transform:scale(.96);
     }
 
     .filter.active{
-      background:#111;
+      background:#111113;
+      border-color:#111113;
       color:#fff;
-      border-color:#111;
     }
 
-    /* PROPERTY GRID */
+    /* =========================================
+       PROPERTY GRID
+    ========================================= */
 
     .property-grid{
       display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
+      grid-template-columns:
+        repeat(3,minmax(0,1fr));
+
       gap:17px;
     }
 
     .property{
+      position:relative;
+
       overflow:hidden;
+
+      background:#fff;
+
       border:1px solid var(--line);
       border-radius:var(--radius);
-      background:#fff;
-      box-shadow:0 8px 30px rgba(0,0,0,.045);
-      transition:.35s ease;
+
+      box-shadow:
+        0 8px 32px rgba(0,0,0,.045);
+
+      transition:
+        transform .35s cubic-bezier(.2,.8,.2,1),
+        box-shadow .35s ease;
     }
 
     .property:hover{
       transform:translateY(-4px);
-      box-shadow:0 20px 50px rgba(0,0,0,.09);
+
+      box-shadow:
+        0 22px 55px rgba(0,0,0,.095);
+    }
+
+    .property:active{
+      transform:scale(.992);
     }
 
     .property-image{
       position:relative;
+
       aspect-ratio:1.25;
+
       overflow:hidden;
-      background:#e8e8eb;
+
+      background:
+        linear-gradient(
+          135deg,
+          #e9e9eb,
+          #dedee1
+        );
     }
 
     .property-image img{
       width:100%;
       height:100%;
+
       object-fit:cover;
+
+      transition:
+        transform .65s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .property:hover .property-image img{
+      transform:scale(1.035);
+    }
+
+    .property-image::after{
+      content:"";
+
+      position:absolute;
+      inset:0;
+
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(0,0,0,.04),
+          transparent 30%,
+          transparent 70%,
+          rgba(0,0,0,.08)
+        );
+
+      pointer-events:none;
     }
 
     .property-badge{
       position:absolute;
+
+      z-index:2;
+
       top:12px;
       left:12px;
-      padding:7px 9px;
+
+      padding:7px 10px;
+
       border-radius:999px;
-      background:rgba(255,255,255,.85);
-      backdrop-filter:blur(10px);
+
+      background:rgba(255,255,255,.86);
+
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+
       font-size:10px;
       font-weight:750;
     }
 
     .property-body{
-      padding:16px;
+      padding:17px;
     }
 
     .property-price{
-      font-size:20px;
+      font-size:21px;
       font-weight:800;
       letter-spacing:-.045em;
     }
 
     .property-title{
       margin-top:6px;
+
       font-size:14px;
       font-weight:750;
+
+      letter-spacing:-.015em;
     }
 
     .property-location{
       margin-top:5px;
+
       color:#777;
+
       font-size:11px;
+      line-height:1.4;
     }
 
     .property-meta{
       display:flex;
       gap:13px;
+
       margin-top:13px;
       padding-top:12px;
+
       border-top:1px solid var(--line);
+
       color:#666;
+
       font-size:10px;
     }
 
     .loading,
     .empty{
       grid-column:1/-1;
-      padding:55px 20px;
+
+      padding:58px 20px;
+
       text-align:center;
-      border-radius:var(--radius);
-      color:#777;
+
       background:#fff;
+
       border:1px solid var(--line);
+      border-radius:var(--radius);
+
+      color:#777;
+
+      line-height:1.6;
     }
 
-    /* MAP */
+    /* =========================================
+       MAP EXPERIENCE
+    ========================================= */
 
     .map-card{
-      min-height:300px;
-      padding:32px;
-      display:flex;
-      align-items:end;
       position:relative;
+
+      min-height:330px;
+
+      padding:34px;
+
+      display:flex;
+      align-items:flex-end;
+
       overflow:hidden;
+
       border-radius:34px;
-      background:linear-gradient(135deg,#dce5e7,#b9c7ca);
-      box-shadow:0 25px 70px rgba(0,0,0,.1);
+
+      background:
+        radial-gradient(
+          circle at 75% 25%,
+          rgba(255,255,255,.65),
+          transparent 30%
+        ),
+        linear-gradient(
+          135deg,
+          #dfe8e9,
+          #b9c8cb
+        );
+
+      box-shadow:
+        0 28px 80px rgba(0,0,0,.105);
     }
 
-    .map-card:before,
-    .map-card:after{
+    .map-card::before,
+    .map-card::after{
       content:"";
+
       position:absolute;
-      inset:-20%;
-      opacity:.18;
+
+      inset:-25%;
+
+      opacity:.16;
+
       background-image:
-        linear-gradient(35deg,transparent 48%,#fff 49%,transparent 51%),
-        linear-gradient(120deg,transparent 48%,#fff 49%,transparent 51%);
+        linear-gradient(
+          35deg,
+          transparent 48%,
+          #fff 49%,
+          transparent 51%
+        ),
+        linear-gradient(
+          120deg,
+          transparent 48%,
+          #fff 49%,
+          transparent 51%
+        );
+
       background-size:70px 70px;
+
       transform:rotate(8deg);
     }
 
@@ -411,78 +676,163 @@
     }
 
     .map-title{
-      font-size:clamp(38px,6vw,62px);
+      max-width:600px;
+
+      font-size:
+        clamp(42px,6vw,66px);
+
       line-height:.9;
-      letter-spacing:-.08em;
+
+      letter-spacing:-.085em;
+
       font-weight:800;
     }
 
     .map-description{
-      max-width:500px;
-      margin-top:13px;
+      max-width:520px;
+
+      margin-top:14px;
+
       color:#555;
+
       font-size:13px;
-      line-height:1.45;
+      line-height:1.5;
     }
 
     .map-button{
-      display:inline-block;
-      margin-top:20px;
+      display:inline-flex;
+      align-items:center;
+
+      margin-top:21px;
       padding:13px 17px;
-      border-radius:14px;
-      background:#111;
+
+      border-radius:15px;
+
+      background:#111113;
       color:#fff;
+
       font-size:12px;
       font-weight:750;
+
+      transition:
+        transform .2s ease;
     }
 
-    /* AI PLACEHOLDER */
+    .map-button:active{
+      transform:scale(.96);
+    }
+
+    /* =========================================
+       IA
+    ========================================= */
 
     .ai-card{
-      padding:30px;
-      border-radius:30px;
-      background:#111;
+      position:relative;
+      overflow:hidden;
+
+      padding:34px;
+
+      border-radius:32px;
+
+      background:#111113;
       color:#fff;
+
+      box-shadow:
+        0 25px 70px rgba(0,0,0,.15);
+    }
+
+    .ai-card::before{
+      content:"";
+
+      position:absolute;
+
+      width:280px;
+      height:280px;
+
+      right:-100px;
+      top:-130px;
+
+      border-radius:50%;
+
+      background:
+        radial-gradient(
+          circle,
+          rgba(255,255,255,.16),
+          transparent 68%
+        );
+    }
+
+    .ai-card-content{
+      position:relative;
+      z-index:2;
     }
 
     .ai-card h2{
       margin:0;
+
       color:#fff;
+
+      font-size:
+        clamp(35px,5vw,52px);
     }
 
     .ai-card p{
-      max-width:600px;
-      margin:12px 0 0;
-      color:#aaa;
-      line-height:1.5;
+      max-width:620px;
+
+      margin:13px 0 0;
+
+      color:#a9a9ad;
+
       font-size:13px;
+      line-height:1.55;
     }
 
     .ai-button{
-      margin-top:20px;
+      margin-top:21px;
+
       padding:13px 17px;
-      border-radius:14px;
+
+      border:0;
+      border-radius:15px;
+
       background:#fff;
       color:#111;
+
       font-size:12px;
       font-weight:750;
+
+      transition:
+        transform .2s ease;
     }
 
-    /* FOOTER */
+    .ai-button:active{
+      transform:scale(.96);
+    }
+
+    /* =========================================
+       FOOTER
+    ========================================= */
 
     footer{
-      padding:20px 0 calc(50px + var(--safe-bottom));
+      padding:
+        20px
+        0
+        calc(50px + var(--safe-bottom));
+
       text-align:center;
-      color:#888;
+
+      color:#8a8a8f;
+
       font-size:10px;
     }
 
-    /* MOBILE */
+    /* =========================================
+       MOBILE
+    ========================================= */
 
     @media(max-width:800px){
 
       .nav{
-        top:10px;
         width:calc(100% - 16px);
       }
 
@@ -492,14 +842,20 @@
 
       .hero{
         min-height:auto;
-        padding:130px 15px 60px;
+
+        padding:
+          calc(130px + var(--safe-top))
+          15px
+          58px;
       }
 
       h1{
-        font-size:clamp(56px,17vw,82px);
+        font-size:
+          clamp(56px,17vw,84px);
       }
 
-      .hero p{
+      .hero-description{
+        max-width:570px;
         font-size:17px;
       }
 
@@ -512,18 +868,68 @@
       }
 
       .property-image{
-        aspect-ratio:1.45;
+        aspect-ratio:1.42;
       }
 
       .map-card{
-        min-height:270px;
-        padding:25px;
+        min-height:290px;
+        padding:26px;
         border-radius:28px;
       }
 
       .ai-card{
-        padding:25px;
-        border-radius:26px;
+        padding:27px;
+        border-radius:28px;
+      }
+    }
+
+    @media(max-width:500px){
+
+      .search{
+        border-radius:20px;
+      }
+
+      .search button{
+        padding:0 15px;
+      }
+
+      .search-icon{
+        width:34px;
+      }
+
+      .section{
+        margin-bottom:70px;
+      }
+
+      .section-head{
+        align-items:flex-end;
+      }
+
+      .section h2{
+        font-size:39px;
+      }
+
+      .property-body{
+        padding:16px;
+      }
+
+      .map-title{
+        font-size:46px;
+      }
+    }
+
+    /* =========================================
+       REDUCE MOTION
+    ========================================= */
+
+    @media(prefers-reduced-motion:reduce){
+
+      *,
+      *::before,
+      *::after{
+        scroll-behavior:auto!important;
+        transition:none!important;
+        animation:none!important;
       }
     }
   </style>
@@ -531,51 +937,82 @@
 
 <body>
 
-  <!-- NAVEGACIÓN -->
+  <!-- =======================================
+       NAVEGACIÓN
+  ======================================== -->
 
   <nav class="nav">
-    <a href="/" class="logo">NEXO</a>
+
+    <a href="/" class="logo">
+      NEXO
+    </a>
 
     <div class="nav-links">
-      <a href="#propiedades">Propiedades</a>
-      <a href="/mapa/">Mapa</a>
+
+      <a href="#propiedades">
+        Propiedades
+      </a>
+
+      <a href="/mapa/">
+        Mapa
+      </a>
+
     </div>
+
   </nav>
 
 
-  <!-- HERO -->
+  <!-- =======================================
+       HERO
+  ======================================== -->
 
   <section class="hero">
 
     <div class="hero-inner">
 
       <div class="eyebrow">
+
         <span class="status-dot"></span>
+
         PROPIEDADES EN CUBA
+
       </div>
+
 
       <h1>
         Encuentra<br>
         tu lugar.
       </h1>
 
-      <p>
-        Descubre propiedades reales en Cuba de una forma
-        sencilla, rápida y diferente.
+
+      <p class="hero-description">
+        Descubre propiedades reales en Cuba
+        de una forma sencilla, rápida y diferente.
       </p>
+
+
+      <!-- BUSCADOR -->
 
       <div class="search-area">
 
-        <form class="search" id="searchForm">
+        <form
+          class="search"
+          id="searchForm"
+        >
 
-          <div class="search-icon">⌕</div>
+          <div class="search-icon">
+            ⌕
+          </div>
+
 
           <input
             id="searchInput"
             type="search"
             autocomplete="off"
+            enterkeyhint="search"
             placeholder="Casa, apartamento, La Habana..."
           >
+
 
           <button type="submit">
             Buscar
@@ -583,21 +1020,34 @@
 
         </form>
 
+
         <div class="quick-search">
 
-          <button type="button" data-search="La Habana">
+          <button
+            type="button"
+            data-search="La Habana"
+          >
             La Habana
           </button>
 
-          <button type="button" data-search="Casa">
+          <button
+            type="button"
+            data-search="Casa"
+          >
             Casas
           </button>
 
-          <button type="button" data-search="Apartamento">
+          <button
+            type="button"
+            data-search="Apartamento"
+          >
             Apartamentos
           </button>
 
-          <button type="button" data-search="3 habitaciones">
+          <button
+            type="button"
+            data-search="3 habitaciones"
+          >
             3 habitaciones
           </button>
 
@@ -610,23 +1060,36 @@
   </section>
 
 
-  <!-- CONTENIDO -->
+  <!-- =======================================
+       CONTENIDO PRINCIPAL
+  ======================================== -->
 
   <main>
 
-    <!-- PROPIEDADES -->
 
-    <section class="section" id="propiedades">
+    <!-- =====================================
+         PROPIEDADES
+    ====================================== -->
+
+    <section
+      class="section"
+      id="propiedades"
+    >
 
       <div class="section-head">
 
         <div>
-          <h2>Propiedades</h2>
+
+          <h2>
+            Propiedades
+          </h2>
 
           <p class="section-subtitle">
             Inventario disponible de NEXO.
           </p>
+
         </div>
+
 
         <div id="propertyCount">
           Cargando...
@@ -635,11 +1098,14 @@
       </div>
 
 
+      <!-- FILTROS -->
+
       <div class="filters">
 
         <button
           class="filter active"
           data-filter="all"
+          type="button"
         >
           Todas
         </button>
@@ -647,6 +1113,7 @@
         <button
           class="filter"
           data-filter="Casa"
+          type="button"
         >
           Casas
         </button>
@@ -654,6 +1121,7 @@
         <button
           class="filter"
           data-filter="Apartamento"
+          type="button"
         >
           Apartamentos
         </button>
@@ -661,12 +1129,15 @@
         <button
           class="filter"
           data-filter="Villa"
+          type="button"
         >
           Villas
         </button>
 
       </div>
 
+
+      <!-- INVENTARIO -->
 
       <div
         class="property-grid"
@@ -682,7 +1153,9 @@
     </section>
 
 
-    <!-- MAPA -->
+    <!-- =====================================
+         MAPA
+    ====================================== -->
 
     <section class="section">
 
@@ -691,20 +1164,19 @@
         <div class="map-content">
 
           <div class="map-title">
-            Explora<br>
-            Cuba.
+            Mira dónde está.
           </div>
 
           <div class="map-description">
-            Descubre las propiedades de NEXO directamente
-            sobre nuestro mapa interactivo.
+            Explora las propiedades disponibles
+            directamente sobre el mapa de Cuba.
           </div>
 
           <a
-            href="/mapa/"
             class="map-button"
+            href="/mapa/"
           >
-            Abrir mapa
+            Explorar mapa →
           </a>
 
         </div>
@@ -714,49 +1186,60 @@
     </section>
 
 
-    <!-- NEXO IA -->
+    <!-- =====================================
+         NEXO IA
+    ====================================== -->
 
     <section class="section">
 
       <div class="ai-card">
 
-        <h2>
-          NEXO IA
-        </h2>
+        <div class="ai-card-content">
 
-        <p>
-          Tu asistente inmobiliario inteligente.
-          Podrás describir lo que buscas y NEXO IA
-          encontrará propiedades reales que coincidan
-          con tus necesidades.
-        </p>
+          <h2>
+            Pregúntale a NEXO.
+          </h2>
 
-        <button
-          class="ai-button"
-          id="openAI"
-          type="button"
-        >
-          Preguntarle a NEXO IA
-        </button>
+          <p>
+            Describe lo que necesitas como lo harías
+            con una persona. NEXO IA puede ayudarte a
+            encontrar propiedades del inventario real.
+          </p>
+
+          <button
+            class="ai-button"
+            type="button"
+            onclick="openAI()"
+          >
+            Hablar con NEXO IA →
+          </button>
+
+        </div>
 
       </div>
 
     </section>
 
+
   </main>
 
 
+  <!-- =======================================
+       FOOTER
+  ======================================== -->
+
   <footer>
-    NEXO · Descubre tu próximo lugar en Cuba
+
+    NEXO · Propiedades en Cuba
+
   </footer>
 
 
-  <!--
-    IMPORTANTE:
-    La lógica de propiedades y NEXO IA estará en app.js.
-  -->
+  <!-- =======================================
+       APP.JS
+  ======================================== -->
 
-  <script src="/app.js" defer></script>
+  <script src="/app.js"></script>
 
 </body>
 </html>
