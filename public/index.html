@@ -2,1079 +2,737 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  >
-
-  <meta
-    name="theme-color"
-    content="#f7f7f5"
-  >
-
-  <title>NEXO — Encuentra tu próximo lugar</title>
-
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  >
+  <title>NEXO | Encuentra tu próximo lugar</title>
+  <meta name="description" content="NEXO Inmueble. Descubre propiedades y encuentra el lugar ideal.">
 
   <style>
-
-    :root {
-      --bg: #f7f7f5;
-      --surface: #ffffff;
-      --text: #171717;
-      --muted: #777;
-      --line: #e8e8e5;
-      --soft: #f0f0ed;
-      --accent: #171717;
-      --green: #197a42;
-      --danger: #c62828;
-      --radius: 24px;
-      --shadow: 0 12px 40px rgba(0,0,0,.07);
+    :root{
+      --bg:#f5f5f7;
+      --card:rgba(255,255,255,.94);
+      --text:#111113;
+      --muted:#74747a;
+      --line:rgba(0,0,0,.08);
+      --accent:#111113;
+      --shadow:0 18px 50px rgba(0,0,0,.12);
+      --radius:24px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
     }
 
-    html {
-      scroll-behavior: smooth;
+    html{
+      scroll-behavior:smooth;
+      background:var(--bg);
     }
 
-    body {
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "SF Pro Display",
-        "SF Pro Text",
-        "Segoe UI",
-        sans-serif;
-
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",
+      "Helvetica Neue",Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
     }
 
     button,
     input,
-    select {
-      font: inherit;
+    select{
+      font:inherit;
     }
 
-    button {
-      cursor: pointer;
+    button{
+      border:0;
+      cursor:pointer;
     }
 
-    .app {
-      width: 100%;
-      min-height: 100vh;
-    }
-
-    /* =========================
+    /* =========================================
        HEADER
-    ========================= */
+    ========================================= */
 
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-
-      background: rgba(247,247,245,.88);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-
-      border-bottom: 1px solid rgba(0,0,0,.05);
-    }
-
-    .nav {
-      max-width: 1280px;
-      margin: auto;
-
+    .header{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      z-index:1000;
       padding:
-        calc(14px + env(safe-area-inset-top))
-        22px
-        14px;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
+        max(14px, env(safe-area-inset-top))
+        18px
+        10px;
+      pointer-events:none;
     }
 
-    .brand {
-      font-size: 23px;
-      font-weight: 850;
-      letter-spacing: 4px;
+    .nav{
+      max-width:1200px;
+      margin:auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      pointer-events:auto;
     }
 
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 9px;
+    .brand{
+      background:rgba(255,255,255,.84);
+      backdrop-filter:blur(24px);
+      -webkit-backdrop-filter:blur(24px);
+      border:1px solid rgba(255,255,255,.7);
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+      border-radius:18px;
+      padding:11px 16px;
+      font-size:19px;
+      font-weight:800;
+      letter-spacing:-.7px;
     }
 
-    .nav-button {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.75);
-
-      padding: 9px 13px;
-      border-radius: 999px;
-
-      font-size: 13px;
-      font-weight: 700;
-
-      transition:
-        transform .25s ease,
-        background .25s ease;
+    .nav-actions{
+      display:flex;
+      gap:8px;
     }
 
-    .nav-button:active {
-      transform: scale(.96);
+    .glass-btn{
+      width:44px;
+      height:44px;
+      border-radius:50%;
+      background:rgba(255,255,255,.88);
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      box-shadow:0 8px 24px rgba(0,0,0,.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:.25s ease;
     }
 
-    /* =========================
+    .glass-btn:active{
+      transform:scale(.92);
+    }
+
+    /* =========================================
        HERO
-    ========================= */
+    ========================================= */
 
-    .hero {
-      max-width: 1100px;
-      margin: auto;
-      padding: 70px 22px 30px;
+    .hero{
+      min-height:650px;
+      padding:120px 18px 40px;
+      display:flex;
+      align-items:flex-end;
+      position:relative;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 20% 10%,rgba(255,255,255,.95),transparent 35%),
+        linear-gradient(180deg,#fafafa 0%,#f1f1f3 100%);
     }
 
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-
-      background: #ecece8;
-      border-radius: 999px;
-
-      padding: 8px 12px;
-
-      font-size: 12px;
-      font-weight: 750;
-
-      margin-bottom: 18px;
+    .hero-content{
+      width:100%;
+      max-width:1200px;
+      margin:auto;
+      position:relative;
+      z-index:2;
     }
 
-    .eyebrow-dot {
-      width: 7px;
-      height: 7px;
-      background: #1b8a4a;
-      border-radius: 50%;
+    .eyebrow{
+      font-size:13px;
+      font-weight:700;
+      color:var(--muted);
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      margin-bottom:14px;
     }
 
-    .hero h1 {
-      font-size: clamp(40px, 7vw, 72px);
-      line-height: .98;
-      letter-spacing: -3px;
-      max-width: 800px;
-      margin-bottom: 20px;
+    .hero h1{
+      max-width:760px;
+      font-size:clamp(42px,9vw,86px);
+      line-height:.95;
+      letter-spacing:-.065em;
+      font-weight:800;
     }
 
-    .hero p {
-      color: var(--muted);
-      font-size: 18px;
-      line-height: 1.55;
-      max-width: 650px;
+    .hero p{
+      margin-top:22px;
+      max-width:520px;
+      font-size:18px;
+      line-height:1.5;
+      color:var(--muted);
     }
 
-    /* =========================
+    /* =========================================
        SEARCH
-    ========================= */
+    ========================================= */
 
-    .search-box {
-      max-width: 900px;
-      margin: 25px auto 0;
-
-      background: white;
-      border: 1px solid var(--line);
-
-      border-radius: 20px;
-
-      padding: 7px;
-
-      display: flex;
-      align-items: center;
-      gap: 7px;
-
-      box-shadow: var(--shadow);
+    .search-wrap{
+      margin-top:30px;
+      max-width:760px;
     }
 
-    .search-icon {
-      padding-left: 12px;
-      font-size: 18px;
+    .search-box{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:rgba(255,255,255,.95);
+      border:1px solid rgba(0,0,0,.07);
+      box-shadow:var(--shadow);
+      border-radius:22px;
+      padding:7px;
     }
 
-    .search-box input {
-      flex: 1;
-      border: 0;
-      outline: none;
-
-      padding: 14px 8px;
-
-      background: transparent;
-
-      font-size: 16px;
+    .search-icon{
+      width:46px;
+      height:46px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#777;
+      flex:none;
     }
 
-    .ai-button {
-      border: 0;
-      background: #171717;
-      color: white;
-
-      padding: 12px 17px;
-      border-radius: 14px;
-
-      font-weight: 750;
-      white-space: nowrap;
-
-      transition:
-        transform .25s ease,
-        opacity .25s ease;
+    .search-input{
+      border:0;
+      outline:0;
+      flex:1;
+      min-width:0;
+      background:transparent;
+      font-size:16px;
+      color:var(--text);
     }
 
-    .ai-button:active {
-      transform: scale(.96);
+    .search-input::placeholder{
+      color:#96969b;
     }
 
-    /* =========================
+    .search-button{
+      background:#111;
+      color:white;
+      border-radius:17px;
+      min-height:46px;
+      padding:0 18px;
+      font-weight:700;
+      transition:.25s ease;
+    }
+
+    .search-button:active{
+      transform:scale(.96);
+    }
+
+    /* =========================================
        FILTERS
-    ========================= */
+    ========================================= */
 
-    .filters-wrapper {
-      max-width: 1280px;
-      margin: 15px auto 0;
-      padding: 0 22px;
+    .filters{
+      display:flex;
+      gap:8px;
+      margin-top:12px;
+      overflow-x:auto;
+      scrollbar-width:none;
+      padding-bottom:4px;
     }
 
-    .filters {
-      display: flex;
-      gap: 8px;
-
-      overflow-x: auto;
-      padding: 5px 1px 10px;
-
-      scrollbar-width: none;
+    .filters::-webkit-scrollbar{
+      display:none;
     }
 
-    .filters::-webkit-scrollbar {
-      display: none;
+    .filter{
+      flex:none;
+      padding:11px 15px;
+      border-radius:999px;
+      background:rgba(255,255,255,.9);
+      border:1px solid var(--line);
+      color:#555;
+      font-size:14px;
+      font-weight:600;
+      transition:.25s ease;
     }
 
-    .filter {
-      flex: 0 0 auto;
-
-      border: 1px solid var(--line);
-      background: white;
-
-      border-radius: 999px;
-
-      padding: 10px 14px;
-
-      font-size: 13px;
-      font-weight: 700;
-
-      transition:
-        background .25s ease,
-        color .25s ease,
-        transform .25s ease;
+    .filter.active{
+      background:#111;
+      color:#fff;
+      border-color:#111;
     }
 
-    .filter.active {
-      background: #171717;
-      color: white;
-      border-color: #171717;
-    }
-
-    .filter:active {
-      transform: scale(.96);
-    }
-
-    /* =========================
-       AI
-    ========================= */
-
-    .ai-panel {
-      max-width: 1100px;
-      margin: 20px auto 0;
-      padding: 0 22px;
-
-      display: none;
-    }
-
-    .ai-panel.show {
-      display: block;
-      animation: fadeUp .35s ease both;
-    }
-
-    .ai-card {
-      background: #171717;
-      color: white;
-
-      border-radius: 24px;
-
-      padding: 22px;
-    }
-
-    .ai-card h3 {
-      font-size: 19px;
-      margin-bottom: 7px;
-    }
-
-    .ai-card p {
-      color: #bdbdbd;
-      line-height: 1.5;
-      font-size: 14px;
-    }
-
-    .ai-input {
-      margin-top: 15px;
-
-      width: 100%;
-
-      border: 1px solid rgba(255,255,255,.15);
-      background: rgba(255,255,255,.08);
-
-      color: white;
-
-      border-radius: 14px;
-
-      padding: 13px;
-
-      outline: none;
-    }
-
-    /* =========================
-       MAIN
-    ========================= */
-
-    .main {
-      max-width: 1280px;
-      margin: 35px auto 0;
-      padding: 0 22px 80px;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      gap: 15px;
-
-      margin-bottom: 15px;
-    }
-
-    .section-title {
-      font-size: 25px;
-      letter-spacing: -.7px;
-    }
-
-    .result-count {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .view-switch {
-      display: flex;
-      gap: 5px;
-
-      background: #ededeb;
-      border-radius: 12px;
-
-      padding: 4px;
-    }
-
-    .view-switch button {
-      border: 0;
-      background: transparent;
-
-      padding: 8px 12px;
-      border-radius: 9px;
-
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .view-switch button.active {
-      background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,.06);
-    }
-
-    /* =========================
-       PROPERTY GRID
-    ========================= */
-
-    .properties {
-      display: grid;
-
-      grid-template-columns:
-        repeat(3, minmax(0,1fr));
-
-      gap: 20px;
-    }
-
-    .property-card {
-      background: white;
-
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-
-      overflow: hidden;
-
-      box-shadow:
-        0 5px 20px rgba(0,0,0,.035);
-
-      transition:
-        transform .35s cubic-bezier(.2,.8,.2,1),
-        box-shadow .35s ease;
-    }
-
-    .property-card:hover {
-      transform: translateY(-4px);
-
-      box-shadow:
-        0 18px 45px rgba(0,0,0,.09);
-    }
-
-    .property-image {
-      position: relative;
-
-      width: 100%;
-      aspect-ratio: 1.25;
-
-      background: #e9e9e6;
-      overflow: hidden;
-    }
-
-    .property-image img {
-      width: 100%;
-      height: 100%;
-
-      object-fit: cover;
-
-      display: block;
-
-      transition:
-        transform .7s cubic-bezier(.2,.8,.2,1);
-    }
-
-    .property-card:hover
-    .property-image img {
-      transform: scale(1.035);
-    }
-
-    .image-placeholder {
-      width: 100%;
-      height: 100%;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      color: #999;
-      font-size: 14px;
-    }
-
-    .status {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-
-      background: rgba(255,255,255,.9);
-      backdrop-filter: blur(12px);
-
-      border-radius: 999px;
-
-      padding: 7px 10px;
-
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    .favorite {
-      position: absolute;
-      right: 12px;
-      top: 12px;
-
-      width: 39px;
-      height: 39px;
-
-      border: 0;
-
-      border-radius: 50%;
-
-      background: rgba(255,255,255,.92);
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      font-size: 19px;
-
-      transition:
-        transform .25s ease;
-    }
-
-    .favorite:active {
-      transform: scale(.85);
-    }
-
-    .favorite.active {
-      color: #d52b3f;
-    }
-
-    .property-body {
-      padding: 18px;
-    }
-
-    .property-type {
-      color: #777;
-
-      font-size: 12px;
-      font-weight: 750;
-
-      text-transform: uppercase;
-      letter-spacing: .7px;
-
-      margin-bottom: 5px;
-    }
-
-    .property-price {
-      font-size: 25px;
-      font-weight: 850;
-
-      letter-spacing: -.7px;
-
-      margin-bottom: 5px;
-    }
-
-    .property-location {
-      color: #666;
-
-      font-size: 14px;
-
-      margin-bottom: 15px;
-    }
-
-    .features {
-      display: flex;
-      gap: 12px;
-
-      color: #555;
-
-      font-size: 13px;
-
-      margin-bottom: 16px;
-    }
-
-    .property-description {
-      color: #777;
-
-      font-size: 13px;
-      line-height: 1.5;
-
-      margin-bottom: 15px;
-
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .property-action {
-      width: 100%;
-
-      border: 0;
-
-      background: #171717;
-      color: white;
-
-      border-radius: 12px;
-
-      padding: 12px;
-
-      font-size: 14px;
-      font-weight: 750;
-
-      transition:
-        transform .25s ease;
-    }
-
-    .property-action:active {
-      transform: scale(.98);
-    }
-
-    /* =========================
+    /* =========================================
        MAP
-    ========================= */
+    ========================================= */
 
-    #mapView {
-      display: none;
-
-      height: 650px;
-
-      border-radius: 25px;
-      overflow: hidden;
-
-      border: 1px solid var(--line);
-
-      box-shadow: var(--shadow);
-
-      position: relative;
+    .map-section{
+      padding:20px 18px 10px;
     }
 
-    #map {
-      width: 100%;
-      height: 100%;
+    .section-head{
+      max-width:1200px;
+      margin:0 auto 14px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:20px;
     }
 
-    .map-info {
-      position: absolute;
-      z-index: 500;
-
-      top: 15px;
-      left: 15px;
-
-      background: rgba(255,255,255,.94);
-      backdrop-filter: blur(15px);
-
-      padding: 10px 14px;
-
-      border-radius: 999px;
-
-      font-size: 12px;
-      font-weight: 750;
-
-      box-shadow: 0 5px 20px rgba(0,0,0,.08);
+    .section-title{
+      font-size:27px;
+      letter-spacing:-.04em;
+      font-weight:800;
     }
 
-    .price-marker {
-      background: #171717;
-      color: white;
-
-      border-radius: 999px;
-
-      padding: 7px 10px;
-
-      font-size: 11px;
-      font-weight: 800;
-
-      border: 2px solid white;
-
-      box-shadow:
-        0 4px 12px rgba(0,0,0,.2);
-
-      white-space: nowrap;
+    .section-subtitle{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:14px;
     }
 
-    /* =========================
-       EMPTY
-    ========================= */
-
-    .empty {
-      background: white;
-
-      border: 1px solid var(--line);
-
-      border-radius: 24px;
-
-      padding: 50px 20px;
-
-      text-align: center;
-
-      color: #777;
+    .map-shell{
+      position:relative;
+      max-width:1200px;
+      margin:auto;
+      height:min(70vh,650px);
+      min-height:470px;
+      border-radius:30px;
+      overflow:hidden;
+      background:
+        linear-gradient(135deg,#e9eaec,#f8f8f8);
+      box-shadow:0 20px 70px rgba(0,0,0,.12);
+      border:1px solid rgba(0,0,0,.06);
     }
 
-    .empty strong {
-      display: block;
-
-      color: #171717;
-
-      font-size: 19px;
-
-      margin-bottom: 7px;
+    #map{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 30% 30%,#fff,transparent 35%),
+        linear-gradient(135deg,#e6e8eb,#f7f7f8);
     }
 
-    /* =========================
-       MODAL
-    ========================= */
-
-    .modal {
-      position: fixed;
-
-      inset: 0;
-
-      z-index: 3000;
-
-      background: rgba(0,0,0,.45);
-
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-
-      display: none;
-
-      align-items: flex-end;
-      justify-content: center;
+    .map-message{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:30px;
+      pointer-events:none;
     }
 
-    .modal.show {
-      display: flex;
-
-      animation: fadeIn .25s ease both;
+    .map-message-card{
+      background:rgba(255,255,255,.9);
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      padding:22px;
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      max-width:330px;
     }
 
-    .modal-content {
-      width: min(900px, 100%);
-
-      max-height: 92vh;
-
-      overflow-y: auto;
-
-      background: white;
-
-      border-radius: 28px 28px 0 0;
-
-      animation:
-        modalUp .42s cubic-bezier(.2,.8,.2,1) both;
+    .map-message-card strong{
+      display:block;
+      font-size:18px;
+      margin-bottom:7px;
     }
 
-    .modal-close {
-      position: absolute;
-
-      right: 18px;
-      top: 18px;
-
-      z-index: 20;
-
-      width: 40px;
-      height: 40px;
-
-      border: 0;
-
-      border-radius: 50%;
-
-      background: rgba(255,255,255,.9);
-
-      font-size: 21px;
+    .map-message-card span{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.45;
     }
 
-    .detail-image {
-      width: 100%;
-      aspect-ratio: 1.35;
+    /* Marcadores */
 
-      background: #eee;
-
-      overflow: hidden;
+    .property-marker{
+      background:#111;
+      color:white;
+      border-radius:999px;
+      padding:8px 11px;
+      font-size:12px;
+      font-weight:800;
+      box-shadow:0 8px 24px rgba(0,0,0,.25);
+      white-space:nowrap;
+      border:2px solid white;
+      transform:translateY(-50%);
+      transition:.2s ease;
     }
 
-    .detail-image img {
-      width: 100%;
-      height: 100%;
-
-      object-fit: cover;
+    .property-marker:hover{
+      transform:translateY(-50%) scale(1.06);
     }
 
-    .detail-content {
-      padding: 25px;
+    /* =========================================
+       PROPERTY CARDS
+    ========================================= */
+
+    .properties-section{
+      padding:55px 18px 100px;
     }
 
-    .detail-type {
-      color: #777;
-
-      font-size: 12px;
-      font-weight: 800;
-
-      text-transform: uppercase;
-
-      letter-spacing: .7px;
-
-      margin-bottom: 7px;
+    .properties-grid{
+      max-width:1200px;
+      margin:22px auto 0;
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:18px;
     }
 
-    .detail-price {
-      font-size: 36px;
-
-      font-weight: 900;
-
-      letter-spacing: -1.5px;
-
-      margin-bottom: 8px;
-    }
-
-    .detail-location {
-      color: #666;
-
-      margin-bottom: 20px;
-    }
-
-    .detail-features {
-      display: grid;
-
-      grid-template-columns:
-        repeat(3,1fr);
-
-      gap: 8px;
-
-      margin-bottom: 22px;
-    }
-
-    .detail-feature {
-      background: #f5f5f3;
-
-      padding: 14px;
-
-      border-radius: 14px;
-
-      text-align: center;
-    }
-
-    .detail-feature strong {
-      display: block;
-
-      font-size: 18px;
-
-      margin-bottom: 3px;
-    }
-
-    .detail-feature span {
-      color: #777;
-
-      font-size: 11px;
-    }
-
-    .detail-description {
-      color: #555;
-
-      line-height: 1.65;
-
-      margin-bottom: 22px;
-    }
-
-    .contact-button {
-      width: 100%;
-
-      border: 0;
-
-      background: #171717;
-      color: white;
-
-      border-radius: 14px;
-
-      padding: 16px;
-
-      font-size: 16px;
-      font-weight: 800;
-    }
-
-    /* =========================
-       TOAST
-    ========================= */
-
-    .toast {
-      position: fixed;
-
-      left: 50%;
-      bottom: 25px;
-
-      transform: translateX(-50%) translateY(30px);
-
-      z-index: 5000;
-
-      background: #171717;
-      color: white;
-
-      padding: 12px 17px;
-
-      border-radius: 999px;
-
-      font-size: 13px;
-      font-weight: 700;
-
-      opacity: 0;
-      pointer-events: none;
-
+    .property-card{
+      background:var(--card);
+      border:1px solid rgba(0,0,0,.06);
+      border-radius:26px;
+      overflow:hidden;
+      box-shadow:0 12px 40px rgba(0,0,0,.07);
       transition:
-        opacity .3s ease,
-        transform .3s ease;
+        transform .4s cubic-bezier(.2,.8,.2,1),
+        box-shadow .4s ease;
+      cursor:pointer;
     }
 
-    .toast.show {
-      opacity: 1;
-
-      transform:
-        translateX(-50%)
-        translateY(0);
+    .property-card:hover{
+      transform:translateY(-5px);
+      box-shadow:0 22px 55px rgba(0,0,0,.13);
     }
 
-    /* =========================
-       LOADING
-    ========================= */
-
-    .loading {
-      padding: 70px 20px;
-
-      text-align: center;
-
-      color: #777;
+    .property-image{
+      height:240px;
+      position:relative;
+      overflow:hidden;
+      background:#e8e8e8;
     }
 
-    .spinner {
-      width: 30px;
-      height: 30px;
-
-      border: 3px solid #ddd;
-      border-top-color: #171717;
-
-      border-radius: 50%;
-
-      animation: spin .8s linear infinite;
-
-      margin: 0 auto 15px;
+    .property-image img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      transition:transform .7s cubic-bezier(.2,.8,.2,1);
     }
 
-    /* =========================
-       ANIMATIONS
-    ========================= */
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+    .property-card:hover .property-image img{
+      transform:scale(1.035);
     }
 
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-
-      to {
-        opacity: 1;
-      }
+    .image-placeholder{
+      width:100%;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#999;
+      font-size:13px;
     }
 
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .status-pill{
+      position:absolute;
+      top:13px;
+      left:13px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.9);
+      backdrop-filter:blur(12px);
+      font-size:12px;
+      font-weight:700;
     }
 
-    @keyframes modalUp {
-      from {
-        opacity: 0;
-        transform: translateY(40px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .property-body{
+      padding:18px;
     }
 
-    /* =========================
+    .property-price{
+      font-size:23px;
+      font-weight:800;
+      letter-spacing:-.035em;
+    }
+
+    .property-title{
+      margin-top:5px;
+      font-size:17px;
+      font-weight:700;
+    }
+
+    .property-location{
+      margin-top:5px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .property-meta{
+      display:flex;
+      gap:13px;
+      margin-top:15px;
+      color:#555;
+      font-size:13px;
+      flex-wrap:wrap;
+    }
+
+    .property-description{
+      margin-top:14px;
+      color:#666;
+      line-height:1.45;
+      font-size:14px;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    /* =========================================
+       DETAIL VIEW
+    ========================================= */
+
+    .detail-overlay{
+      position:fixed;
+      inset:0;
+      z-index:3000;
+      background:rgba(0,0,0,.38);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .4s ease;
+    }
+
+    .detail-overlay.open{
+      opacity:1;
+      pointer-events:auto;
+    }
+
+    .detail-panel{
+      position:absolute;
+      right:0;
+      top:0;
+      bottom:0;
+      width:min(620px,100%);
+      background:#fff;
+      overflow-y:auto;
+      transform:translateX(100%);
+      transition:transform .5s cubic-bezier(.2,.8,.2,1);
+      box-shadow:-20px 0 60px rgba(0,0,0,.18);
+    }
+
+    .detail-overlay.open .detail-panel{
+      transform:translateX(0);
+    }
+
+    .detail-close{
+      position:absolute;
+      top:18px;
+      left:18px;
+      z-index:10;
+      width:44px;
+      height:44px;
+      border-radius:50%;
+      background:rgba(255,255,255,.9);
+      backdrop-filter:blur(15px);
+      box-shadow:0 8px 25px rgba(0,0,0,.14);
+      font-size:20px;
+    }
+
+    .detail-image{
+      width:100%;
+      height:390px;
+      background:#e8e8e8;
+      position:relative;
+    }
+
+    .detail-image img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .detail-content{
+      padding:28px 22px 50px;
+    }
+
+    .detail-price{
+      font-size:34px;
+      font-weight:800;
+      letter-spacing:-.05em;
+    }
+
+    .detail-title{
+      margin-top:7px;
+      font-size:22px;
+      font-weight:700;
+    }
+
+    .detail-location{
+      margin-top:6px;
+      color:var(--muted);
+    }
+
+    .detail-meta{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:24px;
+    }
+
+    .detail-meta-item{
+      padding:14px;
+      border-radius:17px;
+      background:#f5f5f7;
+    }
+
+    .detail-meta-item strong{
+      display:block;
+      font-size:18px;
+    }
+
+    .detail-meta-item span{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .detail-description{
+      margin-top:25px;
+      color:#555;
+      line-height:1.6;
+      white-space:pre-line;
+    }
+
+    .contact-button{
+      width:100%;
+      margin-top:28px;
+      padding:17px;
+      border-radius:17px;
+      background:#111;
+      color:#fff;
+      font-weight:800;
+      transition:.25s ease;
+    }
+
+    .contact-button:active{
+      transform:scale(.98);
+    }
+
+    /* =========================================
+       EMPTY / LOADING
+    ========================================= */
+
+    .loading{
+      max-width:1200px;
+      margin:25px auto;
+      padding:35px;
+      text-align:center;
+      color:var(--muted);
+    }
+
+    .empty{
+      max-width:1200px;
+      margin:25px auto;
+      background:white;
+      border-radius:25px;
+      padding:45px 25px;
+      text-align:center;
+      color:var(--muted);
+    }
+
+    /* =========================================
        RESPONSIVE
-    ========================= */
+    ========================================= */
 
-    @media (max-width: 900px) {
+    @media(max-width:850px){
 
-      .properties {
-        grid-template-columns:
-          repeat(2, minmax(0,1fr));
+      .hero{
+        min-height:620px;
       }
 
+      .properties-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      .property-image{
+        height:210px;
+      }
     }
 
-    @media (max-width: 650px) {
+    @media(max-width:600px){
 
-      .nav {
-        padding-left: 16px;
-        padding-right: 16px;
+      .header{
+        padding-left:12px;
+        padding-right:12px;
       }
 
-      .hero {
-        padding-top: 45px;
+      .hero{
+        min-height:650px;
+        padding-left:14px;
+        padding-right:14px;
       }
 
-      .hero h1 {
-        letter-spacing: -2px;
+      .hero h1{
+        font-size:48px;
       }
 
-      .hero p {
-        font-size: 16px;
+      .hero p{
+        font-size:16px;
       }
 
-      .search-box {
-        border-radius: 17px;
+      .search-button{
+        width:46px;
+        padding:0;
+        font-size:0;
       }
 
-      .ai-button {
-        display: none;
+      .search-button::after{
+        content:"⌕";
+        font-size:20px;
       }
 
-      .main {
-        padding-left: 15px;
-        padding-right: 15px;
+      .map-section,
+      .properties-section{
+        padding-left:12px;
+        padding-right:12px;
       }
 
-      .filters-wrapper {
-        padding-left: 15px;
-        padding-right: 15px;
+      .map-shell{
+        height:560px;
+        min-height:0;
+        border-radius:25px;
       }
 
-      .properties {
-        grid-template-columns: 1fr;
+      .properties-grid{
+        grid-template-columns:1fr;
       }
 
-      .property-card:hover {
-        transform: none;
+      .property-image{
+        height:240px;
       }
 
-      #mapView {
-        height: 70vh;
-        min-height: 500px;
+      .detail-image{
+        height:320px;
       }
 
-      .section-header {
-        align-items: flex-start;
-        flex-wrap: wrap;
+      .detail-meta{
+        grid-template-columns:repeat(3,1fr);
       }
-
-      .modal-content {
-        max-height: 94vh;
-      }
-
-      .detail-price {
-        font-size: 30px;
-      }
-
     }
 
+    /* =========================================
+       REDUCED MOTION
+    ========================================= */
+
+    @media(prefers-reduced-motion:reduce){
+
+      *,
+      *::before,
+      *::after{
+        scroll-behavior:auto!important;
+        transition:none!important;
+        animation:none!important;
+      }
+    }
   </style>
 </head>
 
 <body>
 
-<div class="app">
-
-  <!-- =========================
+  <!-- =========================================
        HEADER
-  ========================== -->
+  ========================================== -->
 
-  <header>
-
+  <header class="header">
     <nav class="nav">
 
       <div class="brand">
@@ -1082,1811 +740,994 @@
       </div>
 
       <div class="nav-actions">
-
         <button
-          class="nav-button"
-          id="favoritesButton"
+          class="glass-btn"
           type="button"
-        >
-          ♡ Favoritos
+          aria-label="Ir al mapa"
+          onclick="scrollToMap()">
+          ◉
         </button>
-
       </div>
 
     </nav>
-
   </header>
 
 
-  <!-- =========================
+  <!-- =========================================
        HERO
-  ========================== -->
+  ========================================== -->
 
-  <section class="hero">
+  <main>
 
-    <div class="eyebrow">
-      <span class="eyebrow-dot"></span>
-      NEXO INMUEBLE
-    </div>
+    <section class="hero">
 
-    <h1>
-      Encuentra un lugar
-      que se sienta como tuyo.
-    </h1>
+      <div class="hero-content">
 
-    <p>
-      Explora propiedades, descubre nuevas zonas
-      y encuentra tu próximo lugar de una manera
-      más sencilla.
-    </p>
+        <div class="eyebrow">
+          NEXO INMUEBLE
+        </div>
 
+        <h1>
+          Encuentra<br>
+          tu próximo lugar.
+        </h1>
 
-    <div class="search-box">
+        <p>
+          Explora propiedades, descubre nuevas zonas
+          y encuentra un lugar que se sienta como tuyo.
+        </p>
 
-      <span class="search-icon">
-        ⌕
-      </span>
+        <div class="search-wrap">
 
-      <input
-        id="searchInput"
-        type="search"
-        placeholder="Busca por ciudad, zona o tipo de propiedad..."
-        autocomplete="off"
-      >
+          <div class="search-box">
 
-      <button
-        class="ai-button"
-        id="aiButton"
-        type="button"
-      >
-        ✦ NEXO IA
-      </button>
+            <div class="search-icon">
+              ⌕
+            </div>
 
-    </div>
+            <input
+              id="searchInput"
+              class="search-input"
+              type="search"
+              placeholder="Ciudad, zona o tipo de propiedad..."
+              autocomplete="off">
 
-  </section>
+            <button
+              class="search-button"
+              type="button"
+              onclick="applySearch()">
+              Buscar
+            </button>
 
+          </div>
 
-  <!-- =========================
-       AI PANEL
-  ========================== -->
+          <div class="filters">
 
-  <section
-    class="ai-panel"
-    id="aiPanel"
-  >
+            <button
+              class="filter active"
+              data-filter="all"
+              onclick="setFilter('all', this)">
+              Todas
+            </button>
 
-    <div class="ai-card">
+            <button
+              class="filter"
+              data-filter="Casa"
+              onclick="setFilter('Casa', this)">
+              Casas
+            </button>
 
-      <h3>
-        ✦ ¿Qué estás buscando?
-      </h3>
+            <button
+              class="filter"
+              data-filter="Apartamento"
+              onclick="setFilter('Apartamento', this)">
+              Apartamentos
+            </button>
 
-      <p>
-        Próximamente podrás describir lo que necesitas
-        con tus propias palabras y NEXO encontrará
-        las propiedades que mejor coincidan.
-      </p>
+            <button
+              class="filter"
+              data-filter="price-low"
+              onclick="setFilter('price-low', this)">
+              Menor precio
+            </button>
 
-      <input
-        class="ai-input"
-        placeholder="Ej. Una casa de 3 habitaciones en La Habana..."
-        disabled
-      >
+            <button
+              class="filter"
+              data-filter="price-high"
+              onclick="setFilter('price-high', this)">
+              Mayor precio
+            </button>
 
-    </div>
+          </div>
 
-  </section>
-
-
-  <!-- =========================
-       FILTERS
-  ========================== -->
-
-  <div class="filters-wrapper">
-
-    <div class="filters">
-
-      <button
-        class="filter active"
-        data-filter="all"
-        type="button"
-      >
-        Todas
-      </button>
-
-      <button
-        class="filter"
-        data-filter="Casa"
-        type="button"
-      >
-        Casas
-      </button>
-
-      <button
-        class="filter"
-        data-filter="Apartamento"
-        type="button"
-      >
-        Apartamentos
-      </button>
-
-      <button
-        class="filter"
-        data-filter="Villa"
-        type="button"
-      >
-        Villas
-      </button>
-
-      <button
-        class="filter"
-        data-filter="Terreno"
-        type="button"
-      >
-        Terrenos
-      </button>
-
-      <button
-        class="filter"
-        data-filter="Local"
-        type="button"
-      >
-        Locales
-      </button>
-
-      <button
-        class="filter"
-        data-filter="Oficina"
-        type="button"
-      >
-        Oficinas
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <!-- =========================
-       MAIN
-  ========================== -->
-
-  <main class="main">
-
-    <div class="section-header">
-
-      <div>
-
-        <h2 class="section-title">
-          Explorar propiedades
-        </h2>
-
-        <div
-          class="result-count"
-          id="resultCount"
-        >
-          Cargando...
         </div>
 
       </div>
 
+    </section>
 
-      <div class="view-switch">
 
-        <button
-          id="listButton"
-          class="active"
-          type="button"
-        >
-          Lista
-        </button>
+    <!-- =========================================
+         MAPA
+    ========================================== -->
 
-        <button
-          id="mapButton"
-          type="button"
-        >
-          Mapa
-        </button>
+    <section
+      class="map-section"
+      id="mapSection">
+
+      <div class="section-head">
+
+        <div>
+          <h2 class="section-title">
+            Explora el mapa
+          </h2>
+
+          <p class="section-subtitle">
+            Descubre dónde están las propiedades disponibles.
+          </p>
+        </div>
+
+        <div id="resultCount">
+          0 propiedades
+        </div>
 
       </div>
 
-    </div>
+      <div class="map-shell">
+
+        <div id="map">
+
+          <div
+            id="mapMessage"
+            class="map-message">
+
+            <div class="map-message-card">
+
+              <strong>
+                Preparando el mapa
+              </strong>
+
+              <span>
+                Estamos ubicando las propiedades de NEXO.
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
 
 
-    <!-- LIST -->
+    <!-- =========================================
+         PROPIEDADES
+    ========================================== -->
 
-    <div
-      id="properties"
-      class="properties"
-    >
+    <section class="properties-section">
 
-      <div class="loading">
+      <div class="section-head">
 
-        <div class="spinner"></div>
+        <div>
+          <h2 class="section-title">
+            Propiedades
+          </h2>
 
+          <p class="section-subtitle">
+            Lugares seleccionados para ti.
+          </p>
+        </div>
+
+      </div>
+
+      <div
+        id="loading"
+        class="loading">
         Cargando propiedades...
-
       </div>
 
-    </div>
-
-
-    <!-- MAP -->
-
-    <div
-      id="mapView"
-    >
-
-      <div class="map-info">
-        Explora las propiedades
+      <div
+        id="propertiesGrid"
+        class="properties-grid">
       </div>
 
-      <div id="map"></div>
-
-    </div>
+    </section>
 
   </main>
 
 
-</div>
+  <!-- =========================================
+       PROPERTY DETAIL
+  ========================================== -->
 
+  <div
+    id="detailOverlay"
+    class="detail-overlay"
+    onclick="closeDetail(event)">
 
-<!-- =========================
-     PROPERTY MODAL
-========================== -->
-
-<div
-  class="modal"
-  id="propertyModal"
->
-
-  <div class="modal-content">
-
-    <button
-      class="modal-close"
-      id="modalClose"
-      type="button"
-    >
-      ×
-    </button>
-
-    <div
-      class="detail-image"
-      id="detailImage"
-    ></div>
-
-    <div class="detail-content">
-
-      <div
-        class="detail-type"
-        id="detailType"
-      ></div>
-
-      <div
-        class="detail-price"
-        id="detailPrice"
-      ></div>
-
-      <div
-        class="detail-location"
-        id="detailLocation"
-      ></div>
-
-
-      <div
-        class="detail-features"
-        id="detailFeatures"
-      ></div>
-
-
-      <div
-        class="detail-description"
-        id="detailDescription"
-      ></div>
-
+    <article
+      class="detail-panel"
+      onclick="event.stopPropagation()">
 
       <button
-        class="contact-button"
-        id="contactButton"
+        class="detail-close"
         type="button"
-      >
-        Contactar con NEXO
+        aria-label="Cerrar"
+        onclick="closeDetail()">
+        ×
       </button>
 
-    </div>
+      <div
+        id="detailImage"
+        class="detail-image">
+      </div>
+
+      <div
+        id="detailContent"
+        class="detail-content">
+      </div>
+
+    </article>
 
   </div>
 
-</div>
+
+  <script>
+
+    /* =========================================
+       ESTADO
+    ========================================== */
+
+    let properties = [];
+
+    let filteredProperties = [];
+
+    let currentFilter = "all";
+
+    let currentSearch = "";
 
 
-<div
-  class="toast"
-  id="toast"
-></div>
+    /* =========================================
+       UTILIDADES
+    ========================================== */
+
+    function escapeHTML(value){
+
+      if(value === null || value === undefined){
+        return "";
+      }
+
+      return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+    }
 
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    function formatPrice(value){
+
+      const number = Number(value);
+
+      if(!Number.isFinite(number)){
+        return "Precio a consultar";
+      }
+
+      return new Intl.NumberFormat("es-US",{
+        style:"currency",
+        currency:"USD",
+        maximumFractionDigits:0
+      }).format(number);
+
+    }
 
 
-<script>
+    function getPhotos(property){
 
-  /* =====================================================
-     CONFIGURACIÓN
-  ===================================================== */
+      if(!property || !property.photos){
+        return [];
+      }
 
-  const API_URL =
-    "https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev";
+      try{
 
+        const parsed =
+          typeof property.photos === "string"
+            ? JSON.parse(property.photos)
+            : property.photos;
 
-  /* =====================================================
-     ELEMENTOS
-  ===================================================== */
+        if(Array.isArray(parsed)){
+          return parsed.filter(Boolean);
+        }
 
-  const propertiesContainer =
-    document.getElementById("properties");
+        if(typeof parsed === "string" && parsed.trim()){
+          return [parsed.trim()];
+        }
 
-  const resultCount =
-    document.getElementById("resultCount");
+      }catch(error){
 
-  const searchInput =
-    document.getElementById("searchInput");
+        if(typeof property.photos === "string"){
+          return property.photos
+            .split(",")
+            .map(item => item.trim())
+            .filter(Boolean);
+        }
 
-  const filters =
-    document.querySelectorAll(".filter");
-
-  const listButton =
-    document.getElementById("listButton");
-
-  const mapButton =
-    document.getElementById("mapButton");
-
-  const mapView =
-    document.getElementById("mapView");
-
-  const favoritesButton =
-    document.getElementById("favoritesButton");
-
-  const aiButton =
-    document.getElementById("aiButton");
-
-  const aiPanel =
-    document.getElementById("aiPanel");
-
-  const modal =
-    document.getElementById("propertyModal");
-
-  const modalClose =
-    document.getElementById("modalClose");
-
-  const detailImage =
-    document.getElementById("detailImage");
-
-  const detailType =
-    document.getElementById("detailType");
-
-  const detailPrice =
-    document.getElementById("detailPrice");
-
-  const detailLocation =
-    document.getElementById("detailLocation");
-
-  const detailFeatures =
-    document.getElementById("detailFeatures");
-
-  const detailDescription =
-    document.getElementById("detailDescription");
-
-  const contactButton =
-    document.getElementById("contactButton");
-
-  const toast =
-    document.getElementById("toast");
-
-
-  /* =====================================================
-     ESTADO
-  ===================================================== */
-
-  let allProperties = [];
-
-  let currentFilter = "all";
-
-  let favoritesOnly = false;
-
-  let map = null;
-
-  let mapMarkers = [];
-
-  let selectedProperty = null;
-
-
-  /* =====================================================
-     FAVORITOS
-  ===================================================== */
-
-  function getFavorites() {
-
-    try {
-
-      return JSON.parse(
-        localStorage.getItem(
-          "nexo_favorites"
-        ) || "[]"
-      );
-
-    } catch {
+      }
 
       return [];
+    }
+
+
+    function firstPhoto(property){
+
+      const photos = getPhotos(property);
+
+      return photos.length
+        ? photos[0]
+        : null;
+    }
+
+
+    /* =========================================
+       CARGAR PROPIEDADES
+    ========================================== */
+
+    async function loadProperties(){
+
+      const loading =
+        document.getElementById("loading");
+
+      try{
+
+        const response =
+          await fetch("/api/properties");
+
+        if(!response.ok){
+          throw new Error(
+            "No se pudieron cargar las propiedades."
+          );
+        }
+
+        const data =
+          await response.json();
+
+        if(!data.success){
+          throw new Error(
+            data.error ||
+            "No se pudieron cargar las propiedades."
+          );
+        }
+
+        properties =
+          Array.isArray(data.properties)
+            ? data.properties.filter(
+                property =>
+                  property.status === "available"
+              )
+            : [];
+
+        applyFilters();
+
+      }catch(error){
+
+        console.error("NEXO:",error);
+
+        loading.textContent =
+          "No pudimos cargar las propiedades. Inténtalo nuevamente.";
+
+      }
 
     }
 
-  }
 
+    /* =========================================
+       FILTROS
+    ========================================== */
 
-  function saveFavorites(favorites) {
+    function setFilter(filter, button){
 
-    localStorage.setItem(
-      "nexo_favorites",
-      JSON.stringify(favorites)
-    );
+      currentFilter = filter;
 
-  }
-
-
-  function isFavorite(id) {
-
-    return getFavorites()
-      .includes(Number(id));
-
-  }
-
-
-  function toggleFavorite(id) {
-
-    const numericId =
-      Number(id);
-
-    let favorites =
-      getFavorites();
-
-    if (favorites.includes(numericId)) {
-
-      favorites =
-        favorites.filter(
-          item => item !== numericId
+      document
+        .querySelectorAll(".filter")
+        .forEach(item =>
+          item.classList.remove("active")
         );
 
-      showToast(
-        "Eliminado de favoritos"
-      );
+      if(button){
+        button.classList.add("active");
+      }
 
-    } else {
+      applyFilters();
+    }
 
-      favorites.push(numericId);
 
-      showToast(
-        "Añadido a favoritos ♥"
-      );
+    function applySearch(){
+
+      currentSearch =
+        document
+          .getElementById("searchInput")
+          .value
+          .trim()
+          .toLowerCase();
+
+      applyFilters();
+
+      scrollToMap();
 
     }
 
-    saveFavorites(favorites);
 
-    renderProperties();
+    document
+      .getElementById("searchInput")
+      .addEventListener(
+        "keydown",
+        event => {
 
-  }
+          if(event.key === "Enter"){
+            applySearch();
+          }
 
-
-  /* =====================================================
-     UTILIDADES
-  ===================================================== */
-
-  function escapeHTML(value) {
-
-    if (
-      value === null ||
-      value === undefined
-    ) {
-
-      return "";
-
-    }
-
-    return String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-
-  }
-
-
-  function formatPrice(price) {
-
-    if (
-      price === null ||
-      price === undefined ||
-      price === ""
-    ) {
-
-      return "Precio a consultar";
-
-    }
-
-    const number =
-      Number(price);
-
-    if (
-      Number.isNaN(number)
-    ) {
-
-      return escapeHTML(price);
-
-    }
-
-    return "$" +
-      number.toLocaleString(
-        "en-US",
-        {
-          maximumFractionDigits: 0
         }
       );
 
-  }
 
+    function applyFilters(){
 
-  function getPhotos(property) {
+      let result =
+        [...properties];
 
-    if (!property.photos) {
+      if(currentSearch){
 
-      return [];
+        result =
+          result.filter(property => {
 
-    }
+            const text = [
 
-    try {
+              property.property_type,
+              property.city,
+              property.neighborhood,
+              property.address,
+              property.description
 
-      if (
-        Array.isArray(
-          property.photos
-        )
-      ) {
+            ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
 
-        return property.photos;
+            return text.includes(currentSearch);
+
+          });
 
       }
 
-      const parsed =
-        JSON.parse(
-          property.photos
-        );
 
-      return Array.isArray(parsed)
-        ? parsed
-        : [];
+      if(
+        currentFilter === "Casa" ||
+        currentFilter === "Apartamento"
+      ){
 
-    } catch {
+        result =
+          result.filter(
+            property =>
+              String(property.property_type)
+                .toLowerCase() ===
+              currentFilter.toLowerCase()
+          );
 
-      return [];
-
-    }
-
-  }
-
-
-  function getMainPhoto(property) {
-
-    const photos =
-      getPhotos(property);
-
-    return photos.length
-      ? photos[0]
-      : "";
-
-  }
+      }
 
 
-  function getLocation(property) {
+      if(currentFilter === "price-low"){
 
-    const parts = [];
-
-    if (property.city) {
-      parts.push(property.city);
-    }
-
-    if (property.neighborhood) {
-      parts.push(property.neighborhood);
-    }
-
-    return parts.length
-      ? parts.join(" · ")
-      : "Ubicación no especificada";
-
-  }
-
-
-  function showToast(text) {
-
-    toast.textContent =
-      text;
-
-    toast.classList.add(
-      "show"
-    );
-
-    setTimeout(() => {
-
-      toast.classList.remove(
-        "show"
-      );
-
-    }, 2200);
-
-  }
-
-
-  /* =====================================================
-     CARGAR PROPIEDADES
-  ===================================================== */
-
-  async function loadProperties() {
-
-    propertiesContainer.innerHTML = `
-      <div class="loading">
-        <div class="spinner"></div>
-        Cargando propiedades...
-      </div>
-    `;
-
-    try {
-
-      const response =
-        await fetch(
-          `${API_URL}/api/properties`,
-          {
-            method: "GET",
-            cache: "no-store"
-          }
-        );
-
-      if (!response.ok) {
-
-        throw new Error(
-          "No se pudieron cargar las propiedades."
+        result.sort(
+          (a,b) =>
+            Number(a.price || 0) -
+            Number(b.price || 0)
         );
 
       }
 
-      const result =
-        await response.json();
 
-      if (
-        !result.success ||
-        !Array.isArray(
-          result.properties
-        )
-      ) {
+      if(currentFilter === "price-high"){
 
-        throw new Error(
-          "Respuesta inválida del servidor."
+        result.sort(
+          (a,b) =>
+            Number(b.price || 0) -
+            Number(a.price || 0)
         );
 
       }
 
-      allProperties =
-        result.properties.filter(
-          property =>
-            property.status ===
-            "available"
-        );
+
+      filteredProperties =
+        result;
 
       renderProperties();
 
-    } catch (error) {
+      updateCount();
 
-      console.error(
-        "NEXO:",
-        error
-      );
-
-      propertiesContainer.innerHTML = `
-        <div class="empty">
-          <strong>No pudimos cargar las propiedades</strong>
-          <p>
-            Comprueba tu conexión e inténtalo nuevamente.
-          </p>
-        </div>
-      `;
-
-      resultCount.textContent =
-        "No se pudieron cargar los resultados.";
-
-    }
-
-  }
-
-
-  /* =====================================================
-     FILTRAR
-  ===================================================== */
-
-  function getFilteredProperties() {
-
-    const search =
-      searchInput.value
-        .trim()
-        .toLowerCase();
-
-
-    return allProperties.filter(
-      property => {
-
-        if (
-          currentFilter !== "all" &&
-          property.property_type !==
-            currentFilter
-        ) {
-
-          return false;
-
-        }
-
-
-        if (
-          favoritesOnly &&
-          !isFavorite(property.id)
-        ) {
-
-          return false;
-
-        }
-
-
-        if (!search) {
-
-          return true;
-
-        }
-
-
-        const searchable = [
-
-          property.property_type,
-
-          property.city,
-
-          property.neighborhood,
-
-          property.address,
-
-          property.description
-
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-
-
-        return searchable.includes(
-          search
-        );
-
-      }
-    );
-
-  }
-
-
-  /* =====================================================
-     RENDER PROPIEDADES
-  ===================================================== */
-
-  function renderProperties() {
-
-    const properties =
-      getFilteredProperties();
-
-
-    resultCount.textContent =
-      properties.length === 1
-        ? "1 propiedad"
-        : `${properties.length} propiedades`;
-
-
-    if (!properties.length) {
-
-      propertiesContainer.innerHTML = `
-        <div class="empty">
-          <strong>No encontramos propiedades</strong>
-          <p>
-            Prueba cambiando los filtros o la búsqueda.
-          </p>
-        </div>
-      `;
-
-      updateMap([]);
-
-      return;
+      renderMap();
 
     }
 
 
-    propertiesContainer.innerHTML =
-      properties.map(
-        property => {
+    function updateCount(){
 
-          const photo =
-            getMainPhoto(property);
+      const element =
+        document.getElementById("resultCount");
 
-          const favorite =
-            isFavorite(property.id);
+      const count =
+        filteredProperties.length;
 
-
-          const imageHTML =
-            photo
-
-              ? `
-                <img
-                  src="${escapeHTML(photo)}"
-                  alt="${escapeHTML(
-                    property.property_type ||
-                    "Propiedad"
-                  )}"
-                  loading="lazy"
-                  onerror="this.parentElement.innerHTML='<div class=&quot;image-placeholder&quot;>Imagen no disponible</div>'"
-                >
-              `
-
-              : `
-                <div class="image-placeholder">
-                  NEXO
-                </div>
-              `;
-
-
-          return `
-
-            <article
-              class="property-card"
-              data-id="${Number(property.id)}"
-            >
-
-              <div class="property-image">
-
-                ${imageHTML}
-
-                <div class="status">
-                  Disponible
-                </div>
-
-                <button
-                  class="favorite ${
-                    favorite
-                      ? "active"
-                      : ""
-                  }"
-                  type="button"
-                  data-favorite="${Number(property.id)}"
-                  aria-label="Favorito"
-                >
-                  ${
-                    favorite
-                      ? "♥"
-                      : "♡"
-                  }
-                </button>
-
-              </div>
-
-
-              <div class="property-body">
-
-                <div class="property-type">
-                  ${escapeHTML(
-                    property.property_type ||
-                    "Propiedad"
-                  )}
-                </div>
-
-                <div class="property-price">
-                  ${formatPrice(
-                    property.price
-                  )}
-                </div>
-
-                <div class="property-location">
-                  ${escapeHTML(
-                    getLocation(property)
-                  )}
-                </div>
-
-
-                <div class="features">
-
-                  ${
-                    property.bedrooms !==
-                    null &&
-                    property.bedrooms !==
-                    undefined &&
-                    property.bedrooms !==
-                    ""
-                      ? `
-                        <span>
-                          🛏 ${escapeHTML(
-                            property.bedrooms
-                          )}
-                        </span>
-                      `
-                      : ""
-                  }
-
-
-                  ${
-                    property.bathrooms !==
-                    null &&
-                    property.bathrooms !==
-                    undefined &&
-                    property.bathrooms !==
-                    ""
-                      ? `
-                        <span>
-                          🚿 ${escapeHTML(
-                            property.bathrooms
-                          )}
-                        </span>
-                      `
-                      : ""
-                  }
-
-
-                  ${
-                    property.square_meters
-                      ? `
-                        <span>
-                          ${escapeHTML(
-                            property.square_meters
-                          )} m²
-                        </span>
-                      `
-                      : ""
-                  }
-
-                </div>
-
-
-                ${
-                  property.description
-                    ? `
-                      <div class="property-description">
-                        ${escapeHTML(
-                          property.description
-                        )}
-                      </div>
-                    `
-                    : ""
-                }
-
-
-                <button
-                  class="property-action"
-                  type="button"
-                  data-open="${Number(property.id)}"
-                >
-                  Ver propiedad
-                </button>
-
-              </div>
-
-            </article>
-
-          `;
-
-        }
-      ).join("");
-
-
-    updateMap(properties);
-
-  }
-
-
-  /* =====================================================
-     EVENTOS DE TARJETAS
-  ===================================================== */
-
-  propertiesContainer.addEventListener(
-    "click",
-    function(event) {
-
-      const favoriteButton =
-        event.target.closest(
-          "[data-favorite]"
-        );
-
-      if (favoriteButton) {
-
-        event.stopPropagation();
-
-        toggleFavorite(
-          favoriteButton.dataset.favorite
-        );
-
-        return;
-
-      }
-
-
-      const openButton =
-        event.target.closest(
-          "[data-open]"
-        );
-
-      if (openButton) {
-
-        openProperty(
-          Number(
-            openButton.dataset.open
-          )
-        );
-
-      }
-
-    }
-  );
-
-
-  /* =====================================================
-     ABRIR PROPIEDAD
-  ===================================================== */
-
-  function openProperty(id) {
-
-    const property =
-      allProperties.find(
-        item =>
-          Number(item.id) ===
-          Number(id)
-      );
-
-
-    if (!property) {
-
-      return;
+      element.textContent =
+        `${count} ${count === 1 ? "propiedad" : "propiedades"}`;
 
     }
 
 
-    selectedProperty =
-      property;
+    /* =========================================
+       TARJETAS
+    ========================================== */
 
+    function renderProperties(){
 
-    const photo =
-      getMainPhoto(property);
+      const grid =
+        document.getElementById(
+          "propertiesGrid"
+        );
 
+      const loading =
+        document.getElementById("loading");
 
-    detailImage.innerHTML =
-      photo
+      loading.style.display =
+        "none";
 
-        ? `
-          <img
-            src="${escapeHTML(photo)}"
-            alt="${escapeHTML(
-              property.property_type ||
-              "Propiedad"
-            )}"
-          >
-        `
+      if(!filteredProperties.length){
 
-        : `
-          <div class="image-placeholder">
-            NEXO
+        grid.innerHTML = `
+          <div class="empty">
+            <strong>No encontramos propiedades.</strong>
+            <br>
+            <span>
+              Prueba cambiando la búsqueda o los filtros.
+            </span>
           </div>
         `;
 
-
-    detailType.textContent =
-      property.property_type ||
-      "Propiedad";
+        return;
+      }
 
 
-    detailPrice.textContent =
-      formatPrice(
-        property.price
-      );
+      grid.innerHTML =
+        filteredProperties
+          .map(property => {
+
+            const photo =
+              firstPhoto(property);
+
+            const image =
+              photo
+                ? `
+                  <img
+                    src="${escapeHTML(photo)}"
+                    alt="${escapeHTML(
+                      property.property_type ||
+                      "Propiedad"
+                    )}"
+                    loading="lazy"
+                    onerror="this.style.display='none'">
+                `
+                : `
+                  <div class="image-placeholder">
+                    Imagen próximamente
+                  </div>
+                `;
+
+            return `
+
+              <article
+                class="property-card"
+                onclick="openDetail(${Number(property.id)})">
+
+                <div class="property-image">
+
+                  ${image}
+
+                  <div class="status-pill">
+                    Disponible
+                  </div>
+
+                </div>
+
+                <div class="property-body">
+
+                  <div class="property-price">
+                    ${formatPrice(property.price)}
+                  </div>
+
+                  <div class="property-title">
+                    ${escapeHTML(
+                      property.property_type ||
+                      "Propiedad"
+                    )}
+                  </div>
+
+                  <div class="property-location">
+                    ${escapeHTML(
+                      [
+                        property.city,
+                        property.neighborhood
+                      ]
+                      .filter(Boolean)
+                      .join(" · ") ||
+                      "Ubicación disponible próximamente"
+                    )}
+                  </div>
+
+                  <div class="property-meta">
+
+                    ${
+                      property.bedrooms !== null &&
+                      property.bedrooms !== undefined
+                      ? `🛏 ${escapeHTML(property.bedrooms)}`
+                      : ""
+                    }
+
+                    ${
+                      property.bathrooms !== null &&
+                      property.bathrooms !== undefined
+                      ? `🚿 ${escapeHTML(property.bathrooms)}`
+                      : ""
+                    }
+
+                    ${
+                      property.square_meters !== null &&
+                      property.square_meters !== undefined
+                      ? `▣ ${escapeHTML(property.square_meters)} m²`
+                      : ""
+                    }
+
+                  </div>
+
+                  ${
+                    property.description
+                    ? `
+                      <div class="property-description">
+                        ${escapeHTML(property.description)}
+                      </div>
+                    `
+                    : ""
+                  }
+
+                </div>
+
+              </article>
+
+            `;
+
+          })
+          .join("");
+
+    }
 
 
-    detailLocation.textContent =
-      getLocation(property) +
-      (
-        property.address
-          ? ` · ${property.address}`
+    /* =========================================
+       DETALLE
+    ========================================== */
+
+    function openDetail(id){
+
+      const property =
+        properties.find(
+          item =>
+            Number(item.id) === Number(id)
+        );
+
+      if(!property){
+        return;
+      }
+
+      const overlay =
+        document.getElementById(
+          "detailOverlay"
+        );
+
+      const imageContainer =
+        document.getElementById(
+          "detailImage"
+        );
+
+      const content =
+        document.getElementById(
+          "detailContent"
+        );
+
+      const photo =
+        firstPhoto(property);
+
+      imageContainer.innerHTML =
+        photo
+          ? `
+            <img
+              src="${escapeHTML(photo)}"
+              alt="${escapeHTML(
+                property.property_type ||
+                "Propiedad"
+              )}">
+          `
+          : `
+            <div class="image-placeholder">
+              Imagen próximamente
+            </div>
+          `;
+
+
+      content.innerHTML = `
+
+        <div class="detail-price">
+          ${formatPrice(property.price)}
+        </div>
+
+        <div class="detail-title">
+          ${escapeHTML(
+            property.property_type ||
+            "Propiedad"
+          )}
+        </div>
+
+        <div class="detail-location">
+          ${escapeHTML(
+            [
+              property.city,
+              property.neighborhood
+            ]
+            .filter(Boolean)
+            .join(" · ")
+          )}
+        </div>
+
+        <div class="detail-meta">
+
+          <div class="detail-meta-item">
+            <strong>
+              ${property.bedrooms ?? "—"}
+            </strong>
+            <span>
+              Habitaciones
+            </span>
+          </div>
+
+          <div class="detail-meta-item">
+            <strong>
+              ${property.bathrooms ?? "—"}
+            </strong>
+            <span>
+              Baños
+            </span>
+          </div>
+
+          <div class="detail-meta-item">
+            <strong>
+              ${property.square_meters ?? "—"}
+            </strong>
+            <span>
+              m²
+            </span>
+          </div>
+
+        </div>
+
+        ${
+          property.address
+          ? `
+            <div class="detail-description">
+              <strong>Ubicación</strong><br>
+              ${escapeHTML(property.address)}
+            </div>
+          `
           : ""
-      );
+        }
+
+        ${
+          property.description
+          ? `
+            <div class="detail-description">
+              ${escapeHTML(property.description)}
+            </div>
+          `
+          : ""
+        }
+
+        <button
+          class="contact-button"
+          onclick="contactNexo(${Number(property.id)})">
+          Contactar con NEXO
+        </button>
+
+      `;
 
 
-    detailFeatures.innerHTML = `
+      overlay.classList.add("open");
 
-      <div class="detail-feature">
-        <strong>
-          ${
-            property.bedrooms ??
-            "—"
-          }
-        </strong>
-        <span>
-          Habitaciones
-        </span>
-      </div>
-
-      <div class="detail-feature">
-        <strong>
-          ${
-            property.bathrooms ??
-            "—"
-          }
-        </strong>
-        <span>
-          Baños
-        </span>
-      </div>
-
-      <div class="detail-feature">
-        <strong>
-          ${
-            property.square_meters
-              ? property.square_meters
-              : "—"
-          }
-        </strong>
-        <span>
-          m²
-        </span>
-      </div>
-
-    `;
-
-
-    detailDescription.textContent =
-      property.description ||
-      "Esta propiedad forma parte del catálogo de NEXO.";
-
-
-    modal.classList.add(
-      "show"
-    );
-
-    document.body.style.overflow =
-      "hidden";
-
-  }
-
-
-  /* =====================================================
-     CERRAR MODAL
-  ===================================================== */
-
-  function closeModal() {
-
-    modal.classList.remove(
-      "show"
-    );
-
-    document.body.style.overflow =
-      "";
-
-  }
-
-
-  modalClose.addEventListener(
-    "click",
-    closeModal
-  );
-
-
-  modal.addEventListener(
-    "click",
-    function(event) {
-
-      if (
-        event.target === modal
-      ) {
-
-        closeModal();
-
-      }
+      document.body.style.overflow =
+        "hidden";
 
     }
-  );
 
 
-  document.addEventListener(
-    "keydown",
-    function(event) {
+    function closeDetail(event){
 
-      if (
-        event.key === "Escape"
-      ) {
-
-        closeModal();
-
+      if(
+        event &&
+        event.target !== event.currentTarget
+      ){
+        return;
       }
 
+      document
+        .getElementById("detailOverlay")
+        .classList.remove("open");
+
+      document.body.style.overflow =
+        "";
+
     }
-  );
 
 
-  /* =====================================================
-     CONTACTAR NEXO
-  ===================================================== */
+    document.addEventListener(
+      "keydown",
+      event => {
 
-  contactButton.addEventListener(
-    "click",
-    function() {
+        if(event.key === "Escape"){
+          closeDetail();
+        }
 
-      if (!selectedProperty) {
+      }
+    );
+
+
+    /* =========================================
+       CONTACTO
+    ========================================== */
+
+    function contactNexo(id){
+
+      const property =
+        properties.find(
+          item =>
+            Number(item.id) === Number(id)
+        );
+
+      if(!property){
+        return;
+      }
+
+      const text =
+        `Hola NEXO, estoy interesado en la propiedad ${property.property_type || ""} en ${property.city || ""}. Precio: ${formatPrice(property.price)}.`;
+
+      /*
+        No colocamos un número ficticio.
+        Cuando definamos el WhatsApp oficial de NEXO,
+        esta función se conectará directamente.
+      */
+
+      const encoded =
+        encodeURIComponent(text);
+
+      window.location.href =
+        `mailto:?subject=${encodeURIComponent(
+          "Consulta de propiedad NEXO"
+        )}&body=${encoded}`;
+
+    }
+
+
+    /* =========================================
+       MAPA
+       
+       Esta primera versión prepara la arquitectura
+       del mapa sin depender de una API externa.
+       
+       Cuando conectemos el proveedor de mapas,
+       los datos reales de filteredProperties
+       alimentarán directamente los marcadores.
+    ========================================== */
+
+    function renderMap(){
+
+      const map =
+        document.getElementById("map");
+
+      const message =
+        document.getElementById(
+          "mapMessage"
+        );
+
+      if(!filteredProperties.length){
+
+        message.innerHTML = `
+          <div class="map-message-card">
+            <strong>
+              No hay propiedades para mostrar
+            </strong>
+
+            <span>
+              Cambia los filtros para explorar
+              otras propiedades.
+            </span>
+          </div>
+        `;
+
+        message.style.display =
+          "flex";
 
         return;
 
       }
 
 
-      const propertyName =
-        selectedProperty.property_type ||
-        "propiedad";
-
-
-      const message =
-        encodeURIComponent(
-          `Hola NEXO, estoy interesado en esta ${propertyName}. ID: ${selectedProperty.id}.`
-        );
-
-
       /*
-        Más adelante podemos conectar esto
-        directamente con WhatsApp, teléfono,
-        formulario de contacto o IA.
+        Por ahora mostramos una representación
+        visual elegante del mapa.
+
+        En el siguiente paso conectaremos
+        MapLibre/Mapbox/OpenStreetMap con
+        coordenadas reales y marcadores.
       */
 
-      window.location.href =
-        `mailto:?subject=Interés en propiedad NEXO ${selectedProperty.id}&body=${message}`;
-
-    }
-  );
-
-
-  /* =====================================================
-     BÚSQUEDA
-  ===================================================== */
-
-  let searchTimer;
-
-  searchInput.addEventListener(
-    "input",
-    function() {
-
-      clearTimeout(
-        searchTimer
-      );
-
-      searchTimer =
-        setTimeout(
-          renderProperties,
-          120
-        );
-
-    }
-  );
-
-
-  /* =====================================================
-     FILTROS
-  ===================================================== */
-
-  filters.forEach(
-    button => {
-
-      button.addEventListener(
-        "click",
-        function() {
-
-          filters.forEach(
-            item =>
-              item.classList.remove(
-                "active"
-              )
-          );
-
-          this.classList.add(
-            "active"
-          );
-
-
-          currentFilter =
-            this.dataset.filter;
-
-
-          favoritesOnly =
-            false;
-
-
-          favoritesButton.textContent =
-            "♡ Favoritos";
-
-
-          renderProperties();
-
-        }
-      );
-
-    }
-  );
-
-
-  /* =====================================================
-     FAVORITOS
-  ===================================================== */
-
-  favoritesButton.addEventListener(
-    "click",
-    function() {
-
-      favoritesOnly =
-        !favoritesOnly;
-
-
-      if (favoritesOnly) {
-
-        this.textContent =
-          "♥ Favoritos";
-
-      } else {
-
-        this.textContent =
-          "♡ Favoritos";
-
-      }
-
-
-      renderProperties();
-
-    }
-  );
-
-
-  /* =====================================================
-     IA
-  ===================================================== */
-
-  aiButton.addEventListener(
-    "click",
-    function() {
-
-      aiPanel.classList.toggle(
-        "show"
-      );
-
-    }
-  );
-
-
-  /* =====================================================
-     MAPA
-  ===================================================== */
-
-  function initializeMap() {
-
-    if (map) {
-
-      return;
-
-    }
-
-
-    map =
-      L.map(
-        "map",
-        {
-          zoomControl: false
-        }
-      );
-
-
-    L.control.zoom({
-      position: "bottomright"
-    }).addTo(map);
-
-
-    L.tileLayer(
-      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      {
-        maxZoom: 19,
-        attribution:
-          '&copy; OpenStreetMap contributors'
-      }
-    ).addTo(map);
-
-
-    /*
-      Centro inicial:
-      La Habana.
-    */
-
-    map.setView(
-      [23.1136, -82.3666],
-      11
-    );
-
-  }
-
-
-  /*
-    Coordenadas aproximadas por ciudad/zona.
-
-    IMPORTANTE:
-    Estas coordenadas NO representan
-    la dirección exacta de una propiedad.
-
-    Son solamente un fallback mientras
-    D1 no tenga lat/lng.
-  */
-
-  const cityCoordinates = {
-
-    "La Habana": [
-      23.1136,
-      -82.3666
-    ],
-
-    "Havana": [
-      23.1136,
-      -82.3666
-    ],
-
-    "Miami": [
-      25.7617,
-      -80.1918
-    ],
-
-    "Madrid": [
-      40.4168,
-      -3.7038
-    ],
-
-    "Barcelona": [
-      41.3874,
-      2.1686
-    ]
-
-  };
-
-
-  function getCoordinates(property) {
-
-    /*
-      Si posteriormente añadimos
-      latitude/longitude a D1,
-      el mapa utilizará automáticamente
-      la ubicación exacta.
-    */
-
-    if (
-      property.latitude !==
-        undefined &&
-      property.latitude !== null &&
-      property.longitude !==
-        undefined &&
-      property.longitude !== null
-    ) {
-
-      return [
-        Number(property.latitude),
-        Number(property.longitude)
-      ];
-
-    }
-
-
-    const city =
-      property.city ||
-      "";
-
-
-    if (
-      cityCoordinates[city]
-    ) {
-
-      return cityCoordinates[
-        city
-      ];
-
-    }
-
-
-    return [
-      23.1136,
-      -82.3666
-    ];
-
-  }
-
-
-  function createPriceIcon(
-    property
-  ) {
-
-    return L.divIcon({
-
-      className:
-        "nexo-price-marker",
-
-      html: `
-        <div class="price-marker">
-          ${formatPrice(
-            property.price
-          )}
-        </div>
-      `,
-
-      iconSize: null,
-
-      iconAnchor: [
-        30,
-        15
-      ]
-
-    });
-
-  }
-
-
-  function updateMap(
-    properties
-  ) {
-
-    if (!map) {
-
-      return;
-
-    }
-
-
-    mapMarkers.forEach(
-      marker =>
-        map.removeLayer(
-          marker
-        )
-    );
-
-
-    mapMarkers = [];
-
-
-    if (!properties.length) {
-
-      return;
-
-    }
-
-
-    const bounds = [];
-
-
-    properties.forEach(
-      property => {
-
-        const coordinates =
-          getCoordinates(
-            property
-          );
-
-
-        const marker =
-          L.marker(
-            coordinates,
-            {
-              icon:
-                createPriceIcon(
-                  property
-                )
-            }
-          );
-
-
-        marker.addTo(map);
-
-
-        marker.bindPopup(`
-          <div
-            style="
-              width:220px;
-              font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-            "
-          >
-
+      message.innerHTML = `
+        <div class="map-message-card">
+
+          <strong>
+            ${filteredProperties.length}
             ${
-              getMainPhoto(property)
-                ? `
-                  <img
-                    src="${escapeHTML(
-                      getMainPhoto(property)
-                    )}"
-                    style="
-                      width:100%;
-                      height:125px;
-                      object-fit:cover;
-                      border-radius:12px;
-                      margin-bottom:10px;
-                    "
-                  >
-                `
-                : ""
+              filteredProperties.length === 1
+              ? "propiedad disponible"
+              : "propiedades disponibles"
             }
+          </strong>
 
-            <strong
-              style="
-                display:block;
-                font-size:17px;
-                margin-bottom:4px;
-              "
-            >
-              ${formatPrice(
-                property.price
-              )}
-            </strong>
+          <span>
+            El mapa inteligente de NEXO está listo
+            para recibir las ubicaciones reales.
+          </span>
 
-            <div
-              style="
-                color:#777;
-                font-size:12px;
-                margin-bottom:10px;
-              "
-            >
-              ${escapeHTML(
-                getLocation(property)
-              )}
-            </div>
+        </div>
+      `;
 
-            <button
-              onclick="window.openNexoProperty(${Number(property.id)})"
-              style="
-                width:100%;
-                border:0;
-                border-radius:9px;
-                padding:10px;
-                background:#171717;
-                color:white;
-                font-weight:700;
-              "
-            >
-              Ver propiedad
-            </button>
-
-          </div>
-        `);
-
-
-        mapMarkers.push(
-          marker
-        );
-
-
-        bounds.push(
-          coordinates
-        );
-
-      }
-    );
-
-
-    if (bounds.length > 1) {
-
-      map.fitBounds(
-        bounds,
-        {
-          padding: [
-            50,
-            50
-          ],
-          maxZoom: 13
-        }
-      );
-
-    } else {
-
-      map.setView(
-        bounds[0],
-        12
-      );
+      message.style.display =
+        "flex";
 
     }
 
-  }
 
+    /* =========================================
+       NAVEGACIÓN
+    ========================================== */
 
-  window.openNexoProperty =
-    function(id) {
+    function scrollToMap(){
 
-      openProperty(id);
-
-    };
-
-
-  /* =====================================================
-     VISTA MAPA / LISTA
-  ===================================================== */
-
-  listButton.addEventListener(
-    "click",
-    function() {
-
-      listButton.classList.add(
-        "active"
-      );
-
-      mapButton.classList.remove(
-        "active"
-      );
-
-
-      propertiesContainer.style.display =
-        "grid";
-
-      mapView.style.display =
-        "none";
+      document
+        .getElementById("mapSection")
+        .scrollIntoView({
+          behavior:"smooth",
+          block:"start"
+        });
 
     }
-  );
 
 
-  mapButton.addEventListener(
-    "click",
-    function() {
+    /* =========================================
+       INICIO
+    ========================================== */
 
-      listButton.classList.remove(
-        "active"
-      );
+    loadProperties();
 
-      mapButton.classList.add(
-        "active"
-      );
-
-
-      propertiesContainer.style.display =
-        "none";
-
-      mapView.style.display =
-        "block";
-
-
-      initializeMap();
-
-
-      setTimeout(
-        function() {
-
-          map.invalidateSize();
-
-          updateMap(
-            getFilteredProperties()
-          );
-
-        },
-        150
-      );
-
-    }
-  );
-
-
-  /* =====================================================
-     INICIO
-  ===================================================== */
-
-  loadProperties();
-
-</script>
+  </script>
 
 </body>
 </html>
