@@ -42,48 +42,6 @@ export default {
     }
 
     // =========================================================
-    // UTILIDADES
-    // =========================================================
-
-    function clean(value) {
-
-      if (
-        value === null ||
-        value === undefined
-      ) {
-        return "";
-      }
-
-      return String(value)
-        .trim()
-        .replace(/\s+/g, " ");
-    }
-
-    function normalizeAddress(value) {
-
-      return clean(value)
-        .replace(/\bAv\.\s*/gi, "Avenida ")
-        .replace(/\bAv\s+/gi, "Avenida ")
-        .replace(/\bAve\.\s*/gi, "Avenida ")
-        .replace(/\bAve\s+/gi, "Avenida ")
-        .replace(/\bNo\.\s*/gi, " ")
-        .replace(/\bNro\.\s*/gi, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-    }
-
-    function unique(values) {
-
-      return [
-        ...new Set(
-          values
-            .map(clean)
-            .filter(Boolean)
-        )
-      ];
-    }
-
-    // =========================================================
     // AUTENTICACIÓN
     // =========================================================
 
@@ -93,8 +51,7 @@ export default {
         return null;
       }
 
-      const encoder =
-        new TextEncoder();
+      const encoder = new TextEncoder();
 
       const key =
         await crypto.subtle.importKey(
@@ -112,13 +69,10 @@ export default {
         await crypto.subtle.sign(
           "HMAC",
           key,
-          encoder.encode(
-            "NEXO-ADMIN-SESSION"
-          )
+          encoder.encode("NEXO-ADMIN-SESSION")
         );
 
-      const bytes =
-        new Uint8Array(signature);
+      const bytes = new Uint8Array(signature);
 
       return btoa(
         String.fromCharCode(...bytes)
@@ -153,7 +107,7 @@ export default {
     }
 
     // =========================================================
-    // PÁGINA DE LOGIN
+    // LOGIN PAGE
     // =========================================================
 
     const loginPage = `
@@ -244,7 +198,7 @@ button{
 }
 
 button:disabled{
-  opacity:.55;
+  opacity:.6;
 }
 
 .error{
@@ -538,6 +492,48 @@ button.textContent="Entrar";
     }
 
     // =========================================================
+    // UTILIDADES
+    // =========================================================
+
+    function clean(value) {
+
+      if (
+        value === null ||
+        value === undefined
+      ) {
+        return "";
+      }
+
+      return String(value)
+        .trim()
+        .replace(/\s+/g," ");
+    }
+
+    function normalizeAddress(value) {
+
+      return clean(value)
+        .replace(/\bAv\.\s*/gi,"Avenida ")
+        .replace(/\bAv\s+/gi,"Avenida ")
+        .replace(/\bAve\.\s*/gi,"Avenida ")
+        .replace(/\bAve\s+/gi,"Avenida ")
+        .replace(/\bNo\.\s*/gi," ")
+        .replace(/\bNro\.\s*/gi," ")
+        .replace(/\s+/g," ")
+        .trim();
+    }
+
+    function unique(values) {
+
+      return [
+        ...new Set(
+          values
+            .map(clean)
+            .filter(Boolean)
+        )
+      ];
+    }
+
+    // =========================================================
     // GEOCODIFICACIÓN
     // =========================================================
 
@@ -647,26 +643,20 @@ button.textContent="Entrar";
           .split(/\s+/)
           .filter(x => x.length > 2);
 
-      for (
-        const word of cityWords
-      ) {
-        if(text.includes(word)){
+      for (const word of cityWords) {
+        if (text.includes(word)) {
           score += 5;
         }
       }
 
-      for (
-        const word of neighborhoodWords
-      ) {
-        if(text.includes(word)){
+      for (const word of neighborhoodWords) {
+        if (text.includes(word)) {
           score += 8;
         }
       }
 
-      for (
-        const word of addressWords
-      ) {
-        if(text.includes(word)){
+      for (const word of addressWords) {
+        if (text.includes(word)) {
           score += 3;
         }
       }
@@ -681,17 +671,10 @@ button.textContent="Entrar";
       province
     }) {
 
-      city =
-        clean(city);
-
-      neighborhood =
-        clean(neighborhood);
-
-      address =
-        normalizeAddress(address);
-
-      province =
-        clean(province);
+      city = clean(city);
+      neighborhood = clean(neighborhood);
+      address = normalizeAddress(address);
+      province = clean(province);
 
       if (!address) {
 
@@ -723,7 +706,7 @@ button.textContent="Entrar";
 
       // 2. Dirección + municipio + ciudad
 
-      if(neighborhood){
+      if (neighborhood) {
 
         queries.push(
           [
@@ -749,7 +732,7 @@ button.textContent="Entrar";
           .join(", ")
       );
 
-      // 4. Forma original
+      // 4. Dirección original
 
       const original =
         clean(address)
@@ -758,7 +741,7 @@ button.textContent="Entrar";
             "Ave"
           );
 
-      if(original !== address){
+      if (original !== address) {
 
         queries.push(
           [
@@ -786,10 +769,10 @@ button.textContent="Entrar";
           )
           .trim();
 
-      if(
+      if (
         simplified &&
         simplified !== address
-      ){
+      ) {
 
         queries.push(
           [
@@ -811,17 +794,15 @@ button.textContent="Entrar";
       let bestQuery = null;
 
       for (
-        const query
-        of uniqueQueries
-      ){
+        const query of uniqueQueries
+      ) {
 
         const results =
           await nominatimSearch(query);
 
         for (
-          const result
-          of results
-        ){
+          const result of results
+        ) {
 
           const score =
             scoreResult(
@@ -831,36 +812,37 @@ button.textContent="Entrar";
               address
             );
 
-          if(score > bestScore){
+          if (score > bestScore) {
 
             bestScore = score;
             bestResult = result;
             bestQuery = query;
-
           }
         }
 
-        if(bestScore >= 18){
+        if (bestScore >= 18) {
           break;
         }
       }
 
-      if(
+      if (
         bestResult &&
         validResult(bestResult)
-      ){
+      ) {
+
+        const latitude =
+          Number(bestResult.lat);
+
+        const longitude =
+          Number(bestResult.lon);
 
         return {
           success:true,
-          latitude:
-            Number(bestResult.lat),
-          longitude:
-            Number(bestResult.lon),
+          latitude,
+          longitude,
           display_name:
-            bestResult.display_name ||
-            null,
-          query:
-            bestQuery,
+            bestResult.display_name || null,
+          query:bestQuery,
           confidence:
             bestScore >= 18
               ? "high"
@@ -937,7 +919,9 @@ button.textContent="Entrar";
           {
             success:false,
             error:
-              "No se pudieron obtener las propiedades."
+              "No se pudieron obtener las propiedades.",
+            detail:
+              error?.message || null
           },
           500
         );
@@ -959,12 +943,11 @@ button.textContent="Entrar";
           await request.json();
 
         // -----------------------------------------------------
-        // DATOS PRINCIPALES
+        // DATOS
         // -----------------------------------------------------
 
         const title =
-          clean(body.title) ||
-          null;
+          clean(body.title) || null;
 
         const propertyType =
           clean(body.property_type);
@@ -976,31 +959,26 @@ button.textContent="Entrar";
           clean(body.province);
 
         const neighborhood =
-          clean(body.neighborhood) ||
-          null;
+          clean(body.neighborhood) || null;
 
         const address =
-          clean(body.address) ||
-          null;
+          clean(body.address) || null;
 
-        if(
+        if (
+          !title ||
           !propertyType ||
           !city
-        ){
+        ) {
 
           return json(
             {
               success:false,
               error:
-                "El tipo de propiedad y la ciudad son obligatorios."
+                "El título, tipo de propiedad y ciudad son obligatorios."
             },
             400
           );
         }
-
-        // -----------------------------------------------------
-        // CARACTERÍSTICAS
-        // -----------------------------------------------------
 
         const bedrooms =
           body.bedrooms === "" ||
@@ -1031,29 +1009,7 @@ button.textContent="Entrar";
             : Number(body.price);
 
         const description =
-          clean(body.description) ||
-          null;
-
-        // -----------------------------------------------------
-        // FOTOS
-        // -----------------------------------------------------
-
-        let photos = "[]";
-
-        if(
-          body.photos !== null &&
-          body.photos !== undefined
-        ){
-
-          photos =
-            typeof body.photos === "string"
-              ? body.photos
-              : JSON.stringify(body.photos);
-        }
-
-        // -----------------------------------------------------
-        // DATOS PRIVADOS
-        // -----------------------------------------------------
+          clean(body.description) || null;
 
         const ownerName =
           clean(
@@ -1068,12 +1024,24 @@ button.textContent="Entrar";
           ) || null;
 
         const notes =
-          clean(body.notes) ||
-          null;
+          clean(body.notes) || null;
 
         const status =
           clean(body.status) ||
           "available";
+
+        let photos = "[]";
+
+        if (
+          body.photos !== null &&
+          body.photos !== undefined
+        ) {
+
+          photos =
+            typeof body.photos === "string"
+              ? body.photos
+              : JSON.stringify(body.photos);
+        }
 
         // -----------------------------------------------------
         // GEOCODIFICACIÓN
@@ -1099,13 +1067,37 @@ button.textContent="Entrar";
 
         // -----------------------------------------------------
         // INSERT
+        //
+        // TABLA ACTUAL:
+        //
+        // id
+        // property_type
+        // city
+        // neighborhood
+        // address
+        // bedrooms
+        // bathrooms
+        // square_meters
+        // price
+        // description
+        // photos
+        // owner_name
+        // owner_phone
+        // notes
+        // status
+        // created_at
+        // latitude
+        // longitude
+        // title
+        //
+        // created_at tiene CURRENT_TIMESTAMP,
+        // por eso NO se inserta manualmente.
         // -----------------------------------------------------
 
         const result =
           await env.DB
             .prepare(`
               INSERT INTO properties (
-                title,
                 property_type,
                 city,
                 neighborhood,
@@ -1121,17 +1113,16 @@ button.textContent="Entrar";
                 notes,
                 status,
                 latitude,
-                longitude
+                longitude,
+                title
               )
               VALUES (
                 ?,?,?,?,?,?,
                 ?,?,?,?,?,?,
-                ?,?,?,?,
-                ?,?
+                ?,?,?,?,?
               )
             `)
             .bind(
-              title,
               propertyType,
               city,
               neighborhood,
@@ -1147,7 +1138,8 @@ button.textContent="Entrar";
               notes,
               status,
               latitude,
-              longitude
+              longitude,
+              title
             )
             .run();
 
@@ -1159,10 +1151,7 @@ button.textContent="Entrar";
               "Propiedad creada correctamente.",
 
             id:
-              result.meta?.last_row_id ||
-              null,
-
-            title,
+              result.meta?.last_row_id || null,
 
             geocoded:
               geo.success,
@@ -1211,17 +1200,15 @@ button.textContent="Entrar";
         /^\/api\/properties\/(\d+)\/geocode$/
       );
 
-    if(
+    if (
       geocodeMatch &&
       request.method === "POST"
-    ){
+    ) {
 
       const id =
-        Number(
-          geocodeMatch[1]
-        );
+        Number(geocodeMatch[1]);
 
-      try{
+      try {
 
         const property =
           await env.DB
@@ -1237,7 +1224,7 @@ button.textContent="Entrar";
             .bind(id)
             .first();
 
-        if(!property){
+        if (!property) {
 
           return json(
             {
@@ -1259,7 +1246,7 @@ button.textContent="Entrar";
             province:""
           });
 
-        if(!geo.success){
+        if (!geo.success) {
 
           return json(
             {
@@ -1305,7 +1292,7 @@ button.textContent="Entrar";
             geo.query
         });
 
-      }catch(error){
+      } catch(error) {
 
         console.error(
           "NEXO REGEOCODE:",
@@ -1316,7 +1303,9 @@ button.textContent="Entrar";
           {
             success:false,
             error:
-              "No se pudo geocodificar la propiedad."
+              "No se pudo geocodificar la propiedad.",
+            detail:
+              error?.message || null
           },
           500
         );
@@ -1332,28 +1321,21 @@ button.textContent="Entrar";
         /^\/api\/properties\/(\d+)$/
       );
 
-    if(
+    if (
       editMatch &&
       request.method === "PUT"
-    ){
+    ) {
 
       const id =
-        Number(
-          editMatch[1]
-        );
+        Number(editMatch[1]);
 
-      try{
+      try {
 
         const body =
           await request.json();
 
-        // -----------------------------------------------------
-        // DATOS PRINCIPALES
-        // -----------------------------------------------------
-
         const title =
-          clean(body.title) ||
-          null;
+          clean(body.title) || null;
 
         const propertyType =
           clean(body.property_type);
@@ -1364,32 +1346,27 @@ button.textContent="Entrar";
         const province =
           clean(body.province);
 
-        if(
+        if (
+          !title ||
           !propertyType ||
           !city
-        ){
+        ) {
 
           return json(
             {
               success:false,
               error:
-                "El tipo de propiedad y la ciudad son obligatorios."
+                "El título, tipo de propiedad y ciudad son obligatorios."
             },
             400
           );
         }
 
         const neighborhood =
-          clean(body.neighborhood) ||
-          null;
+          clean(body.neighborhood) || null;
 
         const address =
-          clean(body.address) ||
-          null;
-
-        // -----------------------------------------------------
-        // CARACTERÍSTICAS
-        // -----------------------------------------------------
+          clean(body.address) || null;
 
         const bedrooms =
           body.bedrooms === "" ||
@@ -1420,29 +1397,7 @@ button.textContent="Entrar";
             : Number(body.price);
 
         const description =
-          clean(body.description) ||
-          null;
-
-        // -----------------------------------------------------
-        // FOTOS
-        // -----------------------------------------------------
-
-        let photos = "[]";
-
-        if(
-          body.photos !== null &&
-          body.photos !== undefined
-        ){
-
-          photos =
-            typeof body.photos === "string"
-              ? body.photos
-              : JSON.stringify(body.photos);
-        }
-
-        // -----------------------------------------------------
-        // DATOS PRIVADOS
-        // -----------------------------------------------------
+          clean(body.description) || null;
 
         const ownerName =
           clean(
@@ -1457,15 +1412,27 @@ button.textContent="Entrar";
           ) || null;
 
         const notes =
-          clean(body.notes) ||
-          null;
+          clean(body.notes) || null;
 
         const status =
           clean(body.status) ||
           "available";
 
+        let photos = "[]";
+
+        if (
+          body.photos !== null &&
+          body.photos !== undefined
+        ) {
+
+          photos =
+            typeof body.photos === "string"
+              ? body.photos
+              : JSON.stringify(body.photos);
+        }
+
         // -----------------------------------------------------
-        // GEOCODIFICAR NUEVAMENTE
+        // GEOCODIFICAR
         // -----------------------------------------------------
 
         const geo =
@@ -1500,6 +1467,8 @@ button.textContent="Entrar";
                 city = ?,
                 neighborhood = ?,
                 address = ?,
+                latitude = ?,
+                longitude = ?,
                 bedrooms = ?,
                 bathrooms = ?,
                 square_meters = ?,
@@ -1509,9 +1478,7 @@ button.textContent="Entrar";
                 owner_name = ?,
                 owner_phone = ?,
                 notes = ?,
-                status = ?,
-                latitude = ?,
-                longitude = ?
+                status = ?
               WHERE id = ?
             `)
             .bind(
@@ -1520,6 +1487,8 @@ button.textContent="Entrar";
               city,
               neighborhood,
               address,
+              latitude,
+              longitude,
               bedrooms,
               bathrooms,
               squareMeters,
@@ -1530,13 +1499,11 @@ button.textContent="Entrar";
               ownerPhone,
               notes,
               status,
-              latitude,
-              longitude,
               id
             )
             .run();
 
-        if(!result.meta?.changes){
+        if (!result.meta?.changes) {
 
           return json(
             {
@@ -1550,27 +1517,19 @@ button.textContent="Entrar";
 
         return json({
           success:true,
-
           message:
             "Propiedad actualizada correctamente.",
-
-          id,
-          title,
-
           geocoded:
             geo.success,
-
           latitude,
           longitude,
-
           confidence:
             geo.confidence,
-
           location:
             geo.display_name
         });
 
-      }catch(error){
+      } catch(error) {
 
         console.error(
           "NEXO UPDATE:",
@@ -1591,151 +1550,4 @@ button.textContent="Entrar";
     }
 
     // =========================================================
-    // ELIMINAR
-    // =========================================================
-
-    if(
-      editMatch &&
-      request.method === "DELETE"
-    ){
-
-      const id =
-        Number(
-          editMatch[1]
-        );
-
-      try{
-
-        const result =
-          await env.DB
-            .prepare(`
-              DELETE FROM properties
-              WHERE id = ?
-            `)
-            .bind(id)
-            .run();
-
-        if(!result.meta?.changes){
-
-          return json(
-            {
-              success:false,
-              error:
-                "Propiedad no encontrada."
-            },
-            404
-          );
-        }
-
-        return json({
-          success:true,
-          message:
-            "Propiedad eliminada correctamente."
-        });
-
-      }catch(error){
-
-        console.error(
-          "NEXO DELETE:",
-          error
-        );
-
-        return json(
-          {
-            success:false,
-            error:
-              "No se pudo eliminar la propiedad."
-          },
-          500
-        );
-      }
-    }
-
-    // =========================================================
-    // PROPIEDAD INDIVIDUAL
-    // =========================================================
-
-    if(
-      editMatch &&
-      request.method === "GET"
-    ){
-
-      const id =
-        Number(
-          editMatch[1]
-        );
-
-      try{
-
-        const property =
-          await env.DB
-            .prepare(`
-              SELECT
-                id,
-                title,
-                property_type,
-                city,
-                neighborhood,
-                address,
-                latitude,
-                longitude,
-                bedrooms,
-                bathrooms,
-                square_meters,
-                price,
-                description,
-                photos,
-                owner_name,
-                owner_phone,
-                notes,
-                status,
-                created_at
-              FROM properties
-              WHERE id = ?
-                AND status = 'available'
-            `)
-            .bind(id)
-            .first();
-
-        if(!property){
-
-          return json(
-            {
-              success:false,
-              error:
-                "Propiedad no encontrada."
-            },
-            404
-          );
-        }
-
-        return json({
-          success:true,
-          property
-        });
-
-      }catch(error){
-
-        console.error(
-          "NEXO PROPERTY:",
-          error
-        );
-
-        return json(
-          {
-            success:false,
-            error:
-              "Error al consultar la propiedad."
-          },
-          500
-        );
-      }
-    }
-
-    // =========================================================
-    // ASSETS
-    // =========================================================
-
-    return env.ASSETS.fetch(request);
-  }
-};
+    //
