@@ -5,7 +5,7 @@ export default {
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
+      "Access-Control-Allow-Headers": "Content-Type, Authorization"
     };
 
     if (request.method === "OPTIONS") {
@@ -15,15 +15,244 @@ export default {
       });
     }
 
-    const json = (data, status = 200) => {
+    const json = (data, status = 200, extraHeaders = {}) => {
       return new Response(JSON.stringify(data), {
         status,
         headers: {
           "Content-Type": "application/json; charset=UTF-8",
-          ...corsHeaders
+          ...corsHeaders,
+          ...extraHeaders
         }
       });
     };
+
+    // ==========================================
+    // AUTENTICACIÓN DE ADMINISTRADOR
+    // ==========================================
+
+    const COOKIE_NAME = "nexo_admin_session";
+
+    async function createSignature(value) {
+      const encoder = new TextEncoder();
+
+      const key = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(env.ADMIN_PASSWORD),
+        {
+          name: "HMAC",
+          hash: "SHA-256"
+        },
+        false,
+        ["sign"]
+      );
+
+      const signature = await crypto.subtle.sign(
+        "HMAC",
+        key,
+        encoder.encode(value)
+      );
+
+      return Array.from(new Uint8Array(signature))
+        .map(byte => byte.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    async function createSession() {
+      const timestamp = Date.now().toString();
+      const signature = await createSignature(timestamp);
+
+      return `${timestamp}.${signature}`;
+    }
+
+    async function verifySession(request) {
+      const cookieHeader = request.headers.get("Cookie") || "";
+
+      const cookies = Object.fromEntries(
+        cookieHeader
+          .split(";")
+          .map(cookie => cookie.trim())
+          .filter(Boolean)
+          .map(cookie => {
+            const index = cookie.indexOf("=");
+
+            if (index === -1) {
+              return [cookie, ""];
+            }
+
+            return [
+              cookie.slice(0, index),
+              cookie.slice(index + 1)
+            ];
+          })
+      );
+
+      const session = cookies[COOKIE_NAME];
+
+      if (!session) {
+        return false;
+      }
+
+      const parts = session.split(".");
+
+      if (parts.length !== 2) {
+        return false;
+      }
+
+      const timestamp = parts[0];
+      const providedSignature = parts[1];
+
+      const timestampNumber = Number(timestamp);
+
+      if (!Number.isFinite(timestampNumber)) {
+        return false;
+      }
+
+      // Sesión válida durante 7 días
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+      if (Date.now() - timestampNumber > sevenDays) {
+        return false;
+      }
+
+      const expectedSignature =
+        await createSignature(timestamp);
+
+      return providedSignature === expectedSignature;
+    }
+
+    // ==========================================
+    // LOGIN ADMINISTRADOR
+    // ==========================================
+
+    if (
+      url.pathname === "/api/admin/login" &&
+      request.method === "POST"
+    ) {
+      try {
+        const body = await request.json();
+
+        const password =
+          typeof body.password === "string"
+            ? body.password
+            : "";
+
+        if (!env.ADMIN_PASSWORD) {
+          return json({
+            success: false,
+            error: "ADMIN_PASSWORD no está configurado en Cloudflare."
+          }, 500);
+        }
+
+        if (!password) {
+          return json({
+            success: false,
+            error: "Introduce la contraseña."
+          }, 400);
+        }
+
+        if (password !== env.ADMIN_PASSWORD) {
+          return json({
+            success: false,
+            error: "Contraseña incorrecta."
+          }, 401);
+        }
+
+        const session = await createSession();
+
+        return json(
+          {
+            success: true,
+            message: "Acceso autorizado."
+          },
+          200,
+          {
+            "Set-Cookie":
+              `${COOKIE_NAME}=${session}; ` +
+              "Path=/; " +
+              "HttpOnly; " +
+              "Secure; " +
+              "SameSite=Strict; " +
+              "Max-Age=604800"
+          }
+        );
+
+      } catch (error) {
+        console.error(error);
+
+        return json({
+          success: false,
+          error: "No se pudo iniciar sesión."
+        }, 500);
+      }
+    }
+
+    // ==========================================
+    // COMPROBAR SESIÓN
+    // ==========================================
+
+    if (
+      url.pathname === "/api/admin/session" &&
+      request.method === "GET"
+    ) {
+      const authenticated =
+        await verifySession(request);
+
+      return json({
+        success: true,
+        authenticated
+      });
+    }
+
+    // ==========================================
+    // CERRAR SESIÓN
+    // ==========================================
+
+    if (
+      url.pathname === "/api/admin/logout" &&
+      request.method === "POST"
+    ) {
+      return json(
+        {
+          success: true,
+          message: "Sesión cerrada."
+        },
+        200,
+        {
+          "Set-Cookie":
+            `${COOKIE_NAME}=; ` +
+            "Path=/; " +
+            "HttpOnly; " +
+            "Secure; " +
+            "SameSite=Strict; " +
+            "Max-Age=0"
+        }
+      );
+    }
+
+    // ==========================================
+    // VERIFICAR ADMIN PARA OPERACIONES PRIVADAS
+    // ==========================================
+
+    const privateMethod =
+      request.method === "POST" ||
+      request.method === "PUT" ||
+      request.method === "DELETE";
+
+    const isPropertyApi =
+      url.pathname === "/api/properties" ||
+      url.pathname.startsWith("/api/properties/");
+
+    if (privateMethod && isPropertyApi) {
+      const authenticated =
+        await verifySession(request);
+
+      if (!authenticated) {
+        return json({
+          success: false,
+          error: "No autorizado. Inicia sesión como administrador."
+        }, 401);
+      }
+    }
 
     // ==========================================
     // API: OBTENER TODAS LAS PROPIEDADES
@@ -54,6 +283,7 @@ export default {
               status,
               created_at
             FROM properties
+            WHERE status = 'available'
             ORDER BY created_at DESC
           `)
           .all();
@@ -97,7 +327,8 @@ export default {
         if (!propertyType || !city) {
           return json({
             success: false,
-            error: "El tipo de propiedad y la ciudad son obligatorios."
+            error:
+              "El tipo de propiedad y la ciudad son obligatorios."
           }, 400);
         }
 
@@ -167,7 +398,10 @@ export default {
 
         let photos = "[]";
 
-        if (body.photos !== undefined && body.photos !== null) {
+        if (
+          body.photos !== undefined &&
+          body.photos !== null
+        ) {
           photos =
             typeof body.photos === "string"
               ? body.photos
@@ -236,7 +470,8 @@ export default {
       url.pathname.startsWith("/api/properties/") &&
       request.method === "PUT"
     ) {
-      const id = url.pathname.split("/").pop();
+      const id =
+        url.pathname.split("/").pop();
 
       if (!id || !/^\d+$/.test(id)) {
         return json({
@@ -261,7 +496,8 @@ export default {
         if (!propertyType || !city) {
           return json({
             success: false,
-            error: "El tipo de propiedad y la ciudad son obligatorios."
+            error:
+              "El tipo de propiedad y la ciudad son obligatorios."
           }, 400);
         }
 
@@ -331,7 +567,10 @@ export default {
 
         let photos = "[]";
 
-        if (body.photos !== undefined && body.photos !== null) {
+        if (
+          body.photos !== undefined &&
+          body.photos !== null
+        ) {
           photos =
             typeof body.photos === "string"
               ? body.photos
@@ -379,8 +618,10 @@ export default {
 
         return json({
           success: true,
-          message: "Propiedad actualizada correctamente.",
-          changes: result.meta?.changes || 0
+          message:
+            "Propiedad actualizada correctamente.",
+          changes:
+            result.meta?.changes || 0
         });
 
       } catch (error) {
@@ -388,7 +629,8 @@ export default {
 
         return json({
           success: false,
-          error: "No se pudo actualizar la propiedad."
+          error:
+            "No se pudo actualizar la propiedad."
         }, 500);
       }
     }
@@ -401,7 +643,8 @@ export default {
       url.pathname.startsWith("/api/properties/") &&
       request.method === "DELETE"
     ) {
-      const id = url.pathname.split("/").pop();
+      const id =
+        url.pathname.split("/").pop();
 
       if (!id || !/^\d+$/.test(id)) {
         return json({
@@ -428,7 +671,8 @@ export default {
 
         return json({
           success: true,
-          message: "Propiedad eliminada correctamente."
+          message:
+            "Propiedad eliminada correctamente."
         });
 
       } catch (error) {
@@ -436,7 +680,8 @@ export default {
 
         return json({
           success: false,
-          error: "No se pudo eliminar la propiedad."
+          error:
+            "No se pudo eliminar la propiedad."
         }, 500);
       }
     }
@@ -449,7 +694,8 @@ export default {
       url.pathname.startsWith("/api/properties/") &&
       request.method === "GET"
     ) {
-      const id = url.pathname.split("/").pop();
+      const id =
+        url.pathname.split("/").pop();
 
       if (!id || !/^\d+$/.test(id)) {
         return json({
@@ -502,7 +748,8 @@ export default {
 
         return json({
           success: false,
-          error: "Error al consultar la propiedad."
+          error:
+            "Error al consultar la propiedad."
         }, 500);
       }
     }
