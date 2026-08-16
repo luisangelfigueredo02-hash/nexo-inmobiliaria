@@ -1,712 +1,113 @@
-const API_URL =
-  "https://nexo-inmobiliaria.luisangelfigueredo02.workers.dev";
+"use strict";
 
+/*
+ * ============================================================
+ * NEXO — APP.JS
+ * Propiedades + búsqueda + filtros + NEXO IA
+ * ============================================================
+ */
 
-/* ==========================================
-   CARGAR PROPIEDADES
-========================================== */
+const state = {
+  properties: [],
+  filtered: [],
+  filter: "all",
+  search: "",
+  aiHistory: []
+};
 
-async function loadProperties() {
+const $ = (selector) => document.querySelector(selector);
 
-  const section =
-    document.querySelector("#propiedades");
+const grid = $("#propertyGrid");
+const count = $("#propertyCount");
+const searchForm = $("#searchForm");
+const searchInput = $("#searchInput");
+const openAIButton = $("#openAI");
 
-  if (!section) {
-    console.error(
-      "NEXO: no existe #propiedades"
-    );
-    return;
-  }
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
 
-
-  let grid =
-    section.querySelector(
-      ".properties-grid"
-    );
-
-
-  if (!grid) {
-
-    grid =
-      document.createElement("div");
-
-    grid.className =
-      "properties-grid";
-
-    section.appendChild(grid);
-
-  }
-
-
-  grid.innerHTML = `
-    <div class="nexo-loading">
-      Cargando propiedades...
-    </div>
-  `;
-
-
-  try {
-
-    const response =
-      await fetch(
-        `${API_URL}/api/properties`,
-        {
-          method: "GET",
-
-          headers: {
-            "Accept":
-              "application/json"
-          }
-        }
-      );
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        `Error HTTP ${response.status}`
-      );
-
-    }
-
-
-    const data =
-      await response.json();
-
-
-    if (!data.success) {
-
-      throw new Error(
-        data.error ||
-        "No se pudieron cargar las propiedades."
-      );
-
-    }
-
-
-    renderProperties(
-      grid,
-      data.properties || []
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "NEXO:",
-      error
-    );
-
-
-    grid.innerHTML = `
-      <div class="nexo-empty">
-
-        <strong>
-          No pudimos cargar las propiedades.
-        </strong>
-
-        <span>
-          Inténtalo nuevamente en unos segundos.
-        </span>
-
-      </div>
-    `;
-
-  }
-
+function escapeHTML(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
-
-/* ==========================================
-   MOSTRAR PROPIEDADES
-========================================== */
-
-function renderProperties(
-  grid,
-  properties
-) {
-
-
-  if (!properties.length) {
-
-    grid.innerHTML = `
-      <div class="nexo-empty">
-
-        <strong>
-          No hay propiedades disponibles.
-        </strong>
-
-        <span>
-          Pronto tendremos nuevas opciones para ti.
-        </span>
-
-      </div>
-    `;
-
-    return;
-
-  }
-
-
-  grid.innerHTML =
-    properties
-      .map(
-        property =>
-          createPropertyCard(
-            property
-          )
-      )
-      .join("");
-
+function normalize(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
-
-/* ==========================================
-   CREAR TARJETA
-========================================== */
-
-function createPropertyCard(
-  property
-) {
-
-
-  const photos =
-    parsePhotos(
-      property.photos
-    );
-
-
-  const firstPhoto =
-    photos.length
-      ? photos[0]
-      : null;
-
-
-  const price =
-    formatPrice(
-      property.price
-    );
-
-
-  return `
-
-    <article
-      class="property-card"
-      data-property-id="${property.id}"
-    >
-
-
-      <!-- IMAGEN -->
-
-      <div class="property-image">
-
-        ${
-          firstPhoto
-
-            ? `
-
-              <img
-                src="${escapeAttribute(
-                  firstPhoto
-                )}"
-                alt="${escapeAttribute(
-                  property.property_type ||
-                  "Propiedad"
-                )}"
-                loading="lazy"
-
-                onerror="
-                  this.style.display='none';
-                  this.nextElementSibling.style.display='flex';
-                "
-              >
-
-              <div
-                class="property-placeholder"
-                style="display:none;"
-              >
-                <span>
-                  NEXO
-                </span>
-              </div>
-
-            `
-
-            : `
-
-              <div
-                class="property-placeholder"
-              >
-                <span>
-                  NEXO
-                </span>
-              </div>
-
-            `
-        }
-
-
-        <div
-          class="property-image-overlay"
-        ></div>
-
-
-        <div
-          class="property-badge"
-        >
-          ${escapeHTML(
-            property.property_type ||
-            "Propiedad"
-          )}
-        </div>
-
-      </div>
-
-
-      <!-- CONTENIDO -->
-
-      <div
-        class="property-content"
-      >
-
-
-        <div
-          class="property-heading"
-        >
-
-          <div>
-
-            <h3>
-              ${escapeHTML(
-                property.city ||
-                "Ubicación"
-              )}
-            </h3>
-
-
-            ${
-              property.neighborhood
-
-                ? `
-
-                  <p
-                    class="property-location"
-                  >
-                    ${escapeHTML(
-                      property.neighborhood
-                    )}
-                  </p>
-
-                `
-
-                : ""
-            }
-
-          </div>
-
-        </div>
-
-
-        <!-- DETALLES -->
-
-        <div
-          class="property-details"
-        >
-
-
-          ${
-            property.bedrooms !== null &&
-            property.bedrooms !== undefined
-
-              ? `
-
-                <span>
-
-                  <span
-                    class="detail-icon"
-                  >
-                    🛏️
-                  </span>
-
-                  ${property.bedrooms}
-
-                  ${
-                    Number(
-                      property.bedrooms
-                    ) === 1
-
-                      ? " habitación"
-
-                      : " habitaciones"
-                  }
-
-                </span>
-
-              `
-
-              : ""
-          }
-
-
-          ${
-            property.bathrooms !== null &&
-            property.bathrooms !== undefined
-
-              ? `
-
-                <span>
-
-                  <span
-                    class="detail-icon"
-                  >
-                    🚿
-                  </span>
-
-                  ${property.bathrooms}
-
-                  ${
-                    Number(
-                      property.bathrooms
-                    ) === 1
-
-                      ? " baño"
-
-                      : " baños"
-                  }
-
-                </span>
-
-              `
-
-              : ""
-          }
-
-
-          ${
-            property.square_meters !== null &&
-            property.square_meters !== undefined
-
-              ? `
-
-                <span>
-
-                  <span
-                    class="detail-icon"
-                  >
-                    📐
-                  </span>
-
-                  ${property.square_meters}
-                  m²
-
-                </span>
-
-              `
-
-              : ""
-          }
-
-        </div>
-
-
-        <!-- PRECIO + BOTÓN -->
-
-        <div
-          class="property-bottom"
-        >
-
-
-          <div
-            class="property-price"
-          >
-
-            <small>
-              Precio
-            </small>
-
-            <strong>
-              ${price}
-            </strong>
-
-          </div>
-
-
-          <button
-            type="button"
-            class="property-button"
-
-            onclick="
-              viewProperty(
-                ${property.id}
-              )
-            "
-          >
-
-            Ver propiedad
-
-            <span>
-              →
-            </span>
-
-          </button>
-
-
-        </div>
-
-      </div>
-
-    </article>
-
-  `;
-
-}
-
-
-/* ==========================================
-   ABRIR FICHA INDIVIDUAL
-========================================== */
-
-function viewProperty(
-  id
-) {
-
-
-  if (!id) {
-    return;
-  }
-
-
-  window.location.href =
-    `/property.html?id=${encodeURIComponent(
-      id
-    )}`;
-
-}
-
-
-/* ==========================================
-   FOTOS
-========================================== */
-
-function parsePhotos(
-  value
-) {
-
-
-  if (!value) {
-    return [];
-  }
-
-
-  if (Array.isArray(value)) {
-
-    return value
-
-      .filter(
-        photo =>
-          typeof photo === "string" &&
-          photo.trim()
-      )
-
-      .map(
-        photo =>
-          photo.trim()
-      );
-
-  }
-
-
+function formatPrice(value) {
   if (
-    typeof value === "string"
+    value === null ||
+    value === undefined ||
+    value === ""
   ) {
+    return "Precio a consultar";
+  }
 
+  const number = Number(
+    String(value).replace(/[^0-9.-]/g, "")
+  );
 
-    const cleanValue =
-      value.trim();
+  if (!Number.isFinite(number)) {
+    return String(value);
+  }
 
+  return "$" + number.toLocaleString("en-US");
+}
 
-    if (!cleanValue) {
-      return [];
-    }
+function getType(property) {
+  return (
+    property.property_type ||
+    property.type ||
+    "Propiedad"
+  );
+}
 
+function getTitle(property) {
+  return (
+    property.title ||
+    property.name ||
+    getType(property)
+  );
+}
+
+function getLocation(property) {
+  return [
+    property.neighborhood,
+    property.city,
+    property.province
+  ]
+    .filter(Boolean)
+    .join(", ") || "Cuba";
+}
+
+function getPhoto(property) {
+  const photos = property.photos;
+
+  if (!photos) return "";
+
+  if (Array.isArray(photos)) {
+    return photos[0] || "";
+  }
+
+  if (typeof photos === "string") {
 
     try {
+      const parsed = JSON.parse(photos);
 
-      const parsed =
-        JSON.parse(
-          cleanValue
-        );
-
-
-      if (
-        Array.isArray(
-          parsed
-        )
-      ) {
-
-        return parsed
-
-          .filter(
-            photo =>
-              typeof photo === "string" &&
-              photo.trim()
-          )
-
-          .map(
-            photo =>
-              photo.trim()
-          );
-
+      if (Array.isArray(parsed)) {
+        return parsed[0] || "";
       }
+    } catch (_) {}
 
-    } catch (error) {
-
-
-      /*
-        Si el campo contiene
-        una URL individual,
-        también la aceptamos.
-      */
-
-
-      if (
-        cleanValue.startsWith(
-          "http://"
-        ) ||
-
-        cleanValue.startsWith(
-          "https://"
-        )
-      ) {
-
-        return [
-          cleanValue
-        ];
-
-      }
-
-    }
-
-  }
-
-
-  return [];
-
-}
-
-
-/* ==========================================
-   FORMATO DE PRECIO
-========================================== */
-
-function formatPrice(
-  price
-) {
-
-
-  if (
-    price === null ||
-    price === undefined ||
-    price === ""
-  ) {
-
-    return "Consultar";
-
-  }
-
-
-  const numericPrice =
-    Number(price);
-
-
-  if (
-    !Number.isFinite(
-      numericPrice
-    )
-  ) {
-
-    return "Consultar";
-
-  }
-
-
-  return numericPrice.toLocaleString(
-    "en-US",
-    {
-      style: "currency",
-
-      currency: "USD",
-
-      maximumFractionDigits: 0
-    }
-  );
-
-}
-
-
-/* ==========================================
-   ESCAPAR HTML
-========================================== */
-
-function escapeHTML(
-  value
-) {
-
-
-  return String(value)
-
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
-
-}
-
-
-/* ==========================================
-   ESCAPAR ATRIBUTOS
-========================================== */
-
-function escapeAttribute(
-  value
-) {
-
-  return escapeHTML(
-    value
-  );
-
-}
-
-
-/* ==========================================
-   INICIAR NEXO
-========================================== */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  function() {
-
-    loadProperties();
-
-  }
-);
+    return photos
+      .
