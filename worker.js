@@ -16,22 +16,18 @@ export default {
     }
 
     const json = (data, status = 200) => {
-      return new Response(JSON.stringify(data), {
-        status,
-        headers: {
-          "Content-Type": "application/json; charset=UTF-8",
-          ...corsHeaders
+      return new Response(
+        JSON.stringify(data),
+        {
+          status,
+          headers: {
+            "Content-Type":
+              "application/json; charset=UTF-8",
+            ...corsHeaders
+          }
         }
-      });
+      );
     };
-
-    // ==========================================
-    // API: ESTADO
-    // ==========================================
-
-    if (url.pathname === "/" && request.method === "GET") {
-      return env.ASSETS.fetch(request);
-    }
 
     // ==========================================
     // API: OBTENER PROPIEDADES
@@ -69,11 +65,12 @@ export default {
         });
 
       } catch (error) {
-        console.error(error);
+        console.error("NEXO GET:", error);
 
         return json({
           success: false,
-          error: "No se pudieron obtener las propiedades."
+          error:
+            "No se pudieron obtener las propiedades."
         }, 500);
       }
     }
@@ -87,7 +84,8 @@ export default {
       request.method === "POST"
     ) {
       try {
-        const body = await request.json();
+        const body =
+          await request.json();
 
         const propertyType =
           typeof body.property_type === "string"
@@ -223,16 +221,19 @@ export default {
 
         return json({
           success: true,
-          message: "Propiedad creada correctamente.",
-          id: result.meta?.last_row_id || null
+          message:
+            "Propiedad creada correctamente.",
+          id:
+            result.meta?.last_row_id || null
         }, 201);
 
       } catch (error) {
-        console.error(error);
+        console.error("NEXO POST:", error);
 
         return json({
           success: false,
-          error: "No se pudo crear la propiedad."
+          error:
+            "No se pudo crear la propiedad."
         }, 500);
       }
     }
@@ -242,45 +243,56 @@ export default {
     // ==========================================
 
     if (
-      url.pathname.startsWith("/api/properties/") &&
+      url.pathname.startsWith(
+        "/api/properties/"
+      ) &&
       request.method === "GET"
     ) {
-      const id = url.pathname.split("/").pop();
+      const id =
+        url.pathname
+          .split("/")
+          .pop();
 
-      if (!id || !/^\d+$/.test(id)) {
+      if (
+        !id ||
+        !/^\d+$/.test(id)
+      ) {
         return json({
           success: false,
-          error: "ID de propiedad inválido."
+          error:
+            "ID de propiedad inválido."
         }, 400);
       }
 
       try {
-        const property = await env.DB
-          .prepare(`
-            SELECT
-              id,
-              property_type,
-              city,
-              neighborhood,
-              bedrooms,
-              bathrooms,
-              square_meters,
-              price,
-              description,
-              photos,
-              status,
-              created_at
-            FROM properties
-            WHERE id = ?
-              AND status = 'available'
-          `)
-          .bind(Number(id))
-          .first();
+        const property =
+          await env.DB
+            .prepare(`
+              SELECT
+                id,
+                property_type,
+                city,
+                neighborhood,
+                bedrooms,
+                bathrooms,
+                square_meters,
+                price,
+                description,
+                photos,
+                status,
+                created_at
+              FROM properties
+              WHERE id = ?
+                AND status = 'available'
+            `)
+            .bind(Number(id))
+            .first();
 
         if (!property) {
           return json({
             success: false,
-            error: "Propiedad no encontrada."
+            error:
+              "Propiedad no encontrada."
           }, 404);
         }
 
@@ -290,17 +302,21 @@ export default {
         });
 
       } catch (error) {
-        console.error(error);
+        console.error(
+          "NEXO PROPERTY:",
+          error
+        );
 
         return json({
           success: false,
-          error: "Error al consultar la propiedad."
+          error:
+            "Error al consultar la propiedad."
         }, 500);
       }
     }
 
     // ==========================================
-    // ARCHIVOS DEL FRONTEND
+    // FRONTEND
     // ==========================================
 
     return env.ASSETS.fetch(request);
