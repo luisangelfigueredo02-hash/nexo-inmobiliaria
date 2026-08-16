@@ -2,6 +2,10 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    // ==========================================
+    // CORS
+    // ==========================================
+
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -15,47 +19,33 @@ export default {
       });
     }
 
-    const json = (data, status = 200, extra = {}) => {
+    // ==========================================
+    // RESPUESTA JSON
+    // ==========================================
+
+    const json = (data, status = 200) => {
       return new Response(JSON.stringify(data), {
         status,
         headers: {
           "Content-Type": "application/json; charset=UTF-8",
-          ...corsHeaders,
-          ...extra
+          ...corsHeaders
         }
       });
     };
 
-    // =====================================================
-    // SESIÓN DE ADMINISTRADOR
-    // =====================================================
+    // ==========================================
+    // AUTENTICACIÓN ADMIN
+    // ==========================================
 
-    function getCookie(name) {
-      const cookies = request.headers.get("Cookie") || "";
-
-      for (const item of cookies.split(";")) {
-        const parts = item.trim().split("=");
-
-        if (parts[0] === name) {
-          return decodeURIComponent(parts.slice(1).join("="));
-        }
-      }
-
-      return null;
-    }
-
-    async function createSessionToken() {
-      const secret = env.ADMIN_SESSION_SECRET;
-
-      if (!secret) {
-        throw new Error("ADMIN_SESSION_SECRET no configurado.");
-      }
-
+    async function createAdminToken() {
       const encoder = new TextEncoder();
+
+      const keyData = encoder.encode(env.ADMIN);
+      const messageData = encoder.encode("NEXO-ADMIN-SESSION");
 
       const key = await crypto.subtle.importKey(
         "raw",
-        encoder.encode(secret),
+        keyData,
         {
           name: "HMAC",
           hash: "SHA-256"
@@ -64,115 +54,316 @@ export default {
         ["sign"]
       );
 
-      const timestamp = Date.now().toString();
-
       const signature = await crypto.subtle.sign(
         "HMAC",
         key,
-        encoder.encode(timestamp)
+        messageData
       );
 
       const bytes = new Uint8Array(signature);
 
-      let binary = "";
-
-      for (const byte of bytes) {
-        binary += String.fromCharCode(byte);
-      }
-
-      const token =
-        btoa(timestamp + "." + binary);
-
-      return token;
+      return btoa(
+        String.fromCharCode(...bytes)
+      )
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=/g, "");
     }
 
-    async function verifySessionToken(token) {
-      if (!token || !env.ADMIN_SESSION_SECRET) {
+    async function isAdminAuthenticated(request) {
+      if (!env.ADMIN) {
         return false;
       }
 
-      try {
-        const decoded = atob(token);
+      const cookieHeader =
+        request.headers.get("Cookie") || "";
 
-        const separator = decoded.indexOf(".");
+      const match =
+        cookieHeader.match(
+          /(?:^|;\s*)nexo_admin=([^;]+)/
+        );
 
-        if (separator === -1) {
-          return false;
-        }
+      if (!match) {
+        return false;
+      }
 
-        const timestamp =
-          decoded.substring(0, separator);
+      const expectedToken =
+        await createAdminToken();
 
-        const binary =
-          decoded.substring(separator + 1);
+      return match[1] === expectedToken;
+    }
 
-        const time = Number(timestamp);
+    // ==========================================
+    // PÁGINA DE LOGIN
+    // ==========================================
 
-        if (!Number.isFinite(time)) {
-          return false;
-        }
+    const loginPage = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-        // Sesión válida durante 24 horas
-        if (Date.now() - time > 86400000) {
-          return false;
-        }
+  <title>NEXO — Acceso</title>
 
-        const signatureBytes =
-          new Uint8Array(
-            [...binary].map(char =>
-              char.charCodeAt(0)
-            )
-          );
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        const encoder = new TextEncoder();
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
 
-        const key =
-          await crypto.subtle.importKey(
-            "raw",
-            encoder.encode(
-              env.ADMIN_SESSION_SECRET
-            ),
-            {
-              name: "HMAC",
-              hash: "SHA-256"
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      background: #f5f5f3;
+      color: #171717;
+    }
+
+    .login {
+      width: 100%;
+      max-width: 390px;
+
+      background: white;
+      border: 1px solid #e7e7e7;
+      border-radius: 24px;
+
+      padding: 32px;
+
+      box-shadow:
+        0 20px 60px rgba(0,0,0,.08);
+    }
+
+    .logo {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 5px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #777;
+      margin-bottom: 30px;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+
+      border:
+        1px solid #ddd;
+
+      border-radius: 12px;
+
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #171717;
+    }
+
+    button {
+      width: 100%;
+
+      margin-top: 16px;
+
+      padding: 15px;
+
+      border: 0;
+      border-radius: 12px;
+
+      background: #171717;
+      color: white;
+
+      font-size: 16px;
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .6;
+    }
+
+    .error {
+      margin-top: 15px;
+      padding: 12px;
+
+      border-radius: 10px;
+
+      background: #fdeaea;
+      color: #9b1c1c;
+
+      display: none;
+    }
+
+    .error.show {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="login">
+
+    <div class="logo">
+      NEXO
+    </div>
+
+    <div class="subtitle">
+      Acceso al panel de administración
+    </div>
+
+    <form id="loginForm">
+
+      <label for="password">
+        Contraseña
+      </label>
+
+      <input
+        id="password"
+        type="password"
+        autocomplete="current-password"
+        placeholder="Introduce tu contraseña"
+        required
+      >
+
+      <button
+        id="loginButton"
+        type="submit"
+      >
+        Entrar
+      </button>
+
+      <div
+        id="error"
+        class="error"
+      ></div>
+
+    </form>
+
+  </div>
+
+<script>
+
+const form =
+  document.getElementById("loginForm");
+
+const password =
+  document.getElementById("password");
+
+const button =
+  document.getElementById("loginButton");
+
+const error =
+  document.getElementById("error");
+
+form.addEventListener(
+  "submit",
+  async function(event) {
+
+    event.preventDefault();
+
+    error.classList.remove("show");
+    error.textContent = "";
+
+    button.disabled = true;
+    button.textContent = "Comprobando...";
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/admin/login",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
             },
-            false,
-            ["verify"]
-          );
 
-        return await crypto.subtle.verify(
-          "HMAC",
-          key,
-          signatureBytes,
-          encoder.encode(timestamp)
+            body: JSON.stringify({
+              password:
+                password.value
+            })
+          }
         );
 
-      } catch (error) {
-        console.error(
-          "SESSION VERIFY:",
-          error
-        );
+      const result =
+        await response.json();
 
-        return false;
+      if (!response.ok ||
+          !result.success) {
+
+        throw new Error(
+          result.error ||
+          "Contraseña incorrecta."
+        );
       }
+
+      window.location.href =
+        "/admin.html";
+
+    } catch (err) {
+
+      error.textContent =
+        err.message ||
+        "No se pudo iniciar sesión.";
+
+      error.classList.add("show");
+
+      password.value = "";
+      password.focus();
+
+    } finally {
+
+      button.disabled = false;
+      button.textContent = "Entrar";
+
     }
 
-    async function isAdmin() {
-      const token =
-        getCookie("NEXO_ADMIN");
+  });
 
-      return await verifySessionToken(token);
-    }
+</script>
 
-    // =====================================================
-    // LOGIN
-    // =====================================================
+</body>
+</html>
+`;
+
+    // ==========================================
+    // LOGIN ADMIN
+    // ==========================================
 
     if (
       url.pathname === "/api/admin/login" &&
       request.method === "POST"
     ) {
       try {
+
         const body =
           await request.json();
 
@@ -181,30 +372,10 @@ export default {
             ? body.password
             : "";
 
-        if (!password) {
-          return json({
-            success: false,
-            error: "Introduce la contraseña."
-          }, 400);
-        }
-
-        if (!env.ADMIN) {
-          return json({
-            success: false,
-            error:
-              "La variable ADMIN no está configurada."
-          }, 500);
-        }
-
-        if (!env.ADMIN_SESSION_SECRET) {
-          return json({
-            success: false,
-            error:
-              "La variable ADMIN_SESSION_SECRET no está configurada."
-          }, 500);
-        }
-
-        if (password !== env.ADMIN) {
+        if (
+          !env.ADMIN ||
+          password !== env.ADMIN
+        ) {
           return json({
             success: false,
             error: "Contraseña incorrecta."
@@ -212,78 +383,141 @@ export default {
         }
 
         const token =
-          await createSessionToken();
+          await createAdminToken();
 
-        return json(
+        return new Response(
+          JSON.stringify({
+            success: true
+          }),
           {
-            success: true,
-            authenticated: true
-          },
-          200,
-          {
-            "Set-Cookie":
-              `NEXO_ADMIN=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`
+            status: 200,
+
+            headers: {
+              "Content-Type":
+                "application/json; charset=UTF-8",
+
+              "Set-Cookie":
+                `nexo_admin=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400`,
+
+              ...corsHeaders
+            }
           }
         );
 
       } catch (error) {
+
         console.error(
-          "LOGIN ERROR:",
+          "NEXO LOGIN:",
           error
         );
 
         return json({
           success: false,
-          error:
-            "Solicitud de inicio de sesión inválida."
+          error: "Solicitud de inicio de sesión inválida."
         }, 400);
       }
     }
 
-    // =====================================================
-    // COMPROBAR SESIÓN
-    // =====================================================
-
-    if (
-      url.pathname === "/api/admin/session" &&
-      request.method === "GET"
-    ) {
-      return json({
-        authenticated:
-          await isAdmin()
-      });
-    }
-
-    // =====================================================
-    // CERRAR SESIÓN
-    // =====================================================
+    // ==========================================
+    // LOGOUT
+    // ==========================================
 
     if (
       url.pathname === "/api/admin/logout" &&
       request.method === "POST"
     ) {
-      return json(
-        {
+
+      return new Response(
+        JSON.stringify({
           success: true
-        },
-        200,
+        }),
         {
-          "Set-Cookie":
-            "NEXO_ADMIN=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0"
+          status: 200,
+
+          headers: {
+            "Content-Type":
+              "application/json; charset=UTF-8",
+
+            "Set-Cookie":
+              "nexo_admin=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0",
+
+            ...corsHeaders
+          }
         }
       );
     }
 
-    // =====================================================
-    // OBTENER PROPIEDADES
-    // PÚBLICO
-    // =====================================================
+    // ==========================================
+    // PROTEGER PANEL ADMIN
+    // ==========================================
+
+    if (
+      url.pathname === "/admin" ||
+      url.pathname === "/admin.html"
+    ) {
+
+      const authenticated =
+        await isAdminAuthenticated(request);
+
+      if (!authenticated) {
+
+        return new Response(
+          loginPage,
+          {
+            status: 200,
+
+            headers: {
+              "Content-Type":
+                "text/html; charset=UTF-8"
+            }
+          }
+        );
+
+      }
+    }
+
+    // ==========================================
+    // PROTEGER OPERACIONES DE ESCRITURA
+    // ==========================================
+
+    const isWriteOperation =
+      request.method === "POST" ||
+      request.method === "PUT" ||
+      request.method === "DELETE";
+
+    const isPropertyApi =
+      url.pathname === "/api/properties" ||
+      url.pathname.startsWith("/api/properties/");
+
+    if (
+      isWriteOperation &&
+      isPropertyApi
+    ) {
+
+      const authenticated =
+        await isAdminAuthenticated(request);
+
+      if (!authenticated) {
+
+        return json({
+          success: false,
+          error: "No autorizado."
+        }, 401);
+
+      }
+    }
+
+    // ==========================================
+    // API: OBTENER TODAS LAS PROPIEDADES
+    // ==========================================
 
     if (
       url.pathname === "/api/properties" &&
       request.method === "GET"
     ) {
+
       try {
+
         const result =
           await env.DB
             .prepare(`
@@ -299,6 +533,9 @@ export default {
                 price,
                 description,
                 photos,
+                owner_name,
+                owner_phone,
+                notes,
                 status,
                 created_at
               FROM properties
@@ -314,8 +551,9 @@ export default {
         });
 
       } catch (error) {
+
         console.error(
-          "GET PROPERTIES:",
+          "NEXO GET:",
           error
         );
 
@@ -327,23 +565,17 @@ export default {
       }
     }
 
-    // =====================================================
-    // CREAR PROPIEDAD
-    // SOLO ADMIN
-    // =====================================================
+    // ==========================================
+    // API: CREAR PROPIEDAD
+    // ==========================================
 
     if (
       url.pathname === "/api/properties" &&
       request.method === "POST"
     ) {
-      if (!(await isAdmin())) {
-        return json({
-          success: false,
-          error: "No autorizado."
-        }, 401);
-      }
 
       try {
+
         const body =
           await request.json();
 
@@ -357,7 +589,11 @@ export default {
             ? body.city.trim()
             : "";
 
-        if (!propertyType || !city) {
+        if (
+          !propertyType ||
+          !city
+        ) {
+
           return json({
             success: false,
             error:
@@ -435,10 +671,12 @@ export default {
           body.photos !== undefined &&
           body.photos !== null
         ) {
+
           photos =
             typeof body.photos === "string"
               ? body.photos
               : JSON.stringify(body.photos);
+
         }
 
         const result =
@@ -460,7 +698,10 @@ export default {
                 notes,
                 status
               )
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?
+              )
             `)
             .bind(
               propertyType,
@@ -489,8 +730,9 @@ export default {
         }, 201);
 
       } catch (error) {
+
         console.error(
-          "CREATE PROPERTY:",
+          "NEXO CREATE:",
           error
         );
 
@@ -502,26 +744,23 @@ export default {
       }
     }
 
-    // =====================================================
-    // EDITAR PROPIEDAD
-    // SOLO ADMIN
-    // =====================================================
+    // ==========================================
+    // API: EDITAR PROPIEDAD
+    // ==========================================
 
     if (
       url.pathname.startsWith("/api/properties/") &&
       request.method === "PUT"
     ) {
-      if (!(await isAdmin())) {
-        return json({
-          success: false,
-          error: "No autorizado."
-        }, 401);
-      }
 
       const id =
         url.pathname.split("/").pop();
 
-      if (!id || !/^\d+$/.test(id)) {
+      if (
+        !id ||
+        !/^\d+$/.test(id)
+      ) {
+
         return json({
           success: false,
           error:
@@ -530,6 +769,7 @@ export default {
       }
 
       try {
+
         const body =
           await request.json();
 
@@ -543,7 +783,11 @@ export default {
             ? body.city.trim()
             : "";
 
-        if (!propertyType || !city) {
+        if (
+          !propertyType ||
+          !city
+        ) {
+
           return json({
             success: false,
             error:
@@ -621,10 +865,12 @@ export default {
           body.photos !== undefined &&
           body.photos !== null
         ) {
+
           photos =
             typeof body.photos === "string"
               ? body.photos
               : JSON.stringify(body.photos);
+
         }
 
         const result =
@@ -676,8 +922,9 @@ export default {
         });
 
       } catch (error) {
+
         console.error(
-          "UPDATE PROPERTY:",
+          "NEXO UPDATE:",
           error
         );
 
@@ -689,26 +936,23 @@ export default {
       }
     }
 
-    // =====================================================
-    // ELIMINAR PROPIEDAD
-    // SOLO ADMIN
-    // =====================================================
+    // ==========================================
+    // API: ELIMINAR PROPIEDAD
+    // ==========================================
 
     if (
       url.pathname.startsWith("/api/properties/") &&
       request.method === "DELETE"
     ) {
-      if (!(await isAdmin())) {
-        return json({
-          success: false,
-          error: "No autorizado."
-        }, 401);
-      }
 
       const id =
         url.pathname.split("/").pop();
 
-      if (!id || !/^\d+$/.test(id)) {
+      if (
+        !id ||
+        !/^\d+$/.test(id)
+      ) {
+
         return json({
           success: false,
           error:
@@ -717,6 +961,7 @@ export default {
       }
 
       try {
+
         const result =
           await env.DB
             .prepare(`
@@ -726,7 +971,10 @@ export default {
             .bind(Number(id))
             .run();
 
-        if (!result.meta?.changes) {
+        if (
+          !result.meta?.changes
+        ) {
+
           return json({
             success: false,
             error:
@@ -741,8 +989,9 @@ export default {
         });
 
       } catch (error) {
+
         console.error(
-          "DELETE PROPERTY:",
+          "NEXO DELETE:",
           error
         );
 
@@ -754,19 +1003,23 @@ export default {
       }
     }
 
-    // =====================================================
-    // PROPIEDAD INDIVIDUAL
-    // PÚBLICO
-    // =====================================================
+    // ==========================================
+    // API: PROPIEDAD INDIVIDUAL
+    // ==========================================
 
     if (
       url.pathname.startsWith("/api/properties/") &&
       request.method === "GET"
     ) {
+
       const id =
         url.pathname.split("/").pop();
 
-      if (!id || !/^\d+$/.test(id)) {
+      if (
+        !id ||
+        !/^\d+$/.test(id)
+      ) {
+
         return json({
           success: false,
           error:
@@ -775,6 +1028,7 @@ export default {
       }
 
       try {
+
         const property =
           await env.DB
             .prepare(`
@@ -790,6 +1044,9 @@ export default {
                 price,
                 description,
                 photos,
+                owner_name,
+                owner_phone,
+                notes,
                 status,
                 created_at
               FROM properties
@@ -800,6 +1057,7 @@ export default {
             .first();
 
         if (!property) {
+
           return json({
             success: false,
             error:
@@ -813,8 +1071,9 @@ export default {
         });
 
       } catch (error) {
+
         console.error(
-          "GET PROPERTY:",
+          "NEXO PROPERTY:",
           error
         );
 
@@ -826,9 +1085,9 @@ export default {
       }
     }
 
-    // =====================================================
+    // ==========================================
     // FRONTEND
-    // =====================================================
+    // ==========================================
 
     return env.ASSETS.fetch(request);
   }
