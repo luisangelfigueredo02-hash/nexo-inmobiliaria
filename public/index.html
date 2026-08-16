@@ -1,1317 +1,1741 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<meta name="theme-color" content="#f7f7f5">
+
+<meta
+  name="description"
+  content="NEXO Inmueble — encuentra propiedades que encajan contigo."
+>
+
+<title>NEXO — Inmueble</title>
+
+<style>
+
+/* =========================================================
+   NEXO — DESIGN SYSTEM
+========================================================= */
+
+:root {
+  --bg: #f6f6f3;
+  --surface: #ffffff;
+  --text: #111111;
+  --muted: #777773;
+  --soft: #ecece8;
+  --line: rgba(17,17,17,.09);
+  --black: #111111;
+  --white: #ffffff;
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-xl: 34px;
 
-  <meta
-    name="description"
-    content="NEXO Inmueble — Propiedades seleccionadas para encontrar tu próximo lugar."
-  >
+  --shadow-soft:
+    0 12px 35px rgba(0,0,0,.07);
 
-  <title>NEXO — Inmueble</title>
+  --shadow-card:
+    0 18px 55px rgba(0,0,0,.08);
+}
 
-  <style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
 
-    :root {
-      --black: #101010;
-      --white: #ffffff;
-      --cream: #f7f7f4;
-      --gray: #777;
-      --light: #ededeb;
-      --border: #e4e4e0;
-    }
+body {
+  background: var(--bg);
+  color: var(--text);
 
-    html {
-      scroll-behavior: smooth;
-    }
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    "Segoe UI",
+    sans-serif;
 
-    body {
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 
-      background: var(--cream);
-      color: var(--black);
+  min-height: 100vh;
+}
 
-      min-height: 100vh;
-    }
+body.modal-open {
+  overflow: hidden;
+}
 
-    button,
-    input,
-    select {
-      font-family: inherit;
-    }
+button,
+input,
+select {
+  font: inherit;
+}
 
-    button {
-      cursor: pointer;
-    }
+button {
+  cursor: pointer;
+}
 
-    /* ==================================================
-       HEADER
-    ================================================== */
+a {
+  color: inherit;
+}
 
-    header {
-      position: absolute;
 
-      top: 0;
-      left: 0;
-      right: 0;
+/* =========================================================
+   PAGE TRANSITION
+========================================================= */
 
-      z-index: 50;
+.page {
+  animation:
+    pageIn .7s cubic-bezier(.22,.61,.36,1);
+}
 
-      color: white;
-    }
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 
-    .header-inner {
-      max-width: 1240px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-      margin: auto;
 
-      padding:
-        22px 22px;
+/* =========================================================
+   HEADER
+========================================================= */
 
-      display: flex;
+.site-header {
+  position: absolute;
 
-      align-items: center;
-      justify-content: space-between;
-    }
+  top: 0;
+  left: 0;
+  right: 0;
 
-    .logo {
-      color: white;
+  z-index: 50;
 
-      text-decoration: none;
+  color: white;
+}
 
-      font-size: 27px;
+.header-inner {
+  width: min(1280px, 100%);
 
-      font-weight: 900;
+  margin: auto;
 
-      letter-spacing: 5px;
-    }
+  padding:
+    22px 24px;
 
-    .admin-link {
-      color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-      text-decoration: none;
+.logo {
+  text-decoration: none;
 
-      border:
-        1px solid
-        rgba(255,255,255,.45);
+  font-size: 25px;
+  font-weight: 900;
 
-      background:
-        rgba(0,0,0,.18);
+  letter-spacing: 5px;
 
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+  line-height: 1;
+}
 
-      padding:
-        9px 14px;
+.header-actions {
+  display: flex;
+  align-items: center;
 
-      border-radius: 999px;
+  gap: 10px;
+}
 
-      font-size: 11px;
+.header-button {
+  text-decoration: none;
 
-      font-weight: 700;
-    }
+  padding:
+    10px 15px;
 
-    /* ==================================================
-       HERO
-    ================================================== */
+  border-radius: 999px;
 
-    .hero {
-      position: relative;
+  border:
+    1px solid
+    rgba(255,255,255,.35);
 
-      min-height: 720px;
+  background:
+    rgba(0,0,0,.16);
 
-      display: flex;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 
-      align-items: flex-end;
+  color: white;
 
-      overflow: hidden;
+  font-size: 11px;
+  font-weight: 700;
 
-      background: #222;
-    }
+  transition:
+    background .25s ease,
+    transform .25s ease;
+}
 
-    .hero-background {
-      position: absolute;
+.header-button:hover {
+  background:
+    rgba(255,255,255,.16);
 
-      inset: 0;
+  transform: translateY(-1px);
+}
 
-      background:
-        linear-gradient(
-          to bottom,
-          rgba(0,0,0,.20),
-          rgba(0,0,0,.30) 45%,
-          rgba(0,0,0,.82)
-        );
 
-      z-index: 2;
-    }
+/* =========================================================
+   HERO
+========================================================= */
 
-    .hero-image {
-      position: absolute;
+.hero {
+  position: relative;
 
-      inset: 0;
+  min-height:
+    min(820px, 92vh);
 
-      width: 100%;
-      height: 100%;
+  overflow: hidden;
 
-      object-fit: cover;
+  background:
+    #242424;
 
-      z-index: 1;
+  display: flex;
+  align-items: flex-end;
+}
 
-      transform: scale(1.01);
-    }
+.hero-image,
+.hero-fallback {
+  position: absolute;
 
-    .hero-placeholder {
-      position: absolute;
+  inset: 0;
 
-      inset: 0;
+  width: 100%;
+  height: 100%;
 
-      z-index: 1;
+  object-fit: cover;
+}
 
-      background:
-        linear-gradient(
-          135deg,
-          #242424,
-          #575757
-        );
+.hero-image {
+  opacity: 0;
 
-      display: flex;
+  transform: scale(1.035);
 
-      align-items: center;
-      justify-content: center;
+  transition:
+    opacity 1s ease,
+    transform 8s cubic-bezier(.2,.6,.2,1);
+}
 
-      color:
-        rgba(255,255,255,.15);
+.hero-image.loaded {
+  opacity: 1;
+  transform: scale(1);
+}
 
-      font-size: 100px;
+.hero-fallback {
+  background:
+    radial-gradient(
+      circle at 70% 30%,
+      #555 0,
+      #2b2b2b 45%,
+      #111 100%
+    );
 
-      font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-      letter-spacing: 8px;
-    }
+  color:
+    rgba(255,255,255,.08);
 
-    .hero-content {
-      position: relative;
+  font-size:
+    clamp(70px, 14vw, 180px);
 
-      z-index: 5;
+  font-weight: 900;
 
-      width: 100%;
+  letter-spacing: 12px;
+}
 
-      max-width: 1240px;
+.hero-overlay {
+  position: absolute;
 
-      margin: auto;
+  inset: 0;
 
-      padding:
-        0 22px
-        90px;
-    }
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(0,0,0,.16) 0%,
+      rgba(0,0,0,.08) 30%,
+      rgba(0,0,0,.48) 70%,
+      rgba(0,0,0,.82) 100%
+    );
+}
 
-    .hero-label {
-      display: inline-flex;
+.hero-content {
+  position: relative;
 
-      align-items: center;
+  z-index: 3;
 
-      gap: 8px;
+  width: min(1280px, 100%);
 
-      color:
-        rgba(255,255,255,.9);
+  margin: auto;
 
-      font-size: 11px;
+  padding:
+    0 24px
+    clamp(70px, 10vh, 110px);
+}
 
-      font-weight: 800;
+.hero-eyebrow {
+  display: flex;
+  align-items: center;
 
-      letter-spacing: 2px;
+  gap: 9px;
 
-      text-transform: uppercase;
+  margin-bottom: 18px;
 
-      margin-bottom: 18px;
-    }
+  color:
+    rgba(255,255,255,.82);
 
-    .hero-label::before {
-      content: "";
+  font-size: 10px;
+  font-weight: 800;
 
-      width: 7px;
-      height: 7px;
+  letter-spacing: 2.5px;
 
-      background: white;
+  text-transform: uppercase;
+}
 
-      border-radius: 50%;
-    }
+.hero-eyebrow-dot {
+  width: 6px;
+  height: 6px;
 
-    .hero h1 {
-      color: white;
+  border-radius: 50%;
 
-      max-width: 850px;
+  background: white;
+}
 
-      font-size:
-        clamp(48px, 8vw, 92px);
+.hero-title {
+  max-width: 980px;
 
-      line-height: .94;
+  color: white;
 
-      letter-spacing: -4px;
+  font-size:
+    clamp(54px, 9vw, 108px);
 
-      font-weight: 800;
-    }
+  font-weight: 800;
 
-    .hero h1 span {
-      color:
-        rgba(255,255,255,.60);
-    }
+  line-height: .91;
 
-    .hero-description {
-      color:
-        rgba(255,255,255,.78);
+  letter-spacing:
+    -5px;
+}
 
-      max-width: 560px;
+.hero-title span {
+  display: block;
 
-      margin-top: 23px;
+  color:
+    rgba(255,255,255,.62);
+}
 
-      font-size: 15px;
+.hero-subtitle {
+  max-width: 510px;
 
-      line-height: 1.6;
-    }
+  margin-top: 25px;
 
-    /* ==================================================
-       SEARCH
-    ================================================== */
+  color:
+    rgba(255,255,255,.76);
 
-    .search-wrapper {
-      position: relative;
+  font-size: 15px;
 
-      z-index: 10;
+  line-height: 1.65;
+}
 
-      max-width: 1080px;
 
-      margin:
-        -38px auto
-        0;
+/* =========================================================
+   SEARCH EXPERIENCE
+========================================================= */
 
-      padding:
-        0 22px;
-    }
+.search-zone {
+  position: relative;
 
-    .search-box {
-      background: white;
+  z-index: 10;
 
-      border:
-        1px solid
-        rgba(0,0,0,.08);
+  width: min(1120px, 100%);
 
-      border-radius: 20px;
+  margin:
+    -46px auto
+    0;
 
-      padding: 10px;
+  padding:
+    0 22px;
+}
 
-      box-shadow:
-        0 20px 60px
-        rgba(0,0,0,.12);
+.search-panel {
+  background:
+    rgba(255,255,255,.96);
 
-      display: grid;
+  border:
+    1px solid
+    rgba(0,0,0,.07);
 
-      grid-template-columns:
-        1fr
-        190px
-        125px;
+  border-radius:
+    22px;
 
-      gap: 9px;
-    }
+  padding: 9px;
 
-    .search-input,
-    .search-select {
-      width: 100%;
+  box-shadow:
+    0 24px 70px rgba(0,0,0,.13);
 
-      border: 0;
+  display: grid;
 
-      outline: none;
+  grid-template-columns:
+    1.5fr
+    .8fr
+    .8fr
+    auto;
 
-      background: #f4f4f1;
+  gap: 8px;
 
-      border-radius: 12px;
+  backdrop-filter:
+    blur(20px);
 
-      padding:
-        15px;
+  -webkit-backdrop-filter:
+    blur(20px);
+}
 
-      color: var(--black);
+.search-field {
+  min-width: 0;
 
-      font-size: 14px;
-    }
+  border: 0;
 
-    .search-button {
-      border: 0;
+  outline: 0;
 
-      border-radius: 12px;
+  background:
+    #f3f3f0;
 
-      background: var(--black);
+  border-radius:
+    14px;
 
-      color: white;
+  padding:
+    15px 16px;
 
-      font-size: 13px;
+  color: var(--text);
 
-      font-weight: 800;
-    }
+  font-size: 13px;
 
-    /* ==================================================
-       MAIN
-    ================================================== */
+  transition:
+    background .2s ease,
+    box-shadow .2s ease;
+}
 
-    main {
-      max-width: 1240px;
+.search-field:focus {
+  background: white;
 
-      margin: auto;
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(0,0,0,.12);
+}
 
-      padding:
-        100px 22px
-        90px;
-    }
+.search-button {
+  border: 0;
 
-    .section-header {
-      display: flex;
+  border-radius:
+    14px;
 
-      align-items: flex-end;
+  padding:
+    0 23px;
 
-      justify-content: space-between;
+  background:
+    var(--black);
 
-      gap: 20px;
+  color: white;
 
-      margin-bottom: 30px;
-    }
+  font-size: 12px;
+  font-weight: 800;
 
-    .section-kicker {
-      color: var(--gray);
+  transition:
+    transform .2s ease,
+    background .2s ease;
+}
 
-      font-size: 10px;
+.search-button:hover {
+  transform: translateY(-1px);
+}
 
-      font-weight: 800;
+.search-button:active {
+  transform: scale(.98);
+}
 
-      letter-spacing: 2px;
 
-      text-transform: uppercase;
+/* =========================================================
+   MAIN
+========================================================= */
 
-      margin-bottom: 8px;
-    }
+.main {
+  width: min(1280px, 100%);
 
-    .section-title {
-      font-size: 34px;
+  margin: auto;
 
-      letter-spacing: -1.5px;
+  padding:
+    110px 24px
+    90px;
+}
 
-      line-height: 1;
-    }
+.section-top {
+  display: flex;
 
-    .results-count {
-      color: var(--gray);
+  align-items: flex-end;
 
-      font-size: 12px;
-    }
+  justify-content: space-between;
 
-    /* ==================================================
-       PROPERTY GRID
-    ================================================== */
+  gap: 25px;
 
-    .properties-grid {
-      display: grid;
+  margin-bottom: 30px;
+}
 
-      grid-template-columns:
-        repeat(3, 1fr);
+.section-kicker {
+  color: var(--muted);
 
-      gap: 20px;
-    }
+  font-size: 10px;
 
-    /* ==================================================
-       PROPERTY CARD
-    ================================================== */
+  font-weight: 800;
 
-    .property-card {
-      background: white;
+  letter-spacing: 2.2px;
 
-      border:
-        1px solid
-        var(--border);
+  text-transform: uppercase;
 
-      border-radius: 18px;
+  margin-bottom: 9px;
+}
 
-      overflow: hidden;
+.section-title {
+  font-size:
+    clamp(32px, 5vw, 48px);
 
-      transition:
-        transform .25s ease,
-        box-shadow .25s ease;
+  font-weight: 800;
 
-      display: flex;
+  line-height: .98;
 
-      flex-direction: column;
-    }
+  letter-spacing:
+    -2px;
+}
 
-    .property-card:hover {
-      transform:
-        translateY(-5px);
+.section-count {
+  color: var(--muted);
 
-      box-shadow:
-        0 25px 60px
-        rgba(0,0,0,.09);
-    }
+  font-size: 12px;
+}
 
-    .property-image {
-      position: relative;
 
-      width: 100%;
+/* =========================================================
+   PROPERTY GRID
+========================================================= */
 
-      aspect-ratio: 4 / 3;
+.property-grid {
+  display: grid;
 
-      background: #dededb;
+  grid-template-columns:
+    repeat(3, 1fr);
 
-      overflow: hidden;
-    }
+  gap: 20px;
+}
 
-    .property-image img {
-      width: 100%;
-      height: 100%;
 
-      object-fit: cover;
+/* =========================================================
+   PROPERTY CARD
+========================================================= */
 
-      display: block;
+.property-card {
+  background:
+    var(--surface);
 
-      transition:
-        transform .45s ease;
-    }
+  border:
+    1px solid
+    var(--line);
 
-    .property-card:hover
-    .property-image img {
-      transform: scale(1.045);
-    }
+  border-radius:
+    var(--radius-md);
 
-    .image-placeholder {
-      width: 100%;
-      height: 100%;
+  overflow: hidden;
 
-      display: flex;
+  box-shadow:
+    0 0 0 rgba(0,0,0,0);
 
-      align-items: center;
-      justify-content: center;
+  transform:
+    translateY(12px);
 
-      background:
-        linear-gradient(
-          135deg,
-          #ddd,
-          #f1f1ee
-        );
+  opacity: 0;
 
-      color: #999;
+  animation:
+    cardIn .7s
+    cubic-bezier(.22,.61,.36,1)
+    forwards;
 
-      font-size: 12px;
-    }
+  transition:
+    transform .4s cubic-bezier(.22,.61,.36,1),
+    box-shadow .4s ease;
+}
 
-    .available {
-      position: absolute;
+.property-card:hover {
+  transform:
+    translateY(-6px);
 
-      top: 13px;
-      left: 13px;
+  box-shadow:
+    var(--shadow-card);
+}
 
-      background:
-        rgba(255,255,255,.94);
+@keyframes cardIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-      color: #111;
+.property-image {
+  position: relative;
 
-      padding:
-        7px 10px;
+  aspect-ratio:
+    4 / 3;
 
-      border-radius: 999px;
+  background:
+    #e4e4e0;
 
-      font-size: 9px;
+  overflow: hidden;
+}
 
-      font-weight: 800;
+.property-image img {
+  display: block;
 
-      text-transform: uppercase;
+  width: 100%;
+  height: 100%;
 
-      letter-spacing: .7px;
-    }
+  object-fit: cover;
 
-    .photo-count {
-      position: absolute;
+  transition:
+    transform .7s
+    cubic-bezier(.2,.6,.2,1);
+}
 
-      right: 13px;
-      bottom: 13px;
+.property-card:hover
+.property-image img {
+  transform:
+    scale(1.045);
+}
 
-      background:
-        rgba(0,0,0,.62);
+.image-placeholder {
+  width: 100%;
+  height: 100%;
 
-      color: white;
+  display: flex;
 
-      padding:
-        6px 9px;
+  align-items: center;
+  justify-content: center;
 
-      border-radius: 999px;
+  background:
+    linear-gradient(
+      135deg,
+      #deded9,
+      #f0f0ed
+    );
 
-      font-size: 10px;
-    }
+  color: #999;
 
-    .property-body {
-      padding: 18px;
+  font-size: 11px;
+}
 
-      flex: 1;
+.property-status {
+  position: absolute;
 
-      display: flex;
+  top: 14px;
+  left: 14px;
 
-      flex-direction: column;
-    }
+  padding:
+    7px 10px;
 
-    .property-type {
-      color: var(--gray);
+  border-radius:
+    999px;
 
-      font-size: 10px;
+  background:
+    rgba(255,255,255,.94);
 
-      font-weight: 800;
+  color:
+    #111;
 
-      letter-spacing: 1.4px;
+  font-size: 9px;
 
-      text-transform: uppercase;
+  font-weight: 800;
 
-      margin-bottom: 8px;
-    }
+  letter-spacing: .7px;
 
-    .property-name {
-      font-size: 21px;
+  text-transform: uppercase;
 
-      font-weight: 800;
+  backdrop-filter:
+    blur(8px);
+}
 
-      letter-spacing: -.5px;
+.photo-badge {
+  position: absolute;
 
-      margin-bottom: 5px;
-    }
+  right: 14px;
+  bottom: 14px;
 
-    .property-location {
-      color: var(--gray);
+  padding:
+    7px 10px;
 
-      font-size: 13px;
+  border-radius:
+    999px;
 
-      margin-bottom: 16px;
-    }
+  background:
+    rgba(0,0,0,.58);
 
-    .property-price {
-      font-size: 24px;
+  color: white;
 
-      font-weight: 850;
+  font-size: 10px;
+}
 
-      letter-spacing: -.8px;
+.property-content {
+  padding: 19px;
+}
 
-      margin-bottom: 14px;
-    }
+.property-type {
+  color: var(--muted);
 
-    .property-info {
-      display: flex;
+  font-size: 9px;
 
-      gap: 7px;
+  font-weight: 800;
 
-      flex-wrap: wrap;
+  letter-spacing: 1.6px;
 
-      margin-bottom: 18px;
-    }
+  text-transform: uppercase;
 
-    .info-pill {
-      background: #f3f3f0;
+  margin-bottom: 8px;
+}
 
-      color: #555;
+.property-title {
+  font-size: 21px;
 
-      border-radius: 7px;
+  font-weight: 800;
 
-      padding:
-        7px 9px;
+  letter-spacing:
+    -.6px;
 
-      font-size: 10px;
+  line-height: 1.05;
 
-      font-weight: 600;
-    }
+  margin-bottom: 6px;
+}
 
-    .view-button {
-      width: 100%;
+.property-location {
+  color: var(--muted);
 
-      margin-top: auto;
+  font-size: 12px;
 
-      border: 0;
+  margin-bottom: 18px;
+}
 
-      border-radius: 11px;
+.property-price {
+  font-size: 25px;
 
-      background: var(--black);
+  font-weight: 850;
 
-      color: white;
+  letter-spacing:
+    -1px;
 
-      padding:
-        14px;
+  margin-bottom: 16px;
+}
 
-      font-size: 12px;
+.property-details {
+  display: flex;
 
-      font-weight: 800;
-    }
+  flex-wrap: wrap;
 
-    /* ==================================================
-       FEATURE STRIP
-    ================================================== */
+  gap: 6px;
 
-    .feature-strip {
-      margin-top: 80px;
+  margin-bottom: 18px;
+}
 
-      padding:
-        45px;
+.detail {
+  padding:
+    7px 9px;
 
-      background:
-        #111;
+  background:
+    #f3f3f0;
 
-      color: white;
+  border-radius: 8px;
 
-      border-radius: 24px;
+  color: #555;
 
-      display: grid;
+  font-size: 10px;
 
-      grid-template-columns:
-        repeat(3, 1fr);
+  font-weight: 600;
+}
 
-      gap: 35px;
-    }
+.view-property {
+  width: 100%;
 
-    .feature {
-      border-right:
-        1px solid
-        rgba(255,255,255,.15);
+  border: 0;
 
-      padding-right: 30px;
-    }
+  background:
+    var(--black);
 
-    .feature:last-child {
-      border-right: 0;
-      padding-right: 0;
-    }
+  color: white;
 
-    .feature-number {
-      font-size: 12px;
+  padding:
+    14px;
 
-      color:
-        rgba(255,255,255,.45);
+  border-radius:
+    11px;
 
-      margin-bottom: 18px;
-    }
+  font-size: 11px;
 
-    .feature h3 {
-      font-size: 18px;
+  font-weight: 800;
 
-      margin-bottom: 8px;
-    }
+  transition:
+    transform .2s ease,
+    opacity .2s ease;
+}
 
-    .feature p {
-      color:
-        rgba(255,255,255,.58);
+.view-property:hover {
+  opacity: .9;
+}
 
-      font-size: 12px;
+.view-property:active {
+  transform:
+    scale(.985);
+}
 
-      line-height: 1.6;
-    }
 
-    /* ==================================================
-       EMPTY / ERROR
-    ================================================== */
+/* =========================================================
+   EMPTY / LOADING
+========================================================= */
 
-    .loading,
-    .empty,
-    .error {
-      grid-column: 1 / -1;
+.state {
+  grid-column:
+    1 / -1;
 
-      text-align: center;
+  padding:
+    90px 20px;
 
-      padding: 70px 20px;
+  text-align: center;
 
-      color: var(--gray);
+  color: var(--muted);
 
-      font-size: 14px;
-    }
+  font-size: 13px;
+}
 
-    .error {
-      color: #9b1c1c;
-    }
+.state.error {
+  color:
+    #a12626;
+}
 
-    /* ==================================================
-       MODAL
-    ================================================== */
 
-    .modal {
-      position: fixed;
+/* =========================================================
+   PHILOSOPHY
+========================================================= */
 
-      inset: 0;
+.philosophy {
+  margin-top: 90px;
 
-      z-index: 100;
+  border-radius:
+    var(--radius-xl);
 
-      background:
-        rgba(0,0,0,.70);
+  overflow: hidden;
 
-      display: none;
+  background:
+    #111;
 
-      align-items: center;
-      justify-content: center;
+  color: white;
 
-      padding: 15px;
-    }
+  display: grid;
 
-    .modal.show {
-      display: flex;
-    }
+  grid-template-columns:
+    1.2fr
+    1fr;
+}
 
-    .modal-box {
-      position: relative;
+.philosophy-main {
+  padding:
+    clamp(35px, 6vw, 70px);
+}
 
-      width: 100%;
+.philosophy-kicker {
+  color:
+    rgba(255,255,255,.45);
 
-      max-width: 920px;
+  font-size: 9px;
 
-      max-height: 94vh;
+  font-weight: 800;
 
-      overflow-y: auto;
+  letter-spacing: 2px;
 
-      background: white;
+  text-transform: uppercase;
 
-      border-radius: 22px;
+  margin-bottom: 20px;
+}
 
-      overflow-x: hidden;
-    }
+.philosophy-title {
+  max-width: 650px;
 
-    .modal-close {
-      position: absolute;
+  font-size:
+    clamp(34px, 5vw, 62px);
 
-      top: 14px;
-      right: 14px;
+  line-height: .98;
 
-      z-index: 10;
+  letter-spacing:
+    -2.5px;
 
-      width: 40px;
-      height: 40px;
+  font-weight: 800;
+}
 
-      border: 0;
+.philosophy-title span {
+  color:
+    rgba(255,255,255,.42);
+}
 
-      border-radius: 50%;
+.philosophy-copy {
+  max-width: 520px;
 
-      background:
-        rgba(255,255,255,.94);
+  margin-top: 25px;
 
-      font-size: 23px;
+  color:
+    rgba(255,255,255,.58);
 
-      line-height: 1;
-    }
+  font-size: 13px;
 
-    .modal-image {
-      width: 100%;
+  line-height: 1.7;
+}
 
-      aspect-ratio: 16 / 9;
+.philosophy-side {
+  border-left:
+    1px solid
+    rgba(255,255,255,.1);
 
-      background: #ddd;
+  padding:
+    clamp(35px, 6vw, 70px);
 
-      overflow: hidden;
-    }
+  display: flex;
 
-    .modal-image img {
-      width: 100%;
-      height: 100%;
+  flex-direction: column;
 
-      object-fit: cover;
+  justify-content: center;
 
-      display: block;
-    }
+  gap: 30px;
+}
 
-    .modal-body {
-      padding: 28px;
-    }
+.philosophy-item {
+  display: grid;
 
-    .modal-type {
-      color: var(--gray);
+  grid-template-columns:
+    30px 1fr;
 
-      font-size: 10px;
+  gap: 15px;
+}
 
-      font-weight: 800;
+.philosophy-number {
+  color:
+    rgba(255,255,255,.32);
 
-      text-transform: uppercase;
+  font-size: 10px;
+}
 
-      letter-spacing: 1.5px;
+.philosophy-item h3 {
+  font-size: 15px;
 
-      margin-bottom: 8px;
-    }
+  margin-bottom: 6px;
+}
 
-    .modal-title {
-      font-size: 34px;
+.philosophy-item p {
+  color:
+    rgba(255,255,255,.48);
 
-      line-height: 1;
+  font-size: 11px;
 
-      letter-spacing: -1.5px;
+  line-height: 1.55;
+}
 
-      margin-bottom: 8px;
-    }
 
-    .modal-location {
-      color: var(--gray);
+/* =========================================================
+   MODAL
+========================================================= */
 
-      font-size: 14px;
+.modal {
+  position: fixed;
 
-      margin-bottom: 20px;
-    }
+  inset: 0;
 
-    .modal-price {
-      font-size: 29px;
+  z-index: 100;
 
-      font-weight: 850;
+  padding:
+    18px;
 
-      margin-bottom: 22px;
-    }
+  display: flex;
 
-    .modal-details {
-      display: grid;
+  align-items: center;
+  justify-content: center;
 
-      grid-template-columns:
-        repeat(3, 1fr);
+  background:
+    rgba(0,0,0,.72);
 
-      border-top:
-        1px solid
-        var(--border);
+  opacity: 0;
 
-      border-bottom:
-        1px solid
-        var(--border);
+  visibility: hidden;
 
-      margin-bottom: 22px;
-    }
+  transition:
+    opacity .35s ease,
+    visibility .35s ease;
 
-    .modal-detail {
-      text-align: center;
+  backdrop-filter:
+    blur(12px);
 
-      padding: 16px 8px;
+  -webkit-backdrop-filter:
+    blur(12px);
+}
 
-      border-right:
-        1px solid
-        var(--border);
-    }
+.modal.active {
+  opacity: 1;
+  visibility: visible;
+}
 
-    .modal-detail:last-child {
-      border-right: 0;
-    }
+.modal-box {
+  position: relative;
 
-    .modal-detail strong {
-      display: block;
+  width:
+    min(100%, 980px);
 
-      font-size: 18px;
+  max-height:
+    94vh;
 
-      margin-bottom: 3px;
-    }
+  overflow-y: auto;
 
-    .modal-detail span {
-      color: var(--gray);
+  background:
+    white;
 
-      font-size: 10px;
-    }
+  border-radius:
+    25px;
 
-    .modal-description {
-      color: #555;
+  transform:
+    translateY(20px)
+    scale(.985);
 
-      font-size: 14px;
+  opacity: 0;
 
-      line-height: 1.7;
+  transition:
+    transform .4s
+    cubic-bezier(.22,.61,.36,1),
+    opacity .3s ease;
+}
 
-      white-space: pre-line;
+.modal.active
+.modal-box {
+  transform:
+    translateY(0)
+    scale(1);
 
-      margin-bottom: 25px;
-    }
+  opacity: 1;
+}
 
-    .contact-button {
-      width: 100%;
+.modal-close {
+  position: absolute;
 
-      display: block;
+  z-index: 20;
 
-      text-align: center;
+  top: 14px;
+  right: 14px;
 
-      text-decoration: none;
+  width: 40px;
+  height: 40px;
 
-      border: 0;
+  border: 0;
 
-      background: var(--black);
+  border-radius: 50%;
 
-      color: white;
+  background:
+    rgba(255,255,255,.93);
 
-      border-radius: 12px;
+  color: #111;
 
-      padding: 15px;
+  font-size: 24px;
 
-      font-size: 13px;
+  line-height: 1;
 
-      font-weight: 800;
-    }
+  box-shadow:
+    0 5px 20px
+    rgba(0,0,0,.12);
+}
 
-    /* ==================================================
-       FOOTER
-    ================================================== */
+.modal-gallery {
+  position: relative;
 
-    footer {
-      background: #111;
+  background:
+    #ddd;
 
-      color: white;
-    }
+  aspect-ratio:
+    16 / 9;
 
-    .footer-inner {
-      max-width: 1240px;
+  overflow: hidden;
+}
 
-      margin: auto;
+.modal-gallery img {
+  width: 100%;
+  height: 100%;
 
-      padding:
-        38px 22px;
+  display: block;
 
-      display: flex;
+  object-fit: cover;
+}
 
-      justify-content: space-between;
+.gallery-controls {
+  position: absolute;
 
-      gap: 20px;
+  inset:
+    auto 16px 16px;
 
-      color:
-        rgba(255,255,255,.45);
+  display: flex;
 
-      font-size: 11px;
-    }
+  justify-content: space-between;
+}
 
-    .footer-logo {
-      color: white;
+.gallery-button {
+  width: 38px;
+  height: 38px;
 
-      font-weight: 900;
+  border: 0;
 
-      letter-spacing: 3px;
-    }
+  border-radius: 50%;
 
-    /* ==================================================
-       TABLET
-    ================================================== */
+  background:
+    rgba(0,0,0,.55);
 
-    @media (max-width: 850px) {
+  color: white;
 
-      .properties-grid {
-        grid-template-columns:
-          repeat(2, 1fr);
-      }
+  font-size: 20px;
+}
 
-      .feature-strip {
-        grid-template-columns:
-          1fr;
-      }
+.modal-body {
+  padding:
+    30px;
+}
 
-      .feature {
-        border-right: 0;
+.modal-type {
+  color: var(--muted);
 
-        border-bottom:
-          1px solid
-          rgba(255,255,255,.15);
+  font-size: 9px;
 
-        padding:
-          0 0 25px;
-      }
+  font-weight: 800;
 
-      .feature:last-child {
-        border-bottom: 0;
+  letter-spacing: 1.7px;
 
-        padding-bottom: 0;
-      }
+  text-transform: uppercase;
 
-      .search-box {
-        grid-template-columns:
-          1fr;
-      }
+  margin-bottom: 8px;
+}
 
-      .search-button {
-        min-height: 46px;
-      }
+.modal-title {
+  font-size:
+    clamp(30px, 5vw, 45px);
 
-    }
+  line-height: .98;
 
-    /* ==================================================
-       MOBILE
-    ================================================== */
+  letter-spacing:
+    -2px;
 
-    @media (max-width: 560px) {
+  font-weight: 800;
+}
 
-      header {
-        position: absolute;
-      }
+.modal-location {
+  color: var(--muted);
 
-      .header-inner {
-        padding:
-          17px 16px;
-      }
+  font-size: 13px;
 
-      .logo {
-        font-size: 23px;
+  margin-top: 8px;
+}
 
-        letter-spacing: 4px;
-      }
+.modal-price {
+  margin-top: 22px;
 
-      .admin-link {
-        padding:
-          8px 11px;
+  font-size: 30px;
 
-        font-size: 9px;
-      }
+  font-weight: 850;
 
-      .hero {
-        min-height: 680px;
-      }
+  letter-spacing:
+    -1px;
+}
 
-      .hero-content {
-        padding:
-          0 17px
-          80px;
-      }
+.modal-details {
+  display: grid;
 
-      .hero h1 {
-        font-size:
-          clamp(45px, 13vw, 65px);
+  grid-template-columns:
+    repeat(3, 1fr);
 
-        letter-spacing:
-          -2.8px;
-      }
+  margin:
+    25px 0;
 
-      .hero-description {
-        font-size: 13px;
+  border-top:
+    1px solid var(--line);
 
-        max-width: 370px;
-      }
+  border-bottom:
+    1px solid var(--line);
+}
 
-      .search-wrapper {
-        margin:
-          -35px auto
-          0;
+.modal-detail {
+  padding:
+    18px 10px;
 
-        padding:
-          0 16px;
-      }
+  text-align: center;
 
-      .search-box {
-        padding: 9px;
-      }
+  border-right:
+    1px solid var(--line);
+}
 
-      main {
-        padding:
-          90px 16px
-          65px;
-      }
+.modal-detail:last-child {
+  border-right: 0;
+}
 
-      .section-title {
-        font-size: 29px;
-      }
+.modal-detail strong {
+  display: block;
 
-      .properties-grid {
-        grid-template-columns: 1fr;
+  font-size: 19px;
 
-        gap: 17px;
-      }
+  margin-bottom: 4px;
+}
 
-      .property-image {
-        aspect-ratio: 4 / 3;
-      }
+.modal-detail span {
+  color: var(--muted);
 
-      .feature-strip {
-        margin-top: 55px;
+  font-size: 9px;
+}
 
-        padding:
-          28px 24px;
+.modal-description {
+  color: #555;
 
-        border-radius: 19px;
-      }
+  font-size: 13px;
 
-      .modal {
-        padding: 0;
-      }
+  line-height: 1.75;
 
-      .modal-box {
-        height: 100vh;
+  white-space: pre-line;
 
-        max-height: 100vh;
+  margin-bottom: 25px;
+}
 
-        border-radius: 0;
-      }
+.modal-address {
+  display: none;
 
-      .modal-image {
-        aspect-ratio: 4 / 3;
-      }
+  color: #555;
 
-      .modal-body {
-        padding: 22px;
-      }
+  font-size: 12px;
 
-      .modal-title {
-        font-size: 29px;
-      }
+  line-height: 1.5;
 
-      .footer-inner {
-        flex-direction: column;
-      }
+  margin-bottom: 20px;
+}
 
-    }
+.contact-button {
+  display: block;
 
-  </style>
+  width: 100%;
+
+  text-align: center;
+
+  text-decoration: none;
+
+  border: 0;
+
+  background:
+    #111;
+
+  color: white;
+
+  border-radius:
+    12px;
+
+  padding:
+    16px;
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  transition:
+    transform .2s ease,
+    opacity .2s ease;
+}
+
+.contact-button:active {
+  transform:
+    scale(.985);
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer {
+  background:
+    #111;
+
+  color: white;
+}
+
+.footer-inner {
+  width:
+    min(1280px, 100%);
+
+  margin: auto;
+
+  padding:
+    45px 24px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  color:
+    rgba(255,255,255,.42);
+
+  font-size: 10px;
+}
+
+.footer-logo {
+  color: white;
+
+  font-size: 16px;
+
+  font-weight: 900;
+
+  letter-spacing: 3px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 950px) {
+
+  .search-panel {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+  .search-button {
+    min-height: 48px;
+  }
+
+  .property-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .philosophy {
+    grid-template-columns:
+      1fr;
+  }
+
+  .philosophy-side {
+    border-left: 0;
+
+    border-top:
+      1px solid
+      rgba(255,255,255,.1);
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .header-inner {
+    padding:
+      18px 17px;
+  }
+
+  .logo {
+    font-size: 22px;
+    letter-spacing: 4px;
+  }
+
+  .header-button {
+    padding:
+      8px 11px;
+
+    font-size: 9px;
+  }
+
+  .hero {
+    min-height:
+      680px;
+  }
+
+  .hero-content {
+    padding:
+      0 17px
+      75px;
+  }
+
+  .hero-title {
+    font-size:
+      clamp(48px, 13vw, 68px);
+
+    letter-spacing:
+      -3.5px;
+  }
+
+  .hero-subtitle {
+    max-width: 370px;
+
+    font-size: 13px;
+  }
+
+  .search-zone {
+    margin-top:
+      -34px;
+
+    padding:
+      0 15px;
+  }
+
+  .search-panel {
+    grid-template-columns:
+      1fr;
+
+    padding:
+      9px;
+  }
+
+  .search-button {
+    min-height:
+      48px;
+  }
+
+  .main {
+    padding:
+      90px 16px
+      65px;
+  }
+
+  .section-top {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+
+    margin-bottom:
+      22px;
+  }
+
+  .section-title {
+    font-size:
+      34px;
+  }
+
+  .property-grid {
+    grid-template-columns:
+      1fr;
+
+    gap: 17px;
+  }
+
+  .property-card:hover {
+    transform:
+      translateY(0);
+  }
+
+  .philosophy {
+    margin-top:
+      60px;
+
+    border-radius:
+      23px;
+  }
+
+  .philosophy-main,
+  .philosophy-side {
+    padding:
+      32px 25px;
+  }
+
+  .philosophy-title {
+    font-size:
+      37px;
+  }
+
+  .modal {
+    padding: 0;
+  }
+
+  .modal-box {
+    max-height:
+      100vh;
+
+    height:
+      100vh;
+
+    border-radius:
+      0;
+  }
+
+  .modal-gallery {
+    aspect-ratio:
+      4 / 3;
+  }
+
+  .modal-body {
+    padding:
+      24px 20px;
+  }
+
+  .modal-title {
+    font-size:
+      31px;
+  }
+
+  .footer-inner {
+    flex-direction:
+      column;
+
+    align-items:
+      flex-start;
+  }
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+
+    animation-duration:
+      .01ms !important;
+
+    animation-iteration-count:
+      1 !important;
+
+    transition-duration:
+      .01ms !important;
+  }
+
+}
+
+</style>
 </head>
 
 
 <body>
 
-  <!-- ==================================================
-       HEADER
-  ================================================== -->
+<div class="page">
 
-  <header>
 
-    <div class="header-inner">
+<!-- ======================================================
+     HEADER
+====================================================== -->
 
-      <a
-        href="/"
-        class="logo"
-      >
-        NEXO
-      </a>
+<header class="site-header">
+
+  <div class="header-inner">
+
+    <a
+      href="/"
+      class="logo"
+    >
+      NEXO
+    </a>
+
+    <div class="header-actions">
 
       <a
         href="/admin.html"
-        class="admin-link"
+        class="header-button"
       >
         Administración
       </a>
 
     </div>
 
-  </header>
+  </div>
+
+</header>
 
 
-  <!-- ==================================================
-       HERO
-  ================================================== -->
+<!-- ======================================================
+     HERO
+====================================================== -->
 
-  <section
-    id="hero"
-    class="hero"
+<section class="hero">
+
+  <div
+    id="heroFallback"
+    class="hero-fallback"
+  >
+    NEXO
+  </div>
+
+
+  <img
+    id="heroImage"
+    class="hero-image"
+    alt="Propiedad destacada NEXO"
   >
 
-    <div
-      id="heroPlaceholder"
-      class="hero-placeholder"
+
+  <div class="hero-overlay"></div>
+
+
+  <div class="hero-content">
+
+    <div class="hero-eyebrow">
+
+      <span class="hero-eyebrow-dot"></span>
+
+      NEXO INMUEBLE
+
+    </div>
+
+
+    <h1 class="hero-title">
+
+      Encuentra
+
+      <span>
+        tu próximo lugar.
+      </span>
+
+    </h1>
+
+
+    <p class="hero-subtitle">
+
+      Propiedades seleccionadas para quienes
+      buscan un lugar que realmente se sienta suyo.
+
+    </p>
+
+  </div>
+
+</section>
+
+
+<!-- ======================================================
+     SEARCH
+====================================================== -->
+
+<section class="search-zone">
+
+  <div class="search-panel">
+
+    <input
+      id="searchInput"
+      class="search-field"
+      type="search"
+      placeholder="¿Dónde quieres vivir?"
+      autocomplete="off"
     >
-      NEXO
-    </div>
 
 
-    <img
-      id="heroImage"
-      class="hero-image"
-      alt="Propiedad destacada de NEXO"
-      style="display:none;"
+    <select
+      id="typeFilter"
+      class="search-field"
     >
 
+      <option value="">
+        Tipo de propiedad
+      </option>
 
-    <div class="hero-background"></div>
+      <option value="Casa">
+        Casa
+      </option>
 
+      <option value="Apartamento">
+        Apartamento
+      </option>
 
-    <div class="hero-content">
+      <option value="Villa">
+        Villa
+      </option>
 
-      <div class="hero-label">
-        NEXO INMUEBLE
-      </div>
+      <option value="Terreno">
+        Terreno
+      </option>
 
+      <option value="Local">
+        Local
+      </option>
 
-      <h1>
-        Encuentra
-        <span>tu próximo lugar.</span>
-      </h1>
+      <option value="Oficina">
+        Oficina
+      </option>
 
-
-      <p class="hero-description">
-        Propiedades seleccionadas para quienes buscan
-        algo más que una dirección.
-      </p>
-
-    </div>
-
-  </section>
-
-
-  <!-- ==================================================
-       SEARCH
-  ================================================== -->
-
-  <section class="search-wrapper">
-
-    <div class="search-box">
-
-      <input
-        id="searchInput"
-        class="search-input"
-        type="search"
-        placeholder="Ciudad, zona o tipo de propiedad..."
-      >
+    </select>
 
 
-      <select
-        id="typeFilter"
-        class="search-select"
-      >
+    <select
+      id="priceFilter"
+      class="search-field"
+    >
 
-        <option value="">
-          Todos los tipos
-        </option>
+      <option value="">
+        Cualquier precio
+      </option>
 
-        <option value="Casa">
-          Casas
-        </option>
+      <option value="50000">
+        Hasta $50,000
+      </option>
 
-        <option value="Apartamento">
-          Apartamentos
-        </option>
+      <option value="100000">
+        Hasta $100,000
+      </option>
 
-        <option value="Villa">
-          Villas
-        </option>
+      <option value="200000">
+        Hasta $200,000
+      </option>
 
-        <option value="Terreno">
-          Terrenos
-        </option>
+      <option value="500000">
+        Hasta $500,000
+      </option>
 
-        <option value="Local">
-          Locales
-        </option>
-
-        <option value="Oficina">
-          Oficinas
-        </option>
-
-      </select>
+    </select>
 
 
-      <button
-        id="searchButton"
-        class="search-button"
-        type="button"
-      >
-        Buscar
-      </button>
+    <button
+      id="searchButton"
+      class="search-button"
+      type="button"
+    >
+      Buscar
+    </button>
 
-    </div>
+  </div>
 
-  </section>
+</section>
 
 
-  <!-- ==================================================
-       PROPERTIES
-  ================================================== -->
+<!-- ======================================================
+     MAIN
+====================================================== -->
 
-  <main>
+<main class="main">
 
-    <div class="section-header">
+  <section>
+
+    <div class="section-top">
 
       <div>
 
@@ -1328,7 +1752,7 @@
 
       <div
         id="resultsCount"
-        class="results-count"
+        class="section-count"
       >
         Cargando...
       </div>
@@ -1337,1211 +1761,1610 @@
 
 
     <div
-      id="propertiesGrid"
-      class="properties-grid"
+      id="propertyGrid"
+      class="property-grid"
     >
 
-      <div class="loading">
+      <div class="state">
         Cargando propiedades...
       </div>
 
     </div>
 
+  </section>
 
-    <!-- ==================================================
-         FEATURES
-    ================================================== -->
 
-    <section class="feature-strip">
+  <!-- ====================================================
+       PHILOSOPHY
+  ==================================================== -->
 
-      <div class="feature">
+  <section class="philosophy">
 
-        <div class="feature-number">
+    <div class="philosophy-main">
+
+      <div class="philosophy-kicker">
+        La forma NEXO
+      </div>
+
+
+      <h2 class="philosophy-title">
+
+        Menos ruido.
+        <span>
+          Más conexión.
+        </span>
+
+      </h2>
+
+
+      <p class="philosophy-copy">
+
+        Creemos que encontrar una propiedad no debería
+        sentirse complicado. NEXO reúne espacios,
+        información y personas en una experiencia clara,
+        elegante y humana.
+
+      </p>
+
+    </div>
+
+
+    <div class="philosophy-side">
+
+      <div class="philosophy-item">
+
+        <div class="philosophy-number">
           01
         </div>
 
-        <h3>
-          Selección
-        </h3>
+        <div>
 
-        <p>
-          Descubre propiedades publicadas
-          cuidadosamente dentro de NEXO.
-        </p>
+          <h3>
+            Descubre
+          </h3>
+
+          <p>
+            Explora propiedades sin perderte
+            entre información innecesaria.
+          </p>
+
+        </div>
 
       </div>
 
 
-      <div class="feature">
+      <div class="philosophy-item">
 
-        <div class="feature-number">
+        <div class="philosophy-number">
           02
         </div>
 
-        <h3>
-          Información clara
-        </h3>
+        <div>
 
-        <p>
-          Precio, ubicación, dimensiones y
-          características principales en un solo lugar.
-        </p>
+          <h3>
+            Conoce
+          </h3>
+
+          <p>
+            Mira lo importante antes de tomar
+            una decisión.
+          </p>
+
+        </div>
 
       </div>
 
 
-      <div class="feature">
+      <div class="philosophy-item">
 
-        <div class="feature-number">
+        <div class="philosophy-number">
           03
         </div>
 
-        <h3>
-          Contacto directo
-        </h3>
+        <div>
 
-        <p>
-          Cuando encuentres una propiedad que
-          te interese, conecta con NEXO.
-        </p>
+          <h3>
+            Conecta
+          </h3>
+
+          <p>
+            Cuando encuentres el lugar indicado,
+            conecta con NEXO.
+          </p>
+
+        </div>
 
       </div>
 
-    </section>
+    </div>
 
-  </main>
+  </section>
+
+</main>
 
 
-  <!-- ==================================================
-       MODAL
-  ================================================== -->
+<!-- ======================================================
+     PROPERTY MODAL
+====================================================== -->
 
-  <div
-    id="propertyModal"
-    class="modal"
-  >
+<div
+  id="propertyModal"
+  class="modal"
+>
 
-    <div class="modal-box">
+  <div class="modal-box">
 
-      <button
-        id="closeModal"
-        class="modal-close"
-        type="button"
+    <button
+      id="closeModal"
+      class="modal-close"
+      aria-label="Cerrar"
+      type="button"
+    >
+      ×
+    </button>
+
+
+    <div
+      id="modalGallery"
+      class="modal-gallery"
+    >
+
+      <img
+        id="modalImage"
+        alt=""
       >
-        ×
-      </button>
+
+      <div
+        id="galleryControls"
+        class="gallery-controls"
+        style="display:none;"
+      >
+
+        <button
+          id="previousPhoto"
+          class="gallery-button"
+          type="button"
+        >
+          ‹
+        </button>
+
+        <button
+          id="nextPhoto"
+          class="gallery-button"
+          type="button"
+        >
+          ›
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-body">
+
+      <div
+        id="modalType"
+        class="modal-type"
+      ></div>
+
+
+      <h2
+        id="modalTitle"
+        class="modal-title"
+      ></h2>
 
 
       <div
-        id="modalImage"
-        class="modal-image"
+        id="modalLocation"
+        class="modal-location"
+      ></div>
+
+
+      <div
+        id="modalPrice"
+        class="modal-price"
+      ></div>
+
+
+      <div
+        id="modalDetails"
+        class="modal-details"
+      ></div>
+
+
+      <div
+        id="modalAddress"
+        class="modal-address"
+      ></div>
+
+
+      <div
+        id="modalDescription"
+        class="modal-description"
+      ></div>
+
+
+      <a
+        id="contactButton"
+        class="contact-button"
+        href="#"
       >
-      </div>
-
-
-      <div class="modal-body">
-
-        <div
-          id="modalType"
-          class="modal-type"
-        >
-        </div>
-
-
-        <h2
-          id="modalTitle"
-          class="modal-title"
-        >
-        </h2>
-
-
-        <div
-          id="modalLocation"
-          class="modal-location"
-        >
-        </div>
-
-
-        <div
-          id="modalPrice"
-          class="modal-price"
-        >
-        </div>
-
-
-        <div
-          id="modalDetails"
-          class="modal-details"
-        >
-        </div>
-
-
-        <div
-          id="modalDescription"
-          class="modal-description"
-        >
-        </div>
-
-
-        <a
-          id="contactButton"
-          class="contact-button"
-          href="#"
-        >
-          Contactar con NEXO
-        </a>
-
-      </div>
+        Contactar con NEXO
+      </a>
 
     </div>
 
   </div>
 
+</div>
 
-  <!-- ==================================================
-       FOOTER
-  ================================================== -->
 
-  <footer>
+<!-- ======================================================
+     FOOTER
+====================================================== -->
 
-    <div class="footer-inner">
+<footer class="footer">
 
-      <div class="footer-logo">
-        NEXO
+  <div class="footer-inner">
+
+    <div class="footer-logo">
+      NEXO
+    </div>
+
+    <div>
+      Inmueble
+    </div>
+
+    <div>
+      © 2026 NEXO
+    </div>
+
+  </div>
+
+</footer>
+
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   CONFIGURACIÓN
+========================================================= */
+
+const API_URL =
+  "/api/properties";
+
+
+/*
+  Déjalo vacío por ahora.
+  Cuando tengamos el número oficial de NEXO,
+  podremos activar WhatsApp aquí.
+*/
+
+const NEXO_PHONE = "";
+
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+let properties = [];
+
+let currentProperty = null;
+
+let currentPhotoIndex = 0;
+
+
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+
+const propertyGrid =
+  document.getElementById(
+    "propertyGrid"
+  );
+
+const resultsCount =
+  document.getElementById(
+    "resultsCount"
+  );
+
+const searchInput =
+  document.getElementById(
+    "searchInput"
+  );
+
+const typeFilter =
+  document.getElementById(
+    "typeFilter"
+  );
+
+const priceFilter =
+  document.getElementById(
+    "priceFilter"
+  );
+
+const searchButton =
+  document.getElementById(
+    "searchButton"
+  );
+
+const heroImage =
+  document.getElementById(
+    "heroImage"
+  );
+
+const heroFallback =
+  document.getElementById(
+    "heroFallback"
+  );
+
+const modal =
+  document.getElementById(
+    "propertyModal"
+  );
+
+const closeModalButton =
+  document.getElementById(
+    "closeModal"
+  );
+
+const modalImage =
+  document.getElementById(
+    "modalImage"
+  );
+
+const galleryControls =
+  document.getElementById(
+    "galleryControls"
+  );
+
+const previousPhoto =
+  document.getElementById(
+    "previousPhoto"
+  );
+
+const nextPhoto =
+  document.getElementById(
+    "nextPhoto"
+  );
+
+
+/* =========================================================
+   SEGURIDAD HTML
+========================================================= */
+
+function escapeHtml(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+
+    return "";
+
+  }
+
+  return String(value)
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =========================================================
+   FOTOS
+========================================================= */
+
+function parsePhotos(value) {
+
+  if (!value) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.filter(Boolean);
+  }
+
+  try {
+
+    const parsed =
+      JSON.parse(value);
+
+    if (
+      Array.isArray(parsed)
+    ) {
+
+      return parsed.filter(Boolean);
+
+    }
+
+  } catch (_) {}
+
+  return String(value)
+
+    .split(",")
+
+    .map(
+      item =>
+        item.trim()
+    )
+
+    .filter(Boolean);
+
+}
+
+
+/* =========================================================
+   PRECIO
+========================================================= */
+
+function formatPrice(value) {
+
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+
+    return "Consultar precio";
+
+  }
+
+  const number =
+    Number(value);
+
+  if (
+    Number.isNaN(number)
+  ) {
+
+    return String(value);
+
+  }
+
+  return "$" +
+    number.toLocaleString(
+      "en-US",
+      {
+        maximumFractionDigits: 0
+      }
+    );
+
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+function setupHero(list) {
+
+  const featured =
+    list.find(
+      property =>
+        parsePhotos(
+          property.photos
+        ).length > 0
+    );
+
+  if (!featured) {
+    return;
+  }
+
+  const photos =
+    parsePhotos(
+      featured.photos
+    );
+
+  const image =
+    photos[0];
+
+  if (!image) {
+    return;
+  }
+
+  heroImage.onload =
+    function() {
+
+      heroImage.classList.add(
+        "loaded"
+      );
+
+      heroFallback.style.display =
+        "none";
+
+    };
+
+  heroImage.onerror =
+    function() {
+
+      heroImage.style.display =
+        "none";
+
+      heroFallback.style.display =
+        "flex";
+
+    };
+
+  heroImage.src =
+    image;
+
+}
+
+
+/* =========================================================
+   CARGAR PROPIEDADES
+========================================================= */
+
+async function loadProperties() {
+
+  propertyGrid.innerHTML = `
+    <div class="state">
+      Cargando propiedades...
+    </div>
+  `;
+
+  try {
+
+    const response =
+      await fetch(
+        API_URL,
+        {
+          cache: "no-store"
+        }
+      );
+
+    const result =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !result.success
+    ) {
+
+      throw new Error(
+        result.error ||
+        "No se pudieron cargar las propiedades."
+      );
+
+    }
+
+    properties =
+      Array.isArray(
+        result.properties
+      )
+        ? result.properties
+        : [];
+
+
+    properties =
+      properties.filter(
+        property =>
+          property.status ===
+          "available"
+      );
+
+
+    setupHero(
+      properties
+    );
+
+
+    renderProperties(
+      properties
+    );
+
+  } catch (error) {
+
+    console.error(
+      "NEXO:",
+      error
+    );
+
+    propertyGrid.innerHTML = `
+      <div class="state error">
+        No pudimos cargar las propiedades.
+      </div>
+    `;
+
+    resultsCount.textContent =
+      "Error";
+
+  }
+
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function renderProperties(
+  list
+) {
+
+  resultsCount.textContent =
+    `${list.length} ${
+      list.length === 1
+        ? "propiedad disponible"
+        : "propiedades disponibles"
+    }`;
+
+
+  if (!list.length) {
+
+    propertyGrid.innerHTML = `
+      <div class="state">
+        No encontramos propiedades
+        que coincidan con tu búsqueda.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  propertyGrid.innerHTML =
+    list
+      .map(
+        (property, index) =>
+          createCard(
+            property,
+            index
+          )
+      )
+      .join("");
+
+}
+
+
+/* =========================================================
+   TARJETA
+========================================================= */
+
+function createCard(
+  property,
+  index
+) {
+
+  const photos =
+    parsePhotos(
+      property.photos
+    );
+
+  const image =
+    photos[0] || "";
+
+  const location =
+    [
+      property.city,
+      property.neighborhood
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
+
+  const address =
+    property.address
+      ? property.address
+      : "";
+
+
+  return `
+
+    <article
+      class="property-card"
+      style="
+        animation-delay:
+        ${Math.min(index * 70, 420)}ms;
+      "
+    >
+
+      <div class="property-image">
+
+        ${
+          image
+
+          ?
+
+          `
+            <img
+              src="${escapeHtml(image)}"
+              alt="${escapeHtml(
+                property.property_type ||
+                "Propiedad NEXO"
+              )}"
+              loading="lazy"
+              onerror="
+                this.style.display='none';
+                this.nextElementSibling.style.display='flex';
+              "
+            >
+
+            <div
+              class="image-placeholder"
+              style="display:none;"
+            >
+              Imagen no disponible
+            </div>
+          `
+
+          :
+
+          `
+            <div class="image-placeholder">
+              Sin fotografía
+            </div>
+          `
+        }
+
+
+        <div class="property-status">
+          Disponible
+        </div>
+
+
+        ${
+          photos.length > 0
+
+          ?
+
+          `
+            <div class="photo-badge">
+              📷 ${photos.length}
+            </div>
+          `
+
+          :
+
+          ""
+        }
+
       </div>
 
-      <div>
-        NEXO Inmueble
+
+      <div class="property-content">
+
+        <div class="property-type">
+
+          ${escapeHtml(
+            property.property_type ||
+            "Propiedad"
+          )}
+
+        </div>
+
+
+        <h3 class="property-title">
+
+          ${escapeHtml(
+            property.city ||
+            "Propiedad NEXO"
+          )}
+
+        </h3>
+
+
+        <div class="property-location">
+
+          ${escapeHtml(
+            location ||
+            "Ubicación no especificada"
+          )}
+
+        </div>
+
+
+        <div class="property-price">
+
+          ${formatPrice(
+            property.price
+          )}
+
+        </div>
+
+
+        <div class="property-details">
+
+          ${
+            property.bedrooms !== null &&
+            property.bedrooms !== undefined &&
+            property.bedrooms !== ""
+
+            ?
+
+            `
+              <span class="detail">
+                🛏 ${escapeHtml(
+                  property.bedrooms
+                )} habitaciones
+              </span>
+            `
+
+            :
+
+            ""
+          }
+
+
+          ${
+            property.bathrooms !== null &&
+            property.bathrooms !== undefined &&
+            property.bathrooms !== ""
+
+            ?
+
+            `
+              <span class="detail">
+                🚿 ${escapeHtml(
+                  property.bathrooms
+                )} baños
+              </span>
+            `
+
+            :
+
+            ""
+          }
+
+
+          ${
+            property.square_meters !== null &&
+            property.square_meters !== undefined &&
+            property.square_meters !== ""
+
+            ?
+
+            `
+              <span class="detail">
+                ${escapeHtml(
+                  property.square_meters
+                )} m²
+              </span>
+            `
+
+            :
+
+            ""
+          }
+
+        </div>
+
+
+        <button
+          type="button"
+          class="view-property"
+          data-property-id="${Number(
+            property.id
+          )}"
+        >
+          Ver propiedad
+        </button>
+
       </div>
 
-      <div>
-        © 2026 NEXO
-      </div>
+    </article>
+
+  `;
+
+}
+
+
+/* =========================================================
+   ABRIR PROPIEDAD
+========================================================= */
+
+async function openProperty(id) {
+
+  try {
+
+    const response =
+      await fetch(
+        `${API_URL}/${id}`,
+        {
+          cache: "no-store"
+        }
+      );
+
+    const result =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !result.success
+    ) {
+
+      throw new Error(
+        result.error ||
+        "No se pudo abrir la propiedad."
+      );
+
+    }
+
+
+    currentProperty =
+      result.property;
+
+    currentPhotoIndex =
+      0;
+
+
+    populateModal(
+      currentProperty
+    );
+
+
+    modal.classList.add(
+      "active"
+    );
+
+    document.body.classList.add(
+      "modal-open"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "NEXO:",
+      error
+    );
+
+    alert(
+      error.message ||
+      "No se pudo abrir la propiedad."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+function populateModal(
+  property
+) {
+
+  const photos =
+    parsePhotos(
+      property.photos
+    );
+
+
+  updateModalImage(
+    photos
+  );
+
+
+  document.getElementById(
+    "modalType"
+  ).textContent =
+    property.property_type ||
+    "Propiedad";
+
+
+  document.getElementById(
+    "modalTitle"
+  ).textContent =
+    property.city ||
+    "Propiedad NEXO";
+
+
+  document.getElementById(
+    "modalLocation"
+  ).textContent =
+    [
+      property.city,
+      property.neighborhood
+    ]
+      .filter(Boolean)
+      .join(" · ") ||
+    "Ubicación no especificada";
+
+
+  document.getElementById(
+    "modalPrice"
+  ).textContent =
+    formatPrice(
+      property.price
+    );
+
+
+  document.getElementById(
+    "modalDetails"
+  ).innerHTML = `
+
+    <div class="modal-detail">
+
+      <strong>
+        ${
+          property.bedrooms ??
+          "—"
+        }
+      </strong>
+
+      <span>
+        Habitaciones
+      </span>
 
     </div>
 
-  </footer>
 
+    <div class="modal-detail">
 
-  <!-- ==================================================
-       JAVASCRIPT
-  ================================================== -->
-
-  <script>
-
-    /* ==================================================
-       CONFIGURACIÓN
-    ================================================== */
-
-    const API_URL =
-      "/api/properties";
-
-
-    /*
-     * Cuando tengamos el teléfono oficial de NEXO,
-     * se coloca aquí.
-     *
-     * Ejemplo:
-     *
-     * const NEXO_PHONE = "15551234567";
-     */
-
-    const NEXO_PHONE = "";
-
-
-    /* ==================================================
-       ELEMENTOS
-    ================================================== */
-
-    const propertiesGrid =
-      document.getElementById(
-        "propertiesGrid"
-      );
-
-
-    const resultsCount =
-      document.getElementById(
-        "resultsCount"
-      );
-
-
-    const searchInput =
-      document.getElementById(
-        "searchInput"
-      );
-
-
-    const typeFilter =
-      document.getElementById(
-        "typeFilter"
-      );
-
-
-    const searchButton =
-      document.getElementById(
-        "searchButton"
-      );
-
-
-    const propertyModal =
-      document.getElementById(
-        "propertyModal"
-      );
-
-
-    const closeModal =
-      document.getElementById(
-        "closeModal"
-      );
-
-
-    const heroImage =
-      document.getElementById(
-        "heroImage"
-      );
-
-
-    const heroPlaceholder =
-      document.getElementById(
-        "heroPlaceholder"
-      );
-
-
-    let properties = [];
-
-
-    /* ==================================================
-       ESCAPE HTML
-    ================================================== */
-
-    function escapeHtml(value) {
-
-      if (
-        value === null ||
-        value === undefined
-      ) {
-
-        return "";
-
-      }
-
-
-      return String(value)
-        .replace(
-          /&/g,
-          "&amp;"
-        )
-        .replace(
-          /</g,
-          "&lt;"
-        )
-        .replace(
-          />/g,
-          "&gt;"
-        )
-        .replace(
-          /"/g,
-          "&quot;"
-        )
-        .replace(
-          /'/g,
-          "&#039;"
-        );
-
-    }
-
-
-    /* ==================================================
-       FOTOS
-    ================================================== */
-
-    function parsePhotos(value) {
-
-      if (!value) {
-        return [];
-      }
-
-
-      if (Array.isArray(value)) {
-        return value;
-      }
-
-
-      try {
-
-        const parsed =
-          JSON.parse(value);
-
-
-        if (
-          Array.isArray(parsed)
-        ) {
-
-          return parsed;
-
+      <strong>
+        ${
+          property.bathrooms ??
+          "—"
         }
+      </strong>
 
-      } catch (error) {
-      }
+      <span>
+        Baños
+      </span>
 
+    </div>
 
-      return String(value)
-        .split(",")
-        .map(
-          item =>
-            item.trim()
-        )
-        .filter(Boolean);
 
-    }
+    <div class="modal-detail">
 
-
-    /* ==================================================
-       PRECIO
-    ================================================== */
-
-    function formatPrice(price) {
-
-      if (
-        price === null ||
-        price === undefined ||
-        price === ""
-      ) {
-
-        return "Consultar precio";
-
-      }
-
-
-      const number =
-        Number(price);
-
-
-      if (
-        Number.isNaN(number)
-      ) {
-
-        return escapeHtml(
-          price
-        );
-
-      }
-
-
-      return "$" +
-        number.toLocaleString(
-          "en-US",
-          {
-            maximumFractionDigits: 0
-          }
-        );
-
-    }
-
-
-    /* ==================================================
-       IMAGEN
-    ================================================== */
-
-    function createImage(
-      url,
-      alt
-    ) {
-
-      if (!url) {
-
-        return `
-          <div class="image-placeholder">
-            Sin imagen
-          </div>
-        `;
-
-      }
-
-
-      return `
-        <img
-          src="${escapeHtml(url)}"
-          alt="${escapeHtml(alt)}"
-          loading="lazy"
-          onerror="
-            this.style.display='none';
-            this.nextElementSibling.style.display='flex';
-          "
-        >
-
-        <div
-          class="image-placeholder"
-          style="display:none;"
-        >
-          Imagen no disponible
-        </div>
-      `;
-
-    }
-
-
-    /* ==================================================
-       HERO DINÁMICO
-    ================================================== */
-
-    function setupHero(list) {
-
-      if (!list.length) {
-        return;
-      }
-
-
-      /*
-       * Buscamos primero una propiedad
-       * que tenga fotografía.
-       */
-
-      const property =
-        list.find(
-          item =>
-            parsePhotos(
-              item.photos
-            ).length > 0
-        );
-
-
-      if (!property) {
-        return;
-      }
-
-
-      const photos =
-        parsePhotos(
-          property.photos
-        );
-
-
-      const image =
-        photos[0];
-
-
-      if (!image) {
-        return;
-      }
-
-
-      heroImage.src =
-        image;
-
-
-      heroImage.style.display =
-        "block";
-
-
-      heroPlaceholder.style.display =
-        "none";
-
-
-      heroImage.onerror =
-        function() {
-
-          heroImage.style.display =
-            "none";
-
-          heroPlaceholder.style.display =
-            "flex";
-
-        };
-
-    }
-
-
-    /* ==================================================
-       CARGAR PROPIEDADES
-    ================================================== */
-
-    async function loadProperties() {
-
-      propertiesGrid.innerHTML = `
-        <div class="loading">
-          Cargando propiedades...
-        </div>
-      `;
-
-
-      try {
-
-        const response =
-          await fetch(
-            API_URL
-          );
-
-
-        const result =
-          await response.json();
-
-
-        if (
-          !response.ok ||
-          !result.success
-        ) {
-
-          throw new Error(
-            result.error ||
-            "No se pudieron cargar las propiedades."
-          );
-
+      <strong>
+        ${
+          property.square_meters ??
+          "—"
+        }${
+          property.square_meters
+            ? " m²"
+            : ""
         }
+      </strong>
+
+      <span>
+        Área
+      </span>
+
+    </div>
+
+  `;
 
 
-        properties =
-          Array.isArray(
-            result.properties
-          )
-            ? result.properties
-            : [];
+  const address =
+    document.getElementById(
+      "modalAddress"
+    );
 
 
-        properties =
-          properties.filter(
-            property =>
-              property.status ===
-              "available"
-          );
+  if (
+    property.address
+  ) {
+
+    address.style.display =
+      "block";
+
+    address.textContent =
+      "📍 " +
+      property.address;
+
+  } else {
+
+    address.style.display =
+      "none";
+
+  }
 
 
-        setupHero(
-          properties
-        );
+  document.getElementById(
+    "modalDescription"
+  ).textContent =
+    property.description ||
+    "Solicita más información sobre esta propiedad a NEXO.";
 
 
-        renderProperties(
-          properties
-        );
+  setupContact(
+    property
+  );
+
+}
 
 
-      } catch (error) {
+/* =========================================================
+   MODAL IMAGE
+========================================================= */
 
-        console.error(
-          "NEXO:",
-          error
-        );
+function updateModalImage(
+  photos
+) {
+
+  if (!photos.length) {
+
+    modalImage.style.display =
+      "none";
+
+    galleryControls.style.display =
+      "none";
+
+    document.getElementById(
+      "modalGallery"
+    ).style.background =
+      "linear-gradient(135deg,#ddd,#f0f0ed)";
+
+    return;
+
+  }
 
 
-        propertiesGrid.innerHTML = `
-          <div class="error">
-            No se pudieron cargar las propiedades.
-          </div>
-        `;
+  modalImage.style.display =
+    "block";
+
+  modalImage.src =
+    photos[
+      currentPhotoIndex
+    ];
+
+  modalImage.alt =
+    "Fotografía de propiedad NEXO";
 
 
-        resultsCount.textContent =
-          "Error";
+  galleryControls.style.display =
+    photos.length > 1
+      ? "flex"
+      : "none";
 
-      }
+}
 
+
+/* =========================================================
+   GALERÍA
+========================================================= */
+
+previousPhoto.addEventListener(
+  "click",
+  function() {
+
+    if (
+      !currentProperty
+    ) {
+      return;
     }
 
+    const photos =
+      parsePhotos(
+        currentProperty.photos
+      );
 
-    /* ==================================================
-       RENDERIZAR PROPIEDADES
-    ================================================== */
-
-    function renderProperties(
-      list
+    if (
+      photos.length < 2
     ) {
-
-      resultsCount.textContent =
-        `${list.length} ${
-          list.length === 1
-            ? "propiedad disponible"
-            : "propiedades disponibles"
-        }`;
-
-
-      if (!list.length) {
-
-        propertiesGrid.innerHTML = `
-          <div class="empty">
-            No encontramos propiedades disponibles.
-          </div>
-        `;
-
-        return;
-
-      }
-
-
-      propertiesGrid.innerHTML =
-        list
-          .map(
-            property =>
-              createPropertyCard(
-                property
-              )
-          )
-          .join("");
-
+      return;
     }
 
+    currentPhotoIndex =
+      (
+        currentPhotoIndex -
+        1 +
+        photos.length
+      ) %
+      photos.length;
 
-    /* ==================================================
-       TARJETA
-    ================================================== */
+    updateModalImage(
+      photos
+    );
 
-    function createPropertyCard(
-      property
+  }
+);
+
+
+nextPhoto.addEventListener(
+  "click",
+  function() {
+
+    if (
+      !currentProperty
     ) {
-
-      const photos =
-        parsePhotos(
-          property.photos
-        );
-
-
-      const mainPhoto =
-        photos[0] || "";
-
-
-      const location =
-        [
-          property.city,
-          property.neighborhood
-        ]
-          .filter(Boolean)
-          .join(" · ");
-
-
-      return `
-
-        <article
-          class="property-card"
-        >
-
-          <div
-            class="property-image"
-          >
-
-            ${createImage(
-              mainPhoto,
-              property.property_type ||
-              "Propiedad NEXO"
-            )}
-
-
-            <div class="available">
-              Disponible
-            </div>
-
-
-            ${
-              photos.length
-                ? `
-                  <div class="photo-count">
-                    📷 ${photos.length}
-                  </div>
-                `
-                : ""
-            }
-
-          </div>
-
-
-          <div
-            class="property-body"
-          >
-
-            <div
-              class="property-type"
-            >
-              ${escapeHtml(
-                property.property_type ||
-                "Propiedad"
-              )}
-            </div>
-
-
-            <h3
-              class="property-name"
-            >
-              ${escapeHtml(
-                property.city ||
-                "Propiedad"
-              )}
-            </h3>
-
-
-            <div
-              class="property-location"
-            >
-              ${escapeHtml(
-                location ||
-                "Ubicación no especificada"
-              )}
-            </div>
-
-
-            <div
-              class="property-price"
-            >
-              ${formatPrice(
-                property.price
-              )}
-            </div>
-
-
-            <div
-              class="property-info"
-            >
-
-              ${
-                property.bedrooms !== null &&
-                property.bedrooms !== undefined &&
-                property.bedrooms !== ""
-                  ? `
-                    <span class="info-pill">
-                      🛏 ${escapeHtml(
-                        property.bedrooms
-                      )} habitaciones
-                    </span>
-                  `
-                  : ""
-              }
-
-
-              ${
-                property.bathrooms !== null &&
-                property.bathrooms !== undefined &&
-                property.bathrooms !== ""
-                  ? `
-                    <span class="info-pill">
-                      🚿 ${escapeHtml(
-                        property.bathrooms
-                      )} baños
-                    </span>
-                  `
-                  : ""
-              }
-
-
-              ${
-                property.square_meters !== null &&
-                property.square_meters !== undefined &&
-                property.square_meters !== ""
-                  ? `
-                    <span class="info-pill">
-                      ${escapeHtml(
-                        property.square_meters
-                      )} m²
-                    </span>
-                  `
-                  : ""
-              }
-
-            </div>
-
-
-            <button
-              type="button"
-              class="view-button"
-              onclick="openProperty(${Number(
-                property.id
-              )})"
-            >
-              Ver propiedad
-            </button>
-
-          </div>
-
-        </article>
-
-      `;
-
+      return;
     }
 
+    const photos =
+      parsePhotos(
+        currentProperty.photos
+      );
 
-    /* ==================================================
-       ABRIR PROPIEDAD
-    ================================================== */
-
-    async function openProperty(
-      id
+    if (
+      photos.length < 2
     ) {
+      return;
+    }
 
-      try {
+    currentPhotoIndex =
+      (
+        currentPhotoIndex +
+        1
+      ) %
+      photos.length;
 
-        const response =
-          await fetch(
-            `${API_URL}/${id}`
-          );
+    updateModalImage(
+      photos
+    );
 
-
-        const result =
-          await response.json();
-
-
-        if (
-          !response.ok ||
-          !result.success
-        ) {
-
-          throw new Error(
-            result.error ||
-            "No se pudo abrir la propiedad."
-          );
-
-        }
+  }
+);
 
 
-        showPropertyModal(
-          result.property
-        );
+/* =========================================================
+   CONTACTO
+========================================================= */
+
+function setupContact(
+  property
+) {
+
+  const button =
+    document.getElementById(
+      "contactButton"
+    );
 
 
-      } catch (error) {
+  if (
+    NEXO_PHONE
+  ) {
 
-        console.error(
-          "NEXO:",
-          error
-        );
+    const message =
+      encodeURIComponent(
+        `Hola NEXO, estoy interesado en la propiedad ID ${property.id} (${formatPrice(property.price)}).`
+      );
 
+
+    button.href =
+      `https://wa.me/${NEXO_PHONE}?text=${message}`;
+
+
+    button.onclick =
+      null;
+
+
+  } else {
+
+    button.href =
+      "#";
+
+
+    button.onclick =
+      function(event) {
+
+        event.preventDefault();
 
         alert(
-          error.message ||
-          "No se pudo abrir la propiedad."
+          "El contacto de NEXO estará disponible próximamente."
         );
 
-      }
+      };
+
+  }
+
+}
+
+
+/* =========================================================
+   CERRAR MODAL
+========================================================= */
+
+function closeModal() {
+
+  modal.classList.remove(
+    "active"
+  );
+
+  document.body.classList.remove(
+    "modal-open"
+  );
+
+  currentProperty =
+    null;
+
+}
+
+
+closeModalButton.addEventListener(
+  "click",
+  closeModal
+);
+
+
+modal.addEventListener(
+  "click",
+  function(event) {
+
+    if (
+      event.target ===
+      modal
+    ) {
+
+      closeModal();
 
     }
 
+  }
+);
 
-    /* ==================================================
-       MODAL
-    ================================================== */
 
-    function showPropertyModal(
-      property
+document.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (
+      event.key ===
+      "Escape"
     ) {
 
-      const photos =
-        parsePhotos(
-          property.photos
-        );
+      closeModal();
+
+    }
+
+  }
+);
 
 
-      const mainPhoto =
-        photos[0] || "";
+/* =========================================================
+   FILTROS
+========================================================= */
+
+function filterProperties() {
+
+  const search =
+    searchInput.value
+      .trim()
+      .toLowerCase();
 
 
-      const location =
-        [
+  const type =
+    typeFilter.value
+      .trim()
+      .toLowerCase();
+
+
+  const maxPrice =
+    priceFilter.value
+      ? Number(
+          priceFilter.value
+        )
+      : null;
+
+
+  const filtered =
+    properties.filter(
+      property => {
+
+        const searchable = [
+
+          property.property_type,
+
           property.city,
-          property.neighborhood
+
+          property.neighborhood,
+
+          property.address,
+
+          property.description
+
         ]
           .filter(Boolean)
-          .join(" · ");
+          .join(" ")
+          .toLowerCase();
 
 
-      document.getElementById(
-        "modalImage"
-      ).innerHTML =
-        createImage(
-          mainPhoto,
-          property.property_type ||
-          "Propiedad NEXO"
-        );
-
-
-      document.getElementById(
-        "modalType"
-      ).textContent =
-        property.property_type ||
-        "Propiedad";
-
-
-      document.getElementById(
-        "modalTitle"
-      ).textContent =
-        property.city ||
-        "Propiedad NEXO";
-
-
-      document.getElementById(
-        "modalLocation"
-      ).textContent =
-        location ||
-        property.address ||
-        "Ubicación no especificada";
-
-
-      document.getElementById(
-        "modalPrice"
-      ).textContent =
-        formatPrice(
-          property.price
-        );
-
-
-      document.getElementById(
-        "modalDetails"
-      ).innerHTML = `
-
-        <div class="modal-detail">
-
-          <strong>
-            ${
-              property.bedrooms ??
-              "—"
-            }
-          </strong>
-
-          <span>
-            Habitaciones
-          </span>
-
-        </div>
-
-
-        <div class="modal-detail">
-
-          <strong>
-            ${
-              property.bathrooms ??
-              "—"
-            }
-          </strong>
-
-          <span>
-            Baños
-          </span>
-
-        </div>
-
-
-        <div class="modal-detail">
-
-          <strong>
-            ${
-              property.square_meters ??
-              "—"
-            }${
-              property.square_meters
-                ? " m²"
-                : ""
-            }
-          </strong>
-
-          <span>
-            Área
-          </span>
-
-        </div>
-
-      `;
-
-
-      document.getElementById(
-        "modalDescription"
-      ).textContent =
-        property.description ||
-        "Solicita más información sobre esta propiedad a NEXO.";
-
-
-      const contactButton =
-        document.getElementById(
-          "contactButton"
-        );
-
-
-      if (NEXO_PHONE) {
-
-        const message =
-          encodeURIComponent(
-            `Hola NEXO, estoy interesado en la propiedad ID ${property.id} de ${formatPrice(property.price)}.`
+        const matchesSearch =
+          !search ||
+          searchable.includes(
+            search
           );
 
 
-        contactButton.href =
-          `https://wa.me/${NEXO_PHONE}?text=${message}`;
+        const matchesType =
+          !type ||
+          String(
+            property.property_type ||
+            ""
+          )
+            .toLowerCase() ===
+          type;
 
 
-      } else {
-
-        contactButton.href =
-          "#";
-
-
-        contactButton.onclick =
-          function(event) {
-
-            event.preventDefault();
-
-            alert(
-              "El contacto de NEXO se configurará próximamente."
-            );
-
-          };
-
-      }
+        const propertyPrice =
+          Number(
+            property.price
+          );
 
 
-      propertyModal.classList.add(
-        "show"
-      );
+        const matchesPrice =
+          !maxPrice ||
+          (
+            !Number.isNaN(
+              propertyPrice
+            ) &&
+            propertyPrice <=
+            maxPrice
+          );
 
 
-      document.body.style.overflow =
-        "hidden";
-
-    }
-
-
-    /* ==================================================
-       CERRAR MODAL
-    ================================================== */
-
-    function closePropertyModal() {
-
-      propertyModal.classList.remove(
-        "show"
-      );
-
-
-      document.body.style.overflow =
-        "";
-
-    }
-
-
-    closeModal.addEventListener(
-      "click",
-      closePropertyModal
-    );
-
-
-    propertyModal.addEventListener(
-      "click",
-      function(event) {
-
-        if (
-          event.target ===
-          propertyModal
-        ) {
-
-          closePropertyModal();
-
-        }
-
-      }
-    );
-
-
-    document.addEventListener(
-      "keydown",
-      function(event) {
-
-        if (
-          event.key ===
-          "Escape"
-        ) {
-
-          closePropertyModal();
-
-        }
-
-      }
-    );
-
-
-    /* ==================================================
-       FILTROS
-    ================================================== */
-
-    function filterProperties() {
-
-      const search =
-        searchInput.value
-          .trim()
-          .toLowerCase();
-
-
-      const type =
-        typeFilter.value
-          .trim()
-          .toLowerCase();
-
-
-      const filtered =
-        properties.filter(
-          property => {
-
-            const searchable = [
-              property.property_type,
-              property.city,
-              property.neighborhood,
-              property.address,
-              property.description
-            ]
-              .filter(Boolean)
-              .join(" ")
-              .toLowerCase();
-
-
-            const matchesSearch =
-              !search ||
-              searchable.includes(
-                search
-              );
-
-
-            const matchesType =
-              !type ||
-              String(
-                property.property_type ||
-                ""
-              )
-                .toLowerCase() ===
-              type;
-
-
-            return (
-              matchesSearch &&
-              matchesType
-            );
-
-          }
+        return (
+          matchesSearch &&
+          matchesType &&
+          matchesPrice
         );
 
+      }
+    );
 
-      renderProperties(
-        filtered
+
+  renderProperties(
+    filtered
+  );
+
+}
+
+
+/* =========================================================
+   EVENTOS DE BÚSQUEDA
+========================================================= */
+
+searchButton.addEventListener(
+  "click",
+  filterProperties
+);
+
+
+typeFilter.addEventListener(
+  "change",
+  filterProperties
+);
+
+
+priceFilter.addEventListener(
+  "change",
+  filterProperties
+);
+
+
+searchInput.addEventListener(
+  "input",
+  function() {
+
+    filterProperties();
+
+  }
+);
+
+
+/* =========================================================
+   BOTONES DE PROPIEDADES
+========================================================= */
+
+propertyGrid.addEventListener(
+  "click",
+  function(event) {
+
+    const button =
+      event.target.closest(
+        "[data-property-id]"
       );
+
+    if (!button) {
+      return;
+    }
+
+    const id =
+      button.dataset.propertyId;
+
+    openProperty(
+      id
+    );
+
+  }
+);
+
+
+/* =========================================================
+   SWIPE EN GALERÍA
+========================================================= */
+
+let touchStartX = 0;
+
+let touchEndX = 0;
+
+
+modalImage.addEventListener(
+  "touchstart",
+  function(event) {
+
+    touchStartX =
+      event.changedTouches[0].screenX;
+
+  },
+  {
+    passive: true
+  }
+);
+
+
+modalImage.addEventListener(
+  "touchend",
+  function(event) {
+
+    touchEndX =
+      event.changedTouches[0].screenX;
+
+
+    const difference =
+      touchStartX -
+      touchEndX;
+
+
+    if (
+      Math.abs(difference) <
+      45
+    ) {
+
+      return;
 
     }
 
 
-    searchButton.addEventListener(
-      "click",
-      filterProperties
-    );
+    if (
+      difference > 0
+    ) {
+
+      nextPhoto.click();
+
+    } else {
+
+      previousPhoto.click();
+
+    }
+
+  },
+  {
+    passive: true
+  }
+);
 
 
-    searchInput.addEventListener(
-      "input",
-      filterProperties
-    );
+/* =========================================================
+   INICIAR NEXO
+========================================================= */
 
+loadProperties();
 
-    typeFilter.addEventListener(
-      "change",
-      filterProperties
-    );
-
-
-    /* ==================================================
-       INICIO
-    ================================================== */
-
-    loadProperties();
-
-  </script>
+</script>
 
 </body>
 </html>
