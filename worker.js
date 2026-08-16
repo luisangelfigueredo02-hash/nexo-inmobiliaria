@@ -521,6 +521,8 @@ form.addEventListener(
                 city,
                 neighborhood,
                 address,
+                latitude,
+                longitude,
                 bedrooms,
                 bathrooms,
                 square_meters,
@@ -605,6 +607,44 @@ form.addEventListener(
             ? body.address.trim()
             : null;
 
+        const latitude =
+          body.latitude === "" ||
+          body.latitude === null ||
+          body.latitude === undefined
+            ? null
+            : Number(body.latitude);
+
+        const longitude =
+          body.longitude === "" ||
+          body.longitude === null ||
+          body.longitude === undefined
+            ? null
+            : Number(body.longitude);
+
+        if (
+          latitude !== null &&
+          !Number.isFinite(latitude)
+        ) {
+
+          return json({
+            success: false,
+            error:
+              "La latitud no es válida."
+          }, 400);
+        }
+
+        if (
+          longitude !== null &&
+          !Number.isFinite(longitude)
+        ) {
+
+          return json({
+            success: false,
+            error:
+              "La longitud no es válida."
+          }, 400);
+        }
+
         const bedrooms =
           body.bedrooms === "" ||
           body.bedrooms === null ||
@@ -681,6 +721,8 @@ form.addEventListener(
                 city,
                 neighborhood,
                 address,
+                latitude,
+                longitude,
                 bedrooms,
                 bathrooms,
                 square_meters,
@@ -694,7 +736,7 @@ form.addEventListener(
               )
               VALUES (
                 ?, ?, ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?
               )
             `)
             .bind(
@@ -702,6 +744,8 @@ form.addEventListener(
               city,
               neighborhood,
               address,
+              latitude,
+              longitude,
               bedrooms,
               bathrooms,
               squareMeters,
@@ -799,6 +843,44 @@ form.addEventListener(
             ? body.address.trim()
             : null;
 
+        const latitude =
+          body.latitude === "" ||
+          body.latitude === null ||
+          body.latitude === undefined
+            ? null
+            : Number(body.latitude);
+
+        const longitude =
+          body.longitude === "" ||
+          body.longitude === null ||
+          body.longitude === undefined
+            ? null
+            : Number(body.longitude);
+
+        if (
+          latitude !== null &&
+          !Number.isFinite(latitude)
+        ) {
+
+          return json({
+            success: false,
+            error:
+              "La latitud no es válida."
+          }, 400);
+        }
+
+        if (
+          longitude !== null &&
+          !Number.isFinite(longitude)
+        ) {
+
+          return json({
+            success: false,
+            error:
+              "La longitud no es válida."
+          }, 400);
+        }
+
         const bedrooms =
           body.bedrooms === "" ||
           body.bedrooms === null ||
@@ -875,6 +957,8 @@ form.addEventListener(
                 city = ?,
                 neighborhood = ?,
                 address = ?,
+                latitude = ?,
+                longitude = ?,
                 bedrooms = ?,
                 bathrooms = ?,
                 square_meters = ?,
@@ -892,6 +976,8 @@ form.addEventListener(
               city,
               neighborhood,
               address,
+              latitude,
+              longitude,
               bedrooms,
               bathrooms,
               squareMeters,
@@ -1036,6 +1122,8 @@ form.addEventListener(
                 city,
                 neighborhood,
                 address,
+                latitude,
+                longitude,
                 bedrooms,
                 bathrooms,
                 square_meters,
