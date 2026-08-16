@@ -1,2413 +1,3737 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-
-<title>NEXO — Inmuebles en Cuba</title>
-
-<meta name="description"
-content="NEXO. Descubre propiedades en Cuba de una manera más sencilla.">
-
-<!-- MAPA -->
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
->
-
-<style>
-
-:root{
-  --black:#111111;
-  --white:#ffffff;
-  --bg:#f5f5f7;
-  --gray:#737373;
-  --soft:#eeeeef;
-  --line:rgba(0,0,0,.08);
-  --shadow:0 20px 60px rgba(0,0,0,.13);
-  --radius:26px;
-}
-
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
-
-html{
-  background:var(--bg);
-  scroll-behavior:smooth;
-}
-
-body{
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Display",
-    "SF Pro Text",
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
-  color:var(--black);
-  background:var(--bg);
-  -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
-}
-
-button,
-input,
-select{
-  font:inherit;
-}
-
-button{
-  border:0;
-  cursor:pointer;
-}
-
-img{
-  max-width:100%;
-}
-
-/* =================================================
-   HEADER
-================================================= */
-
-.header{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  z-index:2000;
-  padding:
-    max(12px,env(safe-area-inset-top))
-    14px
-    10px;
-  pointer-events:none;
-}
-
-.nav{
-  max-width:1200px;
-  margin:auto;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  pointer-events:auto;
-}
-
-.logo{
-  padding:11px 17px;
-  border-radius:17px;
-  background:rgba(255,255,255,.88);
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
-  box-shadow:0 10px 30px rgba(0,0,0,.09);
-  font-size:20px;
-  font-weight:900;
-  letter-spacing:-.7px;
-}
-
-.header-button{
-  width:44px;
-  height:44px;
-  border-radius:50%;
-  background:rgba(255,255,255,.9);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  box-shadow:0 10px 30px rgba(0,0,0,.1);
-  font-size:19px;
-  transition:.25s;
-}
-
-.header-button:active{
-  transform:scale(.9);
-}
-
-/* =================================================
-   HERO
-================================================= */
-
-.hero{
-  min-height:720px;
-  position:relative;
-  display:flex;
-  align-items:flex-end;
-  overflow:hidden;
-  padding:130px 18px 45px;
-
-  background:
-    radial-gradient(
-      circle at 15% 15%,
-      #ffffff 0,
-      transparent 36%
-    ),
-    linear-gradient(
-      180deg,
-      #fafafa,
-      #ededee
-    );
-}
-
-.hero-content{
-  width:100%;
-  max-width:1200px;
-  margin:auto;
-}
-
-.eyebrow{
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:.16em;
-  color:#777;
-  text-transform:uppercase;
-  margin-bottom:15px;
-}
-
-.hero h1{
-  font-size:clamp(50px,9vw,92px);
-  line-height:.91;
-  letter-spacing:-.075em;
-  font-weight:850;
-  max-width:800px;
-}
-
-.hero-text{
-  margin-top:24px;
-  max-width:520px;
-  color:var(--gray);
-  font-size:18px;
-  line-height:1.5;
-}
-
-/* =================================================
-   SEARCH
-================================================= */
-
-.search-area{
-  margin-top:30px;
-  max-width:850px;
-}
-
-.search-box{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  background:rgba(255,255,255,.96);
-  border:1px solid rgba(0,0,0,.07);
-  padding:7px;
-  border-radius:22px;
-  box-shadow:var(--shadow);
-}
-
-.search-symbol{
-  width:45px;
-  height:45px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#777;
-  font-size:23px;
-}
-
-.search-input{
-  flex:1;
-  min-width:0;
-  border:0;
-  outline:0;
-  background:transparent;
-  font-size:16px;
-  color:#111;
-}
-
-.search-input::placeholder{
-  color:#999;
-}
-
-.search-button{
-  min-height:45px;
-  padding:0 19px;
-  border-radius:16px;
-  background:#111;
-  color:white;
-  font-weight:750;
-  transition:.25s;
-}
-
-.search-button:active{
-  transform:scale(.95);
-}
-
-/* =================================================
-   QUICK FILTERS
-================================================= */
-
-.quick-filters{
-  margin-top:12px;
-  display:flex;
-  gap:8px;
-  overflow-x:auto;
-  scrollbar-width:none;
-}
-
-.quick-filters::-webkit-scrollbar{
-  display:none;
-}
-
-.quick-filter{
-  flex:none;
-  padding:10px 15px;
-  border-radius:999px;
-  background:rgba(255,255,255,.9);
-  border:1px solid var(--line);
-  color:#555;
-  font-size:13px;
-  font-weight:700;
-  transition:.25s;
-}
-
-.quick-filter.active{
-  background:#111;
-  color:#fff;
-  border-color:#111;
-}
-
-/* =================================================
-   MAP SECTION
-================================================= */
-
-.map-section{
-  padding:22px 14px 0;
-}
-
-.section-top{
-  max-width:1200px;
-  margin:0 auto 14px;
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:15px;
-}
-
-.section-title{
-  font-size:29px;
-  line-height:1;
-  letter-spacing:-.05em;
-  font-weight:850;
-}
-
-.section-subtitle{
-  margin-top:6px;
-  color:#777;
-  font-size:14px;
-}
-
-.count{
-  font-size:13px;
-  color:#777;
-  white-space:nowrap;
-}
-
-.map-container{
-  max-width:1200px;
-  height:min(72vh,680px);
-  min-height:500px;
-  margin:auto;
-  border-radius:30px;
-  overflow:hidden;
-  position:relative;
-  background:#ddd;
-  box-shadow:0 22px 70px rgba(0,0,0,.14);
-  border:1px solid rgba(0,0,0,.07);
-}
-
-#map{
-  position:absolute;
-  inset:0;
-}
-
-/* Leaflet */
-
-.leaflet-container{
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
-}
-
-.leaflet-control-zoom{
-  border:0!important;
-  box-shadow:0 8px 25px rgba(0,0,0,.15)!important;
-}
-
-.leaflet-control-zoom a{
-  border:0!important;
-}
-
-/* =================================================
-   MAP TOP CONTROLS
-================================================= */
-
-.map-top{
-  position:absolute;
-  z-index:1000;
-  top:15px;
-  left:15px;
-  right:15px;
-  display:flex;
-  justify-content:space-between;
-  pointer-events:none;
-}
-
-.map-pill{
-  pointer-events:auto;
-  padding:11px 15px;
-  border-radius:999px;
-  background:rgba(255,255,255,.92);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-  box-shadow:0 9px 28px rgba(0,0,0,.13);
-  font-size:13px;
-  font-weight:750;
-}
-
-.map-actions{
-  display:flex;
-  gap:8px;
-}
-
-.map-action{
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  background:rgba(255,255,255,.93);
-  backdrop-filter:blur(18px);
-  box-shadow:0 9px 28px rgba(0,0,0,.13);
-  pointer-events:auto;
-  transition:.2s;
-}
-
-.map-action:active{
-  transform:scale(.91);
-}
-
-/* =================================================
-   CUSTOM MARKER
-================================================= */
-
-.nexo-marker{
-  background:#111;
-  color:#fff;
-  border:2px solid #fff;
-  border-radius:999px;
-  padding:7px 10px;
-  font-size:12px;
-  font-weight:850;
-  box-shadow:
-    0 8px 24px rgba(0,0,0,.27);
-  white-space:nowrap;
-  transform:translateY(-50%);
-  transition:
-    transform .25s,
-    box-shadow .25s;
-}
-
-.nexo-marker:hover{
-  transform:translateY(-50%) scale(1.07);
-  box-shadow:
-    0 12px 30px rgba(0,0,0,.3);
-}
-
-/* =================================================
-   PROVINCE BUTTONS
-================================================= */
-
-.province-bar{
-  max-width:1200px;
-  margin:16px auto 0;
-  display:flex;
-  gap:8px;
-  overflow-x:auto;
-  scrollbar-width:none;
-  padding:2px 1px 5px;
-}
-
-.province-bar::-webkit-scrollbar{
-  display:none;
-}
-
-.province-button{
-  flex:none;
-  padding:10px 14px;
-  border-radius:999px;
-  background:white;
-  border:1px solid var(--line);
-  font-size:13px;
-  font-weight:700;
-  transition:.25s;
-}
-
-.province-button.active{
-  background:#111;
-  color:#fff;
-}
-
-/* =================================================
-   PROPERTY SECTION
-================================================= */
-
-.properties-section{
-  padding:60px 14px 110px;
-}
-
-.properties-grid{
-  max-width:1200px;
-  margin:22px auto 0;
-  display:grid;
-  grid-template-columns:
-    repeat(3,minmax(0,1fr));
-  gap:18px;
-}
-
-.property-card{
-  background:#fff;
-  border-radius:26px;
-  overflow:hidden;
-  border:1px solid var(--line);
-  box-shadow:
-    0 12px 42px rgba(0,0,0,.07);
-  cursor:pointer;
-  transition:
-    transform .45s cubic-bezier(.2,.8,.2,1),
-    box-shadow .45s;
-}
-
-.property-card:hover{
-  transform:translateY(-5px);
-  box-shadow:
-    0 24px 55px rgba(0,0,0,.13);
-}
-
-.property-image{
-  height:250px;
-  background:#e9e9e9;
-  position:relative;
-  overflow:hidden;
-}
-
-.property-image img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-  transition:
-    transform .7s cubic-bezier(.2,.8,.2,1);
-}
-
-.property-card:hover img{
-  transform:scale(1.04);
-}
-
-.no-photo{
-  height:100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#999;
-  font-size:13px;
-}
-
-.available{
-  position:absolute;
-  top:14px;
-  left:14px;
-  padding:7px 10px;
-  border-radius:999px;
-  background:rgba(255,255,255,.9);
-  backdrop-filter:blur(12px);
-  font-size:11px;
-  font-weight:800;
-}
-
-.property-body{
-  padding:18px;
-}
-
-.price{
-  font-size:24px;
-  font-weight:850;
-  letter-spacing:-.045em;
-}
-
-.property-type{
-  margin-top:5px;
-  font-size:17px;
-  font-weight:750;
-}
-
-.location{
-  margin-top:5px;
-  color:#777;
-  font-size:14px;
-}
-
-.meta{
-  display:flex;
-  gap:13px;
-  flex-wrap:wrap;
-  margin-top:15px;
-  color:#555;
-  font-size:13px;
-}
-
-.description{
-  margin-top:14px;
-  color:#666;
-  font-size:14px;
-  line-height:1.45;
-  display:-webkit-box;
-  -webkit-line-clamp:2;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
-}
-
-/* =================================================
-   EMPTY
-================================================= */
-
-.empty{
-  max-width:1200px;
-  margin:20px auto;
-  padding:50px 25px;
-  text-align:center;
-  background:#fff;
-  border-radius:25px;
-  color:#777;
-}
-
-.loading{
-  max-width:1200px;
-  margin:25px auto;
-  text-align:center;
-  padding:30px;
-  color:#777;
-}
-
-/* =================================================
-   DETAIL
-================================================= */
-
-.overlay{
-  position:fixed;
-  inset:0;
-  z-index:5000;
-  background:rgba(0,0,0,.4);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .4s ease;
-}
-
-.overlay.open{
-  opacity:1;
-  pointer-events:auto;
-}
-
-.detail{
-  position:absolute;
-  top:0;
-  right:0;
-  bottom:0;
-  width:min(650px,100%);
-  background:white;
-  overflow-y:auto;
-  transform:translateX(100%);
-  transition:
-    transform .55s cubic-bezier(.2,.8,.2,1);
-  box-shadow:-25px 0 70px rgba(0,0,0,.18);
-}
-
-.overlay.open .detail{
-  transform:translateX(0);
-}
-
-.close{
-  position:absolute;
-  z-index:20;
-  top:18px;
-  left:18px;
-  width:45px;
-  height:45px;
-  border-radius:50%;
-  background:rgba(255,255,255,.92);
-  backdrop-filter:blur(16px);
-  box-shadow:0 8px 25px rgba(0,0,0,.15);
-  font-size:22px;
-}
-
-.detail-photo{
-  height:410px;
-  background:#e8e8e8;
-}
-
-.detail-photo img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-.detail-content{
-  padding:28px 22px 55px;
-}
-
-.detail-price{
-  font-size:36px;
-  font-weight:850;
-  letter-spacing:-.06em;
-}
-
-.detail-type{
-  margin-top:7px;
-  font-size:23px;
-  font-weight:750;
-}
-
-.detail-location{
-  margin-top:6px;
-  color:#777;
-}
-
-.detail-meta{
-  display:grid;
-  grid-template-columns:
-    repeat(3,1fr);
-  gap:10px;
-  margin-top:25px;
-}
-
-.detail-meta-box{
-  padding:15px;
-  border-radius:18px;
-  background:#f5f5f7;
-}
-
-.detail-meta-box strong{
-  display:block;
-  font-size:19px;
-}
-
-.detail-meta-box span{
-  color:#777;
-  font-size:12px;
-}
-
-.detail-description{
-  margin-top:26px;
-  color:#555;
-  line-height:1.6;
-  white-space:pre-line;
-}
-
-.contact{
-  width:100%;
-  margin-top:28px;
-  padding:18px;
-  border-radius:18px;
-  background:#111;
-  color:white;
-  font-weight:850;
-  transition:.25s;
-}
-
-.contact:active{
-  transform:scale(.98);
-}
-
-/* =================================================
-   AI ENTRY
-================================================= */
-
-.ai-button{
-  position:fixed;
-  right:18px;
-  bottom:
-    max(18px,env(safe-area-inset-bottom));
-  z-index:2500;
-
-  display:flex;
-  align-items:center;
-  gap:8px;
-
-  padding:14px 18px;
-  border-radius:999px;
-
-  background:#111;
-  color:#fff;
-
-  box-shadow:
-    0 15px 40px rgba(0,0,0,.25);
-
-  font-weight:800;
-
-  transition:
-    transform .25s,
-    box-shadow .25s;
-}
-
-.ai-button:active{
-  transform:scale(.94);
-}
-
-/* =================================================
-   RESPONSIVE
-================================================= */
-
-@media(max-width:900px){
-
-  .properties-grid{
-    grid-template-columns:
-      repeat(2,minmax(0,1fr));
-  }
-
-}
-
-@media(max-width:600px){
-
-  .hero{
-    min-height:670px;
-    padding-left:14px;
-    padding-right:14px;
-  }
-
-  .hero h1{
-    font-size:50px;
-  }
-
-  .hero-text{
-    font-size:16px;
-  }
-
-  .search-button{
-    width:45px;
-    padding:0;
-    font-size:0;
-  }
-
-  .search-button::after{
-    content:"⌕";
-    font-size:20px;
-  }
-
-  .map-container{
-    height:570px;
-    min-height:0;
-    border-radius:25px;
-  }
-
-  .properties-grid{
-    grid-template-columns:1fr;
-  }
-
-  .property-image{
-    height:250px;
-  }
-
-  .detail-photo{
-    height:330px;
-  }
-
-}
-
-@media(prefers-reduced-motion:reduce){
-
-  *,
-  *::before,
-  *::after{
-    animation:none!important;
-    transition:none!important;
-    scroll-behavior:auto!important;
-  }
-
-}
-
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <meta name="theme-color" content="#f5f5f7">
+  <meta name="description"
+        content="NEXO — descubre propiedades en Cuba de una forma diferente.">
+
+  <title>NEXO — Descubre tu próximo lugar</title>
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+
+    /* =========================================================
+       NEXO — DESIGN SYSTEM
+       ========================================================= */
+
+    :root {
+      --bg: #f5f5f7;
+      --surface: rgba(255,255,255,.72);
+      --surface-solid: #ffffff;
+      --text: #111111;
+      --muted: #77777d;
+      --soft: #eeeeF1;
+      --border: rgba(0,0,0,.07);
+      --shadow:
+        0 20px 60px rgba(0,0,0,.08);
+
+      --radius-xl: 34px;
+      --radius-lg: 26px;
+      --radius-md: 18px;
+      --radius-sm: 13px;
+
+      --ease:
+        cubic-bezier(.22,1,.36,1);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        Inter,
+        system-ui,
+        sans-serif;
+
+      overflow-x: hidden;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    /* =========================================================
+       LOADING SCREEN
+       ========================================================= */
+
+    #boot {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: #f5f5f7;
+
+      transition:
+        opacity .8s var(--ease),
+        visibility .8s;
+    }
+
+    #boot.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .boot-logo {
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -.08em;
+
+      animation:
+        bootPulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes bootPulse {
+      0%,100% {
+        opacity: .45;
+        transform: scale(.96);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* =========================================================
+       NAVIGATION
+       ========================================================= */
+
+    .nav {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+
+      z-index: 5000;
+
+      width: min(1100px, calc(100% - 28px));
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 10px 12px 10px 18px;
+
+      background:
+        rgba(255,255,255,.68);
+
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter:
+        blur(28px) saturate(180%);
+
+      border: 1px solid rgba(255,255,255,.7);
+
+      border-radius: 999px;
+
+      box-shadow:
+        0 10px 35px rgba(0,0,0,.08);
+
+      transition:
+        background .35s var(--ease),
+        box-shadow .35s var(--ease);
+    }
+
+    .logo {
+      color: #111;
+      text-decoration: none;
+
+      font-size: 21px;
+      font-weight: 750;
+      letter-spacing: -.08em;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .nav-btn {
+      padding: 9px 14px;
+
+      border-radius: 999px;
+
+      background: transparent;
+      color: #333;
+
+      font-size: 13px;
+      font-weight: 600;
+
+      transition:
+        background .25s var(--ease),
+        transform .25s var(--ease);
+    }
+
+    .nav-btn:hover {
+      background: rgba(0,0,0,.05);
+    }
+
+    .nav-btn:active {
+      transform: scale(.95);
+    }
+
+    /* =========================================================
+       HERO
+       ========================================================= */
+
+    .hero {
+      min-height: 820px;
+
+      padding:
+        150px 20px 70px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      position: relative;
+
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+
+      position: absolute;
+
+      width: 700px;
+      height: 700px;
+
+      top: -280px;
+      right: -220px;
+
+      background:
+        radial-gradient(
+          circle,
+          rgba(255,255,255,.95),
+          rgba(255,255,255,0) 68%
+        );
+
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      width: min(1100px, 100%);
+
+      display: grid;
+      grid-template-columns:
+        minmax(0, 1fr)
+        minmax(300px, .72fr);
+
+      gap: 70px;
+
+      align-items: center;
+
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-copy {
+      max-width: 650px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+
+      padding: 8px 13px;
+
+      border-radius: 999px;
+
+      background: rgba(255,255,255,.72);
+
+      border: 1px solid rgba(0,0,0,.06);
+
+      color: #666;
+
+      font-size: 12px;
+      font-weight: 650;
+
+      margin-bottom: 22px;
+    }
+
+    .eyebrow-dot {
+      width: 7px;
+      height: 7px;
+
+      border-radius: 50%;
+
+      background: #35c759;
+
+      box-shadow:
+        0 0 0 4px rgba(52,199,89,.12);
+    }
+
+    h1 {
+      margin: 0;
+
+      font-size:
+        clamp(54px, 8vw, 94px);
+
+      line-height: .94;
+
+      letter-spacing: -.075em;
+
+      font-weight: 760;
+    }
+
+    .hero-subtitle {
+      margin:
+        28px 0 0;
+
+      max-width: 560px;
+
+      font-size:
+        clamp(18px, 2.5vw, 23px);
+
+      line-height: 1.45;
+
+      color: var(--muted);
+
+      letter-spacing: -.025em;
+    }
+
+    /* =========================================================
+       SMART SEARCH
+       ========================================================= */
+
+    .search-shell {
+      margin-top: 38px;
+
+      width: 100%;
+      max-width: 670px;
+
+      padding: 8px;
+
+      display: flex;
+      align-items: center;
+      gap: 7px;
+
+      background:
+        rgba(255,255,255,.82);
+
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+
+      border:
+        1px solid rgba(0,0,0,.06);
+
+      border-radius: 22px;
+
+      box-shadow:
+        0 18px 50px rgba(0,0,0,.08);
+
+      transition:
+        transform .35s var(--ease),
+        box-shadow .35s var(--ease);
+    }
+
+    .search-shell:focus-within {
+      transform: translateY(-2px);
+
+      box-shadow:
+        0 25px 70px rgba(0,0,0,.12);
+    }
+
+    .search-icon {
+      width: 44px;
+      height: 44px;
+
+      display: grid;
+      place-items: center;
+
+      color: #777;
+
+      flex: 0 0 auto;
+    }
+
+    .search-input {
+      flex: 1;
+
+      min-width: 0;
+
+      border: 0;
+      outline: 0;
+
+      background: transparent;
+
+      font-size: 16px;
+
+      color: #111;
+    }
+
+    .search-input::placeholder {
+      color: #999;
+    }
+
+    .search-button {
+      height: 44px;
+
+      padding: 0 18px;
+
+      border-radius: 15px;
+
+      background: #111;
+      color: white;
+
+      font-weight: 650;
+      font-size: 13px;
+
+      transition:
+        transform .25s var(--ease),
+        background .25s;
+    }
+
+    .search-button:hover {
+      background: #222;
+    }
+
+    .search-button:active {
+      transform: scale(.95);
+    }
+
+    .quick-search {
+      display: flex;
+      gap: 8px;
+
+      overflow-x: auto;
+
+      padding: 12px 2px 2px;
+
+      scrollbar-width: none;
+    }
+
+    .quick-search::-webkit-scrollbar {
+      display: none;
+    }
+
+    .quick-chip {
+      flex: 0 0 auto;
+
+      padding: 8px 12px;
+
+      border-radius: 999px;
+
+      background: rgba(255,255,255,.6);
+
+      border: 1px solid rgba(0,0,0,.06);
+
+      color: #555;
+
+      font-size: 12px;
+      font-weight: 600;
+
+      transition:
+        transform .25s var(--ease),
+        background .25s;
+    }
+
+    .quick-chip:active {
+      transform: scale(.95);
+    }
+
+    /* =========================================================
+       HERO VISUAL
+       ========================================================= */
+
+    .hero-visual {
+      position: relative;
+
+      min-height: 430px;
+
+      border-radius: 38px;
+
+      overflow: hidden;
+
+      background:
+        linear-gradient(
+          145deg,
+          #dfe7ea,
+          #b9c8cc
+        );
+
+      box-shadow:
+        0 40px 100px rgba(0,0,0,.12);
+    }
+
+    .hero-visual::after {
+      content: "";
+
+      position: absolute;
+      inset: 0;
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(255,255,255,.1),
+          rgba(0,0,0,.15)
+        );
+
+      pointer-events: none;
+    }
+
+    .cuba-art {
+      position: absolute;
+      inset: 0;
+
+      display: grid;
+      place-items: center;
+
+      color: rgba(255,255,255,.9);
+    }
+
+    .cuba-art svg {
+      width: 88%;
+      height: auto;
+
+      filter:
+        drop-shadow(0 25px 30px rgba(0,0,0,.16));
+    }
+
+    .hero-floating-card {
+      position: absolute;
+
+      z-index: 3;
+
+      left: 22px;
+      bottom: 22px;
+
+      width: calc(100% - 44px);
+
+      padding: 18px;
+
+      border-radius: 23px;
+
+      background:
+        rgba(255,255,255,.78);
+
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+
+      border:
+        1px solid rgba(255,255,255,.7);
+
+      box-shadow:
+        0 20px 50px rgba(0,0,0,.12);
+    }
+
+    .floating-label {
+      color: #777;
+
+      font-size: 11px;
+      font-weight: 650;
+
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .floating-title {
+      margin-top: 5px;
+
+      font-size: 22px;
+      font-weight: 700;
+
+      letter-spacing: -.04em;
+    }
+
+    .floating-meta {
+      margin-top: 5px;
+
+      color: #666;
+
+      font-size: 13px;
+    }
+
+    /* =========================================================
+       DISCOVER
+       ========================================================= */
+
+    .section {
+      width: min(1100px, calc(100% - 32px));
+
+      margin:
+        0 auto 90px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+
+      gap: 20px;
+
+      margin-bottom: 22px;
+    }
+
+    .section-title {
+      margin: 0;
+
+      font-size:
+        clamp(30px, 5vw, 48px);
+
+      letter-spacing: -.06em;
+
+      line-height: 1;
+    }
+
+    .section-description {
+      margin: 9px 0 0;
+
+      color: var(--muted);
+
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .section-link {
+      color: #111;
+      text-decoration: none;
+
+      font-size: 13px;
+      font-weight: 650;
+
+      white-space: nowrap;
+    }
+
+    /* =========================================================
+       PROVINCES
+       ========================================================= */
+
+    .province-row {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, 1fr);
+
+      gap: 12px;
+    }
+
+    .province {
+      min-height: 130px;
+
+      padding: 18px;
+
+      border-radius: 24px;
+
+      background:
+        linear-gradient(
+          145deg,
+          #fff,
+          #f0f0f2
+        );
+
+      border:
+        1px solid rgba(0,0,0,.05);
+
+      box-shadow:
+        0 10px 35px rgba(0,0,0,.045);
+
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      text-align: left;
+
+      transition:
+        transform .45s var(--ease),
+        box-shadow .45s var(--ease);
+    }
+
+    .province:hover {
+      transform: translateY(-5px);
+
+      box-shadow:
+        0 25px 55px rgba(0,0,0,.09);
+    }
+
+    .province:active {
+      transform: scale(.97);
+    }
+
+    .province-name {
+      font-size: 18px;
+      font-weight: 700;
+
+      letter-spacing: -.035em;
+    }
+
+    .province-count {
+      color: #888;
+
+      font-size: 12px;
+    }
+
+    /* =========================================================
+       MAP
+       ========================================================= */
+
+    .map-section {
+      width: min(1200px, calc(100% - 20px));
+
+      margin:
+        0 auto 100px;
+
+      position: relative;
+    }
+
+    .map-container {
+      position: relative;
+
+      height: 680px;
+
+      overflow: hidden;
+
+      border-radius: 36px;
+
+      background: #dce4e4;
+
+      box-shadow:
+        0 35px 100px rgba(0,0,0,.10);
+    }
+
+    #map {
+      position: absolute;
+      inset: 0;
+
+      width: 100%;
+      height: 100%;
+    }
+
+    .leaflet-control-zoom {
+      border: 0 !important;
+
+      box-shadow:
+        0 12px 30px rgba(0,0,0,.12) !important;
+
+      overflow: hidden;
+
+      border-radius: 14px !important;
+    }
+
+    .leaflet-control-zoom a {
+      border: 0 !important;
+
+      width: 38px !important;
+      height: 38px !important;
+
+      line-height: 38px !important;
+    }
+
+    .map-top {
+      position: absolute;
+
+      z-index: 1000;
+
+      top: 18px;
+      left: 18px;
+      right: 18px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      pointer-events: none;
+    }
+
+    .glass {
+      background:
+        rgba(255,255,255,.72);
+
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+
+      border:
+        1px solid rgba(255,255,255,.65);
+
+      box-shadow:
+        0 12px 35px rgba(0,0,0,.10);
+    }
+
+    .map-title {
+      padding: 12px 16px;
+
+      border-radius: 17px;
+
+      pointer-events: auto;
+    }
+
+    .map-title strong {
+      display: block;
+
+      font-size: 15px;
+      letter-spacing: -.02em;
+    }
+
+    .map-title span {
+      display: block;
+
+      margin-top: 2px;
+
+      color: #777;
+
+      font-size: 11px;
+    }
+
+    .map-filter {
+      display: flex;
+      gap: 5px;
+
+      padding: 5px;
+
+      border-radius: 999px;
+
+      pointer-events: auto;
+    }
+
+    .map-filter button {
+      padding: 8px 12px;
+
+      border-radius: 999px;
+
+      background: transparent;
+
+      color: #666;
+
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .map-filter button.active {
+      background: #111;
+      color: white;
+    }
+
+    .map-bottom {
+      position: absolute;
+
+      z-index: 1000;
+
+      bottom: 18px;
+      left: 18px;
+      right: 18px;
+
+      display: flex;
+      justify-content: center;
+
+      pointer-events: none;
+    }
+
+    .map-counter {
+      padding: 11px 17px;
+
+      border-radius: 999px;
+
+      font-size: 12px;
+      font-weight: 650;
+
+      pointer-events: auto;
+    }
+
+    /* =========================================================
+       MAP MARKERS
+       ========================================================= */
+
+    .nexo-marker {
+      width: 42px;
+      height: 42px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 50%;
+
+      background:
+        rgba(17,17,17,.94);
+
+      color: white;
+
+      border:
+        3px solid rgba(255,255,255,.95);
+
+      box-shadow:
+        0 8px 22px rgba(0,0,0,.24);
+
+      font-size: 13px;
+      font-weight: 700;
+
+      transition:
+        transform .3s var(--ease);
+    }
+
+    .nexo-marker:hover {
+      transform: scale(1.12);
+    }
+
+    /* =========================================================
+       PROPERTY CARDS
+       ========================================================= */
+
+    .properties-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 18px;
+    }
+
+    .property-card {
+      overflow: hidden;
+
+      border-radius: 27px;
+
+      background: white;
+
+      border:
+        1px solid rgba(0,0,0,.05);
+
+      box-shadow:
+        0 12px 40px rgba(0,0,0,.055);
+
+      transition:
+        transform .5s var(--ease),
+        box-shadow .5s var(--ease);
+
+      cursor: pointer;
+    }
+
+    .property-card:hover {
+      transform: translateY(-6px);
+
+      box-shadow:
+        0 25px 70px rgba(0,0,0,.11);
+    }
+
+    .property-image {
+      position: relative;
+
+      height: 250px;
+
+      background:
+        linear-gradient(
+          145deg,
+          #e7e7e9,
+          #d2d2d5
+        );
+
+      overflow: hidden;
+    }
+
+    .property-image img {
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+
+      display: block;
+
+      transition:
+        transform .8s var(--ease);
+    }
+
+    .property-card:hover
+    .property-image img {
+      transform: scale(1.045);
+    }
+
+    .image-placeholder {
+      width: 100%;
+      height: 100%;
+
+      display: grid;
+      place-items: center;
+
+      color: #999;
+
+      font-size: 12px;
+    }
+
+    .favorite {
+      position: absolute;
+
+      top: 13px;
+      right: 13px;
+
+      width: 40px;
+      height: 40px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 50%;
+
+      background:
+        rgba(255,255,255,.72);
+
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+
+      color: #333;
+
+      font-size: 19px;
+
+      z-index: 2;
+
+      transition:
+        transform .25s var(--ease),
+        background .25s;
+    }
+
+    .favorite.active {
+      background: #111;
+      color: white;
+    }
+
+    .favorite:active {
+      transform: scale(.82);
+    }
+
+    .property-content {
+      padding: 19px;
+    }
+
+    .property-price {
+      font-size: 25px;
+      font-weight: 750;
+
+      letter-spacing: -.045em;
+    }
+
+    .property-location {
+      margin-top: 5px;
+
+      color: #777;
+
+      font-size: 13px;
+    }
+
+    .property-stats {
+      display: flex;
+      gap: 13px;
+
+      margin-top: 17px;
+
+      color: #555;
+
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .property-status {
+      display: inline-flex;
+
+      margin-top: 15px;
+
+      padding: 6px 9px;
+
+      border-radius: 999px;
+
+      background: #edf9f0;
+
+      color: #278340;
+
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* =========================================================
+       EMPTY
+       ========================================================= */
+
+    .empty {
+      padding: 55px 20px;
+
+      text-align: center;
+
+      border-radius: 25px;
+
+      background: white;
+
+      border:
+        1px solid rgba(0,0,0,.05);
+
+      color: #777;
+    }
+
+    .empty strong {
+      display: block;
+
+      color: #222;
+
+      margin-bottom: 7px;
+    }
+
+    /* =========================================================
+       AI
+       ========================================================= */
+
+    .ai-section {
+      width: min(1100px, calc(100% - 32px));
+
+      margin:
+        0 auto 110px;
+    }
+
+    .ai-card {
+      position: relative;
+
+      overflow: hidden;
+
+      padding:
+        clamp(28px, 6vw, 60px);
+
+      border-radius: 35px;
+
+      background:
+        linear-gradient(
+          145deg,
+          #111,
+          #27272a
+        );
+
+      color: white;
+
+      box-shadow:
+        0 35px 90px rgba(0,0,0,.17);
+    }
+
+    .ai-card::before {
+      content: "";
+
+      position: absolute;
+
+      width: 380px;
+      height: 380px;
+
+      right: -120px;
+      top: -180px;
+
+      background:
+        radial-gradient(
+          circle,
+          rgba(255,255,255,.17),
+          transparent 65%
+        );
+    }
+
+    .ai-kicker {
+      color: rgba(255,255,255,.55);
+
+      font-size: 11px;
+      font-weight: 700;
+
+      text-transform: uppercase;
+
+      letter-spacing: .12em;
+    }
+
+    .ai-title {
+      margin: 12px 0 0;
+
+      max-width: 680px;
+
+      font-size:
+        clamp(32px, 6vw, 58px);
+
+      line-height: .98;
+
+      letter-spacing: -.06em;
+    }
+
+    .ai-description {
+      margin: 19px 0 0;
+
+      max-width: 600px;
+
+      color: rgba(255,255,255,.62);
+
+      line-height: 1.5;
+
+      font-size: 15px;
+    }
+
+    .ai-search {
+      margin-top: 28px;
+
+      display: flex;
+
+      max-width: 680px;
+
+      padding: 6px;
+
+      border-radius: 18px;
+
+      background:
+        rgba(255,255,255,.10);
+
+      border:
+        1px solid rgba(255,255,255,.11);
+    }
+
+    .ai-input {
+      flex: 1;
+
+      min-width: 0;
+
+      border: 0;
+      outline: 0;
+
+      background: transparent;
+
+      padding: 0 14px;
+
+      color: white;
+
+      font-size: 14px;
+    }
+
+    .ai-input::placeholder {
+      color: rgba(255,255,255,.38);
+    }
+
+    .ai-button {
+      padding: 12px 17px;
+
+      border-radius: 13px;
+
+      background: white;
+
+      color: #111;
+
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .ai-note {
+      margin-top: 12px;
+
+      color: rgba(255,255,255,.4);
+
+      font-size: 11px;
+    }
+
+    /* =========================================================
+       FOOTER
+       ========================================================= */
+
+    footer {
+      width: min(1100px, calc(100% - 32px));
+
+      margin:
+        0 auto;
+
+      padding:
+        45px 0 110px;
+
+      border-top:
+        1px solid rgba(0,0,0,.07);
+
+      display: flex;
+      justify-content: space-between;
+      gap: 25px;
+
+      color: #888;
+
+      font-size: 12px;
+    }
+
+    .footer-logo {
+      color: #111;
+
+      font-size: 20px;
+      font-weight: 750;
+
+      letter-spacing: -.08em;
+    }
+
+    /* =========================================================
+       PROPERTY MODAL
+       ========================================================= */
+
+    .modal {
+      position: fixed;
+      inset: 0;
+
+      z-index: 9000;
+
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+
+      background:
+        rgba(0,0,0,.38);
+
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+
+      opacity: 0;
+      visibility: hidden;
+
+      transition:
+        opacity .4s var(--ease),
+        visibility .4s;
+    }
+
+    .modal.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-panel {
+      width: min(780px, 100%);
+
+      max-height: 92vh;
+
+      overflow-y: auto;
+
+      background: #fff;
+
+      border-radius:
+        34px 34px 0 0;
+
+      transform:
+        translateY(100%);
+
+      transition:
+        transform .65s var(--ease);
+
+      box-shadow:
+        0 -20px 80px rgba(0,0,0,.15);
+    }
+
+    .modal.open .modal-panel {
+      transform: translateY(0);
+    }
+
+    .modal-image {
+      position: relative;
+
+      height: min(55vh, 480px);
+
+      background: #e6e6e8;
+
+      overflow: hidden;
+    }
+
+    .modal-image img {
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+    }
+
+    .modal-close {
+      position: absolute;
+
+      top: 16px;
+      right: 16px;
+
+      width: 42px;
+      height: 42px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 50%;
+
+      background:
+        rgba(255,255,255,.76);
+
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+
+      font-size: 19px;
+
+      z-index: 2;
+    }
+
+    .modal-body {
+      padding: 28px;
+    }
+
+    .modal-price {
+      font-size: 38px;
+      font-weight: 760;
+
+      letter-spacing: -.055em;
+    }
+
+    .modal-location {
+      margin-top: 7px;
+
+      color: #777;
+
+      font-size: 14px;
+    }
+
+    .modal-stats {
+      display: flex;
+      flex-wrap: wrap;
+
+      gap: 8px;
+
+      margin-top: 22px;
+    }
+
+    .stat {
+      padding: 10px 12px;
+
+      border-radius: 13px;
+
+      background: #f5f5f7;
+
+      color: #555;
+
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .modal-description {
+      margin-top: 25px;
+
+      color: #555;
+
+      line-height: 1.65;
+
+      font-size: 14px;
+    }
+
+    .contact-button {
+      width: 100%;
+
+      margin-top: 27px;
+
+      padding: 17px;
+
+      border-radius: 17px;
+
+      background: #111;
+
+      color: white;
+
+      font-size: 14px;
+      font-weight: 700;
+
+      transition:
+        transform .25s var(--ease);
+    }
+
+    .contact-button:active {
+      transform: scale(.98);
+    }
+
+    /* =========================================================
+       TOAST
+       ========================================================= */
+
+    .toast {
+      position: fixed;
+
+      left: 50%;
+      bottom: 28px;
+
+      z-index: 12000;
+
+      transform:
+        translate(-50%, 25px);
+
+      padding: 12px 17px;
+
+      border-radius: 999px;
+
+      background: rgba(17,17,17,.92);
+
+      color: white;
+
+      font-size: 12px;
+      font-weight: 650;
+
+      opacity: 0;
+      pointer-events: none;
+
+      transition:
+        opacity .35s var(--ease),
+        transform .35s var(--ease);
+    }
+
+    .toast.show {
+      opacity: 1;
+
+      transform:
+        translate(-50%, 0);
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @media (max-width: 850px) {
+
+      .hero {
+        min-height: auto;
+
+        padding-top: 125px;
+      }
+
+      .hero-inner {
+        grid-template-columns: 1fr;
+
+        gap: 45px;
+      }
+
+      .hero-visual {
+        min-height: 380px;
+      }
+
+      .province-row {
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+
+      .properties-grid {
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+
+      .map-container {
+        height: 590px;
+      }
+    }
+
+    @media (max-width: 600px) {
+
+      .nav {
+        top: 10px;
+
+        width:
+          calc(100% - 18px);
+      }
+
+      .nav-btn {
+        display: none;
+      }
+
+      .hero {
+        padding:
+          115px 16px 55px;
+      }
+
+      h1 {
+        font-size: 55px;
+      }
+
+      .hero-subtitle {
+        font-size: 17px;
+      }
+
+      .search-shell {
+        border-radius: 19px;
+      }
+
+      .search-button {
+        padding: 0 14px;
+      }
+
+      .hero-visual {
+        min-height: 350px;
+
+        border-radius: 29px;
+      }
+
+      .section {
+        width:
+          calc(100% - 28px);
+
+        margin-bottom: 70px;
+      }
+
+      .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .province-row {
+        grid-template-columns:
+          repeat(2, 1fr);
+
+        gap: 9px;
+      }
+
+      .province {
+        min-height: 110px;
+
+        border-radius: 20px;
+      }
+
+      .map-section {
+        width:
+          calc(100% - 12px);
+      }
+
+      .map-container {
+        height: 590px;
+
+        border-radius: 28px;
+      }
+
+      .map-top {
+        top: 12px;
+        left: 12px;
+        right: 12px;
+
+        align-items: flex-start;
+      }
+
+      .map-filter {
+        max-width: 170px;
+
+        overflow-x: auto;
+      }
+
+      .map-filter button {
+        white-space: nowrap;
+      }
+
+      .properties-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .property-image {
+        height: 280px;
+      }
+
+      .ai-section {
+        width:
+          calc(100% - 28px);
+      }
+
+      .ai-card {
+        border-radius: 28px;
+      }
+
+      .ai-search {
+        flex-direction: column;
+        gap: 6px;
+
+        background:
+          rgba(255,255,255,.08);
+      }
+
+      .ai-input {
+        min-height: 46px;
+      }
+
+      .ai-button {
+        width: 100%;
+      }
+
+      footer {
+        flex-direction: column;
+      }
+    }
+
+  </style>
 </head>
 
 <body>
 
-<!-- =================================================
-     HEADER
-================================================= -->
+  <!-- =======================================================
+       BOOT
+       ======================================================= -->
 
-<header class="header">
+  <div id="boot">
+    <div class="boot-logo">NEXO</div>
+  </div>
+
+
+  <!-- =======================================================
+       NAV
+       ======================================================= -->
 
   <nav class="nav">
 
-    <div class="logo">
+    <a href="#" class="logo">
       NEXO
-    </div>
+    </a>
 
-    <button
-      class="header-button"
-      onclick="goToMap()"
-      aria-label="Mapa">
-      ◉
-    </button>
+    <div class="nav-actions">
+
+      <button
+        class="nav-btn"
+        onclick="scrollToSection('discover')">
+        Explorar
+      </button>
+
+      <button
+        class="nav-btn"
+        onclick="scrollToSection('map-section')">
+        Mapa
+      </button>
+
+      <button
+        class="nav-btn"
+        onclick="scrollToSection('ai-section')">
+        NEXO IA
+      </button>
+
+      <button
+        class="nav-btn"
+        onclick="showFavorites()">
+        Favoritos
+      </button>
+
+    </div>
 
   </nav>
 
-</header>
 
+  <!-- =======================================================
+       HERO
+       ======================================================= -->
 
-<!-- =================================================
-     HERO
-================================================= -->
+  <main>
 
-<main>
+    <section class="hero">
 
-<section class="hero">
+      <div class="hero-inner">
 
-  <div class="hero-content">
+        <div class="hero-copy">
 
-    <div class="eyebrow">
-      NEXO INMUEBLE · CUBA
-    </div>
+          <div class="eyebrow">
+            <span class="eyebrow-dot"></span>
+            NEXO · Cuba
+          </div>
 
-    <h1>
-      Encuentra<br>
-      tu próximo lugar.
-    </h1>
+          <h1>
+            Encuentra<br>
+            dónde quieres estar.
+          </h1>
 
-    <p class="hero-text">
-      Explora Cuba de una manera diferente.
-      Descubre propiedades, zonas y oportunidades
-      desde un solo lugar.
-    </p>
+          <p class="hero-subtitle">
+            Descubre propiedades en Cuba de una forma
+            más sencilla, visual y humana.
+          </p>
 
+          <div class="search-shell">
 
-    <div class="search-area">
+            <div class="search-icon">
+              ⌕
+            </div>
 
-      <div class="search-box">
+            <input
+              id="mainSearch"
+              class="search-input"
+              type="search"
+              autocomplete="off"
+              placeholder="Busca una ciudad, zona o propiedad..."
+            >
 
-        <div class="search-symbol">
-          ⌕
+            <button
+              class="search-button"
+              onclick="performSearch()">
+              Buscar
+            </button>
+
+          </div>
+
+          <div class="quick-search">
+
+            <button
+              class="quick-chip"
+              onclick="quickSearch('La Habana')">
+              La Habana
+            </button>
+
+            <button
+              class="quick-chip"
+              onclick="quickSearch('Casa')">
+              Casas
+            </button>
+
+            <button
+              class="quick-chip"
+              onclick="quickSearch('Apartamento')">
+              Apartamentos
+            </button>
+
+            <button
+              class="quick-chip"
+              onclick="quickSearch('Playa')">
+              Playa
+            </button>
+
+            <button
+              class="quick-chip"
+              onclick="quickSearch('150000')">
+              Hasta $150k
+            </button>
+
+          </div>
+
         </div>
 
-        <input
-          id="search"
-          class="search-input"
-          type="search"
-          placeholder="¿Qué estás buscando?"
-          autocomplete="off"
-        >
 
-        <button
-          class="search-button"
-          onclick="searchProperties()">
-          Buscar
-        </button>
+        <div class="hero-visual">
+
+          <div class="cuba-art">
+
+            <!-- Silueta estilizada de Cuba -->
+            <svg
+              viewBox="0 0 700 420"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+
+              <path
+                d="M55 260
+                   C105 218 148 205 196 210
+                   C245 215 266 240 314 230
+                   C368 218 394 181 438 174
+                   C490 165 522 184 555 179
+                   C595 173 619 148 647 158
+                   C624 192 602 213 568 228
+                   C535 243 516 261 484 277
+                   C438 299 398 307 350 316
+                   C300 326 257 337 213 329
+                   C164 320 118 297 55 260Z"
+                fill="rgba(255,255,255,.58)"
+              />
+
+              <circle
+                cx="337"
+                cy="247"
+                r="10"
+                fill="white"
+              />
+
+              <circle
+                cx="337"
+                cy="247"
+                r="23"
+                stroke="rgba(255,255,255,.55)"
+                stroke-width="2"
+              />
+
+              <circle
+                cx="337"
+                cy="247"
+                r="40"
+                stroke="rgba(255,255,255,.25)"
+                stroke-width="2"
+              />
+
+            </svg>
+
+          </div>
+
+
+          <div class="hero-floating-card">
+
+            <div class="floating-label">
+              Explora Cuba
+            </div>
+
+            <div class="floating-title">
+              Tu próxima propiedad
+            </div>
+
+            <div class="floating-meta">
+              Explora por ubicación, precio o tipo de inmueble.
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         DISCOVER
+         ===================================================== -->
+
+    <section
+      id="discover"
+      class="section">
+
+      <div class="section-heading">
+
+        <div>
+          <h2 class="section-title">
+            Explora Cuba.
+          </h2>
+
+          <p class="section-description">
+            Empieza por una provincia o descubre todas
+            las propiedades disponibles.
+          </p>
+        </div>
+
+        <a
+          href="#map-section"
+          class="section-link">
+          Ver mapa →
+        </a>
 
       </div>
 
 
-      <div class="quick-filters">
+      <div class="province-row">
 
         <button
-          class="quick-filter active"
-          data-filter="all"
-          onclick="filterType('all',this)">
-          Todo Cuba
+          class="province"
+          onclick="focusProvince('Pinar del Río')">
+
+          <span class="province-name">
+            Pinar del Río
+          </span>
+
+          <span
+            class="province-count"
+            data-province="Pinar del Río">
+            Explorar →
+          </span>
+
         </button>
 
-        <button
-          class="quick-filter"
-          data-filter="Casa"
-          onclick="filterType('Casa',this)">
-          Casas
-        </button>
 
         <button
-          class="quick-filter"
-          data-filter="Apartamento"
-          onclick="filterType('Apartamento',this)">
-          Apartamentos
+          class="province"
+          onclick="focusProvince('La Habana')">
+
+          <span class="province-name">
+            La Habana
+          </span>
+
+          <span
+            class="province-count"
+            data-province="La Habana">
+            Explorar →
+          </span>
+
         </button>
 
-        <button
-          class="quick-filter"
-          data-filter="low"
-          onclick="filterType('low',this)">
-          Menor precio
-        </button>
 
         <button
-          class="quick-filter"
-          data-filter="high"
-          onclick="filterType('high',this)">
-          Mayor precio
+          class="province"
+          onclick="focusProvince('Matanzas')">
+
+          <span class="province-name">
+            Matanzas
+          </span>
+
+          <span
+            class="province-count"
+            data-province="Matanzas">
+            Explorar →
+          </span>
+
+        </button>
+
+
+        <button
+          class="province"
+          onclick="focusProvince('Villa Clara')">
+
+          <span class="province-name">
+            Villa Clara
+          </span>
+
+          <span
+            data-province="Villa Clara"
+            class="province-count">
+            Explorar →
+          </span>
+
+        </button>
+
+
+        <button
+          class="province"
+          onclick="focusProvince('Cienfuegos')">
+
+          <span class="province-name">
+            Cienfuegos
+          </span>
+
+          <span
+            data-province="Cienfuegos"
+            class="province-count">
+            Explorar →
+          </span>
+
+        </button>
+
+
+        <button
+          class="province"
+          onclick="focusProvince('Camagüey')">
+
+          <span class="province-name">
+            Camagüey
+          </span>
+
+          <span
+            data-province="Camagüey"
+            class="province-count">
+            Explorar →
+          </span>
+
+        </button>
+
+
+        <button
+          class="province"
+          onclick="focusProvince('Holguín')">
+
+          <span class="province-name">
+            Holguín
+          </span>
+
+          <span
+            data-province="Holguín"
+            class="province-count">
+            Explorar →
+          </span>
+
+        </button>
+
+
+        <button
+          class="province"
+          onclick="focusProvince('Santiago de Cuba')">
+
+          <span class="province-name">
+            Santiago de Cuba
+          </span>
+
+          <span
+            data-province="Santiago de Cuba"
+            class="province-count">
+            Explorar →
+          </span>
+
         </button>
 
       </div>
 
-    </div>
-
-  </div>
-
-</section>
+    </section>
 
 
-<!-- =================================================
-     MAP
-================================================= -->
+    <!-- =====================================================
+         MAP
+         ===================================================== -->
 
-<section
-  id="mapSection"
-  class="map-section">
+    <section
+      id="map-section"
+      class="map-section">
 
-  <div class="section-top">
+      <div class="map-container">
 
-    <div>
+        <div class="map-top">
 
-      <h2 class="section-title">
-        Cuba
-      </h2>
+          <div class="map-title glass">
 
-      <p class="section-subtitle">
-        Explora propiedades directamente sobre el mapa.
-      </p>
+            <strong>
+              Explora el mapa
+            </strong>
 
-    </div>
+            <span>
+              Propiedades disponibles en NEXO
+            </span>
 
-    <div
-      id="count"
-      class="count">
-      Cargando...
-    </div>
-
-  </div>
+          </div>
 
 
-  <div class="map-container">
+          <div class="map-filter glass">
 
-    <div id="map"></div>
+            <button
+              class="active"
+              data-map-filter="all"
+              onclick="setMapFilter('all', this)">
+              Todas
+            </button>
+
+            <button
+              data-map-filter="Casa"
+              onclick="setMapFilter('Casa', this)">
+              Casas
+            </button>
+
+            <button
+              data-map-filter="Apartamento"
+              onclick="setMapFilter('Apartamento', this)">
+              Apartamentos
+            </button>
+
+          </div>
+
+        </div>
 
 
-    <div class="map-top">
+        <div id="map"></div>
 
-      <div class="map-pill">
-        🇨🇺 Todo Cuba
+
+        <div class="map-bottom">
+
+          <div
+            id="mapCounter"
+            class="map-counter glass">
+            Cargando propiedades…
+          </div>
+
+        </div>
+
       </div>
 
-      <div class="map-actions">
+    </section>
 
-        <button
-          class="map-action"
-          onclick="resetCuba()"
-          aria-label="Ver Cuba completa">
-          ⌂
-        </button>
+
+    <!-- =====================================================
+         PROPERTIES
+         ===================================================== -->
+
+    <section class="section">
+
+      <div class="section-heading">
+
+        <div>
+
+          <h2 class="section-title">
+            Descubre.
+          </h2>
+
+          <p class="section-description">
+            Propiedades disponibles actualmente en NEXO.
+          </p>
+
+        </div>
 
       </div>
 
-    </div>
 
-  </div>
+      <div
+        id="propertiesGrid"
+        class="properties-grid">
+
+      </div>
+
+    </section>
 
 
-  <!-- PROVINCIAS -->
+    <!-- =====================================================
+         AI
+         ===================================================== -->
+
+    <section
+      id="ai-section"
+      class="ai-section">
+
+      <div class="ai-card">
+
+        <div class="ai-kicker">
+          NEXO IA
+        </div>
+
+        <h2 class="ai-title">
+          Dile a NEXO qué estás buscando.
+        </h2>
+
+        <p class="ai-description">
+          Describe la propiedad que imaginas con tus propias
+          palabras. NEXO puede interpretar preferencias como
+          ubicación, tipo de propiedad, habitaciones y precio.
+        </p>
+
+
+        <div class="ai-search">
+
+          <input
+            id="aiInput"
+            class="ai-input"
+            type="text"
+            placeholder="Ej. una casa en La Habana con 3 habitaciones..."
+          >
+
+          <button
+            class="ai-button"
+            onclick="smartSearch()">
+            Encontrar
+          </button>
+
+        </div>
+
+        <div class="ai-note">
+          Experiencia inteligente inicial · IA avanzada próximamente.
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =======================================================
+       PROPERTY MODAL
+       ======================================================= -->
 
   <div
-    id="provinceBar"
-    class="province-bar">
+    id="propertyModal"
+    class="modal">
 
-    <button
-      class="province-button active"
-      onclick="selectProvince('all',this)">
-      Cuba
-    </button>
+    <div class="modal-panel">
 
-    <button
-      class="province-button"
-      onclick="selectProvince('Pinar del Río',this)">
-      Pinar del Río
-    </button>
+      <div class="modal-image">
 
-    <button
-      class="province-button"
-      onclick="selectProvince('Artemisa',this)">
-      Artemisa
-    </button>
+        <button
+          class="modal-close"
+          onclick="closeProperty()">
+          ×
+        </button>
 
-    <button
-      class="province-button"
-      onclick="selectProvince('La Habana',this)">
-      La Habana
-    </button>
+        <img
+          id="modalImage"
+          src=""
+          alt="Propiedad NEXO">
 
-    <button
-      class="province-button"
-      onclick="selectProvince('Mayabeque',this)">
-      Mayabeque
-    </button>
-
-    <button
-      class="province-button"
-      onclick="selectProvince('Matanzas',this)">
-      Matanzas
-    </button>
-
-    <button
-      class="province-button"
-      onclick="selectProvince('Cienfuegos',this)">
-      Cienfuegos
-    </button>
-
-    <button
-      class="province-button"
-      onclick="selectProvince('Villa Clara',this)">
-      Villa Clara
-    </button>
-
-    <button
-      class="province-button"
-      onclick="selectProvince('Sancti Spíritus',this)">
-      Sancti Spíritus
-    </button>
-
-    <button
-      class="province-button"
-      onclick="selectProvince('Ciego de Ávila',this)">
-      Ciego de Ávila
-    </button>
-
-    <button
-      class="province-button"
-      onclick="selectProvince('Camagüey',this)">
-      Camagüey
-    </button>
-
-    <button
-      class="province-button"
-      onclick="selectProvince('Las Tunas',this)">
-      Las Tunas
-    </button>
-
-    <button
-      class="province-button"
-      onclick="selectProvince('Holguín',this)">
-      Holguín
-    </button>
-
-    <button
-      class="province-button"
-      onclick="selectProvince('Granma',this)">
-      Granma
-    </button>
-
-    <button
-      class="province-button"
-      onclick="selectProvince('Santiago de Cuba',this)">
-      Santiago de Cuba
-    </button>
-
-    <button
-      class="province-button"
-      onclick="selectProvince('Guantánamo',this)">
-      Guantánamo
-    </button>
-
-  </div>
-
-</section>
+      </div>
 
 
-<!-- =================================================
-     PROPERTIES
-================================================= -->
+      <div class="modal-body">
 
-<section class="properties-section">
+        <div
+          id="modalPrice"
+          class="modal-price">
+        </div>
 
-  <div class="section-top">
+        <div
+          id="modalLocation"
+          class="modal-location">
+        </div>
 
-    <div>
 
-      <h2 class="section-title">
-        Propiedades
-      </h2>
+        <div
+          id="modalStats"
+          class="modal-stats">
+        </div>
 
-      <p class="section-subtitle">
-        Descubre las oportunidades disponibles.
-      </p>
+
+        <div
+          id="modalDescription"
+          class="modal-description">
+        </div>
+
+
+        <button
+          class="contact-button"
+          onclick="contactNexo()">
+          Contactar con NEXO
+        </button>
+
+      </div>
 
     </div>
 
   </div>
 
+
+  <!-- =======================================================
+       TOAST
+       ======================================================= -->
 
   <div
-    id="loading"
-    class="loading">
-    Cargando propiedades...
+    id="toast"
+    class="toast">
   </div>
 
 
-  <div
-    id="properties"
-    class="properties-grid">
-  </div>
+  <!-- =======================================================
+       SCRIPTS
+       ======================================================= -->
 
-</section>
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+  </script>
 
-</main>
 
+  <script>
 
-<!-- =================================================
-     AI BUTTON
-================================================= -->
+    /* ========================================================
+       NEXO APP
+       ======================================================== */
 
-<button
-  class="ai-button"
-  onclick="aiComingSoon()">
-  ✦ NEXO IA
-</button>
+    const state = {
 
+      properties: [],
 
-<!-- =================================================
-     PROPERTY DETAIL
-================================================= -->
+      filteredProperties: [],
 
-<div
-  id="overlay"
-  class="overlay"
-  onclick="closeDetail(event)">
+      map: null,
 
-  <article
-    class="detail"
-    onclick="event.stopPropagation()">
+      markers: [],
 
-    <button
-      class="close"
-      onclick="closeDetail()">
-      ×
-    </button>
+      mapFilter: "all",
 
+      currentProperty: null,
 
-    <div
-      id="detailPhoto"
-      class="detail-photo">
-    </div>
-
-
-    <div
-      id="detailContent"
-      class="detail-content">
-    </div>
-
-  </article>
-
-</div>
-
-
-<!-- MAP LIBRARY -->
-
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-</script>
-
-
-<script>
-
-/* =================================================
-   NEXO STATE
-================================================= */
-
-let allProperties = [];
-
-let visibleProperties = [];
-
-let activeType = "all";
-
-let activeProvince = "all";
-
-let activeSearch = "";
-
-let markers = [];
-
-
-/* =================================================
-   COORDENADAS DE CUBA
-=================================================
-
-   Son coordenadas aproximadas de referencia
-   para que NEXO pueda comenzar a visualizar
-   propiedades por provincia.
-
-   Más adelante podremos añadir coordenadas
-   exactas a D1 y cada propiedad tendrá su
-   ubicación real.
-================================================= */
-
-const locations = {
-
-  "Pinar del Río":[22.4175,-83.6981],
-
-  "Artemisa":[22.8134,-82.7610],
-
-  "La Habana":[23.1136,-82.3666],
-
-  "Mayabeque":[22.9614,-82.1510],
-
-  "Matanzas":[23.0511,-81.5775],
-
-  "Cienfuegos":[22.1496,-80.4430],
-
-  "Villa Clara":[22.4069,-79.9647],
-
-  "Sancti Spíritus":[21.9297,-79.4422],
-
-  "Ciego de Ávila":[21.8402,-78.7619],
-
-  "Camagüey":[21.3808,-77.9169],
-
-  "Las Tunas":[20.9617,-76.9511],
-
-  "Holguín":[20.8872,-76.2631],
-
-  "Granma":[20.3831,-76.6431],
-
-  "Santiago de Cuba":[20.0169,-75.8302],
-
-  "Guantánamo":[20.1444,-75.2092]
-
-};
-
-
-/* =================================================
-   MAPA
-================================================= */
-
-const map =
-  L.map("map",{
-
-    zoomControl:true,
-
-    minZoom:6,
-
-    maxZoom:17
-
-  }).setView(
-    [21.8,-79.5],
-    6
-  );
-
-
-L.tileLayer(
-  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  {
-    attribution:
-      '&copy; OpenStreetMap contributors',
-
-    maxZoom:19
-  }
-).addTo(map);
-
-
-/* =================================================
-   FORMATOS
-================================================= */
-
-function escapeHTML(value){
-
-  if(
-    value === null ||
-    value === undefined
-  ){
-    return "";
-  }
-
-  return String(value)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-
-}
-
-
-function price(value){
-
-  const number =
-    Number(value);
-
-  if(!Number.isFinite(number)){
-    return "Consultar";
-  }
-
-  return new Intl.NumberFormat(
-    "es-US",
-    {
-      style:"currency",
-      currency:"USD",
-      maximumFractionDigits:0
-    }
-  ).format(number);
-
-}
-
-
-function photos(property){
-
-  if(!property.photos){
-    return [];
-  }
-
-  try{
-
-    const parsed =
-      typeof property.photos === "string"
-      ? JSON.parse(property.photos)
-      : property.photos;
-
-    if(Array.isArray(parsed)){
-      return parsed.filter(Boolean);
-    }
-
-  }catch(error){
-
-    return String(property.photos)
-      .split(",")
-      .map(x=>x.trim())
-      .filter(Boolean);
-
-  }
-
-  return [];
-
-}
-
-
-function photo(property){
-
-  const list =
-    photos(property);
-
-  return list.length
-    ? list[0]
-    : null;
-
-}
-
-
-/* =================================================
-   OBTENER UBICACIÓN
-================================================= */
-
-function getCoordinates(property){
-
-  const city =
-    String(
-      property.city || ""
-    ).trim();
-
-  const neighborhood =
-    String(
-      property.neighborhood || ""
-    ).trim();
-
-  /*
-    Primero intentamos coincidir
-    directamente con una provincia.
-  */
-
-  if(locations[city]){
-    return locations[city];
-  }
-
-  /*
-    Algunas propiedades pueden tener
-    "La Habana" como ciudad y el barrio
-    como Marianao, Playa, etc.
-  */
-
-  const normalized =
-    `${city} ${neighborhood}`.toLowerCase();
-
-  if(
-    normalized.includes("habana")
-  ){
-    return locations["La Habana"];
-  }
-
-  if(
-    normalized.includes("matanzas") ||
-    normalized.includes("varadero")
-  ){
-    return locations["Matanzas"];
-  }
-
-  if(
-    normalized.includes("holguín") ||
-    normalized.includes("holguin")
-  ){
-    return locations["Holguín"];
-  }
-
-  if(
-    normalized.includes("santiago")
-  ){
-    return locations["Santiago de Cuba"];
-  }
-
-  /*
-    Si no podemos determinar la provincia,
-    colocamos el marcador aproximadamente
-    en el centro de Cuba.
-  */
-
-  return [21.8,-79.5];
-
-}
-
-
-/* =================================================
-   CARGAR PROPIEDADES
-================================================= */
-
-async function loadProperties(){
-
-  try{
-
-    const response =
-      await fetch(
-        "/api/properties"
-      );
-
-    if(!response.ok){
-      throw new Error(
-        "No se pudieron cargar las propiedades."
-      );
-    }
-
-    const data =
-      await response.json();
-
-    if(!data.success){
-      throw new Error(
-        data.error ||
-        "Error de NEXO"
-      );
-    }
-
-    allProperties =
-      Array.isArray(data.properties)
-      ? data.properties.filter(
-          property =>
-            property.status === "available"
+      favorites:
+        JSON.parse(
+          localStorage.getItem("nexo_favorites") || "[]"
         )
-      : [];
 
-    visibleProperties =
-      [...allProperties];
-
-    applyEverything();
-
-  }catch(error){
-
-    console.error(
-      "NEXO:",
-      error
-    );
-
-    document
-      .getElementById("loading")
-      .textContent =
-      "No pudimos cargar las propiedades.";
-
-  }
-
-}
+    };
 
 
-/* =================================================
-   FILTROS
-================================================= */
+    /* ========================================================
+       HELPERS
+       ======================================================== */
 
-function filterType(
-  type,
-  button
-){
-
-  activeType =
-    type;
-
-  document
-    .querySelectorAll(".quick-filter")
-    .forEach(
-      item =>
-        item.classList.remove("active")
-    );
-
-  button.classList.add(
-    "active"
-  );
-
-  applyEverything();
-
-}
+    const $ = selector =>
+      document.querySelector(selector);
 
 
-function searchProperties(){
+    const escapeHTML = value => {
 
-  activeSearch =
-    document
-      .getElementById("search")
-      .value
-      .trim()
-      .toLowerCase();
+      if (value === null ||
+          value === undefined) {
+        return "";
+      }
 
-  applyEverything();
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    };
 
-  goToMap();
 
-}
+    const money = value => {
+
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+        return "Precio no disponible";
+      }
+
+      const number =
+        Number(value);
+
+      if (Number.isNaN(number)) {
+        return escapeHTML(value);
+      }
+
+      return "$" +
+        number.toLocaleString(
+          "en-US",
+          {
+            maximumFractionDigits: 0
+          }
+        );
+    };
 
 
-document
-  .getElementById("search")
-  .addEventListener(
-    "keydown",
-    event => {
+    const getPhotos = property => {
 
-      if(event.key === "Enter"){
-        searchProperties();
+      if (!property.photos) {
+        return [];
+      }
+
+      try {
+
+        if (Array.isArray(property.photos)) {
+          return property.photos;
+        }
+
+        const parsed =
+          JSON.parse(property.photos);
+
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+
+      } catch (error) {
+
+        if (
+          typeof property.photos === "string"
+        ) {
+
+          return property.photos
+            .split(",")
+            .map(x => x.trim())
+            .filter(Boolean);
+
+        }
+
+      }
+
+      return [];
+    };
+
+
+    const getLocation = property => {
+
+      return [
+        property.neighborhood,
+        property.city
+      ]
+      .filter(Boolean)
+      .join(" · ") || "Cuba";
+
+    };
+
+
+    /* ========================================================
+       PROPERTY API
+       ======================================================== */
+
+    async function loadProperties() {
+
+      try {
+
+        const response =
+          await fetch(
+            "/api/properties"
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            "No se pudieron cargar las propiedades."
+          );
+        }
+
+        const data =
+          await response.json();
+
+        if (!data.success) {
+          throw new Error(
+            data.error ||
+            "Error al cargar propiedades."
+          );
+        }
+
+        state.properties =
+          Array.isArray(data.properties)
+            ? data.properties.filter(
+                property =>
+                  property.status === "available"
+              )
+            : [];
+
+        state.filteredProperties =
+          [...state.properties];
+
+        renderProperties();
+
+        updateProvinceCounts();
+
+        updateMap();
+
+      } catch (error) {
+
+        console.error(
+          "NEXO:",
+          error
+        );
+
+        $("#propertiesGrid").innerHTML = `
+          <div class="empty">
+            <strong>No pudimos cargar las propiedades.</strong>
+            Inténtalo nuevamente en unos segundos.
+          </div>
+        `;
+
+        $("#mapCounter").textContent =
+          "No se pudieron cargar las propiedades.";
+
+      } finally {
+
+        setTimeout(() => {
+
+          $("#boot")
+            .classList
+            .add("hide");
+
+        }, 350);
+
       }
 
     }
-  );
 
 
-function selectProvince(
-  province,
-  button
-){
+    /* ========================================================
+       RENDER PROPERTIES
+       ======================================================== */
 
-  activeProvince =
-    province;
+    function renderProperties() {
 
-  document
-    .querySelectorAll(".province-button")
-    .forEach(
-      item =>
-        item.classList.remove(
-          "active"
-        )
-    );
+      const grid =
+        $("#propertiesGrid");
 
-  button.classList.add(
-    "active"
-  );
+      if (
+        !state.filteredProperties.length
+      ) {
 
+        grid.innerHTML = `
+          <div class="empty">
+            <strong>
+              No encontramos propiedades.
+            </strong>
 
-  if(
-    province !== "all" &&
-    locations[province]
-  ){
+            Prueba con otra búsqueda.
+          </div>
+        `;
 
-    map.flyTo(
-      locations[province],
-      9,
-      {
-        duration:1.1
+        return;
       }
-    );
 
-  }else{
 
-    resetCuba();
-
-  }
-
-  applyEverything();
-
-}
-
-
-function applyEverything(){
-
-  let result =
-    [...allProperties];
-
-
-  /* Tipo */
-
-  if(
-    activeType === "Casa" ||
-    activeType === "Apartamento"
-  ){
-
-    result =
-      result.filter(
-        property =>
-          String(
-            property.property_type || ""
-          ).toLowerCase() ===
-          activeType.toLowerCase()
-      );
-
-  }
-
-
-  /* Precio */
-
-  if(activeType === "low"){
-
-    result.sort(
-      (a,b)=>
-        Number(a.price || 0) -
-        Number(b.price || 0)
-    );
-
-  }
-
-  if(activeType === "high"){
-
-    result.sort(
-      (a,b)=>
-        Number(b.price || 0) -
-        Number(a.price || 0)
-    );
-
-  }
-
-
-  /* Provincia */
-
-  if(
-    activeProvince !== "all"
-  ){
-
-    result =
-      result.filter(
-        property => {
-
-          const city =
-            String(
-              property.city || ""
-            ).toLowerCase();
-
-          const province =
-            activeProvince.toLowerCase();
-
-          return (
-            city.includes(province) ||
-            province.includes(city)
-          );
-
-        }
-      );
-
-  }
-
-
-  /* Búsqueda */
-
-  if(activeSearch){
-
-    result =
-      result.filter(
-        property => {
-
-          const text = [
-
-            property.property_type,
-
-            property.city,
-
-            property.neighborhood,
-
-            property.address,
-
-            property.description
-
-          ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-
-          return text.includes(
-            activeSearch
-          );
-
-        }
-      );
-
-  }
-
-
-  visibleProperties =
-    result;
-
-  renderCards();
-
-  renderMarkers();
-
-  updateCount();
-
-}
-
-
-/* =================================================
-   CONTADOR
-================================================= */
-
-function updateCount(){
-
-  const count =
-    visibleProperties.length;
-
-  document
-    .getElementById("count")
-    .textContent =
-      `${count} ${
-        count === 1
-        ? "propiedad"
-        : "propiedades"
-      }`;
-
-}
-
-
-/* =================================================
-   MARCADORES
-================================================= */
-
-function renderMarkers(){
-
-  markers.forEach(
-    marker =>
-      map.removeLayer(marker)
-  );
-
-  markers = [];
-
-
-  visibleProperties
-    .forEach(
-      property => {
-
-        const coordinates =
-          getCoordinates(property);
-
-        const marker =
-          L.marker(
-            coordinates,
-            {
-              icon:
-                L.divIcon({
-
-                  className:"",
-
-                  html:
-                    `<div class="nexo-marker">
-                      ${price(property.price)}
-                    </div>`,
-
-                  iconSize:null,
-
-                  iconAnchor:
-                    [0,0]
-
-                })
+      grid.innerHTML =
+        state.filteredProperties
+          .map(property =>
+            propertyCard(property)
+          )
+          .join("");
+
+    }
+
+
+    function propertyCard(property) {
+
+      const photos =
+        getPhotos(property);
+
+      const image =
+        photos[0] || "";
+
+      const favorite =
+        state.favorites
+          .includes(Number(property.id));
+
+      return `
+
+        <article
+          class="property-card"
+          onclick="openProperty(${Number(property.id)})">
+
+          <div class="property-image">
+
+            ${
+              image
+                ? `
+                  <img
+                    src="${escapeHTML(image)}"
+                    alt="${escapeHTML(
+                      property.property_type ||
+                      "Propiedad"
+                    )}"
+                    loading="lazy"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
+                  >
+
+                  <div
+                    class="image-placeholder"
+                    style="display:none">
+                    Fotografía no disponible
+                  </div>
+                `
+                : `
+                  <div class="image-placeholder">
+                    Fotografía próximamente
+                  </div>
+                `
             }
+
+
+            <button
+              class="favorite ${
+                favorite ? "active" : ""
+              }"
+              onclick="
+                event.stopPropagation();
+                toggleFavorite(${Number(property.id)}, this);
+              "
+              aria-label="Guardar propiedad">
+
+              ${
+                favorite
+                  ? "♥"
+                  : "♡"
+              }
+
+            </button>
+
+          </div>
+
+
+          <div class="property-content">
+
+            <div class="property-price">
+              ${money(property.price)}
+            </div>
+
+            <div class="property-location">
+              ${escapeHTML(
+                property.property_type ||
+                "Propiedad"
+              )}
+              ·
+              ${escapeHTML(
+                getLocation(property)
+              )}
+            </div>
+
+
+            <div class="property-stats">
+
+              ${
+                property.bedrooms !== null &&
+                property.bedrooms !== undefined
+                  ? `
+                    <span>
+                      🛏 ${escapeHTML(
+                        property.bedrooms
+                      )}
+                    </span>
+                  `
+                  : ""
+              }
+
+              ${
+                property.bathrooms !== null &&
+                property.bathrooms !== undefined
+                  ? `
+                    <span>
+                      🚿 ${escapeHTML(
+                        property.bathrooms
+                      )}
+                    </span>
+                  `
+                  : ""
+              }
+
+              ${
+                property.square_meters
+                  ? `
+                    <span>
+                      ${escapeHTML(
+                        property.square_meters
+                      )} m²
+                    </span>
+                  `
+                  : ""
+              }
+
+            </div>
+
+
+            <div class="property-status">
+              Disponible
+            </div>
+
+          </div>
+
+        </article>
+
+      `;
+
+    }
+
+
+    /* ========================================================
+       MAP
+       ======================================================== */
+
+    function initMap() {
+
+      state.map =
+        L.map(
+          "map",
+          {
+            zoomControl: true,
+            scrollWheelZoom: true
+          }
+        )
+        .setView(
+          [21.55, -79.5],
+          6
+        );
+
+
+      L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          maxZoom: 18,
+          attribution:
+            '&copy; OpenStreetMap contributors'
+        }
+      ).addTo(
+        state.map
+      );
+
+    }
+
+
+    /*
+      Mientras todavía no guardamos coordenadas
+      reales en D1, utilizamos ubicaciones aproximadas
+      por ciudad/provincia.
+
+      Más adelante sustituiremos esto por:
+
+      latitude
+      longitude
+
+      directamente desde D1.
+    */
+
+    const locationCenters = {
+
+      "La Habana":
+        [23.1136, -82.3666],
+
+      "La Lisa":
+        [23.0105, -82.4630],
+
+      "Playa":
+        [23.095, -82.432],
+
+      "Marianao":
+        [23.089, -82.437],
+
+      "Matanzas":
+        [23.041, -81.5775],
+
+      "Varadero":
+        [23.15, -81.25],
+
+      "Pinar del Río":
+        [22.4175, -83.6981],
+
+      "Villa Clara":
+        [22.406, -79.964],
+
+      "Santa Clara":
+        [22.406, -79.964],
+
+      "Cienfuegos":
+        [22.1456, -80.4364],
+
+      "Camagüey":
+        [21.383, -77.907],
+
+      "Holguín":
+        [20.8872, -76.2631],
+
+      "Santiago de Cuba":
+        [20.0169, -75.8302],
+
+      "Artemisa":
+        [22.813, -82.761],
+
+      "Mayabeque":
+        [22.96, -81.95],
+
+      "Sancti Spíritus":
+        [21.93, -79.44],
+
+      "Ciego de Ávila":
+        [21.84, -78.76],
+
+      "Las Tunas":
+        [20.96, -76.95],
+
+      "Granma":
+        [20.38, -76.64],
+
+      "Guantánamo":
+        [20.14, -75.21],
+
+      "Isla de la Juventud":
+        [21.74, -82.80]
+
+    };
+
+
+    function getCoordinates(property) {
+
+      const possible =
+        [
+          property.neighborhood,
+          property.city
+        ]
+        .filter(Boolean);
+
+      for (
+        const place of possible
+      ) {
+
+        if (
+          locationCenters[place]
+        ) {
+          return locationCenters[place];
+        }
+
+      }
+
+      return [
+        21.55,
+        -79.5
+      ];
+
+    }
+
+
+    function updateMap() {
+
+      if (!state.map) {
+        return;
+      }
+
+
+      state.markers.forEach(
+        marker =>
+          marker.remove()
+      );
+
+      state.markers = [];
+
+
+      const visible =
+        state.filteredProperties;
+
+
+      visible.forEach(
+        property => {
+
+          const coords =
+            getCoordinates(property);
+
+
+          const icon =
+            L.divIcon({
+
+              className:
+                "",
+
+              html: `
+                <div class="nexo-marker">
+                  ${property.bedrooms || "•"}
+                </div>
+              `,
+
+              iconSize:
+                [42,42],
+
+              iconAnchor:
+                [21,21]
+
+            });
+
+
+          const marker =
+            L.marker(
+              coords,
+              { icon }
+            )
+            .addTo(
+              state.map
+            );
+
+
+          marker.on(
+            "click",
+            () =>
+              openProperty(
+                Number(property.id)
+              )
           );
 
 
-        marker.addTo(map);
+          state.markers.push(
+            marker
+          );
+
+        }
+      );
 
 
-        marker.on(
-          "click",
-          () =>
-            openDetail(
-              property.id
+      $("#mapCounter").textContent =
+        `${visible.length} ${
+          visible.length === 1
+            ? "propiedad"
+            : "propiedades"
+        }`;
+
+    }
+
+
+    /* ========================================================
+       MAP FILTER
+       ======================================================== */
+
+    function setMapFilter(
+      filter,
+      button
+    ) {
+
+      state.mapFilter =
+        filter;
+
+
+      document
+        .querySelectorAll(
+          ".map-filter button"
+        )
+        .forEach(
+          btn =>
+            btn.classList.remove(
+              "active"
             )
         );
 
 
-        markers.push(
-          marker
+      button.classList.add(
+        "active"
+      );
+
+
+      applyFilters();
+
+    }
+
+
+    /* ========================================================
+       SEARCH
+       ======================================================== */
+
+    function performSearch() {
+
+      const query =
+        $("#mainSearch")
+          .value
+          .trim()
+          .toLowerCase();
+
+
+      if (!query) {
+
+        state.filteredProperties =
+          [...state.properties];
+
+        renderProperties();
+
+        updateMap();
+
+        scrollToSection(
+          "map-section"
         );
+
+        return;
+      }
+
+
+      state.filteredProperties =
+        state.properties.filter(
+          property => {
+
+            const searchable =
+              [
+                property.property_type,
+                property.city,
+                property.neighborhood,
+                property.address,
+                property.description,
+                property.price,
+                property.bedrooms,
+                property.bathrooms,
+                property.square_meters
+              ]
+              .filter(
+                x =>
+                  x !== null &&
+                  x !== undefined
+              )
+              .join(" ")
+              .toLowerCase();
+
+
+            return searchable
+              .includes(query);
+
+          }
+        );
+
+
+      renderProperties();
+
+      updateMap();
+
+      scrollToSection(
+        "map-section"
+      );
+
+      showToast(
+        `${state.filteredProperties.length} resultados`
+      );
+
+    }
+
+
+    function quickSearch(value) {
+
+      $("#mainSearch")
+        .value = value;
+
+      performSearch();
+
+    }
+
+
+    /*
+      Interpretación sencilla de lenguaje natural.
+      Más adelante la sustituiremos por una IA real
+      conectada al backend.
+    */
+
+    function smartSearch() {
+
+      const text =
+        $("#aiInput")
+          .value
+          .trim()
+          .toLowerCase();
+
+
+      if (!text) {
+
+        showToast(
+          "Cuéntame qué propiedad estás buscando."
+        );
+
+        return;
+      }
+
+
+      let results =
+        [...state.properties];
+
+
+      /*
+        Ciudad / zona
+      */
+
+      const places =
+        Object.keys(
+          locationCenters
+        );
+
+
+      const detectedPlace =
+        places.find(
+          place =>
+            text.includes(
+              place.toLowerCase()
+            )
+        );
+
+
+      if (detectedPlace) {
+
+        results =
+          results.filter(
+            property =>
+              [
+                property.city,
+                property.neighborhood
+              ]
+              .filter(Boolean)
+              .some(
+                value =>
+                  String(value)
+                    .toLowerCase()
+                    .includes(
+                      detectedPlace.toLowerCase()
+                    )
+              )
+          );
+
+      }
+
+
+      /*
+        Tipo
+      */
+
+      if (
+        text.includes("casa")
+      ) {
+
+        results =
+          results.filter(
+            property =>
+              String(
+                property.property_type || ""
+              )
+              .toLowerCase()
+              .includes("casa")
+          );
+
+      }
+
+
+      if (
+        text.includes("apartamento") ||
+        text.includes("apartamentos") ||
+        text.includes("apto")
+      ) {
+
+        results =
+          results.filter(
+            property =>
+              String(
+                property.property_type || ""
+              )
+              .toLowerCase()
+              .includes("apart")
+          );
+
+      }
+
+
+      /*
+        Habitaciones
+      */
+
+      const bedroomsMatch =
+        text.match(
+          /(\d+)\s*(habitaciones?|cuartos?|hab)/
+        );
+
+
+      if (bedroomsMatch) {
+
+        const bedrooms =
+          Number(
+            bedroomsMatch[1]
+          );
+
+        results =
+          results.filter(
+            property =>
+              Number(
+                property.bedrooms
+              ) >= bedrooms
+          );
+
+      }
+
+
+      /*
+        Precio máximo
+      */
+
+      const priceMatch =
+        text.match(
+          /(?:menos de|hasta|máximo|maximo|por debajo de)\s*\$?\s*([\d,.]+)\s*(k|mil)?/
+        );
+
+
+      if (priceMatch) {
+
+        let maxPrice =
+          Number(
+            priceMatch[1]
+              .replace(/,/g, "")
+          );
+
+
+        if (
+          priceMatch[2] === "k" ||
+          priceMatch[2] === "mil"
+        ) {
+
+          maxPrice *= 1000;
+
+        }
+
+
+        results =
+          results.filter(
+            property =>
+              Number(property.price) <=
+              maxPrice
+          );
+
+      }
+
+
+      state.filteredProperties =
+        results;
+
+
+      renderProperties();
+
+      updateMap();
+
+      scrollToSection(
+        "map-section"
+      );
+
+
+      showToast(
+        results.length
+          ? `${results.length} propiedades encontradas`
+          : "No encontramos coincidencias"
+      );
+
+    }
+
+
+    $("#mainSearch")
+      .addEventListener(
+        "keydown",
+        event => {
+
+          if (
+            event.key === "Enter"
+          ) {
+
+            performSearch();
+
+          }
+
+        }
+      );
+
+
+    /* ========================================================
+       GENERIC FILTER APPLICATION
+       ======================================================== */
+
+    function applyFilters() {
+
+      let results =
+        [...state.properties];
+
+
+      if (
+        state.mapFilter !== "all"
+      ) {
+
+        results =
+          results.filter(
+            property =>
+              String(
+                property.property_type || ""
+              )
+              .toLowerCase()
+              .includes(
+                state.mapFilter.toLowerCase()
+              )
+          );
+
+      }
+
+
+      state.filteredProperties =
+        results;
+
+
+      renderProperties();
+
+      updateMap();
+
+    }
+
+
+    /* ========================================================
+       PROVINCES
+       ======================================================== */
+
+    function updateProvinceCounts() {
+
+      document
+        .querySelectorAll(
+          "[data-province]"
+        )
+        .forEach(
+          element => {
+
+            const province =
+              element.dataset.province;
+
+
+            const count =
+              state.properties.filter(
+                property => {
+
+                  const city =
+                    String(
+                      property.city || ""
+                    )
+                    .toLowerCase();
+
+                  const neighborhood =
+                    String(
+                      property.neighborhood || ""
+                    )
+                    .toLowerCase();
+
+                  return (
+                    city.includes(
+                      province.toLowerCase()
+                    ) ||
+                    neighborhood.includes(
+                      province.toLowerCase()
+                    )
+                  );
+
+                }
+              ).length;
+
+
+            element.textContent =
+              count
+                ? `${count} ${
+                    count === 1
+                      ? "propiedad"
+                      : "propiedades"
+                  }`
+                : "Explorar →";
+
+          }
+        );
+
+    }
+
+
+    function focusProvince(
+      province
+    ) {
+
+      const coords =
+        locationCenters[
+          province
+        ];
+
+
+      if (!coords) {
+
+        quickSearch(
+          province
+        );
+
+        return;
+      }
+
+
+      state.map.flyTo(
+        coords,
+        province === "La Habana"
+          ? 11
+          : 9,
+        {
+          duration: 1.2
+        }
+      );
+
+
+      $("#mainSearch")
+        .value = province;
+
+
+      performSearch();
+
+    }
+
+
+    /* ========================================================
+       FAVORITES
+       ======================================================== */
+
+    function toggleFavorite(
+      id,
+      button
+    ) {
+
+      id =
+        Number(id);
+
+
+      if (
+        state.favorites.includes(id)
+      ) {
+
+        state.favorites =
+          state.favorites.filter(
+            favorite =>
+              favorite !== id
+          );
+
+        button.classList.remove(
+          "active"
+        );
+
+        button.textContent =
+          "♡";
+
+
+        showToast(
+          "Eliminada de favoritos"
+        );
+
+      } else {
+
+        state.favorites.push(
+          id
+        );
+
+        button.classList.add(
+          "active"
+        );
+
+        button.textContent =
+          "♥";
+
+
+        showToast(
+          "Guardada en favoritos"
+        );
+
+      }
+
+
+      localStorage.setItem(
+        "nexo_favorites",
+        JSON.stringify(
+          state.favorites
+        )
+      );
+
+    }
+
+
+    function showFavorites() {
+
+      if (
+        !state.favorites.length
+      ) {
+
+        showToast(
+          "Todavía no tienes favoritos."
+        );
+
+        return;
+      }
+
+
+      state.filteredProperties =
+        state.properties.filter(
+          property =>
+            state.favorites.includes(
+              Number(property.id)
+            )
+        );
+
+
+      renderProperties();
+
+      updateMap();
+
+      scrollToSection(
+        "discover"
+      );
+
+      showToast(
+        `${state.filteredProperties.length} favoritos`
+      );
+
+    }
+
+
+    /* ========================================================
+       PROPERTY DETAIL
+       ======================================================== */
+
+    function openProperty(id) {
+
+      const property =
+        state.properties.find(
+          item =>
+            Number(item.id) ===
+            Number(id)
+        );
+
+
+      if (!property) {
+        return;
+      }
+
+
+      state.currentProperty =
+        property;
+
+
+      const photos =
+        getPhotos(property);
+
+
+      $("#modalImage").src =
+        photos[0] || "";
+
+
+      $("#modalImage").style.display =
+        photos[0]
+          ? "block"
+          : "none";
+
+
+      $("#modalPrice").textContent =
+        money(
+          property.price
+        );
+
+
+      $("#modalLocation").textContent =
+        [
+          property.property_type,
+          getLocation(property)
+        ]
+        .filter(Boolean)
+        .join(" · ");
+
+
+      const stats = [];
+
+
+      if (
+        property.bedrooms !== null &&
+        property.bedrooms !== undefined
+      ) {
+
+        stats.push(
+          `🛏 ${property.bedrooms} habitaciones`
+        );
+
+      }
+
+
+      if (
+        property.bathrooms !== null &&
+        property.bathrooms !== undefined
+      ) {
+
+        stats.push(
+          `🚿 ${property.bathrooms} baños`
+        );
+
+      }
+
+
+      if (
+        property.square_meters
+      ) {
+
+        stats.push(
+          `${property.square_meters} m²`
+        );
+
+      }
+
+
+      $("#modalStats").innerHTML =
+        stats
+          .map(
+            stat =>
+              `<span class="stat">
+                ${escapeHTML(stat)}
+              </span>`
+          )
+          .join("");
+
+
+      $("#modalDescription")
+        .textContent =
+          property.description ||
+          "Esta propiedad forma parte del inventario disponible de NEXO.";
+
+
+      $("#propertyModal")
+        .classList
+        .add("open");
+
+
+      document.body.style.overflow =
+        "hidden";
+
+    }
+
+
+    function closeProperty() {
+
+      $("#propertyModal")
+        .classList
+        .remove("open");
+
+
+      document.body.style.overflow =
+        "";
+
+    }
+
+
+    $("#propertyModal")
+      .addEventListener(
+        "click",
+        event => {
+
+          if (
+            event.target.id ===
+            "propertyModal"
+          ) {
+
+            closeProperty();
+
+          }
+
+        }
+      );
+
+
+    function contactNexo() {
+
+      showToast(
+        "NEXO recibirá tu solicitud de contacto."
+      );
+
+      /*
+        Aquí posteriormente conectaremos
+        WhatsApp / formulario / CRM.
+      */
+
+    }
+
+
+    /* ========================================================
+       NAVIGATION
+       ======================================================== */
+
+    function scrollToSection(
+      id
+    ) {
+
+      const element =
+        document.getElementById(id);
+
+      if (!element) {
+        return;
+      }
+
+
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+    }
+
+
+    /* ========================================================
+       TOAST
+       ======================================================== */
+
+    let toastTimer;
+
+
+    function showToast(
+      message
+    ) {
+
+      const toast =
+        $("#toast");
+
+
+      toast.textContent =
+        message;
+
+
+      toast.classList.add(
+        "show"
+      );
+
+
+      clearTimeout(
+        toastTimer
+      );
+
+
+      toastTimer =
+        setTimeout(
+          () =>
+            toast.classList.remove(
+              "show"
+            ),
+          2500
+        );
+
+    }
+
+
+    /* ========================================================
+       INIT
+       ======================================================== */
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      () => {
+
+        initMap();
+
+        loadProperties();
 
       }
     );
 
-}
-
-
-/* =================================================
-   TARJETAS
-================================================= */
-
-function renderCards(){
-
-  const grid =
-    document.getElementById(
-      "properties"
-    );
-
-  const loading =
-    document.getElementById(
-      "loading"
-    );
-
-  loading.style.display =
-    "none";
-
-
-  if(
-    !visibleProperties.length
-  ){
-
-    grid.innerHTML = `
-
-      <div class="empty">
-
-        <strong>
-          No encontramos propiedades.
-        </strong>
-
-        <br>
-
-        <span>
-          Prueba con otra zona,
-          provincia o filtro.
-        </span>
-
-      </div>
-
-    `;
-
-    return;
-
-  }
-
-
-  grid.innerHTML =
-    visibleProperties
-      .map(
-        property => {
-
-          const image =
-            photo(property);
-
-          return `
-
-            <article
-              class="property-card"
-              onclick="openDetail(${Number(property.id)})">
-
-              <div class="property-image">
-
-                ${
-                  image
-
-                  ? `
-                    <img
-                      src="${escapeHTML(image)}"
-                      alt="${escapeHTML(
-                        property.property_type ||
-                        "Propiedad"
-                      )}"
-                      loading="lazy"
-                      onerror="this.style.display='none'">
-                  `
-
-                  : `
-
-                    <div class="no-photo">
-                      Imagen próximamente
-                    </div>
-
-                  `
-                }
-
-                <div class="available">
-                  Disponible
-                </div>
-
-              </div>
-
-
-              <div class="property-body">
-
-                <div class="price">
-                  ${price(property.price)}
-                </div>
-
-                <div class="property-type">
-                  ${escapeHTML(
-                    property.property_type ||
-                    "Propiedad"
-                  )}
-                </div>
-
-                <div class="location">
-
-                  ${escapeHTML(
-                    [
-                      property.city,
-                      property.neighborhood
-                    ]
-                    .filter(Boolean)
-                    .join(" · ") ||
-                    "Cuba"
-                  )}
-
-                </div>
-
-
-                <div class="meta">
-
-                  ${
-                    property.bedrooms !==
-                    null &&
-                    property.bedrooms !==
-                    undefined
-
-                    ? `
-                      🛏 ${escapeHTML(
-                        property.bedrooms
-                      )} habitaciones
-                    `
-
-                    : ""
-                  }
-
-
-                  ${
-                    property.bathrooms !==
-                    null &&
-                    property.bathrooms !==
-                    undefined
-
-                    ? `
-                      🚿 ${escapeHTML(
-                        property.bathrooms
-                      )} baños
-                    `
-
-                    : ""
-                  }
-
-
-                  ${
-                    property.square_meters !==
-                    null &&
-                    property.square_meters !==
-                    undefined
-
-                    ? `
-                      ${escapeHTML(
-                        property.square_meters
-                      )} m²
-                    `
-
-                    : ""
-                  }
-
-                </div>
-
-
-                ${
-                  property.description
-
-                  ? `
-
-                    <div class="description">
-
-                      ${escapeHTML(
-                        property.description
-                      )}
-
-                    </div>
-
-                  `
-
-                  : ""
-
-                }
-
-              </div>
-
-            </article>
-
-          `;
-
-        }
-      )
-      .join("");
-
-}
-
-
-/* =================================================
-   DETALLE
-================================================= */
-
-function openDetail(id){
-
-  const property =
-    allProperties.find(
-      item =>
-        Number(item.id) ===
-        Number(id)
-    );
-
-  if(!property){
-    return;
-  }
-
-
-  const overlay =
-    document.getElementById(
-      "overlay"
-    );
-
-  const detailPhoto =
-    document.getElementById(
-      "detailPhoto"
-    );
-
-  const detailContent =
-    document.getElementById(
-      "detailContent"
-    );
-
-
-  const image =
-    photo(property);
-
-
-  detailPhoto.innerHTML =
-    image
-
-    ? `
-      <img
-        src="${escapeHTML(image)}"
-        alt="${escapeHTML(
-          property.property_type ||
-          "Propiedad"
-        )}">
-    `
-
-    : `
-
-      <div
-        class="no-photo">
-        Imagen próximamente
-      </div>
-
-    `;
-
-
-  detailContent.innerHTML = `
-
-    <div class="detail-price">
-      ${price(property.price)}
-    </div>
-
-    <div class="detail-type">
-      ${escapeHTML(
-        property.property_type ||
-        "Propiedad"
-      )}
-    </div>
-
-    <div class="detail-location">
-
-      ${escapeHTML(
-        [
-          property.city,
-          property.neighborhood
-        ]
-        .filter(Boolean)
-        .join(" · ")
-      )}
-
-    </div>
-
-
-    <div class="detail-meta">
-
-
-      <div class="detail-meta-box">
-
-        <strong>
-          ${property.bedrooms ?? "—"}
-        </strong>
-
-        <span>
-          Habitaciones
-        </span>
-
-      </div>
-
-
-      <div class="detail-meta-box">
-
-        <strong>
-          ${property.bathrooms ?? "—"}
-        </strong>
-
-        <span>
-          Baños
-        </span>
-
-      </div>
-
-
-      <div class="detail-meta-box">
-
-        <strong>
-          ${property.square_meters ?? "—"}
-        </strong>
-
-        <span>
-          m²
-        </span>
-
-      </div>
-
-
-    </div>
-
-
-    ${
-      property.address
-
-      ? `
-
-        <div class="detail-description">
-
-          <strong>
-            Ubicación
-          </strong>
-
-          <br>
-
-          ${escapeHTML(
-            property.address
-          )}
-
-        </div>
-
-      `
-
-      : ""
-
-    }
-
-
-    ${
-      property.description
-
-      ? `
-
-        <div class="detail-description">
-
-          ${escapeHTML(
-            property.description
-          )}
-
-        </div>
-
-      `
-
-      : ""
-
-    }
-
-
-    <button
-      class="contact"
-      onclick="contactNexo(${Number(property.id)})">
-
-      Contactar con NEXO
-
-    </button>
-
-  `;
-
-
-  overlay.classList.add(
-    "open"
-  );
-
-  document.body.style.overflow =
-    "hidden";
-
-
-  /* Mover mapa hacia propiedad */
-
-  const coords =
-    getCoordinates(property);
-
-  map.flyTo(
-    coords,
-    Math.max(
-      map.getZoom(),
-      9
-    ),
-    {
-      duration:.8
-    }
-  );
-
-}
-
-
-function closeDetail(event){
-
-  if(
-    event &&
-    event.target !==
-    event.currentTarget
-  ){
-    return;
-  }
-
-  document
-    .getElementById("overlay")
-    .classList.remove(
-      "open"
-    );
-
-  document.body.style.overflow =
-    "";
-
-}
-
-
-document.addEventListener(
-  "keydown",
-  event => {
-
-    if(
-      event.key === "Escape"
-    ){
-
-      closeDetail();
-
-    }
-
-  }
-);
-
-
-/* =================================================
-   CONTACTO
-================================================= */
-
-function contactNexo(id){
-
-  const property =
-    allProperties.find(
-      item =>
-        Number(item.id) ===
-        Number(id)
-    );
-
-  if(!property){
-    return;
-  }
-
-
-  const message =
-    `Hola NEXO, estoy interesado en la propiedad ${property.property_type || ""} en ${property.city || ""}. Precio: ${price(property.price)}.`;
-
-  /*
-    No ponemos un teléfono inventado.
-
-    Cuando definamos el WhatsApp oficial
-    de NEXO, aquí conectaremos el botón
-    directamente con WhatsApp.
-  */
-
-  const encoded =
-    encodeURIComponent(
-      message
-    );
-
-
-  window.location.href =
-    `mailto:?subject=${encodeURIComponent(
-      "Consulta de propiedad NEXO"
-    )}&body=${encoded}`;
-
-}
-
-
-/* =================================================
-   MAPA — CUBA COMPLETA
-================================================= */
-
-function resetCuba(){
-
-  map.flyTo(
-    [21.8,-79.5],
-    6,
-    {
-      duration:1
-    }
-  );
-
-}
-
-
-function goToMap(){
-
-  document
-    .getElementById(
-      "mapSection"
-    )
-    .scrollIntoView({
-      behavior:"smooth",
-      block:"start"
-    });
-
-}
-
-
-/* =================================================
-   IA — PREPARACIÓN
-================================================= */
-
-function aiComingSoon(){
-
-  /*
-    No fingimos que la IA ya está conectada.
-
-    El botón queda preparado para la siguiente
-    etapa: búsqueda conversacional de propiedades.
-  */
-
-  alert(
-    "NEXO IA será la próxima gran función: podrás describir la propiedad que buscas con tus propias palabras."
-  );
-
-}
-
-
-/* =================================================
-   INICIO
-================================================= */
-
-loadProperties();
-
-</script>
+  </script>
 
 </body>
 </html>
