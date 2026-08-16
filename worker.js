@@ -5,7 +5,7 @@ export default {
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      "Access-Control-Allow-Headers": "Content-Type"
     };
 
     if (request.method === "OPTIONS") {
@@ -26,103 +26,35 @@ export default {
       });
     };
 
-    // ==========================================
+    // =========================================================
     // AUTENTICACIÓN DE ADMINISTRADOR
-    // ==========================================
+    // =========================================================
 
-    const COOKIE_NAME = "nexo_admin_session";
-
-    async function createSignature(value) {
-      const encoder = new TextEncoder();
-
-      const key = await crypto.subtle.importKey(
-        "raw",
-        encoder.encode(env.ADMIN_PASSWORD),
-        {
-          name: "HMAC",
-          hash: "SHA-256"
-        },
-        false,
-        ["sign"]
-      );
-
-      const signature = await crypto.subtle.sign(
-        "HMAC",
-        key,
-        encoder.encode(value)
-      );
-
-      return Array.from(new Uint8Array(signature))
-        .map(byte => byte.toString(16).padStart(2, "0"))
-        .join("");
-    }
-
-    async function createSession() {
-      const timestamp = Date.now().toString();
-      const signature = await createSignature(timestamp);
-
-      return `${timestamp}.${signature}`;
-    }
-
-    async function verifySession(request) {
+    const getCookie = (name) => {
       const cookieHeader = request.headers.get("Cookie") || "";
 
-      const cookies = Object.fromEntries(
-        cookieHeader
-          .split(";")
-          .map(cookie => cookie.trim())
-          .filter(Boolean)
-          .map(cookie => {
-            const index = cookie.indexOf("=");
+      const cookies = cookieHeader.split(";");
 
-            if (index === -1) {
-              return [cookie, ""];
-            }
+      for (const cookie of cookies) {
+        const [key, ...valueParts] = cookie.trim().split("=");
 
-            return [
-              cookie.slice(0, index),
-              cookie.slice(index + 1)
-            ];
-          })
-      );
-
-      const session = cookies[COOKIE_NAME];
-
-      if (!session) {
-        return false;
+        if (key === name) {
+          return valueParts.join("=");
+        }
       }
 
-      const parts = session.split(".");
+      return null;
+    };
 
-      if (parts.length !== 2) {
-        return false;
-      }
+    const isAdmin = () => {
+      const session = getCookie("NEXO_ADMIN");
 
-      const timestamp = parts[0];
-      const providedSignature = parts[1];
+      return session === env.ADMIN;
+    };
 
-      const timestampNumber = Number(timestamp);
-
-      if (!Number.isFinite(timestampNumber)) {
-        return false;
-      }
-
-      // Sesión válida durante 7 días
-      const sevenDays = 7 * 24 * 60 * 60 * 1000;
-
-      if (Date.now() - timestampNumber > sevenDays) {
-        return false;
-      }
-
-      const expectedSignature =
-        await createSignature(timestamp);
-
-      return providedSignature === expectedSignature;
-    }
-
-    // ==========================================
-    // LOGIN ADMINISTRADOR
-    // ==========================================
+    // =========================================================
+    // LOGIN
+    // =========================================================
 
     if (
       url.pathname === "/api/admin/login" &&
@@ -136,13 +68,6 @@ export default {
             ? body.password
             : "";
 
-        if (!env.ADMIN_PASSWORD) {
-          return json({
-            success: false,
-            error: "ADMIN_PASSWORD no está configurado en Cloudflare."
-          }, 500);
-        }
-
         if (!password) {
           return json({
             success: false,
@@ -150,62 +75,58 @@ export default {
           }, 400);
         }
 
-        if (password !== env.ADMIN_PASSWORD) {
+        if (!env.ADMIN) {
+          return json({
+            success: false,
+            error: "La variable ADMIN no está configurada en Cloudflare."
+          }, 500);
+        }
+
+        if (password !== env.ADMIN) {
           return json({
             success: false,
             error: "Contraseña incorrecta."
           }, 401);
         }
 
-        const session = await createSession();
-
         return json(
           {
             success: true,
-            message: "Acceso autorizado."
+            authenticated: true
           },
           200,
           {
             "Set-Cookie":
-              `${COOKIE_NAME}=${session}; ` +
-              "Path=/; " +
-              "HttpOnly; " +
-              "Secure; " +
-              "SameSite=Strict; " +
-              "Max-Age=604800"
+              `NEXO_ADMIN=${encodeURIComponent(env.ADMIN)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`
           }
         );
 
       } catch (error) {
-        console.error(error);
+        console.error("NEXO LOGIN:", error);
 
         return json({
           success: false,
-          error: "No se pudo iniciar sesión."
-        }, 500);
+          error: "Solicitud de inicio de sesión inválida."
+        }, 400);
       }
     }
 
-    // ==========================================
+    // =========================================================
     // COMPROBAR SESIÓN
-    // ==========================================
+    // =========================================================
 
     if (
       url.pathname === "/api/admin/session" &&
       request.method === "GET"
     ) {
-      const authenticated =
-        await verifySession(request);
-
       return json({
-        success: true,
-        authenticated
+        authenticated: isAdmin()
       });
     }
 
-    // ==========================================
+    // =========================================================
     // CERRAR SESIÓN
-    // ==========================================
+    // =========================================================
 
     if (
       url.pathname === "/api/admin/logout" &&
@@ -213,50 +134,20 @@ export default {
     ) {
       return json(
         {
-          success: true,
-          message: "Sesión cerrada."
+          success: true
         },
         200,
         {
           "Set-Cookie":
-            `${COOKIE_NAME}=; ` +
-            "Path=/; " +
-            "HttpOnly; " +
-            "Secure; " +
-            "SameSite=Strict; " +
-            "Max-Age=0"
+            "NEXO_ADMIN=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0"
         }
       );
     }
 
-    // ==========================================
-    // VERIFICAR ADMIN PARA OPERACIONES PRIVADAS
-    // ==========================================
-
-    const privateMethod =
-      request.method === "POST" ||
-      request.method === "PUT" ||
-      request.method === "DELETE";
-
-    const isPropertyApi =
-      url.pathname === "/api/properties" ||
-      url.pathname.startsWith("/api/properties/");
-
-    if (privateMethod && isPropertyApi) {
-      const authenticated =
-        await verifySession(request);
-
-      if (!authenticated) {
-        return json({
-          success: false,
-          error: "No autorizado. Inicia sesión como administrador."
-        }, 401);
-      }
-    }
-
-    // ==========================================
+    // =========================================================
     // API: OBTENER TODAS LAS PROPIEDADES
-    // ==========================================
+    // PÚBLICO
+    // =========================================================
 
     if (
       url.pathname === "/api/properties" &&
@@ -294,7 +185,7 @@ export default {
         });
 
       } catch (error) {
-        console.error(error);
+        console.error("NEXO GET PROPERTIES:", error);
 
         return json({
           success: false,
@@ -303,14 +194,22 @@ export default {
       }
     }
 
-    // ==========================================
-    // API: CREAR PROPIEDAD
-    // ==========================================
+    // =========================================================
+    // CREAR PROPIEDAD
+    // SOLO ADMIN
+    // =========================================================
 
     if (
       url.pathname === "/api/properties" &&
       request.method === "POST"
     ) {
+      if (!isAdmin()) {
+        return json({
+          success: false,
+          error: "No autorizado."
+        }, 401);
+      }
+
       try {
         const body = await request.json();
 
@@ -327,8 +226,7 @@ export default {
         if (!propertyType || !city) {
           return json({
             success: false,
-            error:
-              "El tipo de propiedad y la ciudad son obligatorios."
+            error: "El tipo de propiedad y la ciudad son obligatorios."
           }, 400);
         }
 
@@ -453,7 +351,7 @@ export default {
         }, 201);
 
       } catch (error) {
-        console.error(error);
+        console.error("NEXO CREATE:", error);
 
         return json({
           success: false,
@@ -462,16 +360,23 @@ export default {
       }
     }
 
-    // ==========================================
-    // API: EDITAR PROPIEDAD
-    // ==========================================
+    // =========================================================
+    // EDITAR PROPIEDAD
+    // SOLO ADMIN
+    // =========================================================
 
     if (
       url.pathname.startsWith("/api/properties/") &&
       request.method === "PUT"
     ) {
-      const id =
-        url.pathname.split("/").pop();
+      if (!isAdmin()) {
+        return json({
+          success: false,
+          error: "No autorizado."
+        }, 401);
+      }
+
+      const id = url.pathname.split("/").pop();
 
       if (!id || !/^\d+$/.test(id)) {
         return json({
@@ -496,8 +401,7 @@ export default {
         if (!propertyType || !city) {
           return json({
             success: false,
-            error:
-              "El tipo de propiedad y la ciudad son obligatorios."
+            error: "El tipo de propiedad y la ciudad son obligatorios."
           }, 400);
         }
 
@@ -618,33 +522,37 @@ export default {
 
         return json({
           success: true,
-          message:
-            "Propiedad actualizada correctamente.",
-          changes:
-            result.meta?.changes || 0
+          message: "Propiedad actualizada correctamente.",
+          changes: result.meta?.changes || 0
         });
 
       } catch (error) {
-        console.error(error);
+        console.error("NEXO UPDATE:", error);
 
         return json({
           success: false,
-          error:
-            "No se pudo actualizar la propiedad."
+          error: "No se pudo actualizar la propiedad."
         }, 500);
       }
     }
 
-    // ==========================================
-    // API: ELIMINAR PROPIEDAD
-    // ==========================================
+    // =========================================================
+    // ELIMINAR PROPIEDAD
+    // SOLO ADMIN
+    // =========================================================
 
     if (
       url.pathname.startsWith("/api/properties/") &&
       request.method === "DELETE"
     ) {
-      const id =
-        url.pathname.split("/").pop();
+      if (!isAdmin()) {
+        return json({
+          success: false,
+          error: "No autorizado."
+        }, 401);
+      }
+
+      const id = url.pathname.split("/").pop();
 
       if (!id || !/^\d+$/.test(id)) {
         return json({
@@ -671,31 +579,29 @@ export default {
 
         return json({
           success: true,
-          message:
-            "Propiedad eliminada correctamente."
+          message: "Propiedad eliminada correctamente."
         });
 
       } catch (error) {
-        console.error(error);
+        console.error("NEXO DELETE:", error);
 
         return json({
           success: false,
-          error:
-            "No se pudo eliminar la propiedad."
+          error: "No se pudo eliminar la propiedad."
         }, 500);
       }
     }
 
-    // ==========================================
-    // API: PROPIEDAD INDIVIDUAL
-    // ==========================================
+    // =========================================================
+    // PROPIEDAD INDIVIDUAL
+    // PÚBLICO
+    // =========================================================
 
     if (
       url.pathname.startsWith("/api/properties/") &&
       request.method === "GET"
     ) {
-      const id =
-        url.pathname.split("/").pop();
+      const id = url.pathname.split("/").pop();
 
       if (!id || !/^\d+$/.test(id)) {
         return json({
@@ -719,9 +625,6 @@ export default {
               price,
               description,
               photos,
-              owner_name,
-              owner_phone,
-              notes,
               status,
               created_at
             FROM properties
@@ -744,19 +647,18 @@ export default {
         });
 
       } catch (error) {
-        console.error(error);
+        console.error("NEXO PROPERTY:", error);
 
         return json({
           success: false,
-          error:
-            "Error al consultar la propiedad."
+          error: "Error al consultar la propiedad."
         }, 500);
       }
     }
 
-    // ==========================================
+    // =========================================================
     // FRONTEND
-    // ==========================================
+    // =========================================================
 
     return env.ASSETS.fetch(request);
   }
