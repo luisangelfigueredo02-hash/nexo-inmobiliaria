@@ -10,13 +10,17 @@
 <style>
 :root{
   --bg:#f5f5f7;
+  --card:rgba(255,255,255,.88);
   --white:#fff;
-  --text:#171717;
-  --muted:#777;
-  --border:rgba(0,0,0,.08);
+  --text:#111;
+  --muted:#737378;
+  --line:rgba(0,0,0,.08);
+  --soft:#f0f0f2;
   --green:#34c759;
+  --orange:#ff9500;
   --red:#ff3b30;
-  --radius:22px;
+  --radius:24px;
+  --shadow:0 18px 60px rgba(0,0,0,.07);
 }
 
 *{
@@ -24,13 +28,24 @@
   -webkit-tap-highlight-color:transparent;
 }
 
+html{
+  scroll-behavior:smooth;
+}
+
 body{
   margin:0;
   min-width:320px;
   background:var(--bg);
   color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",
-  "SF Pro Text",Inter,system-ui,sans-serif;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    Inter,
+    system-ui,
+    sans-serif;
+  -webkit-font-smoothing:antialiased;
 }
 
 button,input,textarea,select{
@@ -38,23 +53,29 @@ button,input,textarea,select{
 }
 
 button{
-  border:0;
   cursor:pointer;
 }
 
 .nav{
   position:sticky;
   top:0;
-  z-index:20;
-  padding:14px 16px;
-  background:rgba(255,255,255,.82);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
+  z-index:100;
+  padding:
+    max(12px,env(safe-area-inset-top))
+    16px
+    12px;
+
+  background:rgba(255,255,255,.78);
+  border-bottom:1px solid var(--line);
+
+  backdrop-filter:blur(25px);
+  -webkit-backdrop-filter:blur(25px);
 }
 
 .nav-inner{
-  max-width:1100px;
+  width:min(1180px,100%);
   margin:auto;
+
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -62,108 +83,198 @@ button{
 
 .logo{
   font-size:22px;
-  font-weight:800;
+  font-weight:850;
   letter-spacing:-.08em;
 }
 
-.back{
-  padding:10px 14px;
+.nav-actions{
+  display:flex;
+  gap:7px;
+}
+
+.nav-btn{
+  padding:10px 13px;
+  border:0;
   border-radius:999px;
   background:#eeeef0;
-  color:#333;
-  font-size:12px;
-  font-weight:700;
+  color:#222;
+  font-size:11px;
+  font-weight:750;
+}
+
+.nav-btn.dark{
+  background:#111;
+  color:#fff;
 }
 
 main{
-  width:min(1100px,calc(100% - 28px));
-  margin:30px auto 70px;
+  width:min(1180px,calc(100% - 28px));
+  margin:28px auto 70px;
+}
+
+.hero{
+  margin-bottom:25px;
 }
 
 .eyebrow{
   color:#777;
   font-size:10px;
-  font-weight:800;
+  font-weight:850;
   text-transform:uppercase;
-  letter-spacing:.12em;
+  letter-spacing:.13em;
 }
 
 h1{
   margin:8px 0;
-  font-size:clamp(38px,7vw,62px);
-  line-height:.95;
-  letter-spacing:-.07em;
+  font-size:clamp(38px,7vw,64px);
+  line-height:.92;
+  letter-spacing:-.075em;
 }
 
 .subtitle{
   max-width:650px;
-  margin:14px 0 28px;
+  margin:14px 0 0;
   color:#777;
-  font-size:14px;
-  line-height:1.5;
+  font-size:13px;
+  line-height:1.55;
 }
+
+/* DASHBOARD */
+
+.dashboard{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.metric{
+  min-height:105px;
+  padding:17px;
+
+  border:1px solid var(--line);
+  border-radius:20px;
+
+  background:var(--card);
+  box-shadow:var(--shadow);
+
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+
+.metric-label{
+  color:#777;
+  font-size:10px;
+  font-weight:700;
+}
+
+.metric-value{
+  margin-top:12px;
+  font-size:29px;
+  font-weight:850;
+  letter-spacing:-.06em;
+}
+
+.metric-detail{
+  margin-top:4px;
+  color:#888;
+  font-size:9px;
+}
+
+/* LAYOUT */
 
 .layout{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 360px;
-  gap:20px;
+  grid-template-columns:minmax(0,1fr) 380px;
+  gap:18px;
   align-items:start;
 }
 
 .card{
-  background:#fff;
-  border:1px solid var(--border);
+  background:var(--card);
+  border:1px solid var(--line);
   border-radius:var(--radius);
-  box-shadow:0 15px 45px rgba(0,0,0,.05);
+  box-shadow:var(--shadow);
+
   padding:22px;
+
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+
+.card + .card{
+  margin-top:18px;
 }
 
 .card-title{
   margin:0 0 20px;
-  font-size:20px;
-  letter-spacing:-.04em;
+  font-size:19px;
+  font-weight:800;
+  letter-spacing:-.045em;
+}
+
+.card-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
 }
 
 .section-label{
   margin:27px 0 15px;
   padding-bottom:9px;
-  border-bottom:1px solid var(--border);
-  font-size:11px;
-  font-weight:800;
+
+  border-bottom:1px solid var(--line);
+
+  color:#777;
+  font-size:10px;
+  font-weight:850;
+
   text-transform:uppercase;
-  letter-spacing:.08em;
+  letter-spacing:.09em;
 }
 
 .field{
-  margin-bottom:16px;
+  margin-bottom:15px;
 }
 
 label{
   display:block;
   margin-bottom:7px;
+
   color:#444;
-  font-size:11px;
-  font-weight:700;
+  font-size:10px;
+  font-weight:750;
 }
 
 input,
 textarea,
 select{
   width:100%;
+
   padding:13px 14px;
-  border:1px solid rgba(0,0,0,.09);
+
+  border:1px solid rgba(0,0,0,.08);
   border-radius:14px;
+
   outline:none;
+
   background:#f8f8f9;
   color:#111;
-  font-size:14px;
+
+  font-size:13px;
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    background .2s ease;
 }
 
 input:focus,
 textarea:focus,
 select:focus{
   background:#fff;
-  border-color:rgba(0,0,0,.25);
+  border-color:rgba(0,0,0,.22);
   box-shadow:0 0 0 4px rgba(0,0,0,.035);
 }
 
@@ -184,29 +295,52 @@ textarea{
   gap:12px;
 }
 
+/* BUTTON */
+
 .submit{
   width:100%;
-  min-height:52px;
+  min-height:54px;
   margin-top:10px;
-  border-radius:15px;
+
+  border:0;
+  border-radius:16px;
+
   background:#111;
   color:#fff;
-  font-size:13px;
-  font-weight:800;
+
+  font-size:12px;
+  font-weight:850;
+
+  box-shadow:0 10px 30px rgba(0,0,0,.13);
+
+  transition:
+    transform .2s ease,
+    opacity .2s ease;
+}
+
+.submit:active{
+  transform:scale(.985);
 }
 
 .submit:disabled{
   opacity:.55;
+  cursor:wait;
 }
+
+/* NOTICE */
 
 .notice{
   display:none;
+
   margin-bottom:18px;
   padding:15px 16px;
-  border-radius:15px;
-  font-size:12px;
-  line-height:1.5;
+
+  border-radius:16px;
+
+  font-size:11px;
+  line-height:1.55;
   font-weight:650;
+
   white-space:pre-wrap;
   overflow-wrap:anywhere;
 }
@@ -229,79 +363,161 @@ textarea{
   color:#c52b22;
 }
 
+/* PREVIEW */
+
 .preview{
   position:sticky;
-  top:85px;
+  top:82px;
 }
 
 .preview-box{
-  height:230px;
-  border-radius:17px;
-  background:linear-gradient(145deg,#e7e7e9,#d2d2d5);
+  position:relative;
+
+  height:245px;
+
   overflow:hidden;
+
+  border-radius:18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #e7e7e9,
+      #d2d2d5
+    );
+
   display:grid;
   place-items:center;
+
   color:#999;
-  font-size:12px;
+  font-size:11px;
   text-align:center;
 }
 
 .preview-box img{
   width:100%;
   height:100%;
+
   object-fit:cover;
+
   display:none;
+}
+
+.preview-overlay{
+  position:absolute;
+  left:12px;
+  bottom:12px;
+
+  padding:7px 10px;
+
+  border-radius:999px;
+
+  background:rgba(0,0,0,.55);
+  color:#fff;
+
+  font-size:9px;
+  font-weight:750;
+
+  backdrop-filter:blur(10px);
 }
 
 .preview-price{
   margin-top:17px;
-  font-size:28px;
-  font-weight:800;
-  letter-spacing:-.05em;
+
+  font-size:29px;
+  font-weight:850;
+
+  letter-spacing:-.06em;
 }
 
 .preview-location{
   margin-top:5px;
+
   color:#777;
-  font-size:12px;
+  font-size:11px;
   line-height:1.5;
 }
 
 .stats{
   display:flex;
   flex-wrap:wrap;
-  gap:7px;
+  gap:6px;
   margin-top:14px;
 }
 
 .stat{
   padding:7px 10px;
+
   border-radius:999px;
-  background:#f1f1f3;
+
+  background:#f0f0f2;
   color:#555;
-  font-size:10px;
+
+  font-size:9px;
+  font-weight:700;
 }
 
+/* SEARCH */
+
+.inventory-search{
+  display:flex;
+  gap:7px;
+  margin-bottom:12px;
+}
+
+.inventory-search input{
+  flex:1;
+}
+
+.small-btn{
+  border:0;
+  border-radius:13px;
+  padding:0 13px;
+
+  background:#111;
+  color:#fff;
+
+  font-size:10px;
+  font-weight:750;
+}
+
+/* PROPERTIES */
+
 .properties{
-  margin-top:20px;
+  margin-top:18px;
 }
 
 .property{
   display:flex;
-  gap:10px;
-  padding:11px;
-  margin-bottom:8px;
-  border-radius:15px;
+  gap:11px;
+
+  padding:10px;
+  margin-bottom:7px;
+
+  border-radius:16px;
+
   background:#f7f7f8;
+
+  transition:
+    transform .2s ease,
+    background .2s ease;
+}
+
+.property:hover{
+  background:#f0f0f2;
 }
 
 .property-image{
-  width:55px;
-  height:55px;
-  flex:0 0 55px;
-  border-radius:11px;
-  background:#ddd;
+  width:58px;
+  height:58px;
+
+  flex:0 0 58px;
+
   overflow:hidden;
+
+  border-radius:12px;
+
+  background:#ddd;
 }
 
 .property-image img{
@@ -312,36 +528,95 @@ textarea{
 
 .property-info{
   min-width:0;
+  flex:1;
 }
 
 .property-title{
-  font-size:13px;
-  font-weight:750;
-  white-space:nowrap;
   overflow:hidden;
+
+  font-size:12px;
+  font-weight:800;
+
+  white-space:nowrap;
   text-overflow:ellipsis;
 }
 
 .property-location{
   margin-top:3px;
+
+  overflow:hidden;
+
   color:#777;
-  font-size:10px;
+  font-size:9px;
+
+  white-space:nowrap;
+  text-overflow:ellipsis;
 }
 
 .property-price{
   margin-top:4px;
+
   font-size:11px;
-  font-weight:700;
+  font-weight:800;
 }
+
+.property-status{
+  align-self:center;
+
+  padding:5px 8px;
+
+  border-radius:999px;
+
+  font-size:8px;
+  font-weight:800;
+}
+
+.status-available{
+  background:#eaf8ed;
+  color:#278340;
+}
+
+.status-reserved{
+  background:#fff4dc;
+  color:#966700;
+}
+
+.status-sold{
+  background:#ffeceb;
+  color:#c52b22;
+}
+
+.empty{
+  padding:25px 10px;
+
+  color:#888;
+
+  text-align:center;
+
+  font-size:11px;
+  line-height:1.5;
+}
+
+/* FOOTER */
 
 footer{
   padding:30px;
-  text-align:center;
+
   color:#888;
-  font-size:10px;
+
+  text-align:center;
+
+  font-size:9px;
 }
 
-@media(max-width:800px){
+/* MOBILE */
+
+@media(max-width:900px){
+
+  .dashboard{
+    grid-template-columns:repeat(2,1fr);
+  }
+
   .layout{
     grid-template-columns:1fr;
   }
@@ -349,17 +624,56 @@ footer{
   .preview{
     position:static;
   }
+
 }
 
 @media(max-width:560px){
+
+  main{
+    width:calc(100% - 20px);
+    margin-top:22px;
+  }
+
+  .nav{
+    padding-left:10px;
+    padding-right:10px;
+  }
+
+  .nav-btn{
+    padding:9px 11px;
+  }
+
   .grid-2,
   .grid-3{
     grid-template-columns:1fr;
   }
 
-  .card{
-    padding:18px;
+  .dashboard{
+    gap:7px;
   }
+
+  .metric{
+    min-height:92px;
+    padding:14px;
+  }
+
+  .metric-value{
+    font-size:25px;
+  }
+
+  .card{
+    padding:17px;
+    border-radius:21px;
+  }
+
+  h1{
+    font-size:44px;
+  }
+
+  .preview-box{
+    height:220px;
+  }
+
 }
 </style>
 </head>
@@ -367,414 +681,582 @@ footer{
 <body>
 
 <nav class="nav">
-  <div class="nav-inner">
-    <div class="logo">NEXO</div>
 
-    <button
-      class="back"
-      type="button"
-      onclick="location.href='/'">
-      ← Ver sitio
-    </button>
+  <div class="nav-inner">
+
+    <div class="logo">
+      NEXO
+    </div>
+
+    <div class="nav-actions">
+
+      <button
+        class="nav-btn"
+        type="button"
+        onclick="location.href='/mapa/'"
+      >
+        Mapa
+      </button>
+
+      <button
+        class="nav-btn dark"
+        type="button"
+        onclick="location.href='/'"
+      >
+        Ver sitio
+      </button>
+
+    </div>
+
   </div>
+
 </nav>
 
 <main>
 
-<div class="eyebrow">
-  NEXO · Administración
-</div>
+  <section class="hero">
 
-<h1>Añade una propiedad.</h1>
+    <div class="eyebrow">
+      NEXO · Administración
+    </div>
 
-<p class="subtitle">
-  NEXO intentará localizar automáticamente la propiedad
-  utilizando la dirección que introduzcas.
-</p>
+    <h1>
+      Controla tu inventario.
+    </h1>
 
-<div id="notice" class="notice"></div>
+    <p class="subtitle">
+      Publica propiedades, revisa el inventario y deja que
+      NEXO localice automáticamente cada propiedad cuando
+      sea posible.
+    </p>
 
-<div class="layout">
+  </section>
 
-<section class="card">
+  <section class="dashboard">
 
-<h2 class="card-title">
-  Información de la propiedad
-</h2>
+    <div class="metric">
 
-<form id="propertyForm" autocomplete="off">
+      <div class="metric-label">
+        INVENTARIO
+      </div>
 
-<div class="section-label">
-  Información principal
-</div>
+      <div
+        class="metric-value"
+        id="metricTotal"
+      >
+        —
+      </div>
 
-<div class="field">
-<label for="title">Título</label>
+      <div class="metric-detail">
+        propiedades registradas
+      </div>
 
-<input
-  id="title"
-  name="title"
-  placeholder="Ej. Casa moderna en La Habana"
-  required>
-</div>
+    </div>
 
-<div class="grid-2">
+    <div class="metric">
 
-<div class="field">
-<label for="property_type">
-  Tipo de propiedad
-</label>
+      <div class="metric-label">
+        DISPONIBLES
+      </div>
 
-<select
-  id="property_type"
-  name="property_type"
-  required>
+      <div
+        class="metric-value"
+        id="metricAvailable"
+      >
+        —
+      </div>
 
-<option value="">
-Seleccionar
-</option>
+      <div class="metric-detail">
+        actualmente activas
+      </div>
 
-<option value="Casa">
-Casa
-</option>
+    </div>
 
-<option value="Apartamento">
-Apartamento
-</option>
+    <div class="metric">
 
-<option value="Villa">
-Villa
-</option>
+      <div class="metric-label">
+        UBICADAS
+      </div>
 
-<option value="Terreno">
-Terreno
-</option>
+      <div
+        class="metric-value"
+        id="metricLocated"
+      >
+        —
+      </div>
 
-<option value="Local">
-Local
-</option>
+      <div class="metric-detail">
+        con coordenadas
+      </div>
 
-<option value="Otro">
-Otro
-</option>
+    </div>
 
-</select>
-</div>
+    <div class="metric">
 
-<div class="field">
+      <div class="metric-label">
+        FAVORITOS
+      </div>
 
-<label for="status">
-Estado
-</label>
+      <div
+        class="metric-value"
+        id="metricFavorites"
+      >
+        —
+      </div>
 
-<select
-  id="status"
-  name="status">
+      <div class="metric-detail">
+        guardados en dispositivos
+      </div>
 
-<option value="available">
-Disponible
-</option>
+    </div>
 
-<option value="reserved">
-Reservada
-</option>
+  </section>
 
-<option value="sold">
-Vendida
-</option>
+  <div
+    id="notice"
+    class="notice"
+  ></div>
 
-</select>
+  <div class="layout">
 
-</div>
+    <section class="card">
 
-</div>
+      <div class="card-header">
 
-<div class="field">
+        <h2 class="card-title">
+          Nueva propiedad
+        </h2>
 
-<label for="price">
-Precio
-</label>
+      </div>
 
-<input
-  id="price"
-  name="price"
-  type="number"
-  min="0"
-  inputmode="decimal"
-  placeholder="150000"
-  required>
+      <form
+        id="propertyForm"
+        autocomplete="off"
+      >
 
-</div>
+        <div class="section-label">
+          Información principal
+        </div>
 
-<div class="section-label">
-Ubicación
-</div>
+        <div class="field">
 
-<div class="grid-2">
+          <label for="title">
+            Título
+          </label>
 
-<div class="field">
+          <input
+            id="title"
+            name="title"
+            placeholder="Ej. Casa moderna en Miramar"
+            required
+          >
 
-<label for="province">
-Provincia
-</label>
+        </div>
 
-<input
-  id="province"
-  name="province"
-  placeholder="La Habana">
+        <div class="grid-2">
 
-</div>
+          <div class="field">
 
-<div class="field">
+            <label for="property_type">
+              Tipo de propiedad
+            </label>
 
-<label for="city">
-Ciudad
-</label>
+            <select
+              id="property_type"
+              name="property_type"
+              required
+            >
 
-<input
-  id="city"
-  name="city"
-  placeholder="La Habana">
+              <option value="">
+                Seleccionar
+              </option>
 
-</div>
+              <option value="Casa">
+                Casa
+              </option>
 
-</div>
+              <option value="Apartamento">
+                Apartamento
+              </option>
 
-<div class="field">
+              <option value="Villa">
+                Villa
+              </option>
 
-<label for="neighborhood">
-Zona / Municipio
-</label>
+              <option value="Terreno">
+                Terreno
+              </option>
 
-<input
-  id="neighborhood"
-  name="neighborhood"
-  placeholder="La Coronela">
+              <option value="Local">
+                Local
+              </option>
 
-</div>
+              <option value="Otro">
+                Otro
+              </option>
 
-<div class="field">
+            </select>
 
-<label for="address">
-Dirección exacta
-</label>
+          </div>
 
-<input
-  id="address"
-  name="address"
-  placeholder="Ave 23 entre 230 y 234, edificio 23015">
+          <div class="field">
 
-</div>
+            <label for="status">
+              Estado
+            </label>
 
-<div class="section-label">
-Características
-</div>
+            <select
+              id="status"
+              name="status"
+            >
 
-<div class="grid-3">
+              <option value="available">
+                Disponible
+              </option>
 
-<div class="field">
+              <option value="reserved">
+                Reservada
+              </option>
 
-<label for="bedrooms">
-Habitaciones
-</label>
+              <option value="sold">
+                Vendida
+              </option>
 
-<input
-  id="bedrooms"
-  name="bedrooms"
-  type="number"
-  min="0"
-  inputmode="numeric">
+            </select>
 
-</div>
+          </div>
 
-<div class="field">
+        </div>
 
-<label for="bathrooms">
-Baños
-</label>
+        <div class="field">
 
-<input
-  id="bathrooms"
-  name="bathrooms"
-  type="number"
-  min="0"
-  inputmode="numeric">
+          <label for="price">
+            Precio
+          </label>
 
-</div>
+          <input
+            id="price"
+            name="price"
+            type="number"
+            min="0"
+            inputmode="decimal"
+            placeholder="150000"
+            required
+          >
 
-<div class="field">
+        </div>
 
-<label for="square_meters">
-Metros cuadrados
-</label>
+        <div class="section-label">
+          Ubicación
+        </div>
 
-<input
-  id="square_meters"
-  name="square_meters"
-  type="number"
-  min="0"
-  inputmode="decimal">
+        <div class="grid-2">
 
-</div>
+          <div class="field">
 
-</div>
+            <label for="province">
+              Provincia
+            </label>
 
-<div class="section-label">
-Descripción
-</div>
+            <input
+              id="province"
+              name="province"
+              placeholder="La Habana"
+            >
 
-<div class="field">
+          </div>
 
-<label for="description">
-Descripción
-</label>
+          <div class="field">
 
-<textarea
-  id="description"
-  name="description"
-  placeholder="Describe la propiedad..."></textarea>
+            <label for="city">
+              Ciudad
+            </label>
 
-</div>
+            <input
+              id="city"
+              name="city"
+              placeholder="La Habana"
+              required
+            >
 
-<div class="section-label">
-Fotografías
-</div>
+          </div>
 
-<div class="field">
+        </div>
 
-<label for="photos">
-URLs de las fotografías
-</label>
+        <div class="field">
 
-<textarea
-  id="photos"
-  name="photos"
-  placeholder="Una URL por línea"></textarea>
+          <label for="neighborhood">
+            Zona / Municipio
+          </label>
 
-</div>
+          <input
+            id="neighborhood"
+            name="neighborhood"
+            placeholder="Playa / Miramar"
+          >
 
-<div class="section-label">
-Datos privados
-</div>
+        </div>
 
-<div class="field">
+        <div class="field">
 
-<label for="contact_name">
-Nombre del propietario/contacto
-</label>
+          <label for="address">
+            Dirección
+          </label>
 
-<input
-  id="contact_name"
-  name="contact_name">
+          <input
+            id="address"
+            name="address"
+            placeholder="Calle 10 entre 5ta y 7ma"
+            required
+          >
 
-</div>
+        </div>
 
-<div class="grid-2">
+        <div class="section-label">
+          Características
+        </div>
 
-<div class="field">
+        <div class="grid-3">
 
-<label for="contact_phone">
-Teléfono
-</label>
+          <div class="field">
 
-<input
-  id="contact_phone"
-  name="contact_phone"
-  type="tel">
+            <label for="bedrooms">
+              Habitaciones
+            </label>
 
-</div>
+            <input
+              id="bedrooms"
+              name="bedrooms"
+              type="number"
+              min="0"
+              inputmode="numeric"
+            >
 
-<div class="field">
+          </div>
 
-<label for="contact_email">
-Email
-</label>
+          <div class="field">
 
-<input
-  id="contact_email"
-  name="contact_email"
-  type="email">
+            <label for="bathrooms">
+              Baños
+            </label>
 
-</div>
+            <input
+              id="bathrooms"
+              name="bathrooms"
+              type="number"
+              min="0"
+              inputmode="numeric"
+            >
 
-</div>
+          </div>
 
-<button
-  id="submitButton"
-  class="submit"
-  type="submit">
+          <div class="field">
 
-Publicar propiedad
+            <label for="square_meters">
+              Metros cuadrados
+            </label>
 
-</button>
+            <input
+              id="square_meters"
+              name="square_meters"
+              type="number"
+              min="0"
+              inputmode="decimal"
+            >
 
-</form>
+          </div>
 
-</section>
+        </div>
 
-<aside class="preview">
+        <div class="section-label">
+          Descripción
+        </div>
 
-<section class="card">
+        <div class="field">
 
-<h2 class="card-title">
-Vista previa
-</h2>
+          <label for="description">
+            Descripción
+          </label>
 
-<div class="preview-box">
+          <textarea
+            id="description"
+            name="description"
+            placeholder="Describe las características más importantes..."
+          ></textarea>
 
-<img
-  id="previewImg"
-  alt="">
+        </div>
 
-<span id="previewPlaceholder">
-La fotografía principal aparecerá aquí.
-</span>
+        <div class="section-label">
+          Fotografías
+        </div>
 
-</div>
+        <div class="field">
 
-<div
-  id="previewPrice"
-  class="preview-price">
+          <label for="photos">
+            URLs de fotografías
+          </label>
 
-$0
+          <textarea
+            id="photos"
+            name="photos"
+            placeholder="Una URL por línea"
+          ></textarea>
 
-</div>
+        </div>
 
-<div
-  id="previewLocation"
-  class="preview-location">
+        <div class="section-label">
+          Información privada
+        </div>
 
-Cuba
+        <div class="field">
 
-</div>
+          <label for="contact_name">
+            Nombre del propietario / contacto
+          </label>
 
-<div
-  id="previewStats"
-  class="stats">
-</div>
+          <input
+            id="contact_name"
+            name="contact_name"
+          >
 
-</section>
+        </div>
 
-<section class="card properties">
+        <div class="grid-2">
 
-<h2 class="card-title">
-Propiedades publicadas
-</h2>
+          <div class="field">
 
-<div id="propertiesList">
-Cargando...
-</div>
+            <label for="contact_phone">
+              Teléfono
+            </label>
 
-</section>
+            <input
+              id="contact_phone"
+              name="contact_phone"
+              type="tel"
+            >
 
-</aside>
+          </div>
 
-</div>
+          <div class="field">
+
+            <label for="contact_email">
+              Email
+            </label>
+
+            <input
+              id="contact_email"
+              name="contact_email"
+              type="email"
+            >
+
+          </div>
+
+        </div>
+
+        <button
+          id="submitButton"
+          class="submit"
+          type="submit"
+        >
+          Publicar propiedad
+        </button>
+
+      </form>
+
+    </section>
+
+    <aside class="preview">
+
+      <section class="card">
+
+        <h2 class="card-title">
+          Vista previa
+        </h2>
+
+        <div class="preview-box">
+
+          <img
+            id="previewImg"
+            alt=""
+          >
+
+          <span id="previewPlaceholder">
+            La fotografía principal aparecerá aquí.
+          </span>
+
+          <div
+            class="preview-overlay"
+            id="previewType"
+          >
+            NEXO
+          </div>
+
+        </div>
+
+        <div
+          class="preview-price"
+          id="previewPrice"
+        >
+          $0
+        </div>
+
+        <div
+          class="preview-location"
+          id="previewLocation"
+        >
+          Cuba
+        </div>
+
+        <div
+          class="stats"
+          id="previewStats"
+        ></div>
+
+      </section>
+
+      <section class="card properties">
+
+        <div class="card-header">
+
+          <h2 class="card-title">
+            Inventario
+          </h2>
+
+          <button
+            class="small-btn"
+            id="refreshButton"
+            type="button"
+          >
+            Actualizar
+          </button>
+
+        </div>
+
+        <div class="inventory-search">
+
+          <input
+            id="inventorySearch"
+            type="search"
+            placeholder="Buscar propiedad..."
+            autocomplete="off"
+          >
+
+        </div>
+
+        <div id="propertiesList">
+          Cargando...
+        </div>
+
+      </section>
+
+    </aside>
+
+  </div>
 
 </main>
 
 <footer>
-NEXO · Panel de administración
+  NEXO · Administración
 </footer>
 
 <script>
@@ -804,9 +1286,21 @@ const previewLocation =
 const previewStats =
   document.getElementById("previewStats");
 
+const previewType =
+  document.getElementById("previewType");
+
 const propertiesList =
   document.getElementById("propertiesList");
 
+const inventorySearch =
+  document.getElementById("inventorySearch");
+
+let allProperties = [];
+
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
 
 function escapeHTML(value){
 
@@ -816,21 +1310,7 @@ function escapeHTML(value){
     .replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;")
     .replace(/'/g,"&#039;");
-}
 
-
-function showNotice(message,type){
-
-  notice.textContent =
-    message;
-
-  notice.className =
-    "notice " + type;
-
-  window.scrollTo({
-    top:0,
-    behavior:"smooth"
-  });
 }
 
 
@@ -841,19 +1321,17 @@ function money(value){
     value === undefined ||
     value === ""
   ){
-
     return "$0";
   }
 
   const number =
     Number(
       String(value)
-        .replace(/[$,\s]/g,"")
+        .replace(/[^\d.-]/g,"")
     );
 
   if(!Number.isFinite(number)){
-
-    return String(value);
+    return "$0";
   }
 
   return "$" +
@@ -863,10 +1341,11 @@ function money(value){
         maximumFractionDigits:0
       }
     );
+
 }
 
 
-function photos(){
+function getPhotos(){
 
   const value =
     document
@@ -879,112 +1358,110 @@ function photos(){
   }
 
   return value
-    .split(/\n|,/)
-    .map(x=>x.trim())
+    .split(/[\n,|]+/)
+    .map(item => item.trim())
     .filter(Boolean);
+
 }
 
+
+function showNotice(
+  message,
+  type
+){
+
+  notice.textContent =
+    message;
+
+  notice.className =
+    "notice " + type;
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+function getLocationText(){
+
+  return [
+    document.getElementById("neighborhood").value.trim(),
+    document.getElementById("city").value.trim(),
+    document.getElementById("province").value.trim()
+  ]
+    .filter(Boolean)
+    .join(" · ") || "Cuba";
+
+}
+
+
+/* =========================================================
+   PREVIEW
+========================================================= */
 
 function updatePreview(){
 
   const price =
-    document
-      .getElementById("price")
-      .value;
+    document.getElementById("price").value;
 
   const type =
-    document
-      .getElementById("property_type")
-      .value;
-
-  const province =
-    document
-      .getElementById("province")
-      .value
-      .trim();
-
-  const city =
-    document
-      .getElementById("city")
-      .value
-      .trim();
-
-  const neighborhood =
-    document
-      .getElementById("neighborhood")
-      .value
-      .trim();
+    document.getElementById("property_type").value;
 
   const bedrooms =
-    document
-      .getElementById("bedrooms")
-      .value;
+    document.getElementById("bedrooms").value;
 
   const bathrooms =
-    document
-      .getElementById("bathrooms")
-      .value;
+    document.getElementById("bathrooms").value;
 
-  const squareMeters =
-    document
-      .getElementById("square_meters")
-      .value;
+  const area =
+    document.getElementById("square_meters").value;
 
   previewPrice.textContent =
     money(price);
 
   previewLocation.textContent =
-    [
-      type,
-      neighborhood,
-      city,
-      province
-    ]
-      .filter(Boolean)
-      .join(" · ") ||
-    "Cuba";
+    getLocationText();
+
+  previewType.textContent =
+    type || "NEXO";
 
   const stats = [];
 
   if(bedrooms){
-
     stats.push(
-      "🛏 " +
-      escapeHTML(bedrooms)
+      `🛏 ${escapeHTML(bedrooms)} hab.`
     );
   }
 
   if(bathrooms){
-
     stats.push(
-      "🚿 " +
-      escapeHTML(bathrooms)
+      `🚿 ${escapeHTML(bathrooms)} baños`
     );
   }
 
-  if(squareMeters){
-
+  if(area){
     stats.push(
-      escapeHTML(squareMeters) +
-      " m²"
+      `${escapeHTML(area)} m²`
     );
   }
 
   previewStats.innerHTML =
     stats
       .map(
-        x =>
-          `<span class="stat">${x}</span>`
+        item =>
+          `<span class="stat">${item}</span>`
       )
       .join("");
 
-  const list =
-    photos();
+  const photos =
+    getPhotos();
 
-  if(list.length){
+  if(photos.length){
 
     previewImg.src =
-      list[0];
+      photos[0];
 
     previewImg.style.display =
       "block";
@@ -1003,9 +1480,8 @@ function updatePreview(){
     previewPlaceholder.style.display =
       "block";
 
-    previewPlaceholder.textContent =
-      "La fotografía principal aparecerá aquí.";
   }
+
 }
 
 
@@ -1014,16 +1490,14 @@ form.addEventListener(
   updatePreview
 );
 
-
 form.addEventListener(
   "change",
   updatePreview
 );
 
-
 previewImg.addEventListener(
   "error",
-  ()=>{
+  () => {
 
     previewImg.style.display =
       "none";
@@ -1033,9 +1507,14 @@ previewImg.addEventListener(
 
     previewPlaceholder.textContent =
       "No se pudo cargar la fotografía.";
+
   }
 );
 
+
+/* =========================================================
+   PAYLOAD
+========================================================= */
 
 function buildPayload(){
 
@@ -1045,22 +1524,16 @@ function buildPayload(){
   return {
 
     title:
-      String(
-        data.get("title") ||
-        ""
-      ).trim(),
+      String(data.get("title") || "").trim(),
 
     property_type:
       String(
-        data.get("property_type") ||
-        ""
+        data.get("property_type") || ""
       ).trim(),
 
     price:
       data.get("price")
-        ? Number(
-            data.get("price")
-          )
+        ? Number(data.get("price"))
         : null,
 
     status:
@@ -1071,90 +1544,76 @@ function buildPayload(){
 
     province:
       String(
-        data.get("province") ||
-        ""
+        data.get("province") || ""
       ).trim(),
 
     city:
       String(
-        data.get("city") ||
-        ""
+        data.get("city") || ""
       ).trim(),
 
     neighborhood:
       String(
-        data.get("neighborhood") ||
-        ""
+        data.get("neighborhood") || ""
       ).trim(),
 
     address:
       String(
-        data.get("address") ||
-        ""
+        data.get("address") || ""
       ).trim(),
 
     bedrooms:
       data.get("bedrooms")
-        ? Number(
-            data.get("bedrooms")
-          )
+        ? Number(data.get("bedrooms"))
         : null,
 
     bathrooms:
       data.get("bathrooms")
-        ? Number(
-            data.get("bathrooms")
-          )
+        ? Number(data.get("bathrooms"))
         : null,
 
     square_meters:
       data.get("square_meters")
-        ? Number(
-            data.get("square_meters")
-          )
+        ? Number(data.get("square_meters"))
         : null,
 
     description:
       String(
-        data.get("description") ||
-        ""
+        data.get("description") || ""
       ).trim(),
 
     photos:
-      photos(),
+      getPhotos(),
 
     contact_name:
       String(
-        data.get("contact_name") ||
-        ""
+        data.get("contact_name") || ""
       ).trim(),
 
     contact_phone:
       String(
-        data.get("contact_phone") ||
-        ""
+        data.get("contact_phone") || ""
       ).trim(),
 
     contact_email:
       String(
-        data.get("contact_email") ||
-        ""
+        data.get("contact_email") || ""
       ).trim()
+
   };
+
 }
 
+
+/* =========================================================
+   PUBLICAR
+========================================================= */
 
 form.addEventListener(
   "submit",
   async event => {
 
     event.preventDefault();
-
-    notice.className =
-      "notice";
-
-    notice.textContent =
-      "";
 
     const payload =
       buildPayload();
@@ -1181,9 +1640,7 @@ form.addEventListener(
 
     if(
       payload.price === null ||
-      !Number.isFinite(
-        payload.price
-      ) ||
+      !Number.isFinite(payload.price) ||
       payload.price < 0
     ){
 
@@ -1219,7 +1676,7 @@ form.addEventListener(
       true;
 
     button.textContent =
-      "Localizando y publicando...";
+      "Publicando...";
 
     try{
 
@@ -1241,9 +1698,7 @@ form.addEventListener(
               "same-origin",
 
             body:
-              JSON.stringify(
-                payload
-              )
+              JSON.stringify(payload)
           }
         );
 
@@ -1263,13 +1718,8 @@ form.addEventListener(
           text ||
           "Respuesta inválida del servidor."
         );
-      }
 
-      /*
-       * IMPORTANTE:
-       * Mostramos también "detail" cuando
-       * el Worker lo devuelve.
-       */
+      }
 
       if(
         !response.ok ||
@@ -1278,35 +1728,32 @@ form.addEventListener(
 
         throw new Error(
           result.detail
-            ? (
-                `${result.error || "Error"} — ` +
-                `${result.detail}`
-              )
+            ? `${result.error || "Error"} — ${result.detail}`
             : (
-                result.error ||
-                result.message ||
-                `HTTP ${response.status}`
-              )
+              result.error ||
+              result.message ||
+              `HTTP ${response.status}`
+            )
         );
+
       }
 
       if(result.geocoded){
 
         showNotice(
-          "✓ Propiedad publicada y ubicación encontrada automáticamente.\n\n" +
-          "Coordenadas: " +
-          result.latitude +
-          ", " +
-          result.longitude,
+          "✓ Propiedad publicada correctamente.\n\n" +
+          "NEXO encontró su ubicación automáticamente.",
           "success"
         );
 
       }else{
 
         showNotice(
-          "✓ Propiedad publicada, pero NEXO todavía no pudo encontrar las coordenadas exactas de esta dirección.",
+          "✓ Propiedad publicada.\n\n" +
+          "La propiedad quedó registrada, pero NEXO no encontró coordenadas para esta dirección.",
           "warning"
         );
+
       }
 
       form.reset();
@@ -1323,11 +1770,8 @@ form.addEventListener(
       );
 
       showNotice(
-        "No se pudo publicar:\n\n" +
-        (
-          error.message ||
-          "Error desconocido."
-        ),
+        "No se pudo publicar la propiedad.\n\n" +
+        (error.message || "Error desconocido."),
         "error"
       );
 
@@ -1338,15 +1782,25 @@ form.addEventListener(
 
       button.textContent =
         "Publicar propiedad";
+
     }
+
   }
 );
 
 
+/* =========================================================
+   INVENTARIO
+========================================================= */
+
 async function loadProperties(){
 
   propertiesList.innerHTML =
-    "Cargando...";
+    `
+      <div class="empty">
+        Actualizando inventario...
+      </div>
+    `;
 
   try{
 
@@ -1364,8 +1818,7 @@ async function loadProperties(){
           credentials:
             "same-origin",
 
-          cache:
-            "no-store"
+          cache:"no-store"
         }
       );
 
@@ -1374,157 +1827,379 @@ async function loadProperties(){
       throw new Error(
         `HTTP ${response.status}`
       );
+
     }
 
     const data =
       await response.json();
 
-    const properties =
-      Array.isArray(
-        data.properties
-      )
+    allProperties =
+      Array.isArray(data?.properties)
         ? data.properties
-        : [];
+        : Array.isArray(data)
+          ? data
+          : [];
 
-    if(!properties.length){
+    updateDashboard();
 
-      propertiesList.innerHTML =
-        `
-        <div
-          style="
-            color:#888;
-            font-size:11px;
-          "
-        >
-          No hay propiedades publicadas.
-        </div>
-        `;
-
-      return;
-    }
-
-    propertiesList.innerHTML =
-      properties
-        .slice(0,10)
-        .map(property => {
-
-          let photo =
-            "";
-
-          try{
-
-            const parsed =
-              Array.isArray(
-                property.photos
-              )
-                ? property.photos
-                : JSON.parse(
-                    property.photos ||
-                    "[]"
-                  );
-
-            photo =
-              parsed[0] ||
-              "";
-
-          }catch{}
-
-          const title =
-            property.title ||
-            property.property_type ||
-            "Propiedad";
-
-          const location =
-            [
-              property.neighborhood,
-              property.city
-            ]
-              .filter(Boolean)
-              .join(" · ") ||
-            "Cuba";
-
-          const coordinates =
-            Number.isFinite(
-              Number(
-                property.latitude
-              )
-            ) &&
-            Number.isFinite(
-              Number(
-                property.longitude
-              )
-            )
-              ? "📍 Ubicada"
-              : "⚠️ Sin coordenadas";
-
-          return `
-            <div class="property">
-
-              <div class="property-image">
-
-                ${
-                  photo
-                    ? `
-                      <img
-                        src="${escapeHTML(photo)}"
-                        alt=""
-                        onerror="
-                          this.style.display='none'
-                        "
-                      >
-                    `
-                    : ""
-                }
-
-              </div>
-
-              <div class="property-info">
-
-                <div class="property-title">
-                  ${escapeHTML(title)}
-                </div>
-
-                <div class="property-location">
-                  ${escapeHTML(location)}
-                </div>
-
-                <div class="property-location">
-                  ${coordinates}
-                </div>
-
-                <div class="property-price">
-                  ${money(property.price)}
-                </div>
-
-              </div>
-
-            </div>
-          `;
-
-        })
-        .join("");
+    renderProperties(
+      allProperties
+    );
 
   }catch(error){
 
     console.error(
-      "NEXO LOAD:",
+      "NEXO INVENTORY:",
       error
     );
 
     propertiesList.innerHTML =
       `
-      <div
-        style="
-          color:#c52b22;
-          font-size:11px;
-        "
-      >
-        No se pudieron cargar las propiedades.
-      </div>
+        <div class="empty">
+          No se pudieron cargar las propiedades.
+          <br><br>
+          ${escapeHTML(error.message)}
+        </div>
       `;
+
   }
+
 }
 
+
+function updateDashboard(){
+
+  const total =
+    allProperties.length;
+
+  const available =
+    allProperties.filter(
+      property =>
+        String(
+          property.status ||
+          "available"
+        ).toLowerCase() ===
+        "available"
+    ).length;
+
+  const located =
+    allProperties.filter(
+      property =>
+        Number.isFinite(
+          Number(property.latitude)
+        ) &&
+        Number.isFinite(
+          Number(property.longitude)
+        )
+    ).length;
+
+  let favorites = 0;
+
+  try{
+
+    favorites =
+      JSON.parse(
+        localStorage.getItem(
+          "nexo_favorites"
+        ) || "[]"
+      ).length;
+
+  }catch{}
+
+  document.getElementById(
+    "metricTotal"
+  ).textContent =
+    total;
+
+  document.getElementById(
+    "metricAvailable"
+  ).textContent =
+    available;
+
+  document.getElementById(
+    "metricLocated"
+  ).textContent =
+    located;
+
+  document.getElementById(
+    "metricFavorites"
+  ).textContent =
+    favorites;
+
+}
+
+
+function renderProperties(
+  properties
+){
+
+  if(!properties.length){
+
+    propertiesList.innerHTML =
+      `
+        <div class="empty">
+          No hay propiedades publicadas.
+        </div>
+      `;
+
+    return;
+
+  }
+
+  propertiesList.innerHTML =
+    properties
+      .slice(0,30)
+      .map(
+        property =>
+          propertyHTML(property)
+      )
+      .join("");
+
+}
+
+
+function propertyHTML(
+  property
+){
+
+  let photo = "";
+
+  if(
+    Array.isArray(
+      property.photos
+    )
+  ){
+
+    photo =
+      property.photos[0] || "";
+
+  }else{
+
+    try{
+
+      const parsed =
+        JSON.parse(
+          property.photos ||
+          "[]"
+        );
+
+      if(Array.isArray(parsed)){
+        photo =
+          parsed[0] || "";
+      }
+
+    }catch{
+
+      photo =
+        String(
+          property.photos || ""
+        )
+          .split(/[\n,|]+/)[0]
+          ?.trim() || "";
+
+    }
+
+  }
+
+  const title =
+    property.title ||
+    property.property_type ||
+    "Propiedad";
+
+  const location =
+    [
+      property.neighborhood,
+      property.city
+    ]
+      .filter(Boolean)
+      .join(" · ") ||
+    "Cuba";
+
+  const status =
+    String(
+      property.status ||
+      "available"
+    ).toLowerCase();
+
+  let statusText =
+    "Disponible";
+
+  let statusClass =
+    "status-available";
+
+  if(status === "reserved"){
+
+    statusText =
+      "Reservada";
+
+    statusClass =
+      "status-reserved";
+
+  }
+
+  if(status === "sold"){
+
+    statusText =
+      "Vendida";
+
+    statusClass =
+      "status-sold";
+
+  }
+
+  const located =
+    Number.isFinite(
+      Number(property.latitude)
+    ) &&
+    Number.isFinite(
+      Number(property.longitude)
+    );
+
+  return `
+    <div class="property">
+
+      <div class="property-image">
+
+        ${
+          photo
+            ? `
+              <img
+                src="${escapeHTML(photo)}"
+                alt=""
+                loading="lazy"
+                onerror="this.style.display='none'"
+              >
+            `
+            : ""
+        }
+
+      </div>
+
+      <div class="property-info">
+
+        <div class="property-title">
+          ${escapeHTML(title)}
+        </div>
+
+        <div class="property-location">
+          ${escapeHTML(location)}
+        </div>
+
+        <div class="property-location">
+          ${located ? "📍 Ubicada" : "⚠️ Sin coordenadas"}
+        </div>
+
+        <div class="property-price">
+          ${money(property.price)}
+        </div>
+
+      </div>
+
+      <div
+        class="property-status ${statusClass}"
+      >
+        ${statusText}
+      </div>
+
+    </div>
+  `;
+
+}
+
+
+/* =========================================================
+   BUSCAR INVENTARIO
+========================================================= */
+
+inventorySearch.addEventListener(
+  "input",
+  () => {
+
+    const query =
+      inventorySearch.value
+        .toLowerCase()
+        .trim();
+
+    if(!query){
+
+      renderProperties(
+        allProperties
+      );
+
+      return;
+    }
+
+    const results =
+      allProperties.filter(
+        property => {
+
+          const text =
+            [
+              property.title,
+              property.property_type,
+              property.province,
+              property.city,
+              property.neighborhood,
+              property.address,
+              property.description
+            ]
+              .filter(Boolean)
+              .join(" ")
+              .toLowerCase();
+
+          return text.includes(
+            query
+          );
+
+        }
+      );
+
+    renderProperties(
+      results
+    );
+
+  }
+);
+
+
+/* =========================================================
+   ACTUALIZAR
+========================================================= */
+
+document
+  .getElementById(
+    "refreshButton"
+  )
+  .addEventListener(
+    "click",
+    async () => {
+
+      const btn =
+        document.getElementById(
+          "refreshButton"
+        );
+
+      btn.disabled =
+        true;
+
+      btn.textContent =
+        "Actualizando...";
+
+      await loadProperties();
+
+      btn.disabled =
+        false;
+
+      btn.textContent =
+        "Actualizar";
+
+    }
+  );
+
+
+/* =========================================================
+   INIT
+========================================================= */
 
 updatePreview();
 
