@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -10,22 +11,29 @@
 
   <meta name="theme-color" content="#f5f5f7">
 
-  <title>NEXO — Mapa de propiedades</title>
+  <title>NEXO — Mapa</title>
 
-  <!-- MAPTILER SDK -->
+  <!-- =====================================================
+       MAPBOX GL JS
+       ===================================================== -->
+
   <link
-    href="https://cdn.maptiler.com/maptiler-sdk-js/v4.0.2/maptiler-sdk.css"
+    href="https://api.mapbox.com/mapbox-gl-js/v3.17.0/mapbox-gl.css"
     rel="stylesheet"
   >
+
+  <script
+    src="https://api.mapbox.com/mapbox-gl-js/v3.17.0/mapbox-gl.js"
+  ></script>
 
   <style>
 
     :root {
       --bg: #f5f5f7;
-      --white: #fff;
-      --black: #111;
+      --white: #ffffff;
+      --black: #111111;
       --text: #171717;
-      --muted: #777;
+      --muted: #777777;
       --border: rgba(0,0,0,.08);
     }
 
@@ -36,9 +44,12 @@
 
     html,
     body {
+
       margin: 0;
+
       width: 100%;
       height: 100%;
+
       overflow: hidden;
 
       font-family:
@@ -69,10 +80,15 @@
        ===================================================== */
 
     #map {
+
       position: fixed;
+
       inset: 0;
+
       width: 100%;
       height: 100%;
+
+      z-index: 1;
     }
 
     /* =====================================================
@@ -80,13 +96,14 @@
        ===================================================== */
 
     .topbar {
+
       position: fixed;
 
       top: 0;
       left: 0;
       right: 0;
 
-      z-index: 1000;
+      z-index: 100;
 
       padding:
         calc(12px + env(safe-area-inset-top, 0px))
@@ -97,18 +114,22 @@
     }
 
     .topbar-inner {
+
       width: min(760px, 100%);
+
       margin: auto;
 
       display: flex;
+
       align-items: center;
 
-      gap: 10px;
+      gap: 9px;
 
       pointer-events: auto;
     }
 
     .brand {
+
       flex: 0 0 auto;
 
       padding: 12px 15px;
@@ -118,50 +139,60 @@
       background:
         rgba(255,255,255,.94);
 
-      backdrop-filter:
-        blur(20px);
-
-      -webkit-backdrop-filter:
-        blur(20px);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
 
       box-shadow:
-        0 8px 30px rgba(0,0,0,.10);
+        0 8px 30px rgba(0,0,0,.12);
 
       font-size: 17px;
+
       font-weight: 850;
-      letter-spacing: -.07em;
+
+      letter-spacing: -.06em;
     }
 
     .search {
+
       flex: 1;
 
       min-width: 0;
 
       display: flex;
+
       align-items: center;
 
-      background:
-        rgba(255,255,255,.94);
+      overflow: hidden;
 
       border-radius: 16px;
 
-      box-shadow:
-        0 8px 30px rgba(0,0,0,.10);
+      background:
+        rgba(255,255,255,.95);
 
-      overflow: hidden;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+
+      box-shadow:
+        0 8px 30px rgba(0,0,0,.12);
     }
 
     .search-icon {
+
       padding-left: 14px;
+
       font-size: 16px;
     }
 
     .search input {
+
       width: 100%;
 
-      padding: 13px 12px;
+      min-width: 0;
+
+      padding: 13px 10px;
 
       border: 0;
+
       outline: 0;
 
       background: transparent;
@@ -172,10 +203,13 @@
     }
 
     .clear-search {
+
       display: none;
 
-      width: 36px;
-      height: 36px;
+      flex: 0 0 auto;
+
+      width: 35px;
+      height: 35px;
 
       margin-right: 4px;
 
@@ -185,7 +219,7 @@
 
       color: #555;
 
-      font-size: 15px;
+      font-size: 16px;
     }
 
     .clear-search.show {
@@ -197,6 +231,7 @@
        ===================================================== */
 
     .filters {
+
       position: fixed;
 
       top:
@@ -205,7 +240,7 @@
       left: 0;
       right: 0;
 
-      z-index: 999;
+      z-index: 90;
 
       padding: 0 14px;
 
@@ -213,10 +248,13 @@
     }
 
     .filters-inner {
+
       width: min(760px, 100%);
+
       margin: auto;
 
       display: flex;
+
       gap: 8px;
 
       overflow-x: auto;
@@ -231,6 +269,7 @@
     }
 
     .filter {
+
       flex: 0 0 auto;
 
       padding: 10px 13px;
@@ -238,135 +277,89 @@
       border-radius: 999px;
 
       border:
-        1px solid rgba(0,0,0,.06);
+        1px solid rgba(0,0,0,.07);
 
       background:
-        rgba(255,255,255,.93);
+        rgba(255,255,255,.94);
 
-      backdrop-filter:
-        blur(15px);
-
-      -webkit-backdrop-filter:
-        blur(15px);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
 
       color: #444;
 
       font-size: 11px;
-      font-weight: 700;
+
+      font-weight: 750;
 
       box-shadow:
-        0 5px 20px rgba(0,0,0,.07);
+        0 5px 20px rgba(0,0,0,.08);
     }
 
     .filter.active {
+
       background: #111;
+
       color: #fff;
     }
 
     /* =====================================================
-       CONTROLES DE MAPA NEXO
+       SELECTOR DE MAPA
        ===================================================== */
 
-    .map-style-controls {
+    .map-style {
+
       position: fixed;
 
       right: 14px;
 
       top:
-        calc(140px + env(safe-area-inset-top, 0px));
+        calc(
+          128px +
+          env(safe-area-inset-top, 0px)
+        );
 
-      z-index: 1000;
-
-      display: flex;
-      flex-direction: column;
-
-      gap: 7px;
-    }
-
-    .style-button {
-      min-width: 78px;
-
-      padding: 10px 12px;
-
-      border-radius: 13px;
-
-      background:
-        rgba(255,255,255,.95);
-
-      backdrop-filter:
-        blur(18px);
-
-      -webkit-backdrop-filter:
-        blur(18px);
-
-      box-shadow:
-        0 7px 25px rgba(0,0,0,.12);
-
-      color: #222;
-
-      font-size: 10px;
-      font-weight: 800;
-
-      text-align: center;
-    }
-
-    .style-button.active {
-      background: #111;
-      color: #fff;
-    }
-
-    .style-button:active {
-      transform: scale(.95);
-    }
-
-    /* =====================================================
-       BOTONES INFERIORES
-       ===================================================== */
-
-    .map-buttons {
-      position: fixed;
-
-      right: 14px;
-
-      bottom:
-        calc(18px + env(safe-area-inset-bottom, 0px));
-
-      z-index: 1000;
+      z-index: 95;
 
       display: flex;
+
       flex-direction: column;
 
-      gap: 8px;
-    }
+      gap: 6px;
 
-    .map-button {
-      width: 46px;
-      height: 46px;
+      padding: 5px;
 
       border-radius: 15px;
 
       background:
-        rgba(255,255,255,.95);
+        rgba(255,255,255,.94);
 
-      backdrop-filter:
-        blur(18px);
-
-      -webkit-backdrop-filter:
-        blur(18px);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
 
       box-shadow:
-        0 8px 30px rgba(0,0,0,.12);
-
-      font-size: 18px;
+        0 8px 30px rgba(0,0,0,.13);
     }
 
-    .map-button.active {
+    .style-button {
+
+      padding: 9px 11px;
+
+      border-radius: 11px;
+
+      background: transparent;
+
+      color: #555;
+
+      font-size: 10px;
+
+      font-weight: 800;
+    }
+
+    .style-button.active {
+
       background: #111;
-      color: #fff;
-    }
 
-    .map-button:active {
-      transform: scale(.94);
+      color: #fff;
     }
 
     /* =====================================================
@@ -374,14 +367,18 @@
        ===================================================== */
 
     .counter {
+
       position: fixed;
 
       left: 14px;
 
       bottom:
-        calc(18px + env(safe-area-inset-bottom, 0px));
+        calc(
+          18px +
+          env(safe-area-inset-bottom, 0px)
+        );
 
-      z-index: 1000;
+      z-index: 100;
 
       padding: 10px 14px;
 
@@ -390,17 +387,64 @@
       background:
         rgba(255,255,255,.94);
 
-      backdrop-filter:
-        blur(18px);
-
-      -webkit-backdrop-filter:
-        blur(18px);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
 
       box-shadow:
         0 8px 30px rgba(0,0,0,.12);
 
       font-size: 11px;
+
       font-weight: 750;
+    }
+
+    /* =====================================================
+       BOTONES
+       ===================================================== */
+
+    .map-buttons {
+
+      position: fixed;
+
+      right: 14px;
+
+      bottom:
+        calc(
+          18px +
+          env(safe-area-inset-bottom, 0px)
+        );
+
+      z-index: 100;
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 8px;
+    }
+
+    .map-button {
+
+      width: 44px;
+      height: 44px;
+
+      border-radius: 15px;
+
+      background:
+        rgba(255,255,255,.95);
+
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+
+      box-shadow:
+        0 8px 30px rgba(0,0,0,.12);
+
+      font-size: 18px;
+    }
+
+    .map-button:active {
+
+      transform: scale(.94);
     }
 
     /* =====================================================
@@ -408,12 +452,13 @@
        ===================================================== */
 
     .status {
+
       position: fixed;
 
       left: 50%;
       top: 50%;
 
-      z-index: 2000;
+      z-index: 200;
 
       transform:
         translate(-50%, -50%);
@@ -426,14 +471,15 @@
       border-radius: 20px;
 
       background:
-        rgba(255,255,255,.97);
+        rgba(255,255,255,.96);
 
       box-shadow:
-        0 20px 60px rgba(0,0,0,.16);
+        0 20px 60px rgba(0,0,0,.18);
 
       text-align: center;
 
       font-size: 13px;
+
       line-height: 1.5;
     }
 
@@ -442,46 +488,122 @@
     }
 
     .status-title {
-      font-weight: 800;
+
       margin-bottom: 5px;
+
+      font-weight: 800;
     }
 
     .status-text {
+
       color: #777;
+    }
+
+    /* =====================================================
+       MARKER NEXO
+       ===================================================== */
+
+    .nexo-marker {
+
+      width: 38px;
+      height: 38px;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+
+      background: #111;
+
+      border: 3px solid #fff;
+
+      box-shadow:
+        0 5px 18px rgba(0,0,0,.35);
+
+      color: #fff;
+
+      font-size: 10px;
+
+      font-weight: 900;
+
+      letter-spacing: -.04em;
+    }
+
+    .nexo-marker::after {
+
+      content: "";
+
+      position: absolute;
+
+      width: 8px;
+      height: 8px;
+
+      border-radius: 50%;
+
+      background: #fff;
     }
 
     /* =====================================================
        POPUP
        ===================================================== */
 
-    .maplibregl-popup-content {
-      padding: 0 !important;
+    .mapboxgl-popup {
+
+      max-width:
+        min(330px, 82vw) !important;
+    }
+
+    .mapboxgl-popup-content {
+
+      padding: 0;
+
+      overflow: hidden;
 
       border-radius: 20px;
 
-      overflow: hidden;
-
       box-shadow:
-        0 15px 45px rgba(0,0,0,.16);
+        0 18px 55px rgba(0,0,0,.22);
     }
 
-    .maplibregl-popup {
-      max-width:
-        min(330px, 86vw);
+    .mapboxgl-popup-close-button {
+
+      z-index: 5;
+
+      width: 32px;
+      height: 32px;
+
+      margin: 7px;
+
+      border-radius: 50%;
+
+      background:
+        rgba(255,255,255,.90);
+
+      color: #111;
+
+      font-size: 20px;
+
+      line-height: 30px;
     }
 
     .property-card {
-      overflow: hidden;
 
-      width:
-        min(300px, 76vw);
+      overflow: hidden;
 
       background: #fff;
     }
 
     .property-image {
+
       width: 100%;
       height: 155px;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
 
       background:
         linear-gradient(
@@ -490,32 +612,32 @@
           #d5d5d8
         );
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
       color: #999;
 
       font-size: 11px;
     }
 
     .property-image img {
+
       width: 100%;
       height: 100%;
 
-      display: block;
-
       object-fit: cover;
+
+      display: block;
     }
 
     .property-content {
+
       padding: 15px;
     }
 
     .property-type {
+
       color: #888;
 
       font-size: 9px;
+
       font-weight: 800;
 
       text-transform: uppercase;
@@ -524,32 +646,40 @@
     }
 
     .property-title {
+
       margin-top: 5px;
 
       font-size: 18px;
+
       font-weight: 800;
 
       letter-spacing: -.045em;
     }
 
     .property-price {
+
       margin-top: 7px;
 
       font-size: 19px;
+
       font-weight: 800;
     }
 
     .property-location {
+
       margin-top: 6px;
 
       color: #777;
 
       font-size: 11px;
+
       line-height: 1.45;
     }
 
     .property-stats {
+
       display: flex;
+
       flex-wrap: wrap;
 
       gap: 6px;
@@ -558,6 +688,7 @@
     }
 
     .property-stat {
+
       padding: 6px 8px;
 
       border-radius: 999px;
@@ -567,19 +698,23 @@
       color: #555;
 
       font-size: 9px;
+
       font-weight: 700;
     }
 
     .property-address {
+
       margin-top: 11px;
 
       color: #666;
 
       font-size: 10px;
+
       line-height: 1.4;
     }
 
     .view-property {
+
       width: 100%;
 
       margin-top: 13px;
@@ -589,67 +724,34 @@
       border-radius: 12px;
 
       background: #111;
+
       color: #fff;
 
       font-size: 11px;
+
       font-weight: 750;
     }
 
     /* =====================================================
-       MARCADOR NEXO
+       MAPBOX CONTROLS
        ===================================================== */
 
-    .nexo-marker {
-      width: 38px;
-      height: 38px;
+    .mapboxgl-ctrl-bottom-left {
 
-      border-radius:
-        50% 50% 50% 0;
-
-      background: #111;
-
-      border:
-        3px solid #fff;
-
-      transform:
-        rotate(-45deg);
-
-      box-shadow:
-        0 6px 18px rgba(0,0,0,.30);
-
-      position: relative;
+      bottom:
+        calc(
+          8px +
+          env(safe-area-inset-bottom, 0px)
+        );
     }
 
-    .nexo-marker::after {
-      content: "";
+    .mapboxgl-ctrl-bottom-right {
 
-      position: absolute;
-
-      width: 10px;
-      height: 10px;
-
-      left: 11px;
-      top: 11px;
-
-      border-radius: 50%;
-
-      background: #fff;
-    }
-
-    /* =====================================================
-       LOGO MAPTILER / CONTROLES
-       ===================================================== */
-
-    .maplibregl-ctrl-bottom-left,
-    .maplibregl-ctrl-bottom-right {
-      z-index: 20;
-    }
-
-    .maplibregl-ctrl-group {
-      border-radius: 12px !important;
-      overflow: hidden;
-      box-shadow:
-        0 5px 20px rgba(0,0,0,.12) !important;
+      bottom:
+        calc(
+          8px +
+          env(safe-area-inset-bottom, 0px)
+        );
     }
 
     /* =====================================================
@@ -659,38 +761,44 @@
     @media(max-width:600px) {
 
       .brand {
+
         padding: 11px 13px;
+
         font-size: 16px;
       }
 
       .search input {
+
         font-size: 12px;
       }
 
       .filters {
+
         top:
-          calc(65px + env(safe-area-inset-top, 0px));
+          calc(
+            65px +
+            env(safe-area-inset-top, 0px)
+          );
       }
 
-      .map-style-controls {
+      .map-style {
+
         top:
-          calc(125px + env(safe-area-inset-top, 0px));
-
-        right: 10px;
-      }
-
-      .style-button {
-        min-width: 70px;
-        padding: 9px 10px;
+          calc(
+            122px +
+            env(safe-area-inset-top, 0px)
+          );
       }
 
       .property-image {
+
         height: 145px;
       }
 
     }
 
   </style>
+
 </head>
 
 <body>
@@ -731,7 +839,6 @@
           id="clearSearch"
           class="clear-search"
           type="button"
-          aria-label="Limpiar búsqueda"
         >
           ×
         </button>
@@ -805,41 +912,33 @@
 
 
   <!-- =====================================================
-       CAMBIO DE VISTA
+       ESTILOS DE MAPA
        ===================================================== -->
 
-  <div class="map-style-controls">
+  <div class="map-style">
 
     <button
-      id="streetsButton"
       class="style-button active"
+      data-style="streets"
       type="button"
     >
       🗺️ Mapa
     </button>
 
     <button
-      id="hybridButton"
       class="style-button"
-      type="button"
-    >
-      🌍 Híbrido
-    </button>
-
-    <button
-      id="satelliteButton"
-      class="style-button"
+      data-style="satellite"
       type="button"
     >
       🛰️ Satélite
     </button>
 
     <button
-      id="terrainButton"
       class="style-button"
+      data-style="hybrid"
       type="button"
     >
-      🧊 3D
+      🌎 Híbrido
     </button>
 
   </div>
@@ -912,103 +1011,71 @@
   </div>
 
 
-  <!-- =====================================================
-       MAPTILER SDK
-       ===================================================== -->
-
-  <script
-    src="https://cdn.maptiler.com/maptiler-sdk-js/v4.0.2/maptiler-sdk.umd.min.js"
-  ></script>
-
-
   <script>
 
     "use strict";
 
 
     /* =====================================================
-       CONFIGURACIÓN
+       CONFIGURACIÓN MAPBOX
        ===================================================== */
 
-    /*
-     * CLAVE MAPTILER
-     *
-     * Sustituye el texto entre comillas por tu Default key.
-     *
-     * La clave que me proporcionaste debe ir aquí.
-     */
-
-    const MAPTILER_KEY =
+    const MAPBOX_TOKEN =
       "1NdLFdUeZVfKpdAWdd6K";
 
 
-    maptilersdk.config.apiKey =
-      MAPTILER_KEY;
+    mapboxgl.accessToken =
+      MAPBOX_TOKEN;
+
+
+    /* =====================================================
+       ESTILOS
+       ===================================================== */
+
+    const MAP_STYLES = {
+
+      streets:
+        "mapbox://styles/mapbox/streets-v12",
+
+      satellite:
+        "mapbox://styles/mapbox/satellite-v9",
+
+      hybrid:
+        "mapbox://styles/mapbox/satellite-streets-v12"
+
+    };
 
 
     /* =====================================================
        ELEMENTOS
        ===================================================== */
 
+    const mapElement =
+      document.getElementById("map");
+
     const searchInput =
-      document.getElementById(
-        "searchInput"
-      );
+      document.getElementById("searchInput");
 
     const clearSearch =
-      document.getElementById(
-        "clearSearch"
-      );
+      document.getElementById("clearSearch");
 
     const counter =
-      document.getElementById(
-        "counter"
-      );
+      document.getElementById("counter");
 
     const status =
-      document.getElementById(
-        "status"
-      );
+      document.getElementById("status");
 
     const statusTitle =
-      document.getElementById(
-        "statusTitle"
-      );
+      document.getElementById("statusTitle");
 
     const statusText =
-      document.getElementById(
-        "statusText"
-      );
+      document.getElementById("statusText");
 
     const fitButton =
-      document.getElementById(
-        "fitButton"
-      );
+      document.getElementById("fitButton");
 
     const locationButton =
-      document.getElementById(
-        "locationButton"
-      );
-
-    const streetsButton =
-      document.getElementById(
-        "streetsButton"
-      );
-
-    const hybridButton =
-      document.getElementById(
-        "hybridButton"
-      );
-
-    const satelliteButton =
-      document.getElementById(
-        "satelliteButton"
-      );
-
-    const terrainButton =
-      document.getElementById(
-        "terrainButton"
-      );
+      document.getElementById("locationButton");
 
 
     /* =====================================================
@@ -1023,7 +1090,7 @@
 
     let currentStyle = "streets";
 
-    let terrainEnabled = false;
+    let markers = [];
 
     let userMarker = null;
 
@@ -1033,42 +1100,54 @@
        ===================================================== */
 
     const map =
-      new maptilersdk.Map({
+      new mapboxgl.Map({
 
-        container: "map",
+        container: mapElement,
 
         style:
-          maptilersdk.MapStyle.STREETS,
+          MAP_STYLES.streets,
 
-        center: [
-          -82.3666,
-          23.1136
-        ],
+        center:
+          [-82.3666, 23.1136],
 
-        zoom: 11,
+        zoom: 10.8,
 
-        pitch: 0,
+        minZoom: 3,
 
-        maxPitch: 85,
+        maxZoom: 20,
 
         attributionControl: true,
 
-        navigationControl: false,
+        antialias: true,
 
-        geolocateControl: false
+        dragRotate: false,
+
+        touchPitch: false,
+
+        cooperativeGestures: false
 
       });
 
 
     /* =====================================================
-       CONTROLES NATIVOS
+       CONTROLES
        ===================================================== */
 
     map.addControl(
-      new maptilersdk.NavigationControl({
-        visualizePitch: true
+      new mapboxgl.NavigationControl({
+        showCompass: false,
+        visualizePitch: false
       }),
       "bottom-right"
+    );
+
+
+    map.addControl(
+      new mapboxgl.ScaleControl({
+        maxWidth: 100,
+        unit: "metric"
+      }),
+      "bottom-left"
     );
 
 
@@ -1079,27 +1158,11 @@
     function escapeHTML(value) {
 
       return String(value ?? "")
-        .replace(
-          /&/g,
-          "&amp;"
-        )
-        .replace(
-          /</g,
-          "&lt;"
-        )
-        .replace(
-          />/g,
-          "&gt;"
-        )
-        .replace(
-          /"/g,
-          "&quot;"
-        )
-        .replace(
-          /'/g,
-          "&#039;"
-        );
-
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
 
@@ -1110,21 +1173,20 @@
         value === undefined ||
         value === ""
       ) {
+
         return "$0";
       }
 
       const number =
         Number(
           String(value)
-            .replace(
-              /[$,\s]/g,
-              ""
-            )
+            .replace(/[$,\s]/g, "")
         );
 
       if (
         !Number.isFinite(number)
       ) {
+
         return String(value);
       }
 
@@ -1135,7 +1197,6 @@
             maximumFractionDigits: 0
           }
         );
-
     }
 
 
@@ -1149,7 +1210,6 @@
         )
         .toLowerCase()
         .trim();
-
     }
 
 
@@ -1163,7 +1223,6 @@
 
         return property.photos
           .filter(Boolean);
-
       }
 
 
@@ -1185,7 +1244,6 @@
 
             return parsed
               .filter(Boolean);
-
           }
 
         } catch (error) {
@@ -1200,12 +1258,53 @@
       }
 
       return [];
+    }
 
+
+    function getCoordinates(
+      property
+    ) {
+
+      const latitude =
+        Number(
+          property.latitude
+        );
+
+      const longitude =
+        Number(
+          property.longitude
+        );
+
+
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+      ) {
+
+        return null;
+      }
+
+
+      if (
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180
+      ) {
+
+        return null;
+      }
+
+
+      return [
+        longitude,
+        latitude
+      ];
     }
 
 
     /* =====================================================
-       ESTADO
+       ESTADO VISUAL
        ===================================================== */
 
     function showStatus(
@@ -1222,7 +1321,6 @@
       status.classList.remove(
         "hidden"
       );
-
     }
 
 
@@ -1231,27 +1329,6 @@
       status.classList.add(
         "hidden"
       );
-
-    }
-
-
-    /* =====================================================
-       MARCADORES
-       ===================================================== */
-
-    const markers = new Map();
-
-
-    function clearMarkers() {
-
-      markers.forEach(
-        marker => {
-          marker.remove();
-        }
-      );
-
-      markers.clear();
-
     }
 
 
@@ -1301,7 +1378,6 @@
             property.bedrooms
           )}`
         );
-
       }
 
 
@@ -1316,7 +1392,6 @@
             property.bathrooms
           )}`
         );
-
       }
 
 
@@ -1331,7 +1406,6 @@
             property.square_meters
           )} m²`
         );
-
       }
 
 
@@ -1339,20 +1413,12 @@
         stats.length
           ? `
             <div class="property-stats">
-
               ${stats
                 .map(
                   item =>
-                    `
-                    <span
-                      class="property-stat"
-                    >
-                      ${item}
-                    </span>
-                    `
+                    `<span class="property-stat">${item}</span>`
                 )
                 .join("")}
-
             </div>
           `
           : "";
@@ -1361,17 +1427,12 @@
       const imageHTML =
         image
           ? `
-            <div
-              class="property-image"
-            >
+            <div class="property-image">
 
               <img
-                src="${escapeHTML(
-                  image
-                )}"
-                alt="${escapeHTML(
-                  title
-                )}"
+                src="${escapeHTML(image)}"
+                alt="${escapeHTML(title)}"
+                loading="lazy"
                 onerror="
                   this.style.display='none';
                   this.parentElement.textContent='Sin fotografía';
@@ -1381,9 +1442,7 @@
             </div>
           `
           : `
-            <div
-              class="property-image"
-            >
+            <div class="property-image">
               Sin fotografía
             </div>
           `;
@@ -1392,9 +1451,7 @@
       const addressHTML =
         property.address
           ? `
-            <div
-              class="property-address"
-            >
+            <div class="property-address">
               📍 ${escapeHTML(
                 property.address
               )}
@@ -1404,56 +1461,52 @@
 
 
       return `
-        <div
-          class="property-card"
-        >
+        <div class="property-card">
 
           ${imageHTML}
 
-          <div
-            class="property-content"
-          >
+          <div class="property-content">
 
-            <div
-              class="property-type"
-            >
+            <div class="property-type">
+
               ${escapeHTML(
                 property.property_type ||
                 "Propiedad"
               )}
+
             </div>
 
-            <div
-              class="property-title"
-            >
+
+            <div class="property-title">
+
               ${escapeHTML(title)}
+
             </div>
 
-            <div
-              class="property-price"
-            >
-              ${money(
-                property.price
-              )}
+
+            <div class="property-price">
+
+              ${money(property.price)}
+
             </div>
+
 
             ${
               location
                 ? `
-                  <div
-                    class="property-location"
-                  >
-                    ${escapeHTML(
-                      location
-                    )}
+                  <div class="property-location">
+                    ${escapeHTML(location)}
                   </div>
                 `
                 : ""
             }
 
+
             ${statsHTML}
 
+
             ${addressHTML}
+
 
             <button
               type="button"
@@ -1462,47 +1515,82 @@
                 property.id
               )}"
             >
-              Ver propiedad
+              Centrar propiedad
             </button>
 
           </div>
 
         </div>
       `;
-
     }
 
 
     /* =====================================================
-       CREAR MARCADOR
+       CENTRAR PROPIEDAD
        ===================================================== */
+
+    function centerProperty(
+      property
+    ) {
+
+      const coordinates =
+        getCoordinates(
+          property
+        );
+
+      if (!coordinates) {
+
+        return;
+      }
+
+
+      map.flyTo({
+
+        center:
+          coordinates,
+
+        zoom:
+          Math.max(
+            map.getZoom(),
+            16
+          ),
+
+        speed: 1.1,
+
+        curve: 1.2,
+
+        essential: true
+
+      });
+    }
+
+
+    /* =====================================================
+       MARCADORES
+       ===================================================== */
+
+    function clearMarkers() {
+
+      markers.forEach(
+        marker => marker.remove()
+      );
+
+      markers = [];
+    }
+
 
     function createMarker(
       property
     ) {
 
-      const latitude =
-        Number(
-          property.latitude
+      const coordinates =
+        getCoordinates(
+          property
         );
 
-      const longitude =
-        Number(
-          property.longitude
-        );
-
-
-      if (
-        !Number.isFinite(
-          latitude
-        ) ||
-        !Number.isFinite(
-          longitude
-        )
-      ) {
+      if (!coordinates) {
 
         return null;
-
       }
 
 
@@ -1516,45 +1604,126 @@
         "nexo-marker";
 
 
-      const marker =
-        new maptilersdk.Marker({
-          element,
-          anchor: "bottom"
+      element.innerHTML =
+        "N";
+
+
+      element.setAttribute(
+        "role",
+        "button"
+      );
+
+
+      element.setAttribute(
+        "aria-label",
+        property.property_type ||
+        "Propiedad"
+      );
+
+
+      const popup =
+        new mapboxgl.Popup({
+
+          closeButton: true,
+
+          closeOnClick: true,
+
+          offset: 24,
+
+          maxWidth:
+            "330px"
+
         })
-          .setLngLat([
-            longitude,
-            latitude
-          ])
+          .setHTML(
+            buildPropertyCard(
+              property
+            )
+          );
+
+
+      popup.on(
+        "open",
+        () => {
+
+          const button =
+            popup
+              .getElement()
+              ?.querySelector(
+                ".view-property"
+              );
+
+
+          if (!button) {
+            return;
+          }
+
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              centerProperty(
+                property
+              );
+
+            }
+          );
+
+        }
+      );
+
+
+      const marker =
+        new mapboxgl.Marker({
+
+          element,
+
+          anchor: "bottom",
+
+          pitchAlignment:
+            "viewport",
+
+          rotationAlignment:
+            "viewport"
+
+        })
+          .setLngLat(
+            coordinates
+          )
           .setPopup(
-            new maptilersdk.Popup({
-              offset: 30,
-              closeButton: true,
-              closeOnClick: true,
-              maxWidth: "330px"
-            })
-              .setHTML(
-                buildPropertyCard(
-                  property
-                )
-              )
+            popup
           )
           .addTo(map);
 
 
-      markers.set(
-        Number(property.id),
-        marker
+      element.addEventListener(
+        "click",
+        () => {
+
+          map.flyTo({
+
+            center:
+              coordinates,
+
+            zoom:
+              Math.max(
+                map.getZoom(),
+                15
+              ),
+
+            speed: 1.0,
+
+            essential: true
+
+          });
+
+        }
       );
 
 
       return marker;
-
     }
 
-
-    /* =====================================================
-       RENDER MARCADORES
-       ===================================================== */
 
     function renderMarkers() {
 
@@ -1564,9 +1733,18 @@
       filteredProperties.forEach(
         property => {
 
-          createMarker(
-            property
-          );
+          const marker =
+            createMarker(
+              property
+            );
+
+
+          if (marker) {
+
+            markers.push(
+              marker
+            );
+          }
 
         }
       );
@@ -1578,36 +1756,117 @@
 
 
     /* =====================================================
+       AJUSTAR MAPA
+       ===================================================== */
+
+    function fitVisibleProperties() {
+
+      const coordinates =
+        filteredProperties
+          .map(
+            getCoordinates
+          )
+          .filter(Boolean);
+
+
+      if (!coordinates.length) {
+
+        map.flyTo({
+
+          center:
+            [-82.3666, 23.1136],
+
+          zoom: 10.8,
+
+          essential: true
+
+        });
+
+        return;
+      }
+
+
+      if (
+        coordinates.length === 1
+      ) {
+
+        map.flyTo({
+
+          center:
+            coordinates[0],
+
+          zoom: 15,
+
+          essential: true
+
+        });
+
+        return;
+      }
+
+
+      const bounds =
+        new mapboxgl.LngLatBounds();
+
+
+      coordinates.forEach(
+        coordinate => {
+
+          bounds.extend(
+            coordinate
+          );
+
+        }
+      );
+
+
+      map.fitBounds(
+        bounds,
+        {
+
+          padding: {
+
+            top: 180,
+
+            bottom: 110,
+
+            left: 35,
+
+            right: 35
+
+          },
+
+          maxZoom: 16,
+
+          duration: 1200,
+
+          essential: true
+
+        }
+      );
+
+    }
+
+
+    /* =====================================================
        CONTADOR
        ===================================================== */
 
     function updateCounter() {
 
-      const located =
-        filteredProperties.filter(
-          property => {
-
-            const lat =
-              Number(
-                property.latitude
-              );
-
-            const lng =
-              Number(
-                property.longitude
-              );
-
-            return (
-              Number.isFinite(lat) &&
-              Number.isFinite(lng)
-            );
-
-          }
-        ).length;
-
-
       const total =
         filteredProperties.length;
+
+
+      const located =
+        filteredProperties.filter(
+          property =>
+            Boolean(
+              getCoordinates(
+                property
+              )
+            )
+        ).length;
 
 
       if (
@@ -1632,124 +1891,6 @@
 
 
     /* =====================================================
-       AJUSTAR MAPA
-       ===================================================== */
-
-    function fitVisibleProperties() {
-
-      const coordinates =
-        filteredProperties
-          .map(
-            property => {
-
-              const lat =
-                Number(
-                  property.latitude
-                );
-
-              const lng =
-                Number(
-                  property.longitude
-                );
-
-
-              if (
-                !Number.isFinite(lat) ||
-                !Number.isFinite(lng)
-              ) {
-
-                return null;
-
-              }
-
-
-              return [
-                lng,
-                lat
-              ];
-
-            }
-          )
-          .filter(Boolean);
-
-
-      if (
-        coordinates.length === 0
-      ) {
-
-        map.flyTo({
-          center: [
-            -82.3666,
-            23.1136
-          ],
-          zoom: 11,
-          pitch:
-            terrainEnabled
-              ? 45
-              : 0,
-          duration: 900
-        });
-
-        return;
-
-      }
-
-
-      if (
-        coordinates.length === 1
-      ) {
-
-        map.flyTo({
-          center:
-            coordinates[0],
-          zoom: 15,
-          pitch:
-            terrainEnabled
-              ? 45
-              : 0,
-          duration: 900
-        });
-
-        return;
-
-      }
-
-
-      const bounds =
-        new maptilersdk.LngLatBounds();
-
-
-      coordinates.forEach(
-        coordinate => {
-
-          bounds.extend(
-            coordinate
-          );
-
-        }
-      );
-
-
-      map.fitBounds(
-        bounds,
-        {
-          padding: {
-            top: 170,
-            bottom: 120,
-            left: 40,
-            right: 100
-          },
-
-          maxZoom: 16,
-
-          duration: 1000
-        }
-      );
-
-    }
-
-
-    /* =====================================================
        FILTROS
        ===================================================== */
 
@@ -1767,37 +1908,46 @@
 
 
             if (
-              activeType !== "all" &&
-              normalize(
-                property.property_type
-              ) !==
-              normalize(
-                activeType
-              )
+              activeType !==
+              "all"
             ) {
 
-              return false;
+              if (
+                normalize(
+                  property.property_type
+                ) !==
+                normalize(
+                  activeType
+                )
+              ) {
+
+                return false;
+              }
 
             }
 
 
-            if (
-              !search
-            ) {
+            if (!search) {
 
               return true;
-
             }
 
 
             const searchable =
               [
+
                 property.property_type,
+
                 property.title,
+
                 property.city,
+
                 property.neighborhood,
+
                 property.address,
+
                 property.description
+
               ]
                 .filter(Boolean)
                 .map(normalize)
@@ -1815,9 +1965,11 @@
       renderMarkers();
 
 
+      fitVisibleProperties();
+
+
       if (
-        filteredProperties.length ===
-        0
+        !filteredProperties.length
       ) {
 
         showStatus(
@@ -1831,18 +1983,17 @@
 
       }
 
-
-      fitVisibleProperties();
-
     }
 
 
     /* =====================================================
-       BOTONES DE FILTRO
+       FILTROS BOTONES
        ===================================================== */
 
     document
-      .querySelectorAll(".filter")
+      .querySelectorAll(
+        ".filter"
+      )
       .forEach(
         button => {
 
@@ -1907,7 +2058,8 @@
       "click",
       () => {
 
-        searchInput.value = "";
+        searchInput.value =
+          "";
 
         clearSearch.classList.remove(
           "show"
@@ -1922,260 +2074,71 @@
 
 
     /* =====================================================
-       CAMBIO DE VISTA
+       CAMBIAR MAPA
        ===================================================== */
 
-    function updateStyleButtons() {
+    document
+      .querySelectorAll(
+        ".style-button"
+      )
+      .forEach(
+        button => {
 
-      streetsButton.classList.toggle(
-        "active",
-        currentStyle === "streets"
-      );
+          button.addEventListener(
+            "click",
+            () => {
 
-      hybridButton.classList.toggle(
-        "active",
-        currentStyle === "hybrid"
-      );
+              const style =
+                button.dataset.style;
 
-      satelliteButton.classList.toggle(
-        "active",
-        currentStyle === "satellite"
-      );
 
-      terrainButton.classList.toggle(
-        "active",
-        terrainEnabled
-      );
+              if (
+                !MAP_STYLES[style]
+              ) {
 
-    }
+                return;
+              }
 
 
-    function changeStyle(
-      style
-    ) {
+              document
+                .querySelectorAll(
+                  ".style-button"
+                )
+                .forEach(
+                  item =>
+                    item.classList.remove(
+                      "active"
+                    )
+                );
 
-      currentStyle =
-        style;
 
+              button.classList.add(
+                "active"
+              );
 
-      if (
-        style === "streets"
-      ) {
 
-        map.setStyle(
-          maptilersdk.MapStyle.STREETS
-        );
+              currentStyle =
+                style;
 
-      }
 
+              map.setStyle(
+                MAP_STYLES[
+                  style
+                ]
+              );
 
-      if (
-        style === "hybrid"
-      ) {
 
-        map.setStyle(
-          maptilersdk.MapStyle.HYBRID
-        );
+              /*
+               * Los marcadores HTML
+               * no forman parte del estilo
+               * y permanecen sobre el mapa.
+               */
 
-      }
-
-
-      if (
-        style === "satellite"
-      ) {
-
-        map.setStyle(
-          maptilersdk.MapStyle.SATELLITE
-        );
-
-      }
-
-
-      updateStyleButtons();
-
-    }
-
-
-    streetsButton.addEventListener(
-      "click",
-      () => {
-
-        changeStyle(
-          "streets"
-        );
-
-      }
-    );
-
-
-    hybridButton.addEventListener(
-      "click",
-      () => {
-
-        changeStyle(
-          "hybrid"
-        );
-
-      }
-    );
-
-
-    satelliteButton.addEventListener(
-      "click",
-      () => {
-
-        changeStyle(
-          "satellite"
-        );
-
-      }
-    );
-
-
-    /* =====================================================
-       TERRENO 3D
-       ===================================================== */
-
-    function setupTerrain() {
-
-      if (
-        !map.getSource(
-          "nexo-terrain"
-        )
-      ) {
-
-        map.addSource(
-          "nexo-terrain",
-          {
-            type: "raster-dem",
-
-            url:
-              `https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=${MAPTILER_KEY}`,
-
-            tileSize: 512,
-
-            maxzoom: 14
-          }
-        );
-
-      }
-
-
-      map.setTerrain({
-        source:
-          "nexo-terrain",
-
-        exaggeration: 1.15
-      });
-
-    }
-
-
-    function removeTerrain() {
-
-      try {
-
-        map.setTerrain(
-          null
-        );
-
-      } catch (
-        error
-      ) {
-
-        console.warn(
-          "NEXO: no se pudo quitar el terreno",
-          error
-        );
-
-      }
-
-    }
-
-
-    function toggleTerrain() {
-
-      terrainEnabled =
-        !terrainEnabled;
-
-
-      if (
-        terrainEnabled
-      ) {
-
-        /*
-         * El terreno se configura
-         * después de cargar el estilo.
-         */
-
-        if (
-          map.isStyleLoaded()
-        ) {
-
-          setupTerrain();
+            }
+          );
 
         }
-
-
-        map.easeTo({
-          pitch: 55,
-          bearing: -15,
-          duration: 900
-        });
-
-      } else {
-
-        removeTerrain();
-
-
-        map.easeTo({
-          pitch: 0,
-          bearing: 0,
-          duration: 900
-        });
-
-      }
-
-
-      updateStyleButtons();
-
-    }
-
-
-    terrainButton.addEventListener(
-      "click",
-      () => {
-
-        toggleTerrain();
-
-      }
-    );
-
-
-    /* =====================================================
-       CUANDO CAMBIA EL ESTILO
-       ===================================================== */
-
-    map.on(
-      "style.load",
-      () => {
-
-        if (
-          terrainEnabled
-        ) {
-
-          setupTerrain();
-
-          map.easeTo({
-            pitch: 55,
-            bearing: -15,
-            duration: 700
-          });
-
-        }
-
-      }
-    );
+      );
 
 
     /* =====================================================
@@ -2193,7 +2156,7 @@
 
 
     /* =====================================================
-       MI UBICACIÓN
+       UBICACIÓN DEL USUARIO
        ===================================================== */
 
     locationButton.addEventListener(
@@ -2209,7 +2172,6 @@
           );
 
           return;
-
         }
 
 
@@ -2221,19 +2183,18 @@
 
           position => {
 
-            const latitude =
-              position.coords.latitude;
+            const coordinates = [
 
-            const longitude =
-              position.coords.longitude;
+              position.coords.longitude,
+
+              position.coords.latitude
+
+            ];
 
 
-            if (
-              userMarker
-            ) {
+            if (userMarker) {
 
               userMarker.remove();
-
             }
 
 
@@ -2259,20 +2220,19 @@
               "4px solid white";
 
             element.style.boxShadow =
-              "0 3px 15px rgba(0,0,0,.35)";
+              "0 3px 12px rgba(0,0,0,.3)";
 
 
             userMarker =
-              new maptilersdk.Marker({
+              new mapboxgl.Marker({
                 element
               })
-                .setLngLat([
-                  longitude,
-                  latitude
-                ])
+                .setLngLat(
+                  coordinates
+                )
                 .setPopup(
-                  new maptilersdk.Popup({
-                    offset: 12
+                  new mapboxgl.Popup({
+                    offset: 15
                   })
                     .setText(
                       "Tu ubicación"
@@ -2283,19 +2243,14 @@
 
             map.flyTo({
 
-              center: [
-                longitude,
-                latitude
-              ],
+              center:
+                coordinates,
 
               zoom: 15,
 
-              pitch:
-                terrainEnabled
-                  ? 50
-                  : 0,
+              speed: 1.1,
 
-              duration: 1000
+              essential: true
 
             });
 
@@ -2304,6 +2259,7 @@
               false;
 
           },
+
 
           error => {
 
@@ -2323,12 +2279,17 @@
 
           },
 
+
           {
-            enableHighAccuracy: true,
 
-            timeout: 10000,
+            enableHighAccuracy:
+              true,
 
-            maximumAge: 60000
+            timeout:
+              10000,
+
+            maximumAge:
+              60000
 
           }
 
@@ -2356,15 +2317,20 @@
           await fetch(
             "/api/properties",
             {
-              method: "GET",
+
+              method:
+                "GET",
 
               headers: {
+
                 "Accept":
                   "application/json"
+
               },
 
               cache:
                 "no-store"
+
             }
           );
 
@@ -2421,7 +2387,9 @@
 
 
         filteredProperties =
-          [...allProperties];
+          [
+            ...allProperties
+          ];
 
 
         renderMarkers();
@@ -2432,25 +2400,12 @@
 
         const located =
           allProperties.filter(
-            property => {
-
-              const lat =
-                Number(
-                  property.latitude
-                );
-
-              const lng =
-                Number(
-                  property.longitude
-                );
-
-
-              return (
-                Number.isFinite(lat) &&
-                Number.isFinite(lng)
-              );
-
-            }
+            property =>
+              Boolean(
+                getCoordinates(
+                  property
+                )
+              )
           );
 
 
@@ -2463,20 +2418,19 @@
         } else {
 
           map.flyTo({
-            center: [
-              -82.3666,
-              23.1136
-            ],
-            zoom: 11,
-            duration: 700
+
+            center:
+              [-82.3666, 23.1136],
+
+            zoom: 10.8,
+
+            essential: true
+
           });
 
         }
 
-
-      } catch (
-        error
-      ) {
+      } catch (error) {
 
         console.error(
           "NEXO MAP:",
@@ -2500,99 +2454,10 @@
 
 
     /* =====================================================
-       CLICK EN "VER PROPIEDAD"
+       MAPA LISTO
        ===================================================== */
 
-    document.addEventListener(
-      "click",
-      event => {
-
-        const button =
-          event.target.closest(
-            ".view-property"
-          );
-
-
-        if (
-          !button
-        ) {
-
-          return;
-
-        }
-
-
-        const id =
-          Number(
-            button.dataset.propertyId
-          );
-
-
-        const property =
-          allProperties.find(
-            item =>
-              Number(item.id) ===
-              id
-          );
-
-
-        if (
-          !property
-        ) {
-
-          return;
-
-        }
-
-
-        const lat =
-          Number(
-            property.latitude
-          );
-
-        const lng =
-          Number(
-            property.longitude
-          );
-
-
-        if (
-          !Number.isFinite(lat) ||
-          !Number.isFinite(lng)
-        ) {
-
-          return;
-
-        }
-
-
-        map.flyTo({
-
-          center: [
-            lng,
-            lat
-          ],
-
-          zoom: 17,
-
-          pitch:
-            terrainEnabled
-              ? 55
-              : 0,
-
-          duration: 900
-
-        });
-
-      }
-    );
-
-
-    /* =====================================================
-       INICIO
-       ===================================================== */
-
-    map.once(
+    map.on(
       "load",
       () => {
 
@@ -2603,7 +2468,7 @@
 
 
     /* =====================================================
-       RESPONSIVE
+       REDIMENSIONAMIENTO
        ===================================================== */
 
     window.addEventListener(
@@ -2615,6 +2480,26 @@
       }
     );
 
+
+    /* =====================================================
+       ORIENTACIÓN DEL TELÉFONO
+       ===================================================== */
+
+    window.addEventListener(
+      "orientationchange",
+      () => {
+
+        setTimeout(
+          () => {
+
+            map.resize();
+
+          },
+          300
+        );
+
+      }
+    );
 
   </script>
 
