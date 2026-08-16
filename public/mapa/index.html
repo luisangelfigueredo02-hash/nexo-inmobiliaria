@@ -1,1923 +1,2294 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-
-<title>NEXO — Mapa</title>
-
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
->
-
-<style>
-:root{
-  --bg:#f5f5f7;
-  --white:#fff;
-  --black:#111;
-  --text:#171717;
-  --muted:#777;
-}
-
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
-
-html,
-body{
-  width:100%;
-  height:100%;
-  margin:0;
-  overflow:hidden;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
-
-button,
-input{
-  font:inherit;
-}
-
-button{
-  border:0;
-  cursor:pointer;
-}
-
-/* =========================
-   MAPA
-========================= */
-
-#map{
-  position:fixed;
-  inset:0;
-  width:100%;
-  height:100%;
-  z-index:1;
-}
-
-.leaflet-container{
-  width:100%;
-  height:100%;
-  background:#e5e7eb;
-  font-family:inherit;
-}
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+  <meta name="theme-color" content="#f5f5f7">
+
+  <title>NEXO — Mapa</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  >
+
+  <style>
+
+    :root {
+      --bg: #f4f4f2;
+      --white: rgba(255,255,255,.94);
+      --black: #111;
+      --text: #151515;
+      --muted: #747474;
+      --border: rgba(0,0,0,.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        Inter,
+        system-ui,
+        sans-serif;
 
-.leaflet-tile{
-  image-rendering:auto;
-}
+      background: var(--bg);
+      color: var(--text);
+    }
 
-/* =========================
-   TOPBAR
-========================= */
+    button,
+    input {
+      font: inherit;
+    }
 
-.topbar{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  z-index:1000;
+    button {
+      border: 0;
+      cursor: pointer;
+    }
 
-  padding:
-    calc(12px + env(safe-area-inset-top))
-    14px
-    10px;
+    /* =====================================================
+       MAPA
+       ===================================================== */
 
-  pointer-events:none;
-}
+    #map {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background: #e7e8e6;
+    }
 
-.topbar-inner{
-  max-width:760px;
-  margin:auto;
+    .leaflet-container {
+      font-family: inherit;
+      background: #e7e8e6;
+    }
 
-  display:flex;
-  gap:9px;
-  align-items:center;
+    /*
+     * Suaviza ligeramente la apariencia del mapa.
+     * No modifica las coordenadas ni los datos.
+     */
 
-  pointer-events:auto;
-}
+    .leaflet-tile {
+      filter:
+        saturate(.82)
+        contrast(.96)
+        brightness(1.02);
+    }
 
-.brand{
-  flex:0 0 auto;
+    /* =====================================================
+       BARRA SUPERIOR
+       ===================================================== */
 
-  padding:12px 15px;
+    .topbar {
+      position: fixed;
 
-  border-radius:15px;
+      top: 0;
+      left: 0;
+      right: 0;
 
-  background:rgba(255,255,255,.96);
+      z-index: 1000;
 
-  box-shadow:
-    0 6px 25px rgba(0,0,0,.12);
+      padding:
+        calc(13px + env(safe-area-inset-top, 0px))
+        14px
+        10px;
 
-  font-size:17px;
-  font-weight:800;
-  letter-spacing:-.05em;
-}
+      pointer-events: none;
+    }
 
-.search{
-  flex:1;
-  min-width:0;
+    .topbar-inner {
+      width: min(760px, 100%);
+      margin: auto;
 
-  display:flex;
-  align-items:center;
+      display: flex;
+      align-items: center;
 
-  overflow:hidden;
+      gap: 9px;
 
-  border-radius:15px;
+      pointer-events: auto;
+    }
 
-  background:rgba(255,255,255,.96);
+    .brand {
+      flex: 0 0 auto;
 
-  box-shadow:
-    0 6px 25px rgba(0,0,0,.12);
-}
+      display: flex;
+      align-items: center;
 
-.search-icon{
-  padding-left:13px;
-  font-size:15px;
-}
+      min-height: 47px;
 
-.search input{
-  width:100%;
-  min-width:0;
+      padding: 0 15px;
 
-  padding:13px 10px;
+      border-radius: 16px;
 
-  border:0;
-  outline:0;
+      background:
+        rgba(255,255,255,.92);
 
-  background:transparent;
+      border:
+        1px solid rgba(255,255,255,.75);
 
-  font-size:13px;
-}
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
 
-.clear{
-  display:none;
+      box-shadow:
+        0 8px 28px rgba(0,0,0,.10);
 
-  width:34px;
-  height:34px;
+      color: #111;
 
-  margin-right:4px;
+      font-size: 17px;
+      font-weight: 850;
 
-  border-radius:50%;
+      letter-spacing: -.06em;
+    }
 
-  background:#eee;
+    .search {
+      flex: 1;
 
-  color:#555;
-}
+      min-width: 0;
+      min-height: 47px;
 
-.clear.show{
-  display:block;
-}
+      display: flex;
+      align-items: center;
 
-/* =========================
-   FILTROS
-========================= */
+      background:
+        rgba(255,255,255,.94);
 
-.filters{
-  position:fixed;
+      border:
+        1px solid rgba(255,255,255,.75);
 
-  top:
-    calc(68px + env(safe-area-inset-top));
+      border-radius: 16px;
 
-  left:0;
-  right:0;
+      overflow: hidden;
 
-  z-index:999;
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
 
-  padding:0 14px;
+      box-shadow:
+        0 8px 28px rgba(0,0,0,.10);
+    }
 
-  pointer-events:none;
-}
+    .search-icon {
+      padding-left: 14px;
 
-.filters-inner{
-  max-width:760px;
-  margin:auto;
+      font-size: 15px;
 
-  display:flex;
-  gap:8px;
+      opacity: .65;
+    }
 
-  overflow-x:auto;
+    .search input {
+      width: 100%;
 
-  scrollbar-width:none;
+      min-width: 0;
 
-  pointer-events:auto;
-}
+      padding: 13px 10px;
 
-.filters-inner::-webkit-scrollbar{
-  display:none;
-}
+      border: 0;
+      outline: 0;
 
-.filter{
-  flex:0 0 auto;
+      background: transparent;
 
-  padding:9px 13px;
+      color: #111;
 
-  border-radius:999px;
+      font-size: 13px;
+    }
 
-  background:rgba(255,255,255,.96);
+    .search input::placeholder {
+      color: #858585;
+    }
 
-  border:1px solid rgba(0,0,0,.06);
+    .clear-search {
+      display: none;
 
-  box-shadow:
-    0 5px 18px rgba(0,0,0,.08);
+      flex: 0 0 auto;
 
-  color:#444;
+      width: 34px;
+      height: 34px;
 
-  font-size:11px;
-  font-weight:700;
-}
+      margin-right: 5px;
 
-.filter.active{
-  background:#111;
-  color:#fff;
-}
+      border-radius: 50%;
 
-/* =========================
-   CONTADOR
-========================= */
+      background: #eeeeef;
 
-.counter{
-  position:fixed;
+      color: #555;
 
-  left:14px;
-  bottom:
-    calc(16px + env(safe-area-inset-bottom));
+      font-size: 17px;
+      line-height: 1;
+    }
 
-  z-index:1000;
+    .clear-search.show {
+      display: block;
+    }
 
-  padding:9px 13px;
+    /* =====================================================
+       FILTROS
+       ===================================================== */
 
-  border-radius:999px;
+    .filters {
+      position: fixed;
 
-  background:rgba(255,255,255,.96);
+      top:
+        calc(70px + env(safe-area-inset-top, 0px));
 
-  box-shadow:
-    0 7px 25px rgba(0,0,0,.12);
+      left: 0;
+      right: 0;
 
-  font-size:11px;
-  font-weight:700;
-}
+      z-index: 999;
 
-/* =========================
-   BOTONES
-========================= */
+      padding: 0 14px;
 
-.map-buttons{
-  position:fixed;
+      pointer-events: none;
+    }
 
-  right:14px;
-  bottom:
-    calc(16px + env(safe-area-inset-bottom));
+    .filters-inner {
+      width: min(760px, 100%);
+      margin: auto;
 
-  z-index:1000;
+      display: flex;
+      gap: 8px;
 
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
+      overflow-x: auto;
 
-.map-button{
-  width:44px;
-  height:44px;
+      scrollbar-width: none;
 
-  border-radius:14px;
+      pointer-events: auto;
+    }
 
-  background:rgba(255,255,255,.96);
+    .filters-inner::-webkit-scrollbar {
+      display: none;
+    }
 
-  box-shadow:
-    0 7px 25px rgba(0,0,0,.12);
+    .filter {
+      flex: 0 0 auto;
 
-  font-size:18px;
-}
+      padding: 10px 14px;
 
-.map-button:active{
-  transform:scale(.94);
-}
+      border-radius: 999px;
 
-/* =========================
-   ESTADO
-========================= */
+      border:
+        1px solid rgba(0,0,0,.06);
 
-.status{
-  position:fixed;
+      background:
+        rgba(255,255,255,.91);
 
-  left:50%;
-  top:50%;
+      color: #454545;
 
-  transform:translate(-50%,-50%);
+      font-size: 11px;
+      font-weight: 750;
 
-  z-index:2000;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
 
-  width:min(320px,calc(100% - 40px));
+      box-shadow:
+        0 5px 20px rgba(0,0,0,.07);
 
-  padding:20px;
+      transition:
+        transform .18s ease,
+        background .18s ease,
+        color .18s ease;
+    }
 
-  border-radius:20px;
+    .filter:active {
+      transform: scale(.95);
+    }
 
-  background:rgba(255,255,255,.97);
+    .filter.active {
+      background: #111;
+      color: #fff;
+    }
 
-  box-shadow:
-    0 20px 60px rgba(0,0,0,.16);
+    /* =====================================================
+       CONTADOR
+       ===================================================== */
 
-  text-align:center;
-}
+    .counter {
+      position: fixed;
 
-.status.hidden{
-  display:none;
-}
+      left: 14px;
 
-.status-title{
-  font-weight:800;
-  margin-bottom:5px;
-}
+      bottom:
+        calc(18px + env(safe-area-inset-bottom, 0px));
 
-.status-text{
-  color:#777;
-  font-size:13px;
-  line-height:1.45;
-}
+      z-index: 1000;
 
-/* =========================
-   MARCADOR
-========================= */
+      padding: 10px 14px;
 
-.nexo-marker{
-  position:relative;
+      border-radius: 999px;
 
-  width:34px;
-  height:34px;
+      background:
+        rgba(255,255,255,.94);
 
-  border-radius:50% 50% 50% 0;
+      border:
+        1px solid rgba(255,255,255,.7);
 
-  background:#111;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
 
-  border:3px solid #fff;
+      box-shadow:
+        0 8px 28px rgba(0,0,0,.12);
 
-  transform:rotate(-45deg);
+      font-size: 11px;
+      font-weight: 750;
+    }
 
-  box-shadow:
-    0 5px 15px rgba(0,0,0,.25);
-}
+    /* =====================================================
+       BOTONES
+       ===================================================== */
 
-.nexo-marker::after{
-  content:"";
+    .map-buttons {
+      position: fixed;
 
-  position:absolute;
+      right: 14px;
 
-  width:9px;
-  height:9px;
+      bottom:
+        calc(18px + env(safe-area-inset-bottom, 0px));
 
-  left:9px;
-  top:9px;
+      z-index: 1000;
 
-  border-radius:50%;
+      display: flex;
+      flex-direction: column;
 
-  background:#fff;
-}
+      gap: 8px;
+    }
 
-/* =========================
-   POPUP
-========================= */
+    .map-button {
+      width: 45px;
+      height: 45px;
 
-.leaflet-popup-content-wrapper{
-  padding:0;
+      border-radius: 15px;
 
-  border-radius:20px;
+      background:
+        rgba(255,255,255,.95);
 
-  overflow:hidden;
+      border:
+        1px solid rgba(255,255,255,.75);
 
-  box-shadow:
-    0 15px 45px rgba(0,0,0,.18);
-}
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
 
-.leaflet-popup-content{
-  margin:0;
-  width:min(300px,76vw)!important;
-}
+      box-shadow:
+        0 8px 28px rgba(0,0,0,.12);
 
-.property-card{
-  overflow:hidden;
-  background:#fff;
-}
+      color: #111;
 
-.property-image{
-  width:100%;
-  height:150px;
+      font-size: 18px;
 
-  display:flex;
-  align-items:center;
-  justify-content:center;
+      transition:
+        transform .18s ease;
+    }
 
-  background:#e8e8ea;
+    .map-button:active {
+      transform: scale(.92);
+    }
 
-  color:#999;
+    /* =====================================================
+       CONTROLES LEAFLET
+       ===================================================== */
 
-  font-size:11px;
-}
+    .leaflet-control-zoom {
+      border: 0 !important;
+      box-shadow: none !important;
 
-.property-image img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
+      margin-right: 14px !important;
+      margin-bottom: 88px !important;
+    }
 
-.property-content{
-  padding:15px;
-}
+    .leaflet-control-zoom a {
+      width: 40px !important;
+      height: 40px !important;
 
-.property-type{
-  color:#888;
+      line-height: 40px !important;
 
-  font-size:9px;
-  font-weight:800;
+      border: 0 !important;
 
-  text-transform:uppercase;
-  letter-spacing:.1em;
-}
+      background:
+        rgba(255,255,255,.95) !important;
 
-.property-title{
-  margin-top:5px;
+      color: #111 !important;
 
-  font-size:18px;
-  font-weight:800;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
 
-  letter-spacing:-.04em;
-}
+      box-shadow:
+        0 6px 20px rgba(0,0,0,.10);
+    }
 
-.property-price{
-  margin-top:7px;
+    .leaflet-control-zoom a:first-child {
+      border-radius: 13px 13px 0 0 !important;
+    }
 
-  font-size:19px;
-  font-weight:800;
-}
+    .leaflet-control-zoom a:last-child {
+      border-radius: 0 0 13px 13px !important;
+    }
 
-.property-location{
-  margin-top:6px;
+    /* =====================================================
+       ESTADO
+       ===================================================== */
 
-  color:#777;
+    .status {
+      position: fixed;
 
-  font-size:11px;
-  line-height:1.45;
-}
+      left: 50%;
+      top: 50%;
 
-.property-stats{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
+      z-index: 2000;
 
-  margin-top:12px;
-}
+      width:
+        min(320px, calc(100% - 40px));
 
-.property-stat{
-  padding:6px 8px;
+      padding: 20px;
 
-  border-radius:999px;
+      transform:
+        translate(-50%, -50%);
 
-  background:#f1f1f3;
+      border-radius: 20px;
 
-  color:#555;
+      background:
+        rgba(255,255,255,.96);
 
-  font-size:9px;
-  font-weight:700;
-}
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
 
-.property-address{
-  margin-top:11px;
+      box-shadow:
+        0 20px 60px rgba(0,0,0,.16);
 
-  color:#666;
+      text-align: center;
 
-  font-size:10px;
-  line-height:1.4;
-}
+      font-size: 13px;
+      line-height: 1.5;
+    }
 
-.view-property{
-  width:100%;
+    .status.hidden {
+      display: none;
+    }
 
-  margin-top:13px;
+    .status-title {
+      margin-bottom: 5px;
 
-  padding:11px;
+      font-weight: 800;
+    }
 
-  border-radius:12px;
+    .status-text {
+      color: #777;
+    }
 
-  background:#111;
-  color:#fff;
+    /* =====================================================
+       POPUP
+       ===================================================== */
 
-  font-size:11px;
-  font-weight:700;
-}
+    .leaflet-popup-content-wrapper {
+      padding: 0 !important;
 
-@media(max-width:600px){
+      border-radius: 21px !important;
 
-  .brand{
-    padding:11px 13px;
-    font-size:16px;
-  }
+      overflow: hidden;
 
-  .search input{
-    font-size:12px;
-  }
+      box-shadow:
+        0 18px 55px rgba(0,0,0,.18);
+    }
 
-  .property-image{
-    height:145px;
-  }
-}
-</style>
+    .leaflet-popup-content {
+      width:
+        min(310px, 78vw) !important;
+
+      margin: 0 !important;
+    }
+
+    .leaflet-popup-tip {
+      box-shadow: none;
+    }
+
+    .leaflet-popup-close-button {
+      z-index: 10;
+
+      top: 8px !important;
+      right: 8px !important;
+
+      width: 28px !important;
+      height: 28px !important;
+
+      border-radius: 50%;
+
+      background:
+        rgba(255,255,255,.88);
+
+      color: #111 !important;
+
+      font-size: 20px !important;
+
+      line-height: 25px !important;
+
+      text-align: center;
+    }
+
+    .property-card {
+      overflow: hidden;
+
+      background: #fff;
+    }
+
+    .property-image {
+      width: 100%;
+      height: 160px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background:
+        linear-gradient(
+          145deg,
+          #e8e8ea,
+          #d5d5d8
+        );
+
+      color: #999;
+
+      font-size: 11px;
+    }
+
+    .property-image img {
+      width: 100%;
+      height: 100%;
+
+      display: block;
+
+      object-fit: cover;
+    }
+
+    .property-content {
+      padding: 15px;
+    }
+
+    .property-type {
+      color: #888;
+
+      font-size: 9px;
+      font-weight: 800;
+
+      text-transform: uppercase;
+
+      letter-spacing: .1em;
+    }
+
+    .property-title {
+      margin-top: 5px;
+
+      font-size: 18px;
+      font-weight: 800;
+
+      letter-spacing: -.045em;
+    }
+
+    .property-price {
+      margin-top: 7px;
+
+      font-size: 19px;
+      font-weight: 850;
+    }
+
+    .property-location {
+      margin-top: 6px;
+
+      color: #777;
+
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .property-stats {
+      display: flex;
+      flex-wrap: wrap;
+
+      gap: 6px;
+
+      margin-top: 12px;
+    }
+
+    .property-stat {
+      padding: 6px 8px;
+
+      border-radius: 999px;
+
+      background: #f1f1f3;
+
+      color: #555;
+
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .property-address {
+      margin-top: 11px;
+
+      color: #666;
+
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .view-property {
+      width: 100%;
+
+      margin-top: 13px;
+
+      padding: 11px;
+
+      border-radius: 12px;
+
+      background: #111;
+
+      color: #fff;
+
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    /* =====================================================
+       MARCADOR NEXO
+       ===================================================== */
+
+    .nexo-marker-wrap {
+      width: 38px;
+      height: 48px;
+
+      position: relative;
+    }
+
+    .nexo-marker {
+      position: absolute;
+
+      left: 2px;
+      top: 0;
+
+      width: 34px;
+      height: 34px;
+
+      border-radius:
+        50% 50% 50% 0;
+
+      transform:
+        rotate(-45deg);
+
+      background: #111;
+
+      border:
+        3px solid #fff;
+
+      box-shadow:
+        0 5px 16px rgba(0,0,0,.28);
+    }
+
+    .nexo-marker::after {
+      content: "";
+
+      position: absolute;
+
+      width: 9px;
+      height: 9px;
+
+      left: 9px;
+      top: 9px;
+
+      border-radius: 50%;
+
+      background: #fff;
+    }
+
+    /* =====================================================
+       RESPONSIVE
+       ===================================================== */
+
+    @media(max-width:600px) {
+
+      .brand {
+        min-height: 45px;
+
+        padding: 0 13px;
+
+        font-size: 16px;
+      }
+
+      .search {
+        min-height: 45px;
+      }
+
+      .search input {
+        font-size: 12px;
+      }
+
+      .filters {
+        top:
+          calc(66px + env(safe-area-inset-top, 0px));
+      }
+
+      .property-image {
+        height: 145px;
+      }
+    }
+
+  </style>
 </head>
 
 <body>
 
-<div id="map"></div>
+  <div id="map"></div>
 
-<!-- TOPBAR -->
+  <!-- =====================================================
+       NEXO / BUSCADOR
+       ===================================================== -->
 
-<div class="topbar">
-  <div class="topbar-inner">
+  <div class="topbar">
 
-    <div class="brand">
-      NEXO
-    </div>
+    <div class="topbar-inner">
 
-    <div class="search">
+      <div class="brand">
+        NEXO
+      </div>
 
-      <span class="search-icon">⌕</span>
+      <div class="search">
 
-      <input
-        id="searchInput"
-        type="search"
-        placeholder="Buscar ciudad, zona o dirección"
-        autocomplete="off"
-      >
+        <span class="search-icon">
+          🔎
+        </span>
 
-      <button
-        id="clearSearch"
-        class="clear"
-        type="button"
-      >
-        ×
-      </button>
-
-    </div>
-
-  </div>
-</div>
-
-<!-- FILTROS -->
-
-<div class="filters">
-  <div class="filters-inner">
-
-    <button
-      class="filter active"
-      data-type="all"
-    >
-      Todas
-    </button>
-
-    <button
-      class="filter"
-      data-type="Casa"
-    >
-      Casas
-    </button>
-
-    <button
-      class="filter"
-      data-type="Apartamento"
-    >
-      Apartamentos
-    </button>
-
-    <button
-      class="filter"
-      data-type="Villa"
-    >
-      Villas
-    </button>
-
-    <button
-      class="filter"
-      data-type="Terreno"
-    >
-      Terrenos
-    </button>
-
-    <button
-      class="filter"
-      data-type="Local"
-    >
-      Locales
-    </button>
-
-  </div>
-</div>
-
-<!-- CONTADOR -->
-
-<div id="counter" class="counter">
-  Cargando...
-</div>
-
-<!-- BOTONES -->
-
-<div class="map-buttons">
-
-  <button
-    id="fitButton"
-    class="map-button"
-    type="button"
-    aria-label="Mostrar propiedades"
-  >
-    ⛶
-  </button>
-
-  <button
-    id="locationButton"
-    class="map-button"
-    type="button"
-    aria-label="Mi ubicación"
-  >
-    ⊙
-  </button>
-
-</div>
-
-<!-- ESTADO -->
-
-<div id="status" class="status">
-
-  <div id="statusTitle" class="status-title">
-    Cargando NEXO...
-  </div>
-
-  <div id="statusText" class="status-text">
-    Buscando propiedades.
-  </div>
-
-</div>
-
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-></script>
-
-<script>
-"use strict";
-
-/* =========================================================
-   ELEMENTOS
-========================================================= */
-
-const mapElement =
-  document.getElementById("map");
-
-const searchInput =
-  document.getElementById("searchInput");
-
-const clearSearch =
-  document.getElementById("clearSearch");
-
-const counter =
-  document.getElementById("counter");
-
-const status =
-  document.getElementById("status");
-
-const statusTitle =
-  document.getElementById("statusTitle");
-
-const statusText =
-  document.getElementById("statusText");
-
-const fitButton =
-  document.getElementById("fitButton");
-
-const locationButton =
-  document.getElementById("locationButton");
-
-
-/* =========================================================
-   ESTADO
-========================================================= */
-
-let allProperties = [];
-
-let filteredProperties = [];
-
-let activeType = "all";
-
-let userLocationMarker = null;
-
-
-/* =========================================================
-   MAPA
-========================================================= */
-
-const map =
-  L.map(mapElement, {
-
-    zoomControl:false,
-
-    preferCanvas:true,
-
-    zoomAnimation:true,
-
-    fadeAnimation:true,
-
-    markerZoomAnimation:true,
-
-    worldCopyJump:false,
-
-    maxBoundsViscosity:1
-
-  });
-
-
-/* Zoom */
-
-L.control.zoom({
-  position:"bottomright"
-}).addTo(map);
-
-
-/* Vista inicial */
-
-map.setView(
-  [23.1136,-82.3666],
-  11
-);
-
-
-/* =========================================================
-   OPENSTREETMAP
-========================================================= */
-
-const tiles =
-  L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      maxZoom:19,
-
-      minZoom:3,
-
-      tileSize:256,
-
-      updateWhenIdle:true,
-
-      updateWhenZooming:false,
-
-      keepBuffer:3,
-
-      detectRetina:true,
-
-      attribution:
-        "&copy; OpenStreetMap contributors"
-    }
-  );
-
-
-tiles.addTo(map);
-
-
-/* =========================================================
-   CAPA DE MARCADORES
-========================================================= */
-
-const markerLayer =
-  L.layerGroup();
-
-markerLayer.addTo(map);
-
-
-/* =========================================================
-   ICONO NEXO
-========================================================= */
-
-const nexoIcon =
-  L.divIcon({
-
-    className:"",
-
-    html:
-      '<div class="nexo-marker"></div>',
-
-    iconSize:[34,34],
-
-    iconAnchor:[17,34],
-
-    popupAnchor:[0,-32]
-
-  });
-
-
-/* =========================================================
-   UTILIDADES
-========================================================= */
-
-function escapeHTML(value){
-
-  return String(value ?? "")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-}
-
-
-function normalize(value){
-
-  return String(value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g,"")
-    .toLowerCase()
-    .trim();
-
-}
-
-
-function money(value){
-
-  if(
-    value === null ||
-    value === undefined ||
-    value === ""
-  ){
-
-    return "Precio no disponible";
-
-  }
-
-  const number =
-    Number(
-      String(value)
-        .replace(/[$,\s]/g,"")
-    );
-
-  if(!Number.isFinite(number)){
-
-    return String(value);
-
-  }
-
-  return "$" +
-    number.toLocaleString(
-      "en-US",
-      {
-        maximumFractionDigits:0
-      }
-    );
-
-}
-
-
-function parsePhotos(property){
-
-  if(
-    Array.isArray(property.photos)
-  ){
-
-    return property.photos
-      .filter(Boolean);
-
-  }
-
-  if(
-    typeof property.photos === "string"
-  ){
-
-    try{
-
-      const parsed =
-        JSON.parse(property.photos);
-
-      if(
-        Array.isArray(parsed)
-      ){
-
-        return parsed
-          .filter(Boolean);
-
-      }
-
-    }catch(error){
-
-      console.warn(
-        "NEXO: fotos inválidas",
-        error
-      );
-
-    }
-
-  }
-
-  return [];
-
-}
-
-
-/* =========================================================
-   ESTADO
-========================================================= */
-
-function showStatus(title,text){
-
-  statusTitle.textContent =
-    title;
-
-  statusText.textContent =
-    text;
-
-  status.classList.remove(
-    "hidden"
-  );
-
-}
-
-
-function hideStatus(){
-
-  status.classList.add(
-    "hidden"
-  );
-
-}
-
-
-/* =========================================================
-   COORDENADAS
-========================================================= */
-
-function getCoordinates(property){
-
-  const latitude =
-    Number(property.latitude);
-
-  const longitude =
-    Number(property.longitude);
-
-  if(
-    !Number.isFinite(latitude) ||
-    !Number.isFinite(longitude)
-  ){
-
-    return null;
-
-  }
-
-  if(
-    latitude < -90 ||
-    latitude > 90 ||
-    longitude < -180 ||
-    longitude > 180
-  ){
-
-    return null;
-
-  }
-
-  return [
-    latitude,
-    longitude
-  ];
-
-}
-
-
-/* =========================================================
-   TARJETA
-========================================================= */
-
-function buildPropertyCard(property){
-
-  const photos =
-    parsePhotos(property);
-
-  const image =
-    photos.length
-      ? photos[0]
-      : "";
-
-  const title =
-    property.title ||
-    property.property_type ||
-    "Propiedad";
-
-  const location =
-    [
-      property.neighborhood,
-      property.city
-    ]
-      .filter(Boolean)
-      .join(" · ");
-
-  let stats = [];
-
-  if(
-    property.bedrooms !== null &&
-    property.bedrooms !== undefined &&
-    property.bedrooms !== ""
-  ){
-
-    stats.push(
-      "🛏 " +
-      escapeHTML(
-        property.bedrooms
-      )
-    );
-
-  }
-
-  if(
-    property.bathrooms !== null &&
-    property.bathrooms !== undefined &&
-    property.bathrooms !== ""
-  ){
-
-    stats.push(
-      "🚿 " +
-      escapeHTML(
-        property.bathrooms
-      )
-    );
-
-  }
-
-  if(
-    property.square_meters !== null &&
-    property.square_meters !== undefined &&
-    property.square_meters !== ""
-  ){
-
-    stats.push(
-      escapeHTML(
-        property.square_meters
-      ) +
-      " m²"
-    );
-
-  }
-
-  const statsHTML =
-    stats.length
-      ? `
-        <div class="property-stats">
-          ${
-            stats.map(
-              item =>
-                `<span class="property-stat">${item}</span>`
-            ).join("")
-          }
-        </div>
-      `
-      : "";
-
-  const imageHTML =
-    image
-      ? `
-        <div class="property-image">
-          <img
-            src="${escapeHTML(image)}"
-            alt="${escapeHTML(title)}"
-            loading="lazy"
-            onerror="
-              this.style.display='none';
-              this.parentElement.textContent='Sin fotografía';
-            "
-          >
-        </div>
-      `
-      : `
-        <div class="property-image">
-          Sin fotografía
-        </div>
-      `;
-
-  const addressHTML =
-    property.address
-      ? `
-        <div class="property-address">
-          📍 ${escapeHTML(property.address)}
-        </div>
-      `
-      : "";
-
-  return `
-    <div class="property-card">
-
-      ${imageHTML}
-
-      <div class="property-content">
-
-        <div class="property-type">
-          ${escapeHTML(
-            property.property_type ||
-            "Propiedad"
-          )}
-        </div>
-
-        <div class="property-title">
-          ${escapeHTML(title)}
-        </div>
-
-        <div class="property-price">
-          ${money(property.price)}
-        </div>
-
-        ${
-          location
-            ? `
-              <div class="property-location">
-                ${escapeHTML(location)}
-              </div>
-            `
-            : ""
-        }
-
-        ${statsHTML}
-
-        ${addressHTML}
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Buscar ciudad, zona o dirección"
+          autocomplete="off"
+        >
 
         <button
+          id="clearSearch"
+          class="clear-search"
           type="button"
-          class="view-property"
-          data-property-id="${Number(property.id)}"
+          aria-label="Limpiar búsqueda"
         >
-          Ver propiedad
+          ×
         </button>
 
       </div>
 
     </div>
-  `;
 
-}
+  </div>
 
+  <!-- =====================================================
+       FILTROS
+       ===================================================== -->
 
-/* =========================================================
-   ABRIR PROPIEDAD
-========================================================= */
+  <div class="filters">
 
-function openProperty(property){
+    <div class="filters-inner">
 
-  const coords =
-    getCoordinates(property);
+      <button
+        class="filter active"
+        data-type="all"
+        type="button"
+      >
+        Todas
+      </button>
 
-  if(!coords){
+      <button
+        class="filter"
+        data-type="Casa"
+        type="button"
+      >
+        Casas
+      </button>
 
-    return;
+      <button
+        class="filter"
+        data-type="Apartamento"
+        type="button"
+      >
+        Apartamentos
+      </button>
 
-  }
+      <button
+        class="filter"
+        data-type="Villa"
+        type="button"
+      >
+        Villas
+      </button>
 
-  map.flyTo(
-    coords,
-    Math.max(
-      map.getZoom(),
-      16
-    ),
-    {
-      animate:true,
-      duration:.6
+      <button
+        class="filter"
+        data-type="Terreno"
+        type="button"
+      >
+        Terrenos
+      </button>
+
+      <button
+        class="filter"
+        data-type="Local"
+        type="button"
+      >
+        Locales
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- =====================================================
+       CONTADOR
+       ===================================================== -->
+
+  <div
+    id="counter"
+    class="counter"
+  >
+    Cargando...
+  </div>
+
+  <!-- =====================================================
+       BOTONES
+       ===================================================== -->
+
+  <div class="map-buttons">
+
+    <button
+      id="fitButton"
+      class="map-button"
+      type="button"
+      aria-label="Mostrar propiedades"
+      title="Mostrar propiedades"
+    >
+      ⛶
+    </button>
+
+    <button
+      id="locationButton"
+      class="map-button"
+      type="button"
+      aria-label="Mi ubicación"
+      title="Mi ubicación"
+    >
+      ⊙
+    </button>
+
+  </div>
+
+  <!-- =====================================================
+       ESTADO
+       ===================================================== -->
+
+  <div
+    id="status"
+    class="status"
+  >
+
+    <div
+      id="statusTitle"
+      class="status-title"
+    >
+      Cargando NEXO...
+    </div>
+
+    <div
+      id="statusText"
+      class="status-text"
+    >
+      Buscando propiedades.
+    </div>
+
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    crossorigin=""
+  ></script>
+
+  <script>
+
+    "use strict";
+
+    /* =====================================================
+       ELEMENTOS
+       ===================================================== */
+
+    const searchInput =
+      document.getElementById(
+        "searchInput"
+      );
+
+    const clearSearch =
+      document.getElementById(
+        "clearSearch"
+      );
+
+    const counter =
+      document.getElementById(
+        "counter"
+      );
+
+    const status =
+      document.getElementById(
+        "status"
+      );
+
+    const statusTitle =
+      document.getElementById(
+        "statusTitle"
+      );
+
+    const statusText =
+      document.getElementById(
+        "statusText"
+      );
+
+    const fitButton =
+      document.getElementById(
+        "fitButton"
+      );
+
+    const locationButton =
+      document.getElementById(
+        "locationButton"
+      );
+
+    /* =====================================================
+       ESTADO
+       ===================================================== */
+
+    let allProperties = [];
+
+    let filteredProperties = [];
+
+    let activeType = "all";
+
+    let userLocationMarker = null;
+
+    /* =====================================================
+       CONFIGURACIÓN DEL MAPA
+       ===================================================== */
+
+    /*
+     * ESTA ES LA VISTA INICIAL DE NEXO.
+     *
+     * Ya no abrimos el mundo entero.
+     *
+     * Cuba:
+     * 23.1136, -82.3666
+     *
+     * Zoom 7:
+     * muestra Cuba completa de forma elegante.
+     */
+
+    const NEXO_INITIAL_CENTER =
+      [23.1136, -82.3666];
+
+    const NEXO_INITIAL_ZOOM = 7;
+
+    const map =
+      L.map(
+        "map",
+        {
+          zoomControl: false,
+
+          preferCanvas: true,
+
+          minZoom: 5,
+
+          maxZoom: 19,
+
+          zoomSnap: .25,
+
+          zoomDelta: .5,
+
+          wheelPxPerZoomLevel: 100
+        }
+      );
+
+    /*
+     * Vista inicial.
+     */
+
+    map.setView(
+      NEXO_INITIAL_CENTER,
+      NEXO_INITIAL_ZOOM,
+      {
+        animate: false
+      }
+    );
+
+    /*
+     * Zoom.
+     */
+
+    L.control.zoom({
+      position: "bottomright"
+    }).addTo(map);
+
+    /*
+     * Mapa base.
+     *
+     * Por ahora NO usamos satélite.
+     */
+
+    L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 19,
+
+        attribution:
+          '&copy; OpenStreetMap contributors',
+
+        updateWhenZooming: false,
+
+        keepBuffer: 4
+      }
+    ).addTo(map);
+
+    /* =====================================================
+       CAPA DE PROPIEDADES
+       ===================================================== */
+
+    const markerLayer =
+      L.layerGroup().addTo(map);
+
+    /* =====================================================
+       UTILIDADES
+       ===================================================== */
+
+    function escapeHTML(value) {
+
+      return String(
+        value ?? ""
+      )
+        .replace(
+          /&/g,
+          "&amp;"
+        )
+        .replace(
+          /</g,
+          "&lt;"
+        )
+        .replace(
+          />/g,
+          "&gt;"
+        )
+        .replace(
+          /"/g,
+          "&quot;"
+        )
+        .replace(
+          /'/g,
+          "&#039;"
+        );
     }
-  );
 
-}
+    function normalize(value) {
 
+      return String(
+        value ?? ""
+      )
+        .normalize("NFD")
+        .replace(
+          /[\u0300-\u036f]/g,
+          ""
+        )
+        .toLowerCase()
+        .trim();
+    }
 
-/* =========================================================
-   MARCADORES
-========================================================= */
+    function money(value) {
 
-function renderMarkers(){
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+        return "$0";
+      }
 
-  markerLayer.clearLayers();
+      const number =
+        Number(
+          String(value)
+            .replace(
+              /[$,\s]/g,
+              ""
+            )
+        );
 
-  let located = 0;
+      if (
+        !Number.isFinite(number)
+      ) {
+        return String(value);
+      }
 
-  filteredProperties.forEach(
-    property => {
+      return "$" +
+        number.toLocaleString(
+          "en-US",
+          {
+            maximumFractionDigits: 0
+          }
+        );
+    }
 
-      const coords =
-        getCoordinates(property);
+    function parsePhotos(
+      property
+    ) {
 
-      /*
-       * SIN coordenadas = SIN PIN.
-       */
+      if (
+        Array.isArray(
+          property.photos
+        )
+      ) {
 
-      if(!coords){
+        return property.photos
+          .filter(Boolean);
+
+      }
+
+      if (
+        typeof property.photos ===
+        "string"
+      ) {
+
+        try {
+
+          const parsed =
+            JSON.parse(
+              property.photos
+            );
+
+          if (
+            Array.isArray(parsed)
+          ) {
+
+            return parsed
+              .filter(Boolean);
+
+          }
+
+        } catch (error) {
+
+          console.warn(
+            "NEXO: fotografías inválidas",
+            error
+          );
+
+        }
+
+      }
+
+      return [];
+    }
+
+    function hasCoordinates(
+      property
+    ) {
+
+      const latitude =
+        Number(
+          property.latitude
+        );
+
+      const longitude =
+        Number(
+          property.longitude
+        );
+
+      return (
+        Number.isFinite(latitude) &&
+        Number.isFinite(longitude)
+      );
+    }
+
+    /* =====================================================
+       ESTADO
+       ===================================================== */
+
+    function showStatus(
+      title,
+      text
+    ) {
+
+      statusTitle.textContent =
+        title;
+
+      statusText.textContent =
+        text;
+
+      status.classList.remove(
+        "hidden"
+      );
+    }
+
+    function hideStatus() {
+
+      status.classList.add(
+        "hidden"
+      );
+    }
+
+    /* =====================================================
+       ICONO NEXO
+       ===================================================== */
+
+    const nexoIcon =
+      L.divIcon({
+
+        className: "",
+
+        html:
+          `
+          <div class="nexo-marker-wrap">
+            <div class="nexo-marker"></div>
+          </div>
+          `,
+
+        iconSize:
+          [38, 48],
+
+        iconAnchor:
+          [19, 48],
+
+        popupAnchor:
+          [0, -45]
+      });
+
+    /* =====================================================
+       TARJETA
+       ===================================================== */
+
+    function buildPropertyCard(
+      property
+    ) {
+
+      const photos =
+        parsePhotos(
+          property
+        );
+
+      const image =
+        photos.length
+          ? photos[0]
+          : "";
+
+      const title =
+        property.title ||
+        property.property_type ||
+        "Propiedad";
+
+      const location =
+        [
+          property.neighborhood,
+          property.city
+        ]
+          .filter(Boolean)
+          .join(" · ");
+
+      const stats = [];
+
+      if (
+        property.bedrooms !==
+          null &&
+        property.bedrooms !==
+          undefined &&
+        property.bedrooms !== ""
+      ) {
+
+        stats.push(
+          `🛏 ${escapeHTML(
+            property.bedrooms
+          )}`
+        );
+
+      }
+
+      if (
+        property.bathrooms !==
+          null &&
+        property.bathrooms !==
+          undefined &&
+        property.bathrooms !== ""
+      ) {
+
+        stats.push(
+          `🚿 ${escapeHTML(
+            property.bathrooms
+          )}`
+        );
+
+      }
+
+      if (
+        property.square_meters !==
+          null &&
+        property.square_meters !==
+          undefined &&
+        property.square_meters !== ""
+      ) {
+
+        stats.push(
+          `${escapeHTML(
+            property.square_meters
+          )} m²`
+        );
+
+      }
+
+      const statsHTML =
+        stats.length
+          ? `
+            <div class="property-stats">
+              ${stats
+                .map(
+                  item =>
+                    `
+                    <span class="property-stat">
+                      ${item}
+                    </span>
+                    `
+                )
+                .join("")}
+            </div>
+          `
+          : "";
+
+      const imageHTML =
+        image
+          ? `
+            <div class="property-image">
+
+              <img
+                src="${escapeHTML(
+                  image
+                )}"
+                alt="${escapeHTML(
+                  title
+                )}"
+                loading="lazy"
+                onerror="
+                  this.style.display='none';
+                  this.parentElement.textContent='Sin fotografía';
+                "
+              >
+
+            </div>
+          `
+          : `
+            <div class="property-image">
+              Sin fotografía
+            </div>
+          `;
+
+      const addressHTML =
+        property.address
+          ? `
+            <div class="property-address">
+              📍 ${escapeHTML(
+                property.address
+              )}
+            </div>
+          `
+          : "";
+
+      return `
+        <div class="property-card">
+
+          ${imageHTML}
+
+          <div class="property-content">
+
+            <div class="property-type">
+              ${escapeHTML(
+                property.property_type ||
+                "Propiedad"
+              )}
+            </div>
+
+            <div class="property-title">
+              ${escapeHTML(
+                title
+              )}
+            </div>
+
+            <div class="property-price">
+              ${money(
+                property.price
+              )}
+            </div>
+
+            ${
+              location
+                ? `
+                  <div class="property-location">
+                    ${escapeHTML(
+                      location
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+            ${statsHTML}
+
+            ${addressHTML}
+
+            <button
+              type="button"
+              class="view-property"
+              onclick="openProperty(${Number(
+                property.id
+              )})"
+            >
+              Ver propiedad
+            </button>
+
+          </div>
+
+        </div>
+      `;
+    }
+
+    /* =====================================================
+       ABRIR PROPIEDAD
+       ===================================================== */
+
+    window.openProperty =
+      function(id) {
+
+        const property =
+          allProperties.find(
+            item =>
+              Number(item.id) ===
+              Number(id)
+          );
+
+        if (!property) {
+          return;
+        }
+
+        if (
+          !hasCoordinates(
+            property
+          )
+        ) {
+
+          alert(
+            "Esta propiedad todavía no tiene una ubicación en el mapa."
+          );
+
+          return;
+        }
+
+        const latitude =
+          Number(
+            property.latitude
+          );
+
+        const longitude =
+          Number(
+            property.longitude
+          );
+
+        map.setView(
+          [
+            latitude,
+            longitude
+          ],
+          Math.max(
+            map.getZoom(),
+            16
+          ),
+          {
+            animate: true,
+            duration: .45
+          }
+        );
+
+      };
+
+    /* =====================================================
+       MARCADORES
+       ===================================================== */
+
+    function renderMarkers() {
+
+      markerLayer.clearLayers();
+
+      filteredProperties.forEach(
+        property => {
+
+          if (
+            !hasCoordinates(
+              property
+            )
+          ) {
+            return;
+          }
+
+          const latitude =
+            Number(
+              property.latitude
+            );
+
+          const longitude =
+            Number(
+              property.longitude
+            );
+
+          const marker =
+            L.marker(
+              [
+                latitude,
+                longitude
+              ],
+              {
+                icon:
+                  nexoIcon,
+
+                riseOnHover:
+                  true
+              }
+            );
+
+          marker.bindPopup(
+            buildPropertyCard(
+              property
+            ),
+            {
+              maxWidth: 320,
+
+              closeButton:
+                true,
+
+              autoPan:
+                true,
+
+              autoPanPadding:
+                [20, 120],
+
+              keepInView:
+                true
+            }
+          );
+
+          marker.addTo(
+            markerLayer
+          );
+
+        }
+      );
+
+      updateCounter();
+    }
+
+    /* =====================================================
+       CONTADOR
+       ===================================================== */
+
+    function updateCounter() {
+
+      const total =
+        filteredProperties.length;
+
+      const located =
+        filteredProperties.filter(
+          property =>
+            hasCoordinates(
+              property
+            )
+        ).length;
+
+      if (
+        total === 0
+      ) {
+
+        counter.textContent =
+          "0 propiedades";
 
         return;
-
       }
 
-      located++;
+      if (
+        total === located
+      ) {
 
-      const marker =
-        L.marker(
-          coords,
-          {
-            icon:nexoIcon,
+        counter.textContent =
+          `${total} ${
+            total === 1
+              ? "propiedad"
+              : "propiedades"
+          }`;
 
-            keyboard:true,
+      } else {
 
-            title:
-              property.property_type ||
-              "Propiedad"
-          }
-        );
+        counter.textContent =
+          `${total} propiedades · ${located} ubicadas`;
 
+      }
+    }
 
-      marker.bindPopup(
-        buildPropertyCard(property),
-        {
-          maxWidth:320,
+    /* =====================================================
+       AJUSTAR A PROPIEDADES
+       ===================================================== */
 
-          minWidth:240,
+    function fitVisibleProperties() {
 
-          closeButton:true,
-
-          autoPan:true,
-
-          autoPanPaddingTopLeft:
-            [20,140],
-
-          autoPanPaddingBottomRight:
-            [20,80]
-        }
-      );
-
-
-      marker.on(
-        "popupopen",
-        event => {
-
-          const popup =
-            event.popup;
-
-          const element =
-            popup.getElement();
-
-          if(!element){
-
-            return;
-
-          }
-
-          const button =
-            element.querySelector(
-              ".view-property"
-            );
-
-          if(!button){
-
-            return;
-
-          }
-
-          button.onclick =
-            () => {
-
-              openProperty(
+      const coordinates =
+        filteredProperties
+          .filter(
+            property =>
+              hasCoordinates(
                 property
-              );
-
-              popup.close();
-
-            };
-
-        }
-      );
-
-
-      markerLayer.addLayer(
-        marker
-      );
-
-    }
-  );
-
-  updateCounter(
-    located
-  );
-
-}
-
-
-/* =========================================================
-   CONTADOR
-========================================================= */
-
-function updateCounter(located){
-
-  const total =
-    filteredProperties.length;
-
-  if(total === 0){
-
-    counter.textContent =
-      "0 propiedades";
-
-    return;
-
-  }
-
-  if(total === located){
-
-    counter.textContent =
-      total +
-      (
-        total === 1
-          ? " propiedad"
-          : " propiedades"
-      );
-
-    return;
-
-  }
-
-  counter.textContent =
-    total +
-    " propiedades · " +
-    located +
-    " ubicadas";
-
-}
-
-
-/* =========================================================
-   AJUSTAR MAPA
-========================================================= */
-
-function fitVisibleProperties(){
-
-  const coordinates =
-    filteredProperties
-      .map(getCoordinates)
-      .filter(Boolean);
-
-
-  if(!coordinates.length){
-
-    map.setView(
-      [23.1136,-82.3666],
-      11,
-      {
-        animate:false
-      }
-    );
-
-    return;
-
-  }
-
-
-  if(coordinates.length === 1){
-
-    map.setView(
-      coordinates[0],
-      15,
-      {
-        animate:true
-      }
-    );
-
-    return;
-
-  }
-
-
-  const bounds =
-    L.latLngBounds(
-      coordinates
-    );
-
-
-  if(!bounds.isValid()){
-
-    return;
-
-  }
-
-
-  map.fitBounds(
-    bounds,
-    {
-      paddingTopLeft:
-        [25,150],
-
-      paddingBottomRight:
-        [25,100],
-
-      maxZoom:16,
-
-      animate:true,
-
-      duration:.5
-    }
-  );
-
-}
-
-
-/* =========================================================
-   FILTROS
-========================================================= */
-
-function applyFilters(){
-
-  const search =
-    normalize(
-      searchInput.value
-    );
-
-
-  filteredProperties =
-    allProperties.filter(
-      property => {
-
-        if(
-          activeType !== "all" &&
-          normalize(
-            property.property_type
-          ) !==
-          normalize(
-            activeType
+              )
           )
-        ){
-
-          return false;
-
-        }
-
-
-        if(!search){
-
-          return true;
-
-        }
-
-
-        const searchable =
-          [
-            property.property_type,
-            property.title,
-            property.city,
-            property.neighborhood,
-            property.address,
-            property.description
-          ]
-            .filter(Boolean)
-            .map(normalize)
-            .join(" ");
-
-
-        return searchable.includes(
-          search
-        );
-
-      }
-    );
-
-
-  renderMarkers();
-
-
-  if(
-    filteredProperties.length === 0
-  ){
-
-    showStatus(
-      "Sin resultados",
-      "No encontramos propiedades con esos criterios."
-    );
-
-  }else{
-
-    hideStatus();
-
-  }
-
-
-  fitVisibleProperties();
-
-}
-
-
-/* =========================================================
-   BOTONES DE FILTRO
-========================================================= */
-
-document
-  .querySelectorAll(".filter")
-  .forEach(
-    button => {
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          document
-            .querySelectorAll(".filter")
-            .forEach(
-              item =>
-                item.classList.remove(
-                  "active"
+          .map(
+            property =>
+              [
+                Number(
+                  property.latitude
+                ),
+                Number(
+                  property.longitude
                 )
-            );
-
-
-          button.classList.add(
-            "active"
+              ]
           );
 
+      /*
+       * Sin coordenadas:
+       * volvemos a la vista premium de Cuba.
+       */
 
-          activeType =
-            button.dataset.type ||
-            "all";
+      if (
+        coordinates.length === 0
+      ) {
 
-
-          applyFilters();
-
-        }
-      );
-
-    }
-  );
-
-
-/* =========================================================
-   BUSCADOR
-========================================================= */
-
-searchInput.addEventListener(
-  "input",
-  () => {
-
-    clearSearch.classList.toggle(
-      "show",
-      Boolean(
-        searchInput.value.trim()
-      )
-    );
-
-    applyFilters();
-
-  }
-);
-
-
-clearSearch.addEventListener(
-  "click",
-  () => {
-
-    searchInput.value = "";
-
-    clearSearch.classList.remove(
-      "show"
-    );
-
-    applyFilters();
-
-    searchInput.focus();
-
-  }
-);
-
-
-/* =========================================================
-   BOTÓN AJUSTAR
-========================================================= */
-
-fitButton.addEventListener(
-  "click",
-  () => {
-
-    fitVisibleProperties();
-
-  }
-);
-
-
-/* =========================================================
-   UBICACIÓN
-========================================================= */
-
-locationButton.addEventListener(
-  "click",
-  () => {
-
-    if(
-      !navigator.geolocation
-    ){
-
-      alert(
-        "Tu dispositivo no permite obtener la ubicación."
-      );
-
-      return;
-
-    }
-
-
-    locationButton.disabled =
-      true;
-
-
-    navigator.geolocation.getCurrentPosition(
-
-      position => {
-
-        const coords = [
-          position.coords.latitude,
-          position.coords.longitude
-        ];
-
-
-        if(userLocationMarker){
-
-          map.removeLayer(
-            userLocationMarker
-          );
-
-        }
-
-
-        userLocationMarker =
-          L.circleMarker(
-            coords,
-            {
-              radius:8,
-              weight:3
-            }
-          )
-            .addTo(map);
-
-
-        userLocationMarker.bindPopup(
-          "Tu ubicación"
+        map.setView(
+          NEXO_INITIAL_CENTER,
+          NEXO_INITIAL_ZOOM,
+          {
+            animate: true,
+            duration: .5
+          }
         );
 
+        return;
+      }
 
-        map.flyTo(
-          coords,
+      /*
+       * Una sola propiedad.
+       */
+
+      if (
+        coordinates.length === 1
+      ) {
+
+        map.setView(
+          coordinates[0],
           15,
           {
-            animate:true,
-            duration:.6
+            animate: true,
+            duration: .5
           }
         );
 
+        return;
+      }
+
+      /*
+       * Varias propiedades.
+       */
+
+      const bounds =
+        L.latLngBounds(
+          coordinates
+        );
+
+      map.fitBounds(
+        bounds,
+        {
+          paddingTopLeft:
+            [30, 150],
+
+          paddingBottomRight:
+            [30, 110],
+
+          maxZoom: 15,
+
+          animate: true,
+
+          duration: .55
+        }
+      );
+    }
+
+    /* =====================================================
+       FILTROS
+       ===================================================== */
+
+    function applyFilters() {
+
+      const search =
+        normalize(
+          searchInput.value
+        );
+
+      filteredProperties =
+        allProperties.filter(
+          property => {
+
+            /*
+             * TIPO
+             */
+
+            if (
+              activeType !==
+              "all"
+            ) {
+
+              if (
+                normalize(
+                  property.property_type
+                ) !==
+                normalize(
+                  activeType
+                )
+              ) {
+
+                return false;
+
+              }
+            }
+
+            /*
+             * BUSCADOR
+             */
+
+            if (
+              !search
+            ) {
+
+              return true;
+
+            }
+
+            const searchable =
+              [
+                property.property_type,
+                property.title,
+                property.city,
+                property.neighborhood,
+                property.address,
+                property.description
+              ]
+                .filter(Boolean)
+                .map(normalize)
+                .join(" ");
+
+            return searchable.includes(
+              search
+            );
+          }
+        );
+
+      renderMarkers();
+
+      /*
+       * IMPORTANTE:
+       * Solo ajustamos el mapa cuando
+       * realmente hay una búsqueda/filtro.
+       *
+       * Así al abrir NEXO siempre vemos Cuba
+       * y no un zoom extraño provocado por
+       * los primeros marcadores.
+       */
+
+      if (
+        search ||
+        activeType !== "all"
+      ) {
+
+        fitVisibleProperties();
+
+      }
+
+      if (
+        filteredProperties.length ===
+        0
+      ) {
+
+        showStatus(
+          "Sin resultados",
+          "No encontramos propiedades con esos criterios."
+        );
+
+      } else {
+
+        hideStatus();
+
+      }
+    }
+
+    /* =====================================================
+       BOTONES DE FILTRO
+       ===================================================== */
+
+    document
+      .querySelectorAll(
+        ".filter"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              document
+                .querySelectorAll(
+                  ".filter"
+                )
+                .forEach(
+                  item =>
+                    item.classList.remove(
+                      "active"
+                    )
+                );
+
+              button.classList.add(
+                "active"
+              );
+
+              activeType =
+                button.dataset.type ||
+                "all";
+
+              applyFilters();
+
+            }
+          );
+
+        }
+      );
+
+    /* =====================================================
+       BUSCADOR
+       ===================================================== */
+
+    searchInput.addEventListener(
+      "input",
+      () => {
+
+        clearSearch.classList.toggle(
+          "show",
+          Boolean(
+            searchInput.value.trim()
+          )
+        );
+
+        applyFilters();
+
+      }
+    );
+
+    clearSearch.addEventListener(
+      "click",
+      () => {
+
+        searchInput.value = "";
+
+        clearSearch.classList.remove(
+          "show"
+        );
+
+        activeType = "all";
+
+        document
+          .querySelectorAll(
+            ".filter"
+          )
+          .forEach(
+            item =>
+              item.classList.remove(
+                "active"
+              )
+          );
+
+        const allButton =
+          document.querySelector(
+            '.filter[data-type="all"]'
+          );
+
+        if (
+          allButton
+        ) {
+          allButton.classList.add(
+            "active"
+          );
+        }
+
+        filteredProperties =
+          [...allProperties];
+
+        renderMarkers();
+
+        /*
+         * Al limpiar:
+         * volver a Cuba.
+         */
+
+        map.setView(
+          NEXO_INITIAL_CENTER,
+          NEXO_INITIAL_ZOOM,
+          {
+            animate: true,
+            duration: .5
+          }
+        );
+
+        hideStatus();
+
+        searchInput.focus();
+
+      }
+    );
+
+    /* =====================================================
+       BOTÓN MOSTRAR PROPIEDADES
+       ===================================================== */
+
+    fitButton.addEventListener(
+      "click",
+      () => {
+
+        fitVisibleProperties();
+
+      }
+    );
+
+    /* =====================================================
+       UBICACIÓN DEL USUARIO
+       ===================================================== */
+
+    locationButton.addEventListener(
+      "click",
+      () => {
+
+        if (
+          !navigator.geolocation
+        ) {
+
+          alert(
+            "Tu dispositivo no permite obtener la ubicación."
+          );
+
+          return;
+        }
 
         locationButton.disabled =
-          false;
+          true;
 
-      },
+        navigator.geolocation.getCurrentPosition(
 
+          position => {
 
-      error => {
+            const latitude =
+              position.coords.latitude;
 
-        console.warn(
-          "NEXO ubicación:",
+            const longitude =
+              position.coords.longitude;
+
+            /*
+             * Eliminar ubicación anterior.
+             */
+
+            if (
+              userLocationMarker
+            ) {
+
+              map.removeLayer(
+                userLocationMarker
+              );
+
+            }
+
+            userLocationMarker =
+              L.circleMarker(
+                [
+                  latitude,
+                  longitude
+                ],
+                {
+                  radius: 8,
+
+                  weight: 3,
+
+                  fillOpacity: .9
+                }
+              )
+                .addTo(map)
+                .bindPopup(
+                  "Tu ubicación"
+                );
+
+            userLocationMarker.openPopup();
+
+            map.setView(
+              [
+                latitude,
+                longitude
+              ],
+              15,
+              {
+                animate: true,
+                duration: .6
+              }
+            );
+
+            locationButton.disabled =
+              false;
+
+          },
+
+          error => {
+
+            console.warn(
+              "NEXO ubicación:",
+              error
+            );
+
+            alert(
+              "No se pudo obtener tu ubicación. Comprueba los permisos de ubicación."
+            );
+
+            locationButton.disabled =
+              false;
+
+          },
+
+          {
+            enableHighAccuracy:
+              true,
+
+            timeout:
+              10000,
+
+            maximumAge:
+              60000
+          }
+        );
+
+      }
+    );
+
+    /* =====================================================
+       CARGAR PROPIEDADES
+       ===================================================== */
+
+    async function loadProperties() {
+
+      showStatus(
+        "Cargando NEXO",
+        "Conectando con las propiedades..."
+      );
+
+      try {
+
+        const response =
+          await fetch(
+            "/api/properties",
+            {
+              method: "GET",
+
+              headers: {
+                "Accept":
+                  "application/json"
+              },
+
+              cache:
+                "no-store"
+            }
+          );
+
+        const text =
+          await response.text();
+
+        let data;
+
+        try {
+
+          data =
+            JSON.parse(
+              text
+            );
+
+        } catch {
+
+          throw new Error(
+            "El servidor no devolvió una respuesta JSON válida."
+          );
+
+        }
+
+        if (
+          !response.ok ||
+          data.success === false
+        ) {
+
+          throw new Error(
+            data.error ||
+            `Error HTTP ${response.status}`
+          );
+
+        }
+
+        allProperties =
+          Array.isArray(
+            data.properties
+          )
+            ? data.properties
+            : [];
+
+        /*
+         * Solo propiedades disponibles.
+         */
+
+        allProperties =
+          allProperties.filter(
+            property =>
+              !property.status ||
+              property.status ===
+                "available"
+          );
+
+        filteredProperties =
+          [...allProperties];
+
+        /*
+         * Crear pines.
+         */
+
+        renderMarkers();
+
+        /*
+         * IMPORTANTE:
+         *
+         * NO hacemos fitBounds automáticamente.
+         *
+         * NEXO siempre abre en Cuba.
+         */
+
+        map.setView(
+          NEXO_INITIAL_CENTER,
+          NEXO_INITIAL_ZOOM,
+          {
+            animate: false
+          }
+        );
+
+        hideStatus();
+
+      } catch (error) {
+
+        console.error(
+          "NEXO MAP:",
           error
         );
 
-
-        alert(
-          "No se pudo obtener tu ubicación."
+        showStatus(
+          "No se pudieron cargar las propiedades",
+          error.message ||
+          "Comprueba la conexión con NEXO."
         );
 
-
-        locationButton.disabled =
-          false;
-
-      },
-
-
-      {
-        enableHighAccuracy:true,
-
-        timeout:10000,
-
-        maximumAge:60000
+        counter.textContent =
+          "Error";
       }
-
-    );
-
-  }
-);
-
-
-/* =========================================================
-   CARGAR PROPIEDADES
-========================================================= */
-
-async function loadProperties(){
-
-  showStatus(
-    "Cargando propiedades",
-    "Conectando con NEXO..."
-  );
-
-
-  try{
-
-    const response =
-      await fetch(
-        "/api/properties",
-        {
-          method:"GET",
-
-          headers:{
-            "Accept":
-              "application/json"
-          },
-
-          cache:"no-store"
-        }
-      );
-
-
-    const text =
-      await response.text();
-
-
-    let data;
-
-
-    try{
-
-      data =
-        JSON.parse(text);
-
-    }catch(error){
-
-      throw new Error(
-        "La respuesta del servidor no es JSON."
-      );
-
     }
 
+    /* =====================================================
+       INICIO
+       ===================================================== */
 
-    if(
-      !response.ok ||
-      data.success === false
-    ){
-
-      throw new Error(
-        data.error ||
-        "Error HTTP " +
-        response.status
-      );
-
-    }
-
-
-    allProperties =
-      Array.isArray(
-        data.properties
-      )
-        ? data.properties
-        : [];
-
+    loadProperties();
 
     /*
-     * Solo propiedades disponibles.
+     * Leaflet necesita recalcular
+     * el tamaño después de cargar.
      */
 
-    allProperties =
-      allProperties.filter(
-        property =>
-          !property.status ||
-          property.status ===
-            "available"
-      );
-
-
-    filteredProperties =
-      [...allProperties];
-
-
-    renderMarkers();
-
-
-    hideStatus();
-
-
-    const located =
-      allProperties
-        .map(getCoordinates)
-        .filter(Boolean);
-
-
-    if(located.length){
-
-      fitVisibleProperties();
-
-    }else{
-
-      map.setView(
-        [23.1136,-82.3666],
-        11,
-        {
-          animate:false
-        }
-      );
-
-    }
-
-
-  }catch(error){
-
-    console.error(
-      "NEXO MAP:",
-      error
-    );
-
-
-    counter.textContent =
-      "Error";
-
-
-    showStatus(
-      "No se pudieron cargar las propiedades",
-      error.message ||
-      "Comprueba la conexión con NEXO."
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   CORRECCIÓN DEL TAMAÑO DEL MAPA
-========================================================= */
-
-function refreshMapSize(){
-
-  map.invalidateSize({
-    pan:false,
-    debounceMoveend:true
-  });
-
-}
-
-
-/*
- * Esperamos a que el navegador haya
- * pintado completamente el mapa.
- */
-
-requestAnimationFrame(
-  () => {
-
-    refreshMapSize();
-
     setTimeout(
-      refreshMapSize,
+      () => {
+
+        map.invalidateSize(
+          true
+        );
+
+      },
       250
     );
 
     setTimeout(
-      refreshMapSize,
-      700
+      () => {
+
+        map.invalidateSize(
+          true
+        );
+
+      },
+      1000
     );
 
-  }
-);
+    window.addEventListener(
+      "resize",
+      () => {
 
+        map.invalidateSize(
+          true
+        );
 
-/* =========================================================
-   RESIZE
-========================================================= */
-
-window.addEventListener(
-  "resize",
-  refreshMapSize
-);
-
-
-window.addEventListener(
-  "orientationchange",
-  () => {
-
-    setTimeout(
-      refreshMapSize,
-      300
+      }
     );
 
-  }
-);
+    /*
+     * Cuando el dispositivo cambia
+     * orientación.
+     */
 
+    window.addEventListener(
+      "orientationchange",
+      () => {
 
-/* =========================================================
-   INICIO
-========================================================= */
+        setTimeout(
+          () => {
 
-loadProperties();
+            map.invalidateSize(
+              true
+            );
 
-</script>
+          },
+          350
+        );
+
+      }
+    );
+
+  </script>
 
 </body>
 </html>
