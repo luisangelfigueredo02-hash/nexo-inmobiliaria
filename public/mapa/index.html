@@ -21,14 +21,11 @@
   <style>
     :root {
       --bg: #f7f7f5;
-      --card: rgba(255,255,255,.94);
-      --text: #111111;
+      --white: #fff;
+      --text: #111;
       --muted: #777;
       --line: rgba(0,0,0,.08);
-      --black: #111;
-      --shadow:
-        0 12px 35px rgba(0,0,0,.12);
-      --radius: 18px;
+      --shadow: 0 12px 35px rgba(0,0,0,.12);
     }
 
     * {
@@ -78,15 +75,28 @@
     }
 
     .leaflet-container {
+      width: 100%;
+      height: 100%;
       font-family: inherit;
       background: #e8e8e6;
     }
 
+    .leaflet-tile {
+      image-rendering: auto;
+    }
+
     .leaflet-control-attribution {
       font-size: 8px !important;
-      background: rgba(255,255,255,.72) !important;
+
+      padding: 2px 5px !important;
+
+      background:
+        rgba(255,255,255,.72) !important;
+
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
+
+      border-radius: 6px 0 0 0;
     }
 
     .leaflet-control-zoom {
@@ -104,7 +114,8 @@
       border: 0 !important;
       border-radius: 14px !important;
 
-      background: rgba(255,255,255,.94) !important;
+      background:
+        rgba(255,255,255,.95) !important;
 
       color: #111 !important;
 
@@ -114,12 +125,17 @@
       font-size: 19px !important;
     }
 
+    .leaflet-control-zoom a:active {
+      transform: scale(.94);
+    }
+
     /* =====================================================
-       CAPA SUPERIOR
+       BARRA SUPERIOR
        ===================================================== */
 
     .top-area {
       position: fixed;
+
       top: 0;
       left: 0;
       right: 0;
@@ -127,7 +143,7 @@
       z-index: 1000;
 
       padding:
-        calc(12px + env(safe-area-inset-top))
+        calc(12px + env(safe-area-inset-top, 0px))
         14px
         0;
 
@@ -141,15 +157,15 @@
       pointer-events: auto;
     }
 
-    /* =====================================================
-       HEADER
-       ===================================================== */
-
     .header {
       display: flex;
       align-items: center;
       gap: 9px;
     }
+
+    /* =====================================================
+       NEXO
+       ===================================================== */
 
     .brand {
       flex: 0 0 auto;
@@ -163,7 +179,8 @@
 
       border-radius: 16px;
 
-      background: rgba(255,255,255,.95);
+      background:
+        rgba(255,255,255,.95);
 
       backdrop-filter: blur(22px);
       -webkit-backdrop-filter: blur(22px);
@@ -171,11 +188,17 @@
       box-shadow:
         0 8px 28px rgba(0,0,0,.11);
 
+      color: #111;
+
       font-size: 17px;
       font-weight: 900;
 
       letter-spacing: -.08em;
     }
+
+    /* =====================================================
+       BUSCADOR
+       ===================================================== */
 
     .search {
       flex: 1;
@@ -188,7 +211,8 @@
 
       border-radius: 16px;
 
-      background: rgba(255,255,255,.95);
+      background:
+        rgba(255,255,255,.95);
 
       backdrop-filter: blur(22px);
       -webkit-backdrop-filter: blur(22px);
@@ -206,7 +230,7 @@
 
       color: #777;
 
-      font-size: 15px;
+      font-size: 16px;
     }
 
     .search input {
@@ -232,6 +256,8 @@
     .clear {
       display: none;
 
+      flex: 0 0 auto;
+
       width: 32px;
       height: 32px;
 
@@ -242,6 +268,9 @@
       background: #ededed;
 
       color: #555;
+
+      font-size: 18px;
+      line-height: 1;
     }
 
     .clear.visible {
@@ -261,6 +290,7 @@
       overflow-x: auto;
 
       scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
     }
 
     .filters::-webkit-scrollbar {
@@ -276,7 +306,8 @@
 
       border-radius: 999px;
 
-      background: rgba(255,255,255,.92);
+      background:
+        rgba(255,255,255,.92);
 
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
@@ -314,7 +345,7 @@
       left: 14px;
 
       bottom:
-        calc(16px + env(safe-area-inset-bottom));
+        calc(16px + env(safe-area-inset-bottom, 0px));
 
       z-index: 1000;
 
@@ -322,7 +353,8 @@
 
       border-radius: 999px;
 
-      background: rgba(255,255,255,.94);
+      background:
+        rgba(255,255,255,.94);
 
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
@@ -337,7 +369,7 @@
     }
 
     /* =====================================================
-       BOTONES
+       HERRAMIENTAS
        ===================================================== */
 
     .map-tools {
@@ -346,7 +378,7 @@
       right: 14px;
 
       bottom:
-        calc(16px + env(safe-area-inset-bottom));
+        calc(16px + env(safe-area-inset-bottom, 0px));
 
       z-index: 1000;
 
@@ -361,7 +393,8 @@
 
       border-radius: 15px;
 
-      background: rgba(255,255,255,.95);
+      background:
+        rgba(255,255,255,.95);
 
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
@@ -374,11 +407,16 @@
       font-size: 17px;
 
       transition:
-        transform .18s ease;
+        transform .18s ease,
+        opacity .18s ease;
     }
 
     .tool:active {
       transform: scale(.92);
+    }
+
+    .tool:disabled {
+      opacity: .5;
     }
 
     /* =====================================================
@@ -393,15 +431,18 @@
 
       z-index: 3000;
 
-      width: min(320px, calc(100% - 40px));
+      width:
+        min(320px, calc(100% - 40px));
 
-      transform: translate(-50%, -50%);
+      transform:
+        translate(-50%, -50%);
 
       padding: 20px;
 
       border-radius: 20px;
 
-      background: rgba(255,255,255,.96);
+      background:
+        rgba(255,255,255,.96);
 
       backdrop-filter: blur(22px);
       -webkit-backdrop-filter: blur(22px);
@@ -440,7 +481,8 @@
       width: 38px;
       height: 38px;
 
-      border-radius: 50% 50% 50% 0;
+      border-radius:
+        50% 50% 50% 0;
 
       background: #111;
 
@@ -508,7 +550,8 @@
     }
 
     .leaflet-popup-content {
-      width: min(310px, 78vw) !important;
+      width:
+        min(310px, 78vw) !important;
 
       margin: 0 !important;
     }
@@ -528,7 +571,8 @@
 
       border-radius: 50%;
 
-      background: rgba(255,255,255,.92);
+      background:
+        rgba(255,255,255,.92);
 
       color: #111 !important;
 
@@ -540,14 +584,12 @@
     }
 
     /* =====================================================
-       TARJETA
+       TARJETA DE PROPIEDAD
        ===================================================== */
 
     .property-card {
       width: 100%;
-
       overflow: hidden;
-
       background: #fff;
     }
 
@@ -557,14 +599,14 @@
       width: 100%;
       height: 170px;
 
+      overflow: hidden;
+
       background:
         linear-gradient(
           145deg,
           #e9e9e7,
           #d8d8d6
         );
-
-      overflow: hidden;
     }
 
     .property-photo img {
@@ -713,7 +755,7 @@
     }
 
     /* =====================================================
-       RESPONSIVE
+       MÓVIL
        ===================================================== */
 
     @media (max-width: 600px) {
@@ -750,7 +792,7 @@
   <div id="map"></div>
 
   <!-- =====================================================
-       PARTE SUPERIOR
+       CABECERA
        ===================================================== -->
 
   <div class="top-area">
@@ -780,7 +822,7 @@
             id="clearSearch"
             class="clear"
             type="button"
-            aria-label="Limpiar"
+            aria-label="Limpiar búsqueda"
           >
             ×
           </button>
@@ -909,6 +951,10 @@
 
   </div>
 
+  <!-- =====================================================
+       LEAFLET
+       ===================================================== -->
+
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     crossorigin=""
@@ -954,10 +1000,34 @@
        ===================================================== */
 
     let allProperties = [];
-
     let filteredProperties = [];
-
     let activeType = "all";
+
+    let userLocationLayer = null;
+
+
+    /* =====================================================
+       CONFIGURACIÓN GEOGRÁFICA
+       ===================================================== */
+
+    const DEFAULT_CENTER =
+      [23.1136, -82.3666];
+
+    const DEFAULT_ZOOM = 11;
+
+    /*
+     * Límites razonables del planeta.
+     *
+     * Evitan que datos corruptos como
+     * latitude = 999999 o longitude = -999999
+     * puedan romper el mapa.
+     */
+
+    const MIN_LAT = -90;
+    const MAX_LAT = 90;
+
+    const MIN_LNG = -180;
+    const MAX_LNG = 180;
 
 
     /* =====================================================
@@ -969,17 +1039,30 @@
         mapElement,
         {
           zoomControl: false,
-          preferCanvas: false,
 
           /*
-           * Evita que Leaflet intente mostrar
-           * el mundo entero al inicio.
+           * Canvas no es necesario para
+           * nuestros pocos marcadores.
            */
+          preferCanvas: false,
 
           worldCopyJump: false,
 
-          minZoom: 3,
-          maxZoom: 19
+          minZoom: 2,
+
+          maxZoom: 19,
+
+          /*
+           * Evita que Leaflet haga
+           * movimientos exagerados.
+           */
+          inertia: true,
+
+          zoomAnimation: true,
+
+          fadeAnimation: true,
+
+          markerZoomAnimation: true
         }
       );
 
@@ -990,17 +1073,12 @@
 
 
     /*
-     * Vista inicial de Cuba.
+     * IMPORTANTE:
      *
-     * Esta vista SOLO se utiliza antes
-     * de cargar las propiedades.
+     * El mapa comienza en Cuba.
+     * Nunca comenzamos mostrando
+     * el mundo entero.
      */
-
-    const DEFAULT_CENTER =
-      [23.1136, -82.3666];
-
-    const DEFAULT_ZOOM = 11;
-
 
     map.setView(
       DEFAULT_CENTER,
@@ -1019,12 +1097,14 @@
       L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
+          minZoom: 2,
           maxZoom: 19,
 
-          updateWhenZooming: true,
+          updateWhenZooming: false,
+
           updateWhenIdle: true,
 
-          keepBuffer: 4,
+          keepBuffer: 3,
 
           attribution:
             '&copy; OpenStreetMap contributors'
@@ -1036,7 +1116,7 @@
 
 
     /* =====================================================
-       CAPA DE MARCADORES
+       CAPA DE PROPIEDADES
        ===================================================== */
 
     const markerLayer =
@@ -1044,31 +1124,136 @@
 
 
     /* =====================================================
-       UTILIDADES
+       VALIDACIÓN DE COORDENADAS
        ===================================================== */
 
-    function escapeHTML(value) {
+    function getValidCoordinates(
+      property
+    ) {
 
-      return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+      if (!property) {
+        return null;
+      }
+
+
+      /*
+       * Admitimos latitude / longitude
+       * como números o strings.
+       */
+
+      const latitude =
+        Number(
+          property.latitude
+        );
+
+      const longitude =
+        Number(
+          property.longitude
+        );
+
+
+      /*
+       * NaN / Infinity.
+       */
+
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+      ) {
+        return null;
+      }
+
+
+      /*
+       * Rango geográfico.
+       */
+
+      if (
+        latitude < MIN_LAT ||
+        latitude > MAX_LAT ||
+        longitude < MIN_LNG ||
+        longitude > MAX_LNG
+      ) {
+        return null;
+      }
+
+
+      /*
+       * 0,0 es el punto del Atlántico.
+       *
+       * Para NEXO no tiene sentido como
+       * coordenada inmobiliaria.
+       */
+
+      if (
+        latitude === 0 &&
+        longitude === 0
+      ) {
+        return null;
+      }
+
+
+      return [
+        latitude,
+        longitude
+      ];
     }
 
 
-    function normalize(value) {
+    /* =====================================================
+       UTILIDADES
+       ===================================================== */
 
-      return String(value ?? "")
+    function escapeHTML(
+      value
+    ) {
+
+      return String(
+        value ?? ""
+      )
+        .replace(
+          /&/g,
+          "&amp;"
+        )
+        .replace(
+          /</g,
+          "&lt;"
+        )
+        .replace(
+          />/g,
+          "&gt;"
+        )
+        .replace(
+          /"/g,
+          "&quot;"
+        )
+        .replace(
+          /'/g,
+          "&#039;"
+        );
+    }
+
+
+    function normalize(
+      value
+    ) {
+
+      return String(
+        value ?? ""
+      )
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
+        .replace(
+          /[\u0300-\u036f]/g,
+          ""
+        )
         .toLowerCase()
         .trim();
     }
 
 
-    function money(value) {
+    function money(
+      value
+    ) {
 
       if (
         value === null ||
@@ -1078,14 +1263,20 @@
         return "$0";
       }
 
+
       const number =
         Number(
           String(value)
-            .replace(/[$,\s]/g, "")
+            .replace(
+              /[$,\s]/g,
+              ""
+            )
         );
 
 
-      if (!Number.isFinite(number)) {
+      if (
+        !Number.isFinite(number)
+      ) {
         return String(value);
       }
 
@@ -1100,24 +1291,48 @@
     }
 
 
-    function parsePhotos(property) {
+    /* =====================================================
+       FOTOGRAFÍAS
+       ===================================================== */
+
+    function parsePhotos(
+      property
+    ) {
 
       if (
-        Array.isArray(property.photos)
+        Array.isArray(
+          property.photos
+        )
       ) {
+
         return property.photos
           .filter(Boolean);
       }
 
 
       if (
-        typeof property.photos === "string"
+        typeof property.photos ===
+        "string"
       ) {
+
+        const raw =
+          property.photos.trim();
+
+
+        if (!raw) {
+          return [];
+        }
+
+
+        /*
+         * Intentar JSON.
+         */
 
         try {
 
           const parsed =
-            JSON.parse(property.photos);
+            JSON.parse(raw);
+
 
           if (
             Array.isArray(parsed)
@@ -1127,43 +1342,40 @@
               .filter(Boolean);
           }
 
-        } catch (error) {
-
+        } catch {
           /*
-           * Si no es JSON, comprobamos
-           * si parece una sola URL.
+           * No era JSON.
            */
-
-          if (
-            property.photos.startsWith("http")
-          ) {
-
-            return [
-              property.photos
-            ];
-          }
-
         }
 
+
+        /*
+         * Una URL única.
+         */
+
+        if (
+          raw.startsWith("http://") ||
+          raw.startsWith("https://")
+        ) {
+
+          return [raw];
+        }
       }
 
 
       /*
-       * Compatibilidad con posibles
-       * campos antiguos de imágenes.
+       * Compatibilidad con
+       * nombres antiguos.
        */
 
-      const candidates = [
+      return [
         property.image,
         property.image_url,
         property.photo,
         property.photo_url,
         property.cover_image,
         property.cover
-      ];
-
-
-      return candidates
+      ]
         .filter(
           item =>
             typeof item === "string" &&
@@ -1173,7 +1385,7 @@
 
 
     /* =====================================================
-       ESTADO VISUAL
+       ESTADO
        ===================================================== */
 
     function showStatus(
@@ -1224,7 +1436,7 @@
 
 
     /* =====================================================
-       TARJETA
+       TARJETA DE PROPIEDAD
        ===================================================== */
 
     function buildPropertyCard(
@@ -1267,7 +1479,9 @@
       ) {
 
         stats.push(
-          `🛏 ${escapeHTML(property.bedrooms)}`
+          `🛏 ${escapeHTML(
+            property.bedrooms
+          )}`
         );
       }
 
@@ -1279,7 +1493,9 @@
       ) {
 
         stats.push(
-          `🚿 ${escapeHTML(property.bathrooms)}`
+          `🚿 ${escapeHTML(
+            property.bathrooms
+          )}`
         );
       }
 
@@ -1291,7 +1507,9 @@
       ) {
 
         stats.push(
-          `${escapeHTML(property.square_meters)} m²`
+          `${escapeHTML(
+            property.square_meters
+          )} m²`
         );
       }
 
@@ -1352,10 +1570,16 @@
         property.address
           ? `
             <div class="address">
-              📍 ${escapeHTML(property.address)}
+              📍 ${escapeHTML(
+                property.address
+              )}
             </div>
           `
           : "";
+
+
+      const safeId =
+        Number(property.id);
 
 
       return `
@@ -1384,7 +1608,9 @@
               location
                 ? `
                   <div class="property-location">
-                    ${escapeHTML(location)}
+                    ${escapeHTML(
+                      location
+                    )}
                   </div>
                 `
                 : ""
@@ -1394,13 +1620,19 @@
 
             ${addressHTML}
 
-            <button
-              class="view-button"
-              type="button"
-              onclick="openProperty(${Number(property.id)})"
-            >
-              Ver propiedad
-            </button>
+            ${
+              Number.isFinite(safeId)
+                ? `
+                  <button
+                    class="view-button"
+                    type="button"
+                    onclick="openProperty(${safeId})"
+                  >
+                    Ver propiedad
+                  </button>
+                `
+                : ""
+            }
 
           </div>
 
@@ -1429,17 +1661,13 @@
         }
 
 
-        const latitude =
-          Number(property.latitude);
+        const coordinates =
+          getValidCoordinates(
+            property
+          );
 
-        const longitude =
-          Number(property.longitude);
 
-
-        if (
-          !Number.isFinite(latitude) ||
-          !Number.isFinite(longitude)
-        ) {
+        if (!coordinates) {
           return;
         }
 
@@ -1448,10 +1676,7 @@
 
 
         map.flyTo(
-          [
-            latitude,
-            longitude
-          ],
+          coordinates,
           Math.max(
             map.getZoom(),
             16
@@ -1461,7 +1686,6 @@
             duration: .7
           }
         );
-
       };
 
 
@@ -1477,32 +1701,25 @@
       filteredProperties.forEach(
         property => {
 
-          const latitude =
-            Number(property.latitude);
-
-          const longitude =
-            Number(property.longitude);
+          const coordinates =
+            getValidCoordinates(
+              property
+            );
 
 
           /*
-           * Nunca colocamos un pin
-           * sin coordenadas reales.
+           * Coordenadas inválidas:
+           * no dibujar pin.
            */
 
-          if (
-            !Number.isFinite(latitude) ||
-            !Number.isFinite(longitude)
-          ) {
+          if (!coordinates) {
             return;
           }
 
 
           const marker =
             L.marker(
-              [
-                latitude,
-                longitude
-              ],
+              coordinates,
               {
                 icon: nexoIcon,
                 keyboard: true
@@ -1511,13 +1728,19 @@
 
 
           marker.bindPopup(
-            buildPropertyCard(property),
+            buildPropertyCard(
+              property
+            ),
             {
               maxWidth: 320,
+
               closeButton: true,
+
               autoPan: true,
+
               autoPanPaddingTopLeft:
                 [25, 130],
+
               autoPanPaddingBottomRight:
                 [25, 90]
             }
@@ -1527,7 +1750,6 @@
           marker.addTo(
             markerLayer
           );
-
         }
       );
 
@@ -1537,50 +1759,40 @@
 
 
     /* =====================================================
-       AJUSTAR A PROPIEDADES
+       OBTENER COORDENADAS VISIBLES
+       ===================================================== */
+
+    function getVisibleCoordinates() {
+
+      return filteredProperties
+        .map(
+          property =>
+            getValidCoordinates(
+              property
+            )
+        )
+        .filter(Boolean);
+    }
+
+
+    /* =====================================================
+       AJUSTAR MAPA
        ===================================================== */
 
     function fitVisibleProperties() {
 
       const coordinates =
-        filteredProperties
-          .map(
-            property => {
-
-              const lat =
-                Number(property.latitude);
-
-              const lng =
-                Number(property.longitude);
-
-
-              if (
-                !Number.isFinite(lat) ||
-                !Number.isFinite(lng)
-              ) {
-                return null;
-              }
-
-
-              return [
-                lat,
-                lng
-              ];
-            }
-          )
-          .filter(Boolean);
+        getVisibleCoordinates();
 
 
       /*
-       * MUY IMPORTANTE:
-       * Si no existen coordenadas,
-       * NO hacemos fitBounds.
-       *
-       * Así evitamos que Leaflet
-       * mande el mapa al océano.
+       * SIN PROPIEDADES UBICADAS:
+       * volvemos a Cuba.
        */
 
-      if (!coordinates.length) {
+      if (
+        coordinates.length === 0
+      ) {
 
         map.setView(
           DEFAULT_CENTER,
@@ -1593,6 +1805,10 @@
         return;
       }
 
+
+      /*
+       * UNA SOLA PROPIEDAD.
+       */
 
       if (
         coordinates.length === 1
@@ -1611,10 +1827,32 @@
       }
 
 
+      /*
+       * VARIAS PROPIEDADES.
+       */
+
       const bounds =
         L.latLngBounds(
           coordinates
         );
+
+
+      /*
+       * Protección adicional:
+       * comprobamos que el bounds sea válido.
+       */
+
+      if (
+        !bounds.isValid()
+      ) {
+
+        map.setView(
+          DEFAULT_CENTER,
+          DEFAULT_ZOOM
+        );
+
+        return;
+      }
 
 
       map.fitBounds(
@@ -1625,6 +1863,11 @@
 
           paddingBottomRight:
             [30, 110],
+
+          /*
+           * Evita que el mapa se
+           * aleje demasiado.
+           */
 
           maxZoom: 16,
 
@@ -1648,24 +1891,18 @@
 
       const located =
         filteredProperties.filter(
-          property => {
-
-            const lat =
-              Number(property.latitude);
-
-            const lng =
-              Number(property.longitude);
-
-
-            return (
-              Number.isFinite(lat) &&
-              Number.isFinite(lng)
-            );
-          }
+          property =>
+            Boolean(
+              getValidCoordinates(
+                property
+              )
+            )
         ).length;
 
 
-      if (total === 0) {
+      if (
+        total === 0
+      ) {
 
         counter.textContent =
           "0 propiedades";
@@ -1718,7 +1955,9 @@
               normalize(
                 property.property_type
               ) !==
-              normalize(activeType)
+              normalize(
+                activeType
+              )
             ) {
 
               return false;
@@ -1759,6 +1998,11 @@
       renderMarkers();
 
 
+      /*
+       * Si hay resultados,
+       * centramos únicamente en ellos.
+       */
+
       if (
         filteredProperties.length
       ) {
@@ -1775,15 +2019,14 @@
         );
 
         /*
-         * No movemos el mapa cuando
-         * una búsqueda queda vacía.
+         * NO movemos el mapa.
          */
       }
     }
 
 
     /* =====================================================
-       BOTONES DE FILTRO
+       FILTROS — EVENTOS
        ===================================================== */
 
     document
@@ -1796,7 +2039,9 @@
             () => {
 
               document
-                .querySelectorAll(".filter")
+                .querySelectorAll(
+                  ".filter"
+                )
                 .forEach(
                   item =>
                     item.classList.remove(
@@ -1862,7 +2107,7 @@
 
 
     /* =====================================================
-       BOTÓN AJUSTAR
+       BOTÓN MOSTRAR PROPIEDADES
        ===================================================== */
 
     fitButton.addEventListener(
@@ -1870,17 +2115,37 @@
       () => {
 
         /*
-         * Solo mostramos las propiedades
-         * que están actualmente filtradas.
+         * Este botón SIEMPRE trabaja
+         * con las propiedades actuales.
          */
 
-        fitVisibleProperties();
+        if (
+          filteredProperties.length
+        ) {
+
+          fitVisibleProperties();
+
+        } else {
+
+          /*
+           * Si no hay filtro válido,
+           * volvemos a Cuba.
+           */
+
+          map.setView(
+            DEFAULT_CENTER,
+            DEFAULT_ZOOM,
+            {
+              animate: true
+            }
+          );
+        }
       }
     );
 
 
     /* =====================================================
-       UBICACIÓN
+       UBICACIÓN DEL USUARIO
        ===================================================== */
 
     locationButton.addEventListener(
@@ -1904,36 +2169,49 @@
 
 
         navigator.geolocation.getCurrentPosition(
+
           position => {
 
             const lat =
-              position.coords.latitude;
+              Number(
+                position.coords.latitude
+              );
 
             const lng =
-              position.coords.longitude;
+              Number(
+                position.coords.longitude
+              );
+
+
+            if (
+              !Number.isFinite(lat) ||
+              !Number.isFinite(lng)
+            ) {
+
+              locationButton.disabled =
+                false;
+
+              return;
+            }
 
 
             /*
-             * Eliminamos círculos anteriores
-             * para no acumularlos.
+             * Eliminar ubicación anterior.
              */
 
             if (
-              window.nexoUserLocation
+              userLocationLayer
             ) {
 
               map.removeLayer(
-                window.nexoUserLocation
+                userLocationLayer
               );
             }
 
 
-            window.nexoUserLocation =
+            userLocationLayer =
               L.circleMarker(
-                [
-                  lat,
-                  lng
-                ],
+                [lat, lng],
                 {
                   radius: 8,
                   weight: 3
@@ -1946,10 +2224,7 @@
 
 
             map.flyTo(
-              [
-                lat,
-                lng
-              ],
+              [lat, lng],
               15,
               {
                 animate: true,
@@ -1983,7 +2258,9 @@
 
           {
             enableHighAccuracy: true,
+
             timeout: 10000,
+
             maximumAge: 60000
           }
         );
@@ -2054,6 +2331,10 @@
         }
 
 
+        /*
+         * Cargar propiedades.
+         */
+
         allProperties =
           Array.isArray(
             data.properties
@@ -2063,17 +2344,31 @@
 
 
         /*
-         * Solo propiedades disponibles.
+         * Solo disponibles.
          */
 
         allProperties =
           allProperties.filter(
-            property =>
-              !property.status ||
-              normalize(property.status) ===
-                "available"
+            property => {
+
+              const statusValue =
+                normalize(
+                  property.status
+                );
+
+
+              return (
+                !statusValue ||
+                statusValue ===
+                  "available"
+              );
+            }
           );
 
+
+        /*
+         * Copia inicial.
+         */
 
         filteredProperties =
           [
@@ -2081,43 +2376,36 @@
           ];
 
 
+        /*
+         * Crear pins.
+         */
+
         renderMarkers();
 
 
-        hideStatus();
-
-
         /*
-         * Buscar propiedades con
-         * coordenadas válidas.
+         * Propiedades con coordenadas
+         * realmente válidas.
          */
 
         const located =
           allProperties.filter(
-            property => {
-
-              const lat =
-                Number(property.latitude);
-
-              const lng =
-                Number(property.longitude);
-
-
-              return (
-                Number.isFinite(lat) &&
-                Number.isFinite(lng)
-              );
-            }
+            property =>
+              Boolean(
+                getValidCoordinates(
+                  property
+                )
+              )
           );
 
 
         /*
-         * Si existen propiedades ubicadas,
-         * el mapa se centra SOLO en ellas.
+         * Si hay propiedades:
+         * mostrar SOLO sus ubicaciones.
          */
 
         if (
-          located.length
+          located.length > 0
         ) {
 
           fitVisibleProperties();
@@ -2125,8 +2413,8 @@
         } else {
 
           /*
-           * Si ninguna propiedad tiene
-           * coordenadas, mantenemos Cuba.
+           * Si ninguna tiene coordenadas,
+           * permanecer en Cuba.
            */
 
           map.setView(
@@ -2137,6 +2425,9 @@
             }
           );
         }
+
+
+        hideStatus();
 
 
       } catch (error) {
@@ -2161,68 +2452,91 @@
 
 
     /* =====================================================
-       INICIALIZACIÓN
+       TAMAÑO DEL MAPA
        ===================================================== */
+
+    function refreshMapSize() {
+
+      /*
+       * Pequeño retraso para que
+       * Safari termine de actualizar
+       * el viewport.
+       */
+
+      requestAnimationFrame(
+        () => {
+
+          map.invalidateSize({
+            pan: false,
+            animate: false
+          });
+        }
+      );
+    }
+
+
+    /* =====================================================
+       INICIO
+       ===================================================== */
+
+    refreshMapSize();
 
     loadProperties();
 
 
     /*
-     * Leaflet necesita recalcular
-     * el tamaño después de aparecer.
+     * Segundo ajuste después de cargar.
      */
 
-    requestAnimationFrame(
-      () => {
-
-        map.invalidateSize(
-          true
-        );
-      }
+    setTimeout(
+      refreshMapSize,
+      350
     );
 
 
     setTimeout(
-      () => {
-
-        map.invalidateSize(
-          true
-        );
-      },
-      500
+      refreshMapSize,
+      1000
     );
 
+
+    /* =====================================================
+       RESIZE
+       ===================================================== */
 
     window.addEventListener(
       "resize",
-      () => {
-
-        map.invalidateSize(
-          true
-        );
-      }
+      refreshMapSize
     );
 
-
-    /*
-     * Cuando Safari/iPhone cambia
-     * la orientación o el viewport.
-     */
 
     window.addEventListener(
       "orientationchange",
       () => {
 
         setTimeout(
-          () => {
-            map.invalidateSize(
-              true
-            );
-          },
+          refreshMapSize,
           350
         );
       }
     );
+
+
+    /*
+     * Safari/iOS puede cambiar
+     * visualViewport sin disparar
+     * exactamente resize.
+     */
+
+    if (
+      window.visualViewport
+    ) {
+
+      window.visualViewport.addEventListener(
+        "resize",
+        refreshMapSize
+      );
+    }
 
   </script>
 
