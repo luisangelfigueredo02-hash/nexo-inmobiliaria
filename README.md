@@ -1,87 +1,64 @@
-# NEXO
+# NEXO Inmueble
 
-## Plataforma inmobiliaria
+> **NEXO — Conecta con tu próximo lugar.**
 
-NEXO es una plataforma inmobiliaria diseñada para mostrar y administrar propiedades de forma sencilla, moderna y escalable.
+NEXO es una plataforma inmobiliaria **mobile-first para Cuba**, diseñada para descubrir, buscar, publicar y administrar propiedades desde una experiencia moderna, minimalista y premium.
 
-### Arquitectura
-
-- **Frontend:** HTML, CSS y JavaScript
-- **Backend:** Cloudflare Workers
-- **Base de datos:** Cloudflare D1
-- **Repositorio:** GitHub
-- **Despliegue:** Cloudflare Workers
-
-### Archivos principales
-
-- `index.html` — Página pública de NEXO
-- `admin.html` — Panel de administración
-- `app.js` — Lógica de la página pública
-- `worker.js` — API y conexión con D1
-- `wrangler.toml` — Configuración de Cloudflare
-- `README.md` — Documentación del proyecto
-
-### Base de datos
-
-Base de datos D1:
-
-`nexo-db`
-
-La tabla principal es:
-
-`properties`
-
-Los datos administrados incluyen:
-
-- Tipo de propiedad
-- Ciudad
-- Zona / barrio
-- Dirección
-- Habitaciones
-- Baños
-- Metros cuadrados
-- Precio
-- Descripción
-- Fotos
-- Nombre del propietario
-- Teléfono del propietario
-- Notas
-- Estado
-
-### API
-
-Obtener propiedades:
-
-`GET /api/properties`
-
-Obtener una propiedad:
-
-`GET /api/properties/:id`
-
-Crear una propiedad:
-
-`POST /api/properties`
-
-### Estado actual
-
-- ✅ GitHub configurado
-- ✅ Cloudflare Worker funcionando
-- ✅ Cloudflare D1 conectado
-- ✅ Tabla `properties` creada
-- ✅ Creación de propiedades funcionando
-- ✅ Consulta de propiedades funcionando
-- ✅ Panel de administración funcionando
-- 🚧 Diseño definitivo de NEXO en desarrollo
-- 🚧 Sistema de imágenes en desarrollo
-- 🚧 Autenticación del administrador pendiente
-- 🚧 Edición y eliminación de propiedades pendientes
+El proyecto está construido sobre Cloudflare Workers + D1 y utiliza una arquitectura sencilla, rápida y escalable.
 
 ---
 
-## Visión de NEXO
+# 🎯 Visión
 
-NEXO busca convertirse en una plataforma inmobiliaria moderna, minimalista, premium y fácil de utilizar desde dispositivos móviles.
+NEXO busca ofrecer una experiencia inmobiliaria diferente en Cuba:
 
-La información introducida desde el panel administrativo debe aparecer automáticamente en la plataforma pública.
+- Interfaz limpia y premium.
+- Experiencia optimizada para dispositivos móviles.
+- Inventario conectado directamente a la base de datos.
+- Búsqueda inmobiliaria inteligente.
+- Mapa interactivo.
+- Geolocalización de propiedades.
+- Favoritos.
+- Detalles de propiedades.
+- NEXO IA.
+- Panel privado de administración.
+- Protección de información privada de propietarios.
+- Arquitectura preparada para crecer.
 
-**NEXO — Conecta con tu próximo lugar.**
+NEXO comienza enfocado en Cuba, con especial atención inicial a **La Habana**.
+
+---
+
+# 🏗️ Arquitectura
+
+| Capa | Tecnología |
+|---|---|
+| Frontend | HTML, CSS, JavaScript |
+| Aplicación pública | `public/index.html` |
+| Aplicación pública JS | `public/app.js` |
+| Administración | `public/admin.html` |
+| Mapa | Leaflet + OpenStreetMap |
+| Backend | Cloudflare Workers |
+| Base de datos | Cloudflare D1 / SQLite |
+| IA | Cloudflare Workers AI |
+| Geocodificación | Nominatim / OpenStreetMap |
+| Hosting | Cloudflare Workers |
+| Código | GitHub |
+
+---
+
+# 📁 Estructura del proyecto
+
+```text
+/
+├── public/
+│   ├── index.html
+│   ├── app.js
+│   ├── admin.html
+│   │
+│   └── mapa/
+│       └── index.html
+│
+├── worker.js
+├── wrangler.toml
+└── README.md
