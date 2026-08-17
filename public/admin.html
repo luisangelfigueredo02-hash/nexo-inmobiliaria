@@ -4,23 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f5f5f7">
-
 <title>NEXO — Administración</title>
 
 <style>
 :root{
   --bg:#f5f5f7;
-  --card:rgba(255,255,255,.88);
-  --white:#fff;
+  --card:#fff;
   --text:#111;
   --muted:#737378;
   --line:rgba(0,0,0,.08);
   --soft:#f0f0f2;
   --green:#34c759;
-  --orange:#ff9500;
   --red:#ff3b30;
-  --radius:24px;
-  --shadow:0 18px 60px rgba(0,0,0,.07);
+  --radius:22px;
+  --shadow:0 16px 50px rgba(0,0,0,.06);
 }
 
 *{
@@ -48,7 +45,10 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 
-button,input,textarea,select{
+button,
+input,
+textarea,
+select{
   font:inherit;
 }
 
@@ -56,20 +56,29 @@ button{
   cursor:pointer;
 }
 
+button:disabled{
+  opacity:.5;
+  cursor:wait;
+}
+
+/* =========================================================
+   NAV
+========================================================= */
+
 .nav{
   position:sticky;
   top:0;
   z-index:100;
   padding:
-    max(12px,env(safe-area-inset-top))
-    16px
-    12px;
+    max(10px,env(safe-area-inset-top))
+    14px
+    10px;
 
-  background:rgba(255,255,255,.78);
+  background:rgba(255,255,255,.82);
   border-bottom:1px solid var(--line);
 
-  backdrop-filter:blur(25px);
-  -webkit-backdrop-filter:blur(25px);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
 }
 
 .nav-inner{
@@ -93,7 +102,7 @@ button{
 }
 
 .nav-btn{
-  padding:10px 13px;
+  padding:9px 12px;
   border:0;
   border-radius:999px;
   background:#eeeef0;
@@ -107,13 +116,17 @@ button{
   color:#fff;
 }
 
+/* =========================================================
+   MAIN
+========================================================= */
+
 main{
-  width:min(1180px,calc(100% - 28px));
-  margin:28px auto 70px;
+  width:min(1180px,calc(100% - 24px));
+  margin:24px auto 70px;
 }
 
 .hero{
-  margin-bottom:25px;
+  margin-bottom:20px;
 }
 
 .eyebrow{
@@ -125,89 +138,130 @@ main{
 }
 
 h1{
-  margin:8px 0;
-  font-size:clamp(38px,7vw,64px);
+  margin:7px 0;
+  font-size:clamp(38px,7vw,62px);
   line-height:.92;
   letter-spacing:-.075em;
 }
 
 .subtitle{
-  max-width:650px;
-  margin:14px 0 0;
+  max-width:680px;
+  margin:12px 0 0;
   color:#777;
   font-size:13px;
   line-height:1.55;
 }
 
-/* DASHBOARD */
+/* =========================================================
+   DASHBOARD
+========================================================= */
 
 .dashboard{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:10px;
-  margin-bottom:20px;
+  gap:9px;
+  margin-bottom:16px;
 }
 
 .metric{
-  min-height:105px;
-  padding:17px;
+  min-height:100px;
+  padding:15px;
 
   border:1px solid var(--line);
-  border-radius:20px;
+  border-radius:19px;
 
-  background:var(--card);
+  background:rgba(255,255,255,.82);
   box-shadow:var(--shadow);
-
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
 }
 
 .metric-label{
   color:#777;
-  font-size:10px;
-  font-weight:700;
+  font-size:9px;
+  font-weight:750;
 }
 
 .metric-value{
-  margin-top:12px;
-  font-size:29px;
+  margin-top:11px;
+  font-size:27px;
   font-weight:850;
   letter-spacing:-.06em;
 }
 
 .metric-detail{
-  margin-top:4px;
+  margin-top:3px;
   color:#888;
   font-size:9px;
 }
 
-/* LAYOUT */
+/* =========================================================
+   NOTICE
+========================================================= */
+
+.notice{
+  display:none;
+
+  margin-bottom:16px;
+  padding:14px 15px;
+
+  border-radius:15px;
+
+  font-size:11px;
+  line-height:1.5;
+  font-weight:650;
+
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+.notice.show{
+  display:block;
+}
+
+.notice.success{
+  background:#edf9f0;
+  color:#278340;
+}
+
+.notice.warning{
+  background:#fff7df;
+  color:#8a6500;
+}
+
+.notice.error{
+  background:#fff0ef;
+  color:#c52b22;
+}
+
+.notice.info{
+  background:#eef4ff;
+  color:#2856a6;
+}
+
+/* =========================================================
+   LAYOUT
+========================================================= */
 
 .layout{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 380px;
-  gap:18px;
+  grid-template-columns:minmax(0,1fr) 390px;
+  gap:16px;
   align-items:start;
 }
 
 .card{
-  background:var(--card);
+  background:rgba(255,255,255,.9);
   border:1px solid var(--line);
   border-radius:var(--radius);
   box-shadow:var(--shadow);
-
-  padding:22px;
-
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
+  padding:20px;
 }
 
 .card + .card{
-  margin-top:18px;
+  margin-top:16px;
 }
 
 .card-title{
-  margin:0 0 20px;
+  margin:0;
   font-size:19px;
   font-weight:800;
   letter-spacing:-.045em;
@@ -217,31 +271,30 @@ h1{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:12px;
+  gap:10px;
+  margin-bottom:18px;
 }
 
 .section-label{
-  margin:27px 0 15px;
-  padding-bottom:9px;
+  margin:24px 0 13px;
+  padding-bottom:8px;
 
   border-bottom:1px solid var(--line);
 
   color:#777;
-  font-size:10px;
+  font-size:9px;
   font-weight:850;
-
   text-transform:uppercase;
   letter-spacing:.09em;
 }
 
 .field{
-  margin-bottom:15px;
+  margin-bottom:13px;
 }
 
 label{
   display:block;
-  margin-bottom:7px;
-
+  margin-bottom:6px;
   color:#444;
   font-size:10px;
   font-weight:750;
@@ -251,23 +304,19 @@ input,
 textarea,
 select{
   width:100%;
-
-  padding:13px 14px;
+  padding:12px 13px;
 
   border:1px solid rgba(0,0,0,.08);
-  border-radius:14px;
+  border-radius:13px;
 
-  outline:none;
+  outline:0;
 
   background:#f8f8f9;
   color:#111;
 
   font-size:13px;
 
-  transition:
-    border-color .2s ease,
-    box-shadow .2s ease,
-    background .2s ease;
+  transition:.2s;
 }
 
 input:focus,
@@ -279,105 +328,80 @@ select:focus{
 }
 
 textarea{
-  min-height:110px;
+  min-height:100px;
   resize:vertical;
 }
 
 .grid-2{
   display:grid;
   grid-template-columns:repeat(2,1fr);
-  gap:12px;
+  gap:11px;
 }
 
 .grid-3{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:12px;
+  gap:11px;
 }
 
-/* BUTTON */
+/* =========================================================
+   FORM BUTTONS
+========================================================= */
+
+.form-actions{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+
+.submit,
+.secondary,
+.danger{
+  min-height:50px;
+  border:0;
+  border-radius:15px;
+  font-size:11px;
+  font-weight:800;
+}
 
 .submit{
-  width:100%;
-  min-height:54px;
-  margin-top:10px;
-
-  border:0;
-  border-radius:16px;
-
+  flex:1;
   background:#111;
   color:#fff;
-
-  font-size:12px;
-  font-weight:850;
-
-  box-shadow:0 10px 30px rgba(0,0,0,.13);
-
-  transition:
-    transform .2s ease,
-    opacity .2s ease;
+  box-shadow:0 10px 28px rgba(0,0,0,.12);
 }
 
-.submit:active{
-  transform:scale(.985);
+.secondary{
+  padding:0 15px;
+  background:#eeeef0;
+  color:#222;
 }
 
-.submit:disabled{
-  opacity:.55;
-  cursor:wait;
-}
-
-/* NOTICE */
-
-.notice{
-  display:none;
-
-  margin-bottom:18px;
-  padding:15px 16px;
-
-  border-radius:16px;
-
-  font-size:11px;
-  line-height:1.55;
-  font-weight:650;
-
-  white-space:pre-wrap;
-  overflow-wrap:anywhere;
-}
-
-.notice.success{
-  display:block;
-  background:#edf9f0;
-  color:#278340;
-}
-
-.notice.warning{
-  display:block;
-  background:#fff7df;
-  color:#8a6500;
-}
-
-.notice.error{
-  display:block;
+.danger{
+  padding:0 15px;
   background:#fff0ef;
   color:#c52b22;
 }
 
-/* PREVIEW */
+.hidden{
+  display:none!important;
+}
+
+/* =========================================================
+   PREVIEW
+========================================================= */
 
 .preview{
   position:sticky;
-  top:82px;
+  top:78px;
 }
 
 .preview-box{
   position:relative;
-
-  height:245px;
-
+  height:230px;
   overflow:hidden;
 
-  border-radius:18px;
+  border-radius:17px;
 
   background:
     linear-gradient(
@@ -397,16 +421,14 @@ textarea{
 .preview-box img{
   width:100%;
   height:100%;
-
   object-fit:cover;
-
   display:none;
 }
 
 .preview-overlay{
   position:absolute;
-  left:12px;
-  bottom:12px;
+  left:11px;
+  bottom:11px;
 
   padding:7px 10px;
 
@@ -422,57 +444,49 @@ textarea{
 }
 
 .preview-price{
-  margin-top:17px;
-
-  font-size:29px;
+  margin-top:15px;
+  font-size:28px;
   font-weight:850;
-
   letter-spacing:-.06em;
 }
 
 .preview-location{
   margin-top:5px;
-
   color:#777;
   font-size:11px;
-  line-height:1.5;
+  line-height:1.45;
 }
 
 .stats{
   display:flex;
   flex-wrap:wrap;
   gap:6px;
-  margin-top:14px;
+  margin-top:13px;
 }
 
 .stat{
-  padding:7px 10px;
-
+  padding:7px 9px;
   border-radius:999px;
-
   background:#f0f0f2;
   color:#555;
-
   font-size:9px;
   font-weight:700;
 }
 
-/* SEARCH */
+/* =========================================================
+   INVENTORY
+========================================================= */
 
 .inventory-search{
   display:flex;
   gap:7px;
-  margin-bottom:12px;
-}
-
-.inventory-search input{
-  flex:1;
+  margin-bottom:11px;
 }
 
 .small-btn{
   border:0;
-  border-radius:13px;
-  padding:0 13px;
+  border-radius:12px;
+  padding:0 12px;
 
   background:#111;
   color:#fff;
@@ -481,26 +495,22 @@ textarea{
   font-weight:750;
 }
 
-/* PROPERTIES */
-
 .properties{
-  margin-top:18px;
+  margin-top:16px;
 }
 
 .property{
   display:flex;
-  gap:11px;
+  gap:10px;
 
-  padding:10px;
-  margin-bottom:7px;
+  padding:9px;
+  margin-bottom:6px;
 
-  border-radius:16px;
+  border-radius:15px;
 
   background:#f7f7f8;
 
-  transition:
-    transform .2s ease,
-    background .2s ease;
+  cursor:pointer;
 }
 
 .property:hover{
@@ -514,8 +524,7 @@ textarea{
   flex:0 0 58px;
 
   overflow:hidden;
-
-  border-radius:12px;
+  border-radius:11px;
 
   background:#ddd;
 }
@@ -569,6 +578,8 @@ textarea{
 
   font-size:8px;
   font-weight:800;
+
+  white-space:nowrap;
 }
 
 .status-available{
@@ -587,8 +598,7 @@ textarea{
 }
 
 .empty{
-  padding:25px 10px;
-
+  padding:25px 8px;
   color:#888;
 
   text-align:center;
@@ -597,19 +607,102 @@ textarea{
   line-height:1.5;
 }
 
-/* FOOTER */
+/* =========================================================
+   LOGIN
+========================================================= */
+
+.auth{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+
+  background:rgba(0,0,0,.45);
+
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+
+  display:grid;
+  place-items:center;
+
+  padding:20px;
+}
+
+.auth-card{
+  width:min(420px,100%);
+
+  padding:24px;
+
+  border-radius:25px;
+
+  background:#fff;
+
+  box-shadow:
+    0 25px 90px
+    rgba(0,0,0,.22);
+}
+
+.auth-title{
+  font-size:28px;
+  font-weight:850;
+  letter-spacing:-.06em;
+}
+
+.auth-copy{
+  margin:8px 0 20px;
+
+  color:#777;
+
+  font-size:12px;
+  line-height:1.5;
+}
+
+.auth button{
+  width:100%;
+  min-height:50px;
+  margin-top:7px;
+
+  border:0;
+  border-radius:14px;
+
+  background:#111;
+  color:#fff;
+
+  font-size:11px;
+  font-weight:800;
+}
+
+.auth-error{
+  display:none;
+
+  margin-top:10px;
+  padding:10px;
+
+  border-radius:12px;
+
+  background:#fff0ef;
+  color:#c52b22;
+
+  font-size:10px;
+}
+
+.auth-error.show{
+  display:block;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
 
 footer{
   padding:30px;
-
   color:#888;
-
   text-align:center;
-
   font-size:9px;
 }
 
-/* MOBILE */
+/* =========================================================
+   MOBILE
+========================================================= */
 
 @media(max-width:900px){
 
@@ -630,17 +723,17 @@ footer{
 @media(max-width:560px){
 
   main{
-    width:calc(100% - 20px);
-    margin-top:22px;
+    width:calc(100% - 18px);
+    margin-top:19px;
   }
 
   .nav{
-    padding-left:10px;
-    padding-right:10px;
+    padding-left:9px;
+    padding-right:9px;
   }
 
   .nav-btn{
-    padding:9px 11px;
+    padding:8px 10px;
   }
 
   .grid-2,
@@ -649,29 +742,38 @@ footer{
   }
 
   .dashboard{
-    gap:7px;
+    gap:6px;
   }
 
   .metric{
-    min-height:92px;
-    padding:14px;
+    min-height:88px;
+    padding:13px;
   }
 
   .metric-value{
-    font-size:25px;
+    font-size:24px;
   }
 
   .card{
-    padding:17px;
-    border-radius:21px;
+    padding:16px;
+    border-radius:20px;
   }
 
   h1{
-    font-size:44px;
+    font-size:43px;
   }
 
   .preview-box{
-    height:220px;
+    height:215px;
+  }
+
+  .form-actions{
+    flex-direction:column;
+  }
+
+  .secondary,
+  .danger{
+    min-height:46px;
   }
 
 }
@@ -706,6 +808,14 @@ footer{
         Ver sitio
       </button>
 
+      <button
+        class="nav-btn"
+        id="logoutButton"
+        type="button"
+      >
+        Salir
+      </button>
+
     </div>
 
   </div>
@@ -714,544 +824,578 @@ footer{
 
 <main>
 
-  <section class="hero">
+<section class="hero">
 
-    <div class="eyebrow">
-      NEXO · Administración
+  <div class="eyebrow">
+    NEXO · Administración
+  </div>
+
+  <h1>
+    Controla tu inventario.
+  </h1>
+
+  <p class="subtitle">
+    Publica, edita, elimina y ubica propiedades
+    desde un solo lugar.
+  </p>
+
+</section>
+
+<section class="dashboard">
+
+  <div class="metric">
+    <div class="metric-label">
+      INVENTARIO
     </div>
 
-    <h1>
-      Controla tu inventario.
-    </h1>
-
-    <p class="subtitle">
-      Publica propiedades, revisa el inventario y deja que
-      NEXO localice automáticamente cada propiedad cuando
-      sea posible.
-    </p>
-
-  </section>
-
-  <section class="dashboard">
-
-    <div class="metric">
-
-      <div class="metric-label">
-        INVENTARIO
-      </div>
-
-      <div
-        class="metric-value"
-        id="metricTotal"
-      >
-        —
-      </div>
-
-      <div class="metric-detail">
-        propiedades registradas
-      </div>
-
+    <div
+      class="metric-value"
+      id="metricTotal"
+    >
+      —
     </div>
 
-    <div class="metric">
+    <div class="metric-detail">
+      propiedades registradas
+    </div>
+  </div>
 
-      <div class="metric-label">
-        DISPONIBLES
-      </div>
-
-      <div
-        class="metric-value"
-        id="metricAvailable"
-      >
-        —
-      </div>
-
-      <div class="metric-detail">
-        actualmente activas
-      </div>
-
+  <div class="metric">
+    <div class="metric-label">
+      DISPONIBLES
     </div>
 
-    <div class="metric">
-
-      <div class="metric-label">
-        UBICADAS
-      </div>
-
-      <div
-        class="metric-value"
-        id="metricLocated"
-      >
-        —
-      </div>
-
-      <div class="metric-detail">
-        con coordenadas
-      </div>
-
+    <div
+      class="metric-value"
+      id="metricAvailable"
+    >
+      —
     </div>
 
-    <div class="metric">
+    <div class="metric-detail">
+      actualmente activas
+    </div>
+  </div>
 
-      <div class="metric-label">
-        FAVORITOS
-      </div>
-
-      <div
-        class="metric-value"
-        id="metricFavorites"
-      >
-        —
-      </div>
-
-      <div class="metric-detail">
-        guardados en dispositivos
-      </div>
-
+  <div class="metric">
+    <div class="metric-label">
+      UBICADAS
     </div>
 
-  </section>
-
-  <div
-    id="notice"
-    class="notice"
-  ></div>
-
-  <div class="layout">
-
-    <section class="card">
-
-      <div class="card-header">
-
-        <h2 class="card-title">
-          Nueva propiedad
-        </h2>
-
-      </div>
-
-      <form
-        id="propertyForm"
-        autocomplete="off"
-      >
-
-        <div class="section-label">
-          Información principal
-        </div>
-
-        <div class="field">
-
-          <label for="title">
-            Título
-          </label>
-
-          <input
-            id="title"
-            name="title"
-            placeholder="Ej. Casa moderna en Miramar"
-            required
-          >
-
-        </div>
-
-        <div class="grid-2">
-
-          <div class="field">
-
-            <label for="property_type">
-              Tipo de propiedad
-            </label>
-
-            <select
-              id="property_type"
-              name="property_type"
-              required
-            >
-
-              <option value="">
-                Seleccionar
-              </option>
-
-              <option value="Casa">
-                Casa
-              </option>
-
-              <option value="Apartamento">
-                Apartamento
-              </option>
-
-              <option value="Villa">
-                Villa
-              </option>
-
-              <option value="Terreno">
-                Terreno
-              </option>
-
-              <option value="Local">
-                Local
-              </option>
-
-              <option value="Otro">
-                Otro
-              </option>
-
-            </select>
-
-          </div>
-
-          <div class="field">
-
-            <label for="status">
-              Estado
-            </label>
-
-            <select
-              id="status"
-              name="status"
-            >
-
-              <option value="available">
-                Disponible
-              </option>
-
-              <option value="reserved">
-                Reservada
-              </option>
-
-              <option value="sold">
-                Vendida
-              </option>
-
-            </select>
-
-          </div>
-
-        </div>
-
-        <div class="field">
-
-          <label for="price">
-            Precio
-          </label>
-
-          <input
-            id="price"
-            name="price"
-            type="number"
-            min="0"
-            inputmode="decimal"
-            placeholder="150000"
-            required
-          >
-
-        </div>
-
-        <div class="section-label">
-          Ubicación
-        </div>
-
-        <div class="grid-2">
-
-          <div class="field">
-
-            <label for="province">
-              Provincia
-            </label>
-
-            <input
-              id="province"
-              name="province"
-              placeholder="La Habana"
-            >
-
-          </div>
-
-          <div class="field">
-
-            <label for="city">
-              Ciudad
-            </label>
-
-            <input
-              id="city"
-              name="city"
-              placeholder="La Habana"
-              required
-            >
-
-          </div>
-
-        </div>
-
-        <div class="field">
-
-          <label for="neighborhood">
-            Zona / Municipio
-          </label>
-
-          <input
-            id="neighborhood"
-            name="neighborhood"
-            placeholder="Playa / Miramar"
-          >
-
-        </div>
-
-        <div class="field">
-
-          <label for="address">
-            Dirección
-          </label>
-
-          <input
-            id="address"
-            name="address"
-            placeholder="Calle 10 entre 5ta y 7ma"
-            required
-          >
-
-        </div>
-
-        <div class="section-label">
-          Características
-        </div>
-
-        <div class="grid-3">
-
-          <div class="field">
-
-            <label for="bedrooms">
-              Habitaciones
-            </label>
-
-            <input
-              id="bedrooms"
-              name="bedrooms"
-              type="number"
-              min="0"
-              inputmode="numeric"
-            >
-
-          </div>
-
-          <div class="field">
-
-            <label for="bathrooms">
-              Baños
-            </label>
-
-            <input
-              id="bathrooms"
-              name="bathrooms"
-              type="number"
-              min="0"
-              inputmode="numeric"
-            >
-
-          </div>
-
-          <div class="field">
-
-            <label for="square_meters">
-              Metros cuadrados
-            </label>
-
-            <input
-              id="square_meters"
-              name="square_meters"
-              type="number"
-              min="0"
-              inputmode="decimal"
-            >
-
-          </div>
-
-        </div>
-
-        <div class="section-label">
-          Descripción
-        </div>
-
-        <div class="field">
-
-          <label for="description">
-            Descripción
-          </label>
-
-          <textarea
-            id="description"
-            name="description"
-            placeholder="Describe las características más importantes..."
-          ></textarea>
-
-        </div>
-
-        <div class="section-label">
-          Fotografías
-        </div>
-
-        <div class="field">
-
-          <label for="photos">
-            URLs de fotografías
-          </label>
-
-          <textarea
-            id="photos"
-            name="photos"
-            placeholder="Una URL por línea"
-          ></textarea>
-
-        </div>
-
-        <div class="section-label">
-          Información privada
-        </div>
-
-        <div class="field">
-
-          <label for="contact_name">
-            Nombre del propietario / contacto
-          </label>
-
-          <input
-            id="contact_name"
-            name="contact_name"
-          >
-
-        </div>
-
-        <div class="grid-2">
-
-          <div class="field">
-
-            <label for="contact_phone">
-              Teléfono
-            </label>
-
-            <input
-              id="contact_phone"
-              name="contact_phone"
-              type="tel"
-            >
-
-          </div>
-
-          <div class="field">
-
-            <label for="contact_email">
-              Email
-            </label>
-
-            <input
-              id="contact_email"
-              name="contact_email"
-              type="email"
-            >
-
-          </div>
-
-        </div>
-
-        <button
-          id="submitButton"
-          class="submit"
-          type="submit"
-        >
-          Publicar propiedad
-        </button>
-
-      </form>
-
-    </section>
-
-    <aside class="preview">
-
-      <section class="card">
-
-        <h2 class="card-title">
-          Vista previa
-        </h2>
-
-        <div class="preview-box">
-
-          <img
-            id="previewImg"
-            alt=""
-          >
-
-          <span id="previewPlaceholder">
-            La fotografía principal aparecerá aquí.
-          </span>
-
-          <div
-            class="preview-overlay"
-            id="previewType"
-          >
-            NEXO
-          </div>
-
-        </div>
-
-        <div
-          class="preview-price"
-          id="previewPrice"
-        >
-          $0
-        </div>
-
-        <div
-          class="preview-location"
-          id="previewLocation"
-        >
-          Cuba
-        </div>
-
-        <div
-          class="stats"
-          id="previewStats"
-        ></div>
-
-      </section>
-
-      <section class="card properties">
-
-        <div class="card-header">
-
-          <h2 class="card-title">
-            Inventario
-          </h2>
-
-          <button
-            class="small-btn"
-            id="refreshButton"
-            type="button"
-          >
-            Actualizar
-          </button>
-
-        </div>
-
-        <div class="inventory-search">
-
-          <input
-            id="inventorySearch"
-            type="search"
-            placeholder="Buscar propiedad..."
-            autocomplete="off"
-          >
-
-        </div>
-
-        <div id="propertiesList">
-          Cargando...
-        </div>
-
-      </section>
-
-    </aside>
+    <div
+      class="metric-value"
+      id="metricLocated"
+    >
+      —
+    </div>
+
+    <div class="metric-detail">
+      con coordenadas
+    </div>
+  </div>
+
+  <div class="metric">
+    <div class="metric-label">
+      SIN UBICAR
+    </div>
+
+    <div
+      class="metric-value"
+      id="metricUnlocated"
+    >
+      —
+    </div>
+
+    <div class="metric-detail">
+      requieren revisión
+    </div>
+  </div>
+
+</section>
+
+<div
+  id="notice"
+  class="notice"
+></div>
+
+<div class="layout">
+
+<section class="card">
+
+  <div class="card-header">
+
+    <h2
+      class="card-title"
+      id="formTitle"
+    >
+      Nueva propiedad
+    </h2>
+
+    <button
+      class="secondary hidden"
+      id="cancelEdit"
+      type="button"
+    >
+      Cancelar
+    </button>
 
   </div>
+
+  <form
+    id="propertyForm"
+    autocomplete="off"
+  >
+
+    <div class="section-label">
+      Información principal
+    </div>
+
+    <div class="field">
+
+      <label for="title">
+        Título
+      </label>
+
+      <input
+        id="title"
+        name="title"
+        placeholder="Ej. Casa moderna en Miramar"
+        required
+      >
+
+    </div>
+
+    <div class="grid-2">
+
+      <div class="field">
+
+        <label for="property_type">
+          Tipo de propiedad
+        </label>
+
+        <select
+          id="property_type"
+          name="property_type"
+          required
+        >
+
+          <option value="">
+            Seleccionar
+          </option>
+
+          <option value="Casa">
+            Casa
+          </option>
+
+          <option value="Apartamento">
+            Apartamento
+          </option>
+
+          <option value="Villa">
+            Villa
+          </option>
+
+          <option value="Terreno">
+            Terreno
+          </option>
+
+          <option value="Local">
+            Local
+          </option>
+
+          <option value="Oficina">
+            Oficina
+          </option>
+
+          <option value="Otro">
+            Otro
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="field">
+
+        <label for="status">
+          Estado
+        </label>
+
+        <select
+          id="status"
+          name="status"
+        >
+
+          <option value="available">
+            Disponible
+          </option>
+
+          <option value="reserved">
+            Reservada
+          </option>
+
+          <option value="sold">
+            Vendida
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+    <div class="field">
+
+      <label for="price">
+        Precio
+      </label>
+
+      <input
+        id="price"
+        name="price"
+        type="number"
+        min="0"
+        inputmode="decimal"
+        placeholder="150000"
+        required
+      >
+
+    </div>
+
+    <div class="section-label">
+      Ubicación
+    </div>
+
+    <div class="grid-2">
+
+      <div class="field">
+
+        <label for="province">
+          Provincia
+        </label>
+
+        <input
+          id="province"
+          name="province"
+          placeholder="La Habana"
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label for="city">
+          Ciudad
+        </label>
+
+        <input
+          id="city"
+          name="city"
+          placeholder="La Habana"
+          required
+        >
+
+      </div>
+
+    </div>
+
+    <div class="field">
+
+      <label for="neighborhood">
+        Zona / Municipio
+      </label>
+
+      <input
+        id="neighborhood"
+        name="neighborhood"
+        placeholder="Playa / Miramar"
+      >
+
+    </div>
+
+    <div class="field">
+
+      <label for="address">
+        Dirección
+      </label>
+
+      <input
+        id="address"
+        name="address"
+        placeholder="Calle 10 entre 5ta y 7ma"
+        required
+      >
+
+    </div>
+
+    <div class="section-label">
+      Características
+    </div>
+
+    <div class="grid-3">
+
+      <div class="field">
+
+        <label for="bedrooms">
+          Habitaciones
+        </label>
+
+        <input
+          id="bedrooms"
+          name="bedrooms"
+          type="number"
+          min="0"
+          inputmode="numeric"
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label for="bathrooms">
+          Baños
+        </label>
+
+        <input
+          id="bathrooms"
+          name="bathrooms"
+          type="number"
+          min="0"
+          inputmode="numeric"
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label for="square_meters">
+          Metros cuadrados
+        </label>
+
+        <input
+          id="square_meters"
+          name="square_meters"
+          type="number"
+          min="0"
+          inputmode="decimal"
+        >
+
+      </div>
+
+    </div>
+
+    <div class="section-label">
+      Descripción
+    </div>
+
+    <div class="field">
+
+      <label for="description">
+        Descripción
+      </label>
+
+      <textarea
+        id="description"
+        name="description"
+        placeholder="Describe las características más importantes..."
+      ></textarea>
+
+    </div>
+
+    <div class="section-label">
+      Fotografías
+    </div>
+
+    <div class="field">
+
+      <label for="photos">
+        URLs de fotografías
+      </label>
+
+      <textarea
+        id="photos"
+        name="photos"
+        placeholder="Una URL por línea"
+      ></textarea>
+
+    </div>
+
+    <div class="section-label">
+      Información privada
+    </div>
+
+    <div class="field">
+
+      <label for="contact_name">
+        Nombre del propietario / contacto
+      </label>
+
+      <input
+        id="contact_name"
+        name="contact_name"
+      >
+
+    </div>
+
+    <div class="grid-2">
+
+      <div class="field">
+
+        <label for="contact_phone">
+          Teléfono
+        </label>
+
+        <input
+          id="contact_phone"
+          name="contact_phone"
+          type="tel"
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label for="contact_email">
+          Email
+        </label>
+
+        <input
+          id="contact_email"
+          name="contact_email"
+          type="email"
+        >
+
+      </div>
+
+    </div>
+
+    <div class="field">
+
+      <label for="notes">
+        Notas administrativas
+      </label>
+
+      <textarea
+        id="notes"
+        name="notes"
+        placeholder="Información interna que no será pública."
+      ></textarea>
+
+    </div>
+
+    <div class="form-actions">
+
+      <button
+        id="submitButton"
+        class="submit"
+        type="submit"
+      >
+        Publicar propiedad
+      </button>
+
+      <button
+        id="deleteButton"
+        class="danger hidden"
+        type="button"
+      >
+        Eliminar
+      </button>
+
+    </div>
+
+  </form>
+
+</section>
+
+<aside class="preview">
+
+<section class="card">
+
+  <h2 class="card-title">
+    Vista previa
+  </h2>
+
+  <div class="preview-box">
+
+    <img
+      id="previewImg"
+      alt=""
+    >
+
+    <span id="previewPlaceholder">
+      La fotografía principal aparecerá aquí.
+    </span>
+
+    <div
+      class="preview-overlay"
+      id="previewType"
+    >
+      NEXO
+    </div>
+
+  </div>
+
+  <div
+    class="preview-price"
+    id="previewPrice"
+  >
+    $0
+  </div>
+
+  <div
+    class="preview-location"
+    id="previewLocation"
+  >
+    Cuba
+  </div>
+
+  <div
+    class="stats"
+    id="previewStats"
+  ></div>
+
+</section>
+
+<section class="card properties">
+
+  <div class="card-header">
+
+    <h2 class="card-title">
+      Inventario
+    </h2>
+
+    <button
+      class="small-btn"
+      id="refreshButton"
+      type="button"
+    >
+      Actualizar
+    </button>
+
+  </div>
+
+  <div class="inventory-search">
+
+    <input
+      id="inventorySearch"
+      type="search"
+      placeholder="Buscar propiedad..."
+      autocomplete="off"
+    >
+
+  </div>
+
+  <div id="propertiesList">
+    <div class="empty">
+      Cargando...
+    </div>
+  </div>
+
+</section>
+
+</aside>
+
+</div>
 
 </main>
 
@@ -1259,47 +1403,135 @@ footer{
   NEXO · Administración
 </footer>
 
+<!-- LOGIN -->
+
+<div
+  class="auth"
+  id="authOverlay"
+>
+
+  <div class="auth-card">
+
+    <div class="auth-title">
+      NEXO
+    </div>
+
+    <div class="auth-copy">
+      Acceso privado de administración.
+    </div>
+
+    <form id="loginForm">
+
+      <input
+        id="loginPassword"
+        type="password"
+        autocomplete="current-password"
+        placeholder="Contraseña"
+        required
+      >
+
+      <button
+        type="submit"
+        id="loginButton"
+      >
+        Entrar
+      </button>
+
+    </form>
+
+    <div
+      class="auth-error"
+      id="loginError"
+    ></div>
+
+  </div>
+
+</div>
+
 <script>
 "use strict";
 
-const form =
-  document.getElementById("propertyForm");
+/* =========================================================
+   DOM
+========================================================= */
 
-const button =
-  document.getElementById("submitButton");
+const $ =
+  selector =>
+    document.querySelector(selector);
+
+const $$ =
+  selector =>
+    [...document.querySelectorAll(selector)];
+
+const form =
+  $("#propertyForm");
 
 const notice =
-  document.getElementById("notice");
+  $("#notice");
+
+const listEl =
+  $("#propertiesList");
+
+const searchInput =
+  $("#inventorySearch");
+
+const submitButton =
+  $("#submitButton");
+
+const deleteButton =
+  $("#deleteButton");
+
+const cancelEdit =
+  $("#cancelEdit");
+
+const formTitle =
+  $("#formTitle");
+
+const authOverlay =
+  $("#authOverlay");
+
+const loginForm =
+  $("#loginForm");
+
+const loginPassword =
+  $("#loginPassword");
+
+const loginButton =
+  $("#loginButton");
+
+const loginError =
+  $("#loginError");
 
 const previewImg =
-  document.getElementById("previewImg");
+  $("#previewImg");
 
 const previewPlaceholder =
-  document.getElementById("previewPlaceholder");
+  $("#previewPlaceholder");
 
 const previewPrice =
-  document.getElementById("previewPrice");
+  $("#previewPrice");
 
 const previewLocation =
-  document.getElementById("previewLocation");
+  $("#previewLocation");
 
 const previewStats =
-  document.getElementById("previewStats");
+  $("#previewStats");
 
 const previewType =
-  document.getElementById("previewType");
-
-const propertiesList =
-  document.getElementById("propertiesList");
-
-const inventorySearch =
-  document.getElementById("inventorySearch");
-
-let allProperties = [];
+  $("#previewType");
 
 
 /* =========================================================
-   UTILIDADES
+   STATE
+========================================================= */
+
+let allProperties = [];
+
+let editingId = null;
+
+
+/* =========================================================
+   HELPERS
 ========================================================= */
 
 function escapeHTML(value){
@@ -1316,22 +1548,14 @@ function escapeHTML(value){
 
 function money(value){
 
-  if(
-    value === null ||
-    value === undefined ||
-    value === ""
-  ){
-    return "$0";
-  }
-
   const number =
     Number(
-      String(value)
+      String(value ?? "")
         .replace(/[^\d.-]/g,"")
     );
 
   if(!Number.isFinite(number)){
-    return "$0";
+    return "Precio no disponible";
   }
 
   return "$" +
@@ -1345,36 +1569,80 @@ function money(value){
 }
 
 
-function getPhotos(){
+function parsePhotos(value){
 
-  const value =
-    document
-      .getElementById("photos")
-      .value
-      .trim();
+  if(Array.isArray(value)){
+
+    return value
+      .map(String)
+      .map(x => x.trim())
+      .filter(Boolean);
+
+  }
 
   if(!value){
     return [];
   }
 
-  return value
+  const text =
+    String(value).trim();
+
+  try{
+
+    const parsed =
+      JSON.parse(text);
+
+    if(Array.isArray(parsed)){
+
+      return parsed
+        .map(String)
+        .map(x => x.trim())
+        .filter(Boolean);
+
+    }
+
+  }catch(_){}
+
+  return text
     .split(/[\n,|]+/)
-    .map(item => item.trim())
+    .map(x => x.trim())
     .filter(Boolean);
+
+}
+
+
+function getPhotos(){
+
+  return parsePhotos(
+    $("#photos").value
+  );
+
+}
+
+
+function locationText(){
+
+  return [
+    $("#neighborhood").value.trim(),
+    $("#city").value.trim(),
+    $("#province").value.trim()
+  ]
+    .filter(Boolean)
+    .join(" · ") || "Cuba";
 
 }
 
 
 function showNotice(
   message,
-  type
+  type = "info"
 ){
 
   notice.textContent =
     message;
 
   notice.className =
-    "notice " + type;
+    `notice show ${type}`;
 
   window.scrollTo({
     top:0,
@@ -1384,17 +1652,233 @@ function showNotice(
 }
 
 
-function getLocationText(){
+function clearNotice(){
 
-  return [
-    document.getElementById("neighborhood").value.trim(),
-    document.getElementById("city").value.trim(),
-    document.getElementById("province").value.trim()
-  ]
-    .filter(Boolean)
-    .join(" · ") || "Cuba";
+  notice.className =
+    "notice";
+
+  notice.textContent =
+    "";
 
 }
+
+
+/* =========================================================
+   API
+========================================================= */
+
+async function api(
+  url,
+  options = {}
+){
+
+  const response =
+    await fetch(
+      url,
+      {
+        credentials:"include",
+
+        ...options,
+
+        headers:{
+          Accept:
+            "application/json",
+
+          ...(options.body
+            ? {
+                "Content-Type":
+                  "application/json"
+              }
+            : {}),
+
+          ...(options.headers || {})
+        }
+      }
+    );
+
+  let data = {};
+
+  try{
+
+    data =
+      await response.json();
+
+  }catch(_){}
+
+  if(!response.ok){
+
+    throw new Error(
+      data?.error ||
+      data?.message ||
+      `HTTP ${response.status}`
+    );
+
+  }
+
+  return data;
+
+}
+
+
+/* =========================================================
+   SESSION
+========================================================= */
+
+async function checkSession(){
+
+  try{
+
+    const data =
+      await api(
+        "/api/admin/session"
+      );
+
+    if(data.authenticated){
+
+      authOverlay
+        .classList
+        .add("hidden");
+
+      await loadProperties();
+
+    }else{
+
+      authOverlay
+        .classList
+        .remove("hidden");
+
+      loginPassword.focus();
+
+    }
+
+  }catch(error){
+
+    authOverlay
+      .classList
+      .remove("hidden");
+
+    loginError.textContent =
+      "No se pudo comprobar la sesión.";
+
+    loginError.classList.add(
+      "show"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+loginForm.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+    loginButton.disabled =
+      true;
+
+    loginButton.textContent =
+      "Entrando...";
+
+    loginError.classList.remove(
+      "show"
+    );
+
+    try{
+
+      const data =
+        await api(
+          "/api/admin/login",
+          {
+            method:"POST",
+
+            body:
+              JSON.stringify({
+                password:
+                  loginPassword.value
+              })
+          }
+        );
+
+      if(!data.authenticated){
+
+        throw new Error(
+          data.error ||
+          "No autorizado."
+        );
+
+      }
+
+      loginPassword.value =
+        "";
+
+      authOverlay
+        .classList
+        .add("hidden");
+
+      await loadProperties();
+
+    }catch(error){
+
+      loginError.textContent =
+        error.message ||
+        "Credenciales incorrectas.";
+
+      loginError.classList.add(
+        "show"
+      );
+
+    }finally{
+
+      loginButton.disabled =
+        false;
+
+      loginButton.textContent =
+        "Entrar";
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+$("#logoutButton")
+  .addEventListener(
+    "click",
+    async () => {
+
+      try{
+
+        await api(
+          "/api/admin/logout",
+          {
+            method:"POST"
+          }
+        );
+
+      }finally{
+
+        authOverlay
+          .classList
+          .remove("hidden");
+
+        resetForm();
+
+        loginPassword.focus();
+
+      }
+
+    }
+  );
 
 
 /* =========================================================
@@ -1403,48 +1887,48 @@ function getLocationText(){
 
 function updatePreview(){
 
-  const price =
-    document.getElementById("price").value;
-
-  const type =
-    document.getElementById("property_type").value;
-
-  const bedrooms =
-    document.getElementById("bedrooms").value;
-
-  const bathrooms =
-    document.getElementById("bathrooms").value;
-
-  const area =
-    document.getElementById("square_meters").value;
-
   previewPrice.textContent =
-    money(price);
+    money(
+      $("#price").value
+    );
 
   previewLocation.textContent =
-    getLocationText();
+    locationText();
 
   previewType.textContent =
-    type || "NEXO";
+    $("#property_type").value ||
+    "NEXO";
 
   const stats = [];
 
-  if(bedrooms){
+  if($("#bedrooms").value){
+
     stats.push(
-      `🛏 ${escapeHTML(bedrooms)} hab.`
+      `${escapeHTML(
+        $("#bedrooms").value
+      )} hab.`
     );
+
   }
 
-  if(bathrooms){
+  if($("#bathrooms").value){
+
     stats.push(
-      `🚿 ${escapeHTML(bathrooms)} baños`
+      `${escapeHTML(
+        $("#bathrooms").value
+      )} baños`
     );
+
   }
 
-  if(area){
+  if($("#square_meters").value){
+
     stats.push(
-      `${escapeHTML(area)} m²`
+      `${escapeHTML(
+        $("#square_meters").value
+      )} m²`
     );
+
   }
 
   previewStats.innerHTML =
@@ -1455,13 +1939,13 @@ function updatePreview(){
       )
       .join("");
 
-  const photos =
+  const images =
     getPhotos();
 
-  if(photos.length){
+  if(images[0]){
 
     previewImg.src =
-      photos[0];
+      images[0];
 
     previewImg.style.display =
       "block";
@@ -1471,14 +1955,18 @@ function updatePreview(){
 
   }else{
 
-    previewImg.src =
-      "";
+    previewImg.removeAttribute(
+      "src"
+    );
 
     previewImg.style.display =
       "none";
 
     previewPlaceholder.style.display =
       "block";
+
+    previewPlaceholder.textContent =
+      "La fotografía principal aparecerá aquí.";
 
   }
 
@@ -1521,10 +2009,20 @@ function buildPayload(){
   const data =
     new FormData(form);
 
+  const number =
+    key =>
+      data.get(key)
+        ? Number(
+            data.get(key)
+          )
+        : null;
+
   return {
 
     title:
-      String(data.get("title") || "").trim(),
+      String(
+        data.get("title") || ""
+      ).trim(),
 
     property_type:
       String(
@@ -1532,9 +2030,7 @@ function buildPayload(){
       ).trim(),
 
     price:
-      data.get("price")
-        ? Number(data.get("price"))
-        : null,
+      number("price"),
 
     status:
       String(
@@ -1563,19 +2059,13 @@ function buildPayload(){
       ).trim(),
 
     bedrooms:
-      data.get("bedrooms")
-        ? Number(data.get("bedrooms"))
-        : null,
+      number("bedrooms"),
 
     bathrooms:
-      data.get("bathrooms")
-        ? Number(data.get("bathrooms"))
-        : null,
+      number("bathrooms"),
 
     square_meters:
-      data.get("square_meters")
-        ? Number(data.get("square_meters"))
-        : null,
+      number("square_meters"),
 
     description:
       String(
@@ -1598,6 +2088,11 @@ function buildPayload(){
     contact_email:
       String(
         data.get("contact_email") || ""
+      ).trim(),
+
+    notes:
+      String(
+        data.get("notes") || ""
       ).trim()
 
   };
@@ -1606,7 +2101,56 @@ function buildPayload(){
 
 
 /* =========================================================
-   PUBLICAR
+   VALIDATION
+========================================================= */
+
+function validatePayload(
+  payload
+){
+
+  if(!payload.title){
+
+    return "Escribe el título de la propiedad.";
+
+  }
+
+  if(!payload.property_type){
+
+    return "Selecciona el tipo de propiedad.";
+
+  }
+
+  if(
+    payload.price === null ||
+    !Number.isFinite(
+      payload.price
+    ) ||
+    payload.price < 0
+  ){
+
+    return "Introduce un precio válido.";
+
+  }
+
+  if(!payload.city){
+
+    return "Introduce la ciudad.";
+
+  }
+
+  if(!payload.address){
+
+    return "Introduce la dirección.";
+
+  }
+
+  return null;
+
+}
+
+
+/* =========================================================
+   CREATE / UPDATE
 ========================================================= */
 
 form.addEventListener(
@@ -1615,172 +2159,99 @@ form.addEventListener(
 
     event.preventDefault();
 
+    clearNotice();
+
     const payload =
       buildPayload();
 
-    if(!payload.title){
+    const validation =
+      validatePayload(
+        payload
+      );
+
+    if(validation){
 
       showNotice(
-        "Escribe el título de la propiedad.",
+        validation,
         "error"
       );
 
       return;
+
     }
 
-    if(!payload.property_type){
-
-      showNotice(
-        "Selecciona el tipo de propiedad.",
-        "error"
-      );
-
-      return;
-    }
-
-    if(
-      payload.price === null ||
-      !Number.isFinite(payload.price) ||
-      payload.price < 0
-    ){
-
-      showNotice(
-        "Introduce un precio válido.",
-        "error"
-      );
-
-      return;
-    }
-
-    if(!payload.city){
-
-      showNotice(
-        "Introduce la ciudad.",
-        "error"
-      );
-
-      return;
-    }
-
-    if(!payload.address){
-
-      showNotice(
-        "Introduce la dirección.",
-        "error"
-      );
-
-      return;
-    }
-
-    button.disabled =
+    submitButton.disabled =
       true;
 
-    button.textContent =
-      "Publicando...";
+    submitButton.textContent =
+      editingId
+        ? "Guardando..."
+        : "Publicando...";
 
     try{
 
-      const response =
-        await fetch(
-          "/api/properties",
+      const data =
+        await api(
+          editingId
+            ? `/api/properties/${editingId}`
+            : "/api/properties",
+
           {
-            method:"POST",
-
-            headers:{
-              "Content-Type":
-                "application/json",
-
-              "Accept":
-                "application/json"
-            },
-
-            credentials:
-              "same-origin",
+            method:
+              editingId
+                ? "PUT"
+                : "POST",
 
             body:
-              JSON.stringify(payload)
+              JSON.stringify(
+                payload
+              )
           }
         );
 
-      const text =
-        await response.text();
+      const geocode =
+        data?.geocode;
 
-      let result;
-
-      try{
-
-        result =
-          JSON.parse(text);
-
-      }catch{
-
-        throw new Error(
-          text ||
-          "Respuesta inválida del servidor."
-        );
-
-      }
-
-      if(
-        !response.ok ||
-        result.success === false
-      ){
-
-        throw new Error(
-          result.detail
-            ? `${result.error || "Error"} — ${result.detail}`
-            : (
-              result.error ||
-              result.message ||
-              `HTTP ${response.status}`
-            )
-        );
-
-      }
-
-      if(result.geocoded){
+      if(geocode?.found){
 
         showNotice(
-          "✓ Propiedad publicada correctamente.\n\n" +
-          "NEXO encontró su ubicación automáticamente.",
+          editingId
+            ? "✓ Propiedad actualizada y ubicada correctamente."
+            : "✓ Propiedad publicada y ubicada automáticamente.",
           "success"
         );
 
       }else{
 
         showNotice(
-          "✓ Propiedad publicada.\n\n" +
-          "La propiedad quedó registrada, pero NEXO no encontró coordenadas para esta dirección.",
+          editingId
+            ? "✓ Propiedad actualizada. No se encontraron nuevas coordenadas."
+            : "✓ Propiedad publicada. No se encontraron coordenadas para esta dirección.",
           "warning"
         );
 
       }
 
-      form.reset();
-
-      updatePreview();
+      resetForm();
 
       await loadProperties();
 
     }catch(error){
 
-      console.error(
-        "NEXO ADMIN:",
-        error
-      );
-
       showNotice(
-        "No se pudo publicar la propiedad.\n\n" +
-        (error.message || "Error desconocido."),
+        `No se pudo guardar la propiedad.\n\n${
+          error.message ||
+          "Error desconocido."
+        }`,
         "error"
       );
 
     }finally{
 
-      button.disabled =
+      submitButton.disabled =
         false;
 
-      button.textContent =
+      submitButton.textContent =
         "Publicar propiedad";
 
     }
@@ -1790,55 +2261,247 @@ form.addEventListener(
 
 
 /* =========================================================
-   INVENTARIO
+   RESET
+========================================================= */
+
+function resetForm(){
+
+  editingId =
+    null;
+
+  form.reset();
+
+  $("#status").value =
+    "available";
+
+  formTitle.textContent =
+    "Nueva propiedad";
+
+  submitButton.textContent =
+    "Publicar propiedad";
+
+  deleteButton
+    .classList
+    .add("hidden");
+
+  cancelEdit
+    .classList
+    .add("hidden");
+
+  updatePreview();
+
+}
+
+
+cancelEdit.addEventListener(
+  "click",
+  resetForm
+);
+
+
+/* =========================================================
+   EDIT
+========================================================= */
+
+function editProperty(
+  property
+){
+
+  editingId =
+    property.id;
+
+  const values = {
+
+    title:
+      property.title,
+
+    property_type:
+      property.property_type,
+
+    status:
+      property.status ||
+      "available",
+
+    price:
+      property.price,
+
+    province:
+      property.province,
+
+    city:
+      property.city,
+
+    neighborhood:
+      property.neighborhood,
+
+    address:
+      property.address,
+
+    bedrooms:
+      property.bedrooms,
+
+    bathrooms:
+      property.bathrooms,
+
+    square_meters:
+      property.square_meters,
+
+    description:
+      property.description,
+
+    contact_name:
+      property.owner_name ||
+      "",
+
+    contact_phone:
+      property.owner_phone ||
+      "",
+
+    contact_email:
+      property.contact_email ||
+      "",
+
+    notes:
+      property.notes ||
+      ""
+
+  };
+
+  Object.entries(
+    values
+  ).forEach(
+    ([key,value]) => {
+
+      const element =
+        $(`#${key}`);
+
+      if(element){
+
+        element.value =
+          value ?? "";
+
+      }
+
+    }
+  );
+
+  $("#photos").value =
+    parsePhotos(
+      property.photos
+    ).join("\n");
+
+  formTitle.textContent =
+    "Editar propiedad";
+
+  submitButton.textContent =
+    "Guardar cambios";
+
+  deleteButton
+    .classList
+    .remove("hidden");
+
+  cancelEdit
+    .classList
+    .remove("hidden");
+
+  updatePreview();
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+/* =========================================================
+   DELETE
+========================================================= */
+
+deleteButton.addEventListener(
+  "click",
+  async () => {
+
+    if(!editingId){
+      return;
+    }
+
+    const confirmed =
+      confirm(
+        "¿Eliminar esta propiedad definitivamente?"
+      );
+
+    if(!confirmed){
+      return;
+    }
+
+    deleteButton.disabled =
+      true;
+
+    try{
+
+      await api(
+        `/api/properties/${editingId}`,
+        {
+          method:"DELETE"
+        }
+      );
+
+      showNotice(
+        "✓ Propiedad eliminada.",
+        "success"
+      );
+
+      resetForm();
+
+      await loadProperties();
+
+    }catch(error){
+
+      showNotice(
+        `No se pudo eliminar la propiedad.\n\n${
+          error.message ||
+          "Error desconocido."
+        }`,
+        "error"
+      );
+
+    }finally{
+
+      deleteButton.disabled =
+        false;
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   INVENTORY
 ========================================================= */
 
 async function loadProperties(){
 
-  propertiesList.innerHTML =
-    `
-      <div class="empty">
-        Actualizando inventario...
-      </div>
-    `;
+  listEl.innerHTML = `
+    <div class="empty">
+      Actualizando inventario...
+    </div>
+  `;
 
   try{
 
-    const response =
-      await fetch(
-        "/api/properties",
-        {
-          method:"GET",
-
-          headers:{
-            "Accept":
-              "application/json"
-          },
-
-          credentials:
-            "same-origin",
-
-          cache:"no-store"
-        }
-      );
-
-    if(!response.ok){
-
-      throw new Error(
-        `HTTP ${response.status}`
-      );
-
-    }
-
     const data =
-      await response.json();
+      await api(
+        "/api/properties?status=all&limit=200"
+      );
 
     allProperties =
-      Array.isArray(data?.properties)
+      Array.isArray(
+        data?.properties
+      )
         ? data.properties
-        : Array.isArray(data)
-          ? data
-          : [];
+        : [];
 
     updateDashboard();
 
@@ -1848,24 +2511,24 @@ async function loadProperties(){
 
   }catch(error){
 
-    console.error(
-      "NEXO INVENTORY:",
-      error
-    );
-
-    propertiesList.innerHTML =
-      `
-        <div class="empty">
-          No se pudieron cargar las propiedades.
-          <br><br>
-          ${escapeHTML(error.message)}
-        </div>
-      `;
+    listEl.innerHTML = `
+      <div class="empty">
+        No se pudo cargar el inventario.
+        <br><br>
+        ${escapeHTML(
+          error.message
+        )}
+      </div>
+    `;
 
   }
 
 }
 
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
 
 function updateDashboard(){
 
@@ -1876,8 +2539,7 @@ function updateDashboard(){
     allProperties.filter(
       property =>
         String(
-          property.status ||
-          "available"
+          property.status || ""
         ).toLowerCase() ===
         "available"
     ).length;
@@ -1886,48 +2548,38 @@ function updateDashboard(){
     allProperties.filter(
       property =>
         Number.isFinite(
-          Number(property.latitude)
+          Number(
+            property.latitude
+          )
         ) &&
         Number.isFinite(
-          Number(property.longitude)
+          Number(
+            property.longitude
+          )
         )
     ).length;
 
-  let favorites = 0;
-
-  try{
-
-    favorites =
-      JSON.parse(
-        localStorage.getItem(
-          "nexo_favorites"
-        ) || "[]"
-      ).length;
-
-  }catch{}
-
-  document.getElementById(
-    "metricTotal"
-  ).textContent =
+  $("#metricTotal").textContent =
     total;
 
-  document.getElementById(
-    "metricAvailable"
-  ).textContent =
+  $("#metricAvailable").textContent =
     available;
 
-  document.getElementById(
-    "metricLocated"
-  ).textContent =
+  $("#metricLocated").textContent =
     located;
 
-  document.getElementById(
-    "metricFavorites"
-  ).textContent =
-    favorites;
+  $("#metricUnlocated").textContent =
+    Math.max(
+      0,
+      total - located
+    );
 
 }
 
+
+/* =========================================================
+   RENDER INVENTORY
+========================================================= */
 
 function renderProperties(
   properties
@@ -1935,76 +2587,93 @@ function renderProperties(
 
   if(!properties.length){
 
-    propertiesList.innerHTML =
-      `
-        <div class="empty">
-          No hay propiedades publicadas.
-        </div>
-      `;
+    listEl.innerHTML = `
+      <div class="empty">
+        No hay propiedades que mostrar.
+      </div>
+    `;
 
     return;
 
   }
 
-  propertiesList.innerHTML =
+  listEl.innerHTML =
     properties
-      .slice(0,30)
+      .slice(0,200)
       .map(
-        property =>
-          propertyHTML(property)
+        propertyHTML
       )
       .join("");
 
+  $$(".property")
+    .forEach(
+      element => {
+
+        element.addEventListener(
+          "click",
+          () => {
+
+            const id =
+              element.dataset.id;
+
+            const property =
+              allProperties.find(
+                item =>
+                  String(
+                    item.id
+                  ) ===
+                  String(id)
+              );
+
+            if(property){
+
+              editProperty(
+                property
+              );
+
+            }
+
+          }
+        );
+
+      }
+    );
+
 }
 
+
+/* =========================================================
+   PROPERTY CARD
+========================================================= */
 
 function propertyHTML(
   property
 ){
 
-  let photo = "";
-
-  if(
-    Array.isArray(
+  const photo =
+    parsePhotos(
       property.photos
-    )
-  ){
+    )[0] || "";
 
-    photo =
-      property.photos[0] || "";
+  const status =
+    String(
+      property.status ||
+      "available"
+    ).toLowerCase();
 
-  }else{
+  const statusClass =
+    status === "sold"
+      ? "status-sold"
+      : status === "reserved"
+        ? "status-reserved"
+        : "status-available";
 
-    try{
-
-      const parsed =
-        JSON.parse(
-          property.photos ||
-          "[]"
-        );
-
-      if(Array.isArray(parsed)){
-        photo =
-          parsed[0] || "";
-      }
-
-    }catch{
-
-      photo =
-        String(
-          property.photos || ""
-        )
-          .split(/[\n,|]+/)[0]
-          ?.trim() || "";
-
-    }
-
-  }
-
-  const title =
-    property.title ||
-    property.property_type ||
-    "Propiedad";
+  const statusText =
+    status === "sold"
+      ? "Vendida"
+      : status === "reserved"
+        ? "Reservada"
+        : "Disponible";
 
   const location =
     [
@@ -2015,48 +2684,25 @@ function propertyHTML(
       .join(" · ") ||
     "Cuba";
 
-  const status =
-    String(
-      property.status ||
-      "available"
-    ).toLowerCase();
-
-  let statusText =
-    "Disponible";
-
-  let statusClass =
-    "status-available";
-
-  if(status === "reserved"){
-
-    statusText =
-      "Reservada";
-
-    statusClass =
-      "status-reserved";
-
-  }
-
-  if(status === "sold"){
-
-    statusText =
-      "Vendida";
-
-    statusClass =
-      "status-sold";
-
-  }
-
   const located =
     Number.isFinite(
-      Number(property.latitude)
+      Number(
+        property.latitude
+      )
     ) &&
     Number.isFinite(
-      Number(property.longitude)
+      Number(
+        property.longitude
+      )
     );
 
   return `
-    <div class="property">
+    <div
+      class="property"
+      data-id="${escapeHTML(
+        property.id
+      )}"
+    >
 
       <div class="property-image">
 
@@ -2064,7 +2710,9 @@ function propertyHTML(
           photo
             ? `
               <img
-                src="${escapeHTML(photo)}"
+                src="${escapeHTML(
+                  photo
+                )}"
                 alt=""
                 loading="lazy"
                 onerror="this.style.display='none'"
@@ -2078,19 +2726,31 @@ function propertyHTML(
       <div class="property-info">
 
         <div class="property-title">
-          ${escapeHTML(title)}
+          ${escapeHTML(
+            property.title ||
+            property.property_type ||
+            "Propiedad"
+          )}
         </div>
 
         <div class="property-location">
-          ${escapeHTML(location)}
+          ${escapeHTML(
+            location
+          )}
         </div>
 
         <div class="property-location">
-          ${located ? "📍 Ubicada" : "⚠️ Sin coordenadas"}
+          ${
+            located
+              ? "📍 Ubicada"
+              : "⚠️ Sin coordenadas"
+          }
         </div>
 
         <div class="property-price">
-          ${money(property.price)}
+          ${money(
+            property.price
+          )}
         </div>
 
       </div>
@@ -2108,15 +2768,15 @@ function propertyHTML(
 
 
 /* =========================================================
-   BUSCAR INVENTARIO
+   SEARCH INVENTORY
 ========================================================= */
 
-inventorySearch.addEventListener(
+searchInput.addEventListener(
   "input",
   () => {
 
     const query =
-      inventorySearch.value
+      searchInput.value
         .toLowerCase()
         .trim();
 
@@ -2127,6 +2787,7 @@ inventorySearch.addEventListener(
       );
 
       return;
+
     }
 
     const results =
@@ -2140,7 +2801,6 @@ inventorySearch.addEventListener(
               property.province,
               property.city,
               property.neighborhood,
-              property.address,
               property.description
             ]
               .filter(Boolean)
@@ -2163,37 +2823,13 @@ inventorySearch.addEventListener(
 
 
 /* =========================================================
-   ACTUALIZAR
+   REFRESH
 ========================================================= */
 
-document
-  .getElementById(
-    "refreshButton"
-  )
+$("#refreshButton")
   .addEventListener(
     "click",
-    async () => {
-
-      const btn =
-        document.getElementById(
-          "refreshButton"
-        );
-
-      btn.disabled =
-        true;
-
-      btn.textContent =
-        "Actualizando...";
-
-      await loadProperties();
-
-      btn.disabled =
-        false;
-
-      btn.textContent =
-        "Actualizar";
-
-    }
+    loadProperties
   );
 
 
@@ -2203,7 +2839,7 @@ document
 
 updatePreview();
 
-loadProperties();
+checkSession();
 
 </script>
 
