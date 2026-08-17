@@ -1,33 +1,35 @@
 /**
  * ============================================================
- * NEXO 2.0 — CLOUDFLARE WORKER
+ * NEXO 2.1 — CLOUDFLARE WORKER
  * ============================================================
  *
  * NEXO Inmueble
  *
- * API:
+ * Backend central:
+ *
+ * PUBLIC
  *   GET    /api/health
  *   GET    /api/properties
- *   POST   /api/properties
  *   GET    /api/properties/:id
+ *   POST   /api/search
+ *   POST   /api/ia
+ *
+ * ADMIN
+ *   POST   /api/admin/login
+ *   POST   /api/admin/logout
+ *   GET    /api/admin/session
+ *   POST   /api/properties
  *   PUT    /api/properties/:id
  *   PATCH  /api/properties/:id
  *   DELETE /api/properties/:id
  *   POST   /api/properties/:id/geocode
- *   POST   /api/search
- *   POST   /api/ia
  *
- * ADMIN:
- *   POST   /api/admin/login
- *   POST   /api/admin/logout
- *   GET    /api/admin/session
- *
- * Bindings:
+ * BINDINGS
  *   DB      -> D1 nexo-db
  *   AI      -> Workers AI
  *   ASSETS  -> ./public
  *
- * Secret:
+ * SECRET
  *   ADMIN_PASSWORD
  *
  * ============================================================
@@ -39,8 +41,8 @@ const AI_MODEL =
 const SESSION_COOKIE =
   "NEXO_ADMIN_SESSION";
 
-const AI_SESSION_HEADER =
-  "X-NEXO-SESSION";
+const SESSION_MAX_AGE =
+  60 * 60 * 24 * 7;
 
 const MAX_PROPERTIES =
   200;
@@ -51,22 +53,25 @@ const MAX_AI_PROPERTIES =
 const MAX_CONVERSATION =
   20;
 
+const MAX_MESSAGE_LENGTH =
+  1000;
+
+const NOMINATIM_URL =
+  "https://nominatim.openstreetmap.org/search";
+
 
 /* ============================================================
-   FETCH PRINCIPAL
-   ============================================================ */
+   FETCH
+============================================================ */
 
 export default {
+
   async fetch(request, env) {
 
     const url =
       new URL(request.url);
 
     try {
-
-      /*
-       * CORS / PREFLIGHT
-       */
 
       if (
         request.method === "OPTIONS"
@@ -77,17 +82,11 @@ export default {
           204,
           request
         );
+
       }
 
-
-      /*
-       * API
-       */
-
       if (
-        url.pathname.startsWith(
-          "/api/"
-        )
+        url.pathname.startsWith("/api/")
       ) {
 
         return handleAPI(
@@ -95,20 +94,16 @@ export default {
           env,
           url
         );
+
       }
-
-
-      /*
-       * ARCHIVOS PÚBLICOS
-       */
 
       if (env.ASSETS) {
 
         return env.ASSETS.fetch(
           request
         );
-      }
 
+      }
 
       return new Response(
         "NEXO",
@@ -137,14 +132,17 @@ export default {
         500,
         request
       );
+
     }
+
   }
+
 };
 
 
 /* ============================================================
    ROUTER
-   ============================================================ */
+============================================================ */
 
 async function handleAPI(
   request,
@@ -169,7 +167,7 @@ async function handleAPI(
       {
         ok: true,
         service: "NEXO",
-        version: "2.0",
+        version: "2.1",
         database:
           !!env.DB,
         ai:
@@ -180,6 +178,7 @@ async function handleAPI(
       200,
       request
     );
+
   }
 
 
@@ -196,6 +195,7 @@ async function handleAPI(
       request,
       env
     );
+
   }
 
 
@@ -211,6 +211,7 @@ async function handleAPI(
     return adminLogout(
       request
     );
+
   }
 
 
@@ -227,14 +228,12 @@ async function handleAPI(
       request,
       env
     );
+
   }
 
 
   /* ----------------------------------------------------------
-     GEOCODIFICACIÓN
-     
-     IMPORTANTE:
-     Esta ruta debe evaluarse ANTES de /properties/:id.
+     GEOCODE
   ---------------------------------------------------------- */
 
   const geoMatch =
@@ -266,6 +265,7 @@ async function handleAPI(
         400,
         request
       );
+
     }
 
     return geocodeProperty(
@@ -273,11 +273,12 @@ async function handleAPI(
       env,
       id
     );
+
   }
 
 
   /* ----------------------------------------------------------
-     PROPIEDADES — COLECCIÓN
+     PROPERTIES COLLECTION
   ---------------------------------------------------------- */
 
   if (
@@ -293,6 +294,7 @@ async function handleAPI(
         env,
         url
       );
+
     }
 
     if (
@@ -303,12 +305,14 @@ async function handleAPI(
         request,
         env
       );
+
     }
+
   }
 
 
   /* ----------------------------------------------------------
-     BÚSQUEDA
+     INTELLIGENT SEARCH
   ---------------------------------------------------------- */
 
   if (
@@ -320,6 +324,7 @@ async function handleAPI(
       request,
       env
     );
+
   }
 
 
@@ -336,23 +341,24 @@ async function handleAPI(
       request,
       env
     );
+
   }
 
 
   /* ----------------------------------------------------------
-     PROPIEDAD INDIVIDUAL
+     INDIVIDUAL PROPERTY
   ---------------------------------------------------------- */
 
-  const match =
+  const propertyMatch =
     path.match(
       /^\/api\/properties\/([^/]+)$/
     );
 
-  if (match) {
+  if (propertyMatch) {
 
     const id =
       Number(
-        match[1]
+        propertyMatch[1]
       );
 
     if (
@@ -369,6 +375,7 @@ async function handleAPI(
         400,
         request
       );
+
     }
 
 
@@ -381,6 +388,7 @@ async function handleAPI(
         env,
         id
       );
+
     }
 
 
@@ -394,6 +402,7 @@ async function handleAPI(
         env,
         id
       );
+
     }
 
 
@@ -406,13 +415,11 @@ async function handleAPI(
         env,
         id
       );
+
     }
+
   }
 
-
-  /* ----------------------------------------------------------
-     ENDPOINT NO ENCONTRADO
-  ---------------------------------------------------------- */
 
   return json(
     {
@@ -423,12 +430,13 @@ async function handleAPI(
     404,
     request
   );
+
 }
 
 
 /* ============================================================
    GET PROPERTIES
-   ============================================================ */
+============================================================ */
 
 async function getProperties(
   request,
@@ -447,17 +455,16 @@ async function getProperties(
       500,
       request
     );
+
   }
 
 
   const params =
     url.searchParams;
 
-
   const status =
     params.get("status") ||
     "available";
-
 
   const limit =
     clamp(
@@ -468,13 +475,24 @@ async function getProperties(
       MAX_PROPERTIES
     );
 
-
   const offset =
     Math.max(
       0,
       Number(
         params.get("offset") || 0
       )
+    );
+
+
+  /*
+   * Solo mostramos información privada
+   * cuando existe una sesión administrativa.
+   */
+
+  const admin =
+    await requireAdmin(
+      request,
+      env
     );
 
 
@@ -495,6 +513,10 @@ async function getProperties(
       price,
       description,
       photos,
+      owner_name,
+      owner_phone,
+      contact_email,
+      notes,
       status,
       created_at
     FROM properties
@@ -516,12 +538,12 @@ async function getProperties(
     bindings.push(
       status
     );
+
   }
 
 
   sql += `
-    ORDER BY
-      created_at DESC
+    ORDER BY created_at DESC
     LIMIT ?
     OFFSET ?
   `;
@@ -543,13 +565,18 @@ async function getProperties(
   const properties =
     (result.results || [])
       .map(
-        normalizeProperty
+        property =>
+          normalizeProperty(
+            property,
+            admin
+          )
       );
 
 
   return json(
     {
       ok: true,
+      success: true,
       properties,
       count:
         properties.length,
@@ -559,12 +586,13 @@ async function getProperties(
     200,
     request
   );
+
 }
 
 
 /* ============================================================
    GET PROPERTY
-   ============================================================ */
+============================================================ */
 
 async function getProperty(
   request,
@@ -616,31 +644,36 @@ async function getProperty(
       404,
       request
     );
+
   }
 
 
-  /*
-   * normalizeProperty elimina
-   * automáticamente los datos privados.
-   */
+  const admin =
+    await requireAdmin(
+      request,
+      env
+    );
+
 
   return json(
     {
       ok: true,
       property:
         normalizeProperty(
-          result
+          result,
+          admin
         )
     },
     200,
     request
   );
+
 }
 
 
 /* ============================================================
    CREATE PROPERTY
-   ============================================================ */
+============================================================ */
 
 async function createProperty(
   request,
@@ -663,6 +696,7 @@ async function createProperty(
       401,
       request
     );
+
   }
 
 
@@ -683,6 +717,7 @@ async function createProperty(
       400,
       request
     );
+
   }
 
 
@@ -692,36 +727,24 @@ async function createProperty(
     );
 
 
-  if (
-    !data.property_type
-  ) {
+  const validation =
+    validateProperty(
+      data
+    );
+
+
+  if (validation) {
 
     return json(
       {
         ok: false,
         error:
-          "El tipo de propiedad es obligatorio."
+          validation
       },
       400,
       request
     );
-  }
 
-
-  if (
-    data.price === null ||
-    data.price < 0
-  ) {
-
-    return json(
-      {
-        ok: false,
-        error:
-          "El precio es obligatorio y debe ser válido."
-      },
-      400,
-      request
-    );
   }
 
 
@@ -783,14 +806,10 @@ async function createProperty(
 
 
   const id =
-    result.meta?.last_row_id;
+    Number(
+      result.meta?.last_row_id
+    );
 
-
-  /*
-   * Intentamos geocodificar automáticamente.
-   *
-   * Si falla, la propiedad igualmente queda creada.
-   */
 
   let geocode =
     null;
@@ -806,7 +825,7 @@ async function createProperty(
       geocode =
         await geocodePropertyInternal(
           env,
-          Number(id)
+          id
         );
 
     } catch (error) {
@@ -815,25 +834,29 @@ async function createProperty(
         "NEXO automatic geocode:",
         error
       );
+
     }
+
   }
 
 
   return json(
     {
       ok: true,
+      success: true,
       id,
       geocode
     },
     201,
     request
   );
+
 }
 
 
 /* ============================================================
    UPDATE PROPERTY
-   ============================================================ */
+============================================================ */
 
 async function updateProperty(
   request,
@@ -857,6 +880,34 @@ async function updateProperty(
       401,
       request
     );
+
+  }
+
+
+  const exists =
+    await env.DB
+      .prepare(`
+        SELECT id
+        FROM properties
+        WHERE id = ?
+        LIMIT 1
+      `)
+      .bind(id)
+      .first();
+
+
+  if (!exists) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "Propiedad no encontrada."
+      },
+      404,
+      request
+    );
+
   }
 
 
@@ -877,6 +928,7 @@ async function updateProperty(
       400,
       request
     );
+
   }
 
 
@@ -886,118 +938,82 @@ async function updateProperty(
     );
 
 
-  if (
-    !data.property_type
-  ) {
+  const validation =
+    validateProperty(
+      data
+    );
+
+
+  if (validation) {
 
     return json(
       {
         ok: false,
         error:
-          "El tipo de propiedad es obligatorio."
+          validation
       },
       400,
       request
     );
+
   }
 
 
-  if (
-    data.price === null ||
-    data.price < 0
-  ) {
+  await env.DB
+    .prepare(`
+      UPDATE properties
+      SET
+        property_type = ?,
+        title = ?,
+        province = ?,
+        city = ?,
+        neighborhood = ?,
+        address = ?,
+        latitude = ?,
+        longitude = ?,
+        bedrooms = ?,
+        bathrooms = ?,
+        square_meters = ?,
+        price = ?,
+        description = ?,
+        photos = ?,
+        owner_name = ?,
+        owner_phone = ?,
+        contact_email = ?,
+        notes = ?,
+        status = ?
+      WHERE id = ?
+    `)
+    .bind(
+      data.property_type,
+      data.title,
+      data.province,
+      data.city,
+      data.neighborhood,
+      data.address,
+      data.latitude,
+      data.longitude,
+      data.bedrooms,
+      data.bathrooms,
+      data.square_meters,
+      data.price,
+      data.description,
+      data.photos,
+      data.owner_name,
+      data.owner_phone,
+      data.contact_email,
+      data.notes,
+      data.status,
+      id
+    )
+    .run();
 
-    return json(
-      {
-        ok: false,
-        error:
-          "El precio es obligatorio y debe ser válido."
-      },
-      400,
-      request
-    );
-  }
-
-
-  const result =
-    await env.DB
-      .prepare(`
-        UPDATE properties
-        SET
-          property_type = ?,
-          title = ?,
-          province = ?,
-          city = ?,
-          neighborhood = ?,
-          address = ?,
-          latitude = ?,
-          longitude = ?,
-          bedrooms = ?,
-          bathrooms = ?,
-          square_meters = ?,
-          price = ?,
-          description = ?,
-          photos = ?,
-          owner_name = ?,
-          owner_phone = ?,
-          contact_email = ?,
-          notes = ?,
-          status = ?
-        WHERE id = ?
-      `)
-      .bind(
-        data.property_type,
-        data.title,
-        data.province,
-        data.city,
-        data.neighborhood,
-        data.address,
-        data.latitude,
-        data.longitude,
-        data.bedrooms,
-        data.bathrooms,
-        data.square_meters,
-        data.price,
-        data.description,
-        data.photos,
-        data.owner_name,
-        data.owner_phone,
-        data.contact_email,
-        data.notes,
-        data.status,
-        id
-      )
-      .run();
-
-
-  if (
-    !result.success
-  ) {
-
-    return json(
-      {
-        ok: false,
-        error:
-          "No se pudo actualizar la propiedad."
-      },
-      500,
-      request
-    );
-  }
-
-
-  /*
-   * Si la dirección cambió o no existen
-   * coordenadas, intentamos geocodificar.
-   */
 
   let geocode =
     null;
 
 
-  if (
-    data.address
-  ) {
+  if (data.address) {
 
     try {
 
@@ -1013,25 +1029,29 @@ async function updateProperty(
         "NEXO update geocode:",
         error
       );
+
     }
+
   }
 
 
   return json(
     {
       ok: true,
+      success: true,
       id,
       geocode
     },
     200,
     request
   );
+
 }
 
 
 /* ============================================================
    DELETE PROPERTY
-   ============================================================ */
+============================================================ */
 
 async function deleteProperty(
   request,
@@ -1055,6 +1075,7 @@ async function deleteProperty(
       401,
       request
     );
+
   }
 
 
@@ -1069,7 +1090,8 @@ async function deleteProperty(
 
 
   if (
-    result.meta?.changes === 0
+    !result.meta ||
+    result.meta.changes === 0
   ) {
 
     return json(
@@ -1081,23 +1103,431 @@ async function deleteProperty(
       404,
       request
     );
+
   }
 
 
   return json(
     {
       ok: true,
-      id
+      success: true,
+      deleted: id
     },
     200,
     request
   );
+
 }
 
 
 /* ============================================================
-   SEARCH
-   ============================================================ */
+   PROPERTY INPUT
+============================================================ */
+
+function propertyInput(
+  body
+) {
+
+  return {
+
+    property_type:
+      cleanString(
+        body.property_type
+      ),
+
+    title:
+      cleanString(
+        body.title
+      ),
+
+    province:
+      cleanString(
+        body.province
+      ),
+
+    city:
+      cleanString(
+        body.city
+      ),
+
+    neighborhood:
+      cleanString(
+        body.neighborhood
+      ),
+
+    address:
+      cleanString(
+        body.address
+      ),
+
+    latitude:
+      nullableNumber(
+        body.latitude
+      ),
+
+    longitude:
+      nullableNumber(
+        body.longitude
+      ),
+
+    bedrooms:
+      nullableNumber(
+        body.bedrooms
+      ),
+
+    bathrooms:
+      nullableNumber(
+        body.bathrooms
+      ),
+
+    square_meters:
+      nullableNumber(
+        body.square_meters
+      ),
+
+    price:
+      nullableNumber(
+        body.price
+      ),
+
+    description:
+      cleanString(
+        body.description
+      ),
+
+    photos:
+      serializePhotos(
+        body.photos
+      ),
+
+    owner_name:
+      cleanString(
+        body.owner_name ||
+        body.contact_name
+      ),
+
+    owner_phone:
+      cleanString(
+        body.owner_phone ||
+        body.contact_phone
+      ),
+
+    contact_email:
+      cleanString(
+        body.contact_email
+      ),
+
+    notes:
+      cleanString(
+        body.notes
+      ),
+
+    status:
+      normalizeStatus(
+        body.status
+      )
+
+  };
+
+}
+
+
+/* ============================================================
+   VALIDATION
+============================================================ */
+
+function validateProperty(
+  data
+) {
+
+  if (
+    !data.property_type
+  ) {
+
+    return (
+      "El tipo de propiedad es obligatorio."
+    );
+
+  }
+
+
+  if (
+    !data.title
+  ) {
+
+    return (
+      "El título de la propiedad es obligatorio."
+    );
+
+  }
+
+
+  if (
+    !data.city
+  ) {
+
+    return (
+      "La ciudad es obligatoria."
+    );
+
+  }
+
+
+  if (
+    !data.address
+  ) {
+
+    return (
+      "La dirección es obligatoria."
+    );
+
+  }
+
+
+  if (
+    data.price === null ||
+    !Number.isFinite(
+      data.price
+    ) ||
+    data.price < 0
+  ) {
+
+    return (
+      "El precio es obligatorio y debe ser válido."
+    );
+
+  }
+
+
+  return null;
+
+}
+
+
+/* ============================================================
+   STATUS
+============================================================ */
+
+function normalizeStatus(
+  value
+) {
+
+  const status =
+    cleanString(
+      value
+    ).toLowerCase();
+
+
+  if (
+    status === "reserved"
+  ) {
+
+    return "reserved";
+
+  }
+
+
+  if (
+    status === "sold"
+  ) {
+
+    return "sold";
+
+  }
+
+
+  return "available";
+
+}
+
+
+/* ============================================================
+   NORMALIZE PROPERTY
+============================================================ */
+
+function normalizeProperty(
+  property,
+  includePrivate = false
+) {
+
+  const base = {
+
+    id:
+      property.id,
+
+    property_type:
+      property.property_type || "",
+
+    title:
+      property.title || "",
+
+    province:
+      property.province || "",
+
+    city:
+      property.city || "",
+
+    neighborhood:
+      property.neighborhood || "",
+
+    latitude:
+      nullableNumber(
+        property.latitude
+      ),
+
+    longitude:
+      nullableNumber(
+        property.longitude
+      ),
+
+    bedrooms:
+      nullableNumber(
+        property.bedrooms
+      ),
+
+    bathrooms:
+      nullableNumber(
+        property.bathrooms
+      ),
+
+    square_meters:
+      nullableNumber(
+        property.square_meters
+      ),
+
+    price:
+      nullableNumber(
+        property.price
+      ),
+
+    description:
+      property.description || "",
+
+    photos:
+      property.photos || "[]",
+
+    status:
+      property.status ||
+      "available",
+
+    created_at:
+      property.created_at || null
+
+  };
+
+
+  /*
+   * Datos administrativos.
+   * Nunca salen a usuarios públicos.
+   */
+
+  if (includePrivate) {
+
+    base.address =
+      property.address || "";
+
+    base.owner_name =
+      property.owner_name || "";
+
+    base.owner_phone =
+      property.owner_phone || "";
+
+    base.contact_email =
+      property.contact_email || "";
+
+    base.notes =
+      property.notes || "";
+
+  }
+
+
+  return base;
+
+}
+
+
+/* ============================================================
+   PHOTOS
+============================================================ */
+
+function serializePhotos(
+  value
+) {
+
+  if (
+    Array.isArray(value)
+  ) {
+
+    return JSON.stringify(
+      value
+        .map(
+          item =>
+            String(
+              item ?? ""
+            ).trim()
+        )
+        .filter(Boolean)
+        .slice(0, 30)
+    );
+
+  }
+
+
+  if (!value) {
+
+    return "[]";
+
+  }
+
+
+  const text =
+    String(value).trim();
+
+
+  try {
+
+    const parsed =
+      JSON.parse(text);
+
+
+    if (
+      Array.isArray(parsed)
+    ) {
+
+      return JSON.stringify(
+        parsed
+          .map(
+            item =>
+              String(
+                item ?? ""
+              ).trim()
+          )
+          .filter(Boolean)
+          .slice(0, 30)
+      );
+
+    }
+
+  } catch (_) {}
+
+
+  return JSON.stringify(
+    text
+      .split(/[\n,|]+/)
+      .map(
+        item =>
+          item.trim()
+      )
+      .filter(Boolean)
+      .slice(0, 30)
+  );
+
+}
+
+
+/* ============================================================
+   INTELLIGENT SEARCH
+============================================================ */
 
 async function intelligentSearch(
   request,
@@ -1110,85 +1540,252 @@ async function intelligentSearch(
     );
 
 
+  if (!body) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "JSON inválido."
+      },
+      400,
+      request
+    );
+
+  }
+
+
   const query =
-    String(
-      body?.query ||
-      body?.message ||
-      ""
-    ).trim();
+    cleanString(
+      body.query ||
+      body.message
+    );
 
 
   if (!query) {
 
     return json(
       {
-        ok: true,
-        query: "",
-        criteria: {},
-        properties: [],
-        count: 0
+        ok: false,
+        error:
+          "Introduce una búsqueda."
       },
-      200,
+      400,
       request
     );
+
   }
 
 
-  const criteria =
-    extractSearchCriteria(
+  const properties =
+    await fetchSearchProperties(
+      env
+    );
+
+
+  const normalizedQuery =
+    normalizeText(
       query
     );
 
 
-  const search =
-    buildPropertySearch(
-      criteria,
-      query,
-      50
+  const numbers =
+    normalizedQuery.match(
+      /\d+(?:[.,]\d+)?/g
+    ) || [];
+
+
+  const budget =
+    detectBudget(
+      normalizedQuery
     );
 
 
-  const result =
-    await env.DB
-      .prepare(
-        search.sql
-      )
-      .bind(
-        ...search.bindings
-      )
-      .all();
+  const bedrooms =
+    detectBedrooms(
+      normalizedQuery
+    );
 
 
-  const properties =
-    (result.results || [])
-      .map(
-        normalizeProperty
+  const type =
+    detectPropertyType(
+      normalizedQuery
+    );
+
+
+  const city =
+    detectCity(
+      normalizedQuery
+    );
+
+
+  let results =
+    properties.filter(
+      property => {
+
+        const text =
+          normalizeText(
+            [
+              property.title,
+              property.property_type,
+              property.province,
+              property.city,
+              property.neighborhood,
+              property.description
+            ]
+              .filter(Boolean)
+              .join(" ")
+          );
+
+
+        if (
+          type &&
+          normalizeText(
+            property.property_type
+          ) !== type
+        ) {
+
+          return false;
+
+        }
+
+
+        if (
+          city &&
+          !text.includes(city)
+        ) {
+
+          return false;
+
+        }
+
+
+        if (
+          bedrooms !== null &&
+          Number(
+            property.bedrooms
+          ) < bedrooms
+        ) {
+
+          return false;
+
+        }
+
+
+        if (
+          budget !== null &&
+          Number(
+            property.price
+          ) > budget
+        ) {
+
+          return false;
+
+        }
+
+
+        return true;
+
+      }
+    );
+
+
+  /*
+   * Si los filtros no producen resultados,
+   * hacemos búsqueda textual.
+   */
+
+  if (
+    !results.length
+  ) {
+
+    results =
+      properties.filter(
+        property => {
+
+          const text =
+            normalizeText(
+              [
+                property.title,
+                property.property_type,
+                property.province,
+                property.city,
+                property.neighborhood,
+                property.description
+              ]
+                .filter(Boolean)
+                .join(" ")
+            );
+
+          return text.includes(
+            normalizedQuery
+          );
+
+        }
       );
+
+  }
+
+
+  results =
+    results.slice(
+      0,
+      MAX_AI_PROPERTIES
+    );
 
 
   return json(
     {
       ok: true,
+      success: true,
       query,
-      criteria,
-      properties,
+      filters: {
+        budget,
+        bedrooms,
+        property_type: type,
+        city
+      },
       count:
-        properties.length
+        results.length,
+      properties:
+        results.map(
+          property =>
+            normalizeProperty(
+              property,
+              false
+            )
+        )
     },
     200,
     request
   );
+
 }
 
 
 /* ============================================================
    NEXO IA
-   ============================================================ */
+============================================================ */
 
 async function nexAI(
   request,
   env
 ) {
+
+  if (!env.AI) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "Workers AI no está configurado."
+      },
+      503,
+      request
+    );
+
+  }
+
 
   const body =
     await readJSON(
@@ -1196,12 +1793,25 @@ async function nexAI(
     );
 
 
+  if (!body) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "JSON inválido."
+      },
+      400,
+      request
+    );
+
+  }
+
+
   const message =
-    String(
-      body?.message ||
-      body?.query ||
-      ""
-    ).trim();
+    cleanString(
+      body.message
+    );
 
 
   if (!message) {
@@ -1210,69 +1820,83 @@ async function nexAI(
       {
         ok: false,
         error:
-          "Escribe una pregunta."
+          "Escribe un mensaje."
       },
       400,
       request
     );
+
   }
 
 
-  let conversation =
+  if (
+    message.length >
+    MAX_MESSAGE_LENGTH
+  ) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "El mensaje es demasiado largo."
+      },
+      400,
+      request
+    );
+
+  }
+
+
+  const conversation =
     Array.isArray(
-      body?.conversation
+      body.conversation
     )
       ? body.conversation
+          .filter(
+            item =>
+              item &&
+              (
+                item.role === "user" ||
+                item.role === "assistant"
+              ) &&
+              typeof item.content ===
+                "string"
+          )
+          .slice(
+            -MAX_CONVERSATION
+          )
+          .map(
+            item => ({
+              role:
+                item.role,
+              content:
+                String(
+                  item.content
+                ).slice(
+                  0,
+                  4000
+                )
+            })
+          )
       : [];
 
 
-  conversation =
-    conversation
-      .filter(
-        item =>
-          item &&
-          (
-            item.role === "user" ||
-            item.role === "assistant"
-          ) &&
-          typeof item.content ===
-            "string"
-      )
-      .slice(
-        -MAX_CONVERSATION
-      );
-
-
-  const criteria =
-    extractSearchCriteria(
-      message
-    );
-
-
-  const search =
-    buildPropertySearch(
-      criteria,
-      message,
-      MAX_AI_PROPERTIES
-    );
-
-
-  const result =
-    await env.DB
-      .prepare(
-        search.sql
-      )
-      .bind(
-        ...search.bindings
-      )
-      .all();
-
+  /*
+   * Buscamos propiedades relevantes antes
+   * de llamar al modelo.
+   */
 
   const properties =
-    (result.results || [])
-      .map(
-        normalizeProperty
-      )
+    await fetchSearchProperties(
+      env
+    );
+
+
+  const relevant =
+    rankProperties(
+      message,
+      properties
+    )
       .slice(
         0,
         MAX_AI_PROPERTIES
@@ -1280,121 +1904,99 @@ async function nexAI(
 
 
   const propertyContext =
-    properties.length
-      ? properties
-          .map(
-            (p, index) =>
-              [
-                `${index + 1}.`,
-                `Título: ${
-                  p.title ||
-                  p.property_type
-                }`,
-                `Precio: ${
-                  formatMoney(
-                    p.price
-                  )
-                }`,
-                `Tipo: ${
-                  p.property_type
-                }`,
-                `Provincia: ${
-                  p.province ||
-                  "N/D"
-                }`,
-                `Ciudad: ${
-                  p.city ||
-                  "N/D"
-                }`,
-                `Zona: ${
-                  p.neighborhood ||
-                  "N/D"
-                }`,
-                `Habitaciones: ${
-                  p.bedrooms ??
-                  "N/D"
-                }`,
-                `Baños: ${
-                  p.bathrooms ??
-                  "N/D"
-                }`,
-                `m²: ${
-                  p.square_meters ??
-                  "N/D"
-                }`,
-                `Descripción: ${
-                  truncate(
-                    p.description,
-                    350
-                  )
-                }`
-              ].join(" | ")
+    relevant
+      .map(
+        property =>
+          JSON.stringify({
+            id:
+              property.id,
+            title:
+              property.title,
+            type:
+              property.property_type,
+            province:
+              property.province,
+            city:
+              property.city,
+            neighborhood:
+              property.neighborhood,
+            bedrooms:
+              property.bedrooms,
+            bathrooms:
+              property.bathrooms,
+            square_meters:
+              property.square_meters,
+            price:
+              property.price,
+            description:
+              property.description,
+            status:
+              property.status
+          })
+      )
+      .join("\n");
+
+
+  const context =
+    body.context &&
+    typeof body.context ===
+      "object"
+      ? JSON.stringify(
+          sanitizeContext(
+            body.context
           )
-          .join("\n")
-      : "No se encontraron propiedades que coincidan con la búsqueda.";
+        )
+      : "{}";
 
 
-  const system =
-`
+  const systemPrompt = `
 Eres NEXO IA, el asistente inmobiliario
-oficial de NEXO Inmueble para Cuba.
+oficial de NEXO Inmueble.
 
-Tu objetivo es ayudar al usuario a:
-- encontrar propiedades;
-- comparar propiedades;
-- entender características;
-- navegar la oferta inmobiliaria.
+Tu función es ayudar a encontrar propiedades
+reales dentro del inventario disponible de NEXO.
 
-REGLAS:
+REGLAS OBLIGATORIAS:
 
 1. Nunca inventes propiedades.
-
-2. Nunca inventes precios,
-   habitaciones, baños, metros,
-   ubicaciones o características.
-
-3. Solo utiliza datos presentes
-   en el contexto de propiedades.
-
-4. Nunca reveles:
-   - owner_name
-   - owner_phone
-   - contact_email
-   - notes
-   - dirección exacta privada
-
-5. Si no existen resultados,
+2. Nunca inventes precios.
+3. Nunca inventes características.
+4. Utiliza exclusivamente los datos entregados
+   en PROPERTY DATA.
+5. Si no existe una propiedad adecuada,
    dilo claramente.
+6. No reveles dirección exacta, teléfono,
+   propietario, email ni notas administrativas.
+7. No inventes coordenadas.
+8. Si el usuario pide recomendaciones,
+   explica brevemente por qué las propiedades
+   encontradas pueden encajar.
+9. Responde en español salvo que el usuario
+   utilice claramente otro idioma.
+10. Sé conciso y natural.
+11. NEXO es una plataforma inmobiliaria de Cuba.
+12. Si una propiedad aparece como disponible,
+   puedes indicarla como disponible.
+13. Si está reservada o vendida, indícalo.
+14. Cuando sea útil, menciona ID de propiedad.
+15. No afirmes que una propiedad existe si no
+   aparece en PROPERTY DATA.
 
-6. Si el usuario pregunta algo general,
-   responde de forma natural.
+CLIENT CONTEXT:
+${context}
 
-7. Puedes comparar propiedades,
-   pero solamente utilizando
-   los datos disponibles.
-
-8. No afirmes que una propiedad
-   está disponible si no aparece
-   como disponible.
-
-9. Sé breve, elegante,
-   claro y útil.
-
-10. NEXO debe sentirse premium,
-    moderno y humano.
-
-PROPIEDADES ENCONTRADAS:
-
-${propertyContext}
+PROPERTY DATA:
+${propertyContext || "No hay propiedades relevantes."}
 `;
 
 
   const messages = [
+
     {
       role:
         "system",
       content:
-        system
+        systemPrompt
     },
 
     ...conversation,
@@ -1405,838 +2007,627 @@ ${propertyContext}
       content:
         message
     }
+
   ];
 
 
-  let answer =
-    "";
+  let result;
 
 
-  if (env.AI) {
+  try {
 
-    try {
+    result =
+      await env.AI.run(
+        AI_MODEL,
+        {
+          messages,
 
-      const aiResult =
-        await env.AI.run(
-          AI_MODEL,
-          {
-            messages,
-            max_tokens:
-              700,
-            temperature:
-              0.25
-          }
-        );
+          max_tokens:
+            700,
 
-
-      answer =
-        aiResult?.response ||
-        aiResult?.result?.response ||
-        "";
-
-    } catch (error) {
-
-      console.error(
-        "NEXO AI ERROR:",
-        error
+          temperature:
+            0.2
+        }
       );
-    }
+
+  } catch (error) {
+
+    console.error(
+      "NEXO AI ERROR:",
+      error
+    );
+
+    return json(
+      {
+        ok: false,
+        error:
+          "NEXO IA no pudo procesar la solicitud."
+      },
+      502,
+      request
+    );
+
   }
+
+
+  const answer =
+    extractAIAnswer(
+      result
+    );
 
 
   if (!answer) {
 
-    if (
-      properties.length === 1
-    ) {
+    return json(
+      {
+        ok: false,
+        error:
+          "NEXO IA no devolvió una respuesta válida."
+      },
+      502,
+      request
+    );
 
-      const p =
-        properties[0];
-
-      answer =
-        `Encontré una propiedad que puede encajar con tu búsqueda: ${
-          p.title ||
-          p.property_type
-        }, por ${
-          formatMoney(
-            p.price
-          )
-        }.`;
-
-    } else if (
-      properties.length > 1
-    ) {
-
-      answer =
-        `Encontré ${
-          properties.length
-        } propiedades que pueden encajar con tu búsqueda.`;
-
-    } else {
-
-      answer =
-        "No encontré propiedades que coincidan con esa búsqueda.";
-    }
   }
 
 
   return json(
     {
       ok: true,
+      success: true,
       answer,
-      response:
-        answer,
-      properties,
-      criteria,
-      session:
-        request.headers.get(
-          AI_SESSION_HEADER
-        ) || null
+      properties:
+        relevant.map(
+          property =>
+            normalizeProperty(
+              property,
+              false
+            )
+        )
     },
     200,
     request
   );
+
 }
 
 
 /* ============================================================
-   SEARCH CRITERIA
-   ============================================================ */
+   FETCH SEARCH PROPERTIES
+============================================================ */
 
-function extractSearchCriteria(
+async function fetchSearchProperties(
+  env
+) {
+
+  if (!env.DB) {
+
+    return [];
+
+  }
+
+
+  try {
+
+    const result =
+      await env.DB
+        .prepare(`
+          SELECT
+            id,
+            property_type,
+            title,
+            province,
+            city,
+            neighborhood,
+            latitude,
+            longitude,
+            bedrooms,
+            bathrooms,
+            square_meters,
+            price,
+            description,
+            photos,
+            status,
+            created_at
+          FROM properties
+          WHERE status != 'sold'
+          ORDER BY created_at DESC
+          LIMIT ?
+        `)
+        .bind(
+          MAX_PROPERTIES
+        )
+        .all();
+
+
+    return result.results || [];
+
+  } catch (error) {
+
+    console.error(
+      "NEXO property search:",
+      error
+    );
+
+    return [];
+
+  }
+
+}
+
+
+/* ============================================================
+   PROPERTY RANKING
+============================================================ */
+
+function rankProperties(
+  query,
+  properties
+) {
+
+  const text =
+    normalizeText(
+      query
+    );
+
+
+  const budget =
+    detectBudget(
+      text
+    );
+
+  const bedrooms =
+    detectBedrooms(
+      text
+    );
+
+  const type =
+    detectPropertyType(
+      text
+    );
+
+  const city =
+    detectCity(
+      text
+    );
+
+
+  return properties
+    .map(
+      property => {
+
+        let score = 0;
+
+        const propertyText =
+          normalizeText(
+            [
+              property.title,
+              property.property_type,
+              property.province,
+              property.city,
+              property.neighborhood,
+              property.description
+            ]
+              .filter(Boolean)
+              .join(" ")
+          );
+
+
+        if (
+          type &&
+          normalizeText(
+            property.property_type
+          ) === type
+        ) {
+
+          score += 30;
+
+        }
+
+
+        if (
+          city &&
+          propertyText.includes(city)
+        ) {
+
+          score += 25;
+
+        }
+
+
+        if (
+          bedrooms !== null &&
+          Number(
+            property.bedrooms
+          ) >= bedrooms
+        ) {
+
+          score += 20;
+
+        }
+
+
+        if (
+          budget !== null &&
+          Number(
+            property.price
+          ) <= budget
+        ) {
+
+          score += 20;
+
+        }
+
+
+        const terms =
+          text
+            .split(/\s+/)
+            .filter(
+              term =>
+                term.length >= 3
+            );
+
+
+        for (
+          const term of terms
+        ) {
+
+          if (
+            propertyText.includes(
+              term
+            )
+          ) {
+
+            score += 2;
+
+          }
+
+        }
+
+
+        return {
+          property,
+          score
+        };
+
+      }
+    )
+    .sort(
+      (a,b) =>
+        b.score - a.score
+    )
+    .map(
+      item =>
+        item.property
+    );
+
+}
+
+
+/* ============================================================
+   DETECTORS
+============================================================ */
+
+function detectPropertyType(
   text
 ) {
 
-  const q =
-    normalize(text);
+  const value =
+    normalizeText(
+      text
+    );
 
-
-  const criteria = {
-
-    property_type:
-      null,
-
-    province:
-      null,
-
-    city:
-      null,
-
-    neighborhood:
-      null,
-
-    bedrooms_min:
-      null,
-
-    bedrooms_max:
-      null,
-
-    bathrooms_min:
-      null,
-
-    price_max:
-      null,
-
-    price_min:
-      null,
-
-    area_min:
-      null,
-
-    area_max:
-      null
-  };
-
-
-  /* ----------------------------------------------------------
-     PROPERTY TYPE
-  ---------------------------------------------------------- */
 
   if (
-    /\b(casa|casas|vivienda|villa|chalet)\b/
-      .test(q)
+    value.includes("apartamento")
   ) {
 
-    criteria.property_type =
-      "casa";
+    return "apartamento";
 
-  } else if (
-    /\b(apartamento|apartamentos|piso)\b/
-      .test(q)
-  ) {
-
-    criteria.property_type =
-      "apartamento";
-
-  } else if (
-    /\b(local|locales|comercial)\b/
-      .test(q)
-  ) {
-
-    criteria.property_type =
-      "local";
-
-  } else if (
-    /\b(terreno|terrenos|solar)\b/
-      .test(q)
-  ) {
-
-    criteria.property_type =
-      "terreno";
-
-  } else if (
-    /\b(oficina|oficinas)\b/
-      .test(q)
-  ) {
-
-    criteria.property_type =
-      "oficina";
   }
 
 
-  /* ----------------------------------------------------------
-     PROVINCES
-  ---------------------------------------------------------- */
-
-  const provinces = [
-    "la habana",
-    "artemisa",
-    "mayabeque",
-    "pinar del rio",
-    "pinar del río",
-    "matanzas",
-    "villa clara",
-    "cienfuegos",
-    "sancti spiritus",
-    "sancti spíritus",
-    "ciego de avila",
-    "ciego de ávila",
-    "camaguey",
-    "camagüey",
-    "las tunas",
-    "holguin",
-    "holguín",
-    "granma",
-    "santiago de cuba",
-    "guantanamo",
-    "guantánamo",
-    "isla de la juventud"
-  ];
-
-
-  for (
-    const province of provinces
+  if (
+    value.includes("casa")
   ) {
 
-    if (
-      q.includes(
-        normalize(province)
-      )
-    ) {
+    return "casa";
 
-      criteria.province =
-        normalize(
-          province
-        );
-
-      break;
-    }
   }
 
 
-  /* ----------------------------------------------------------
-     NEIGHBORHOODS / ZONES
-  ---------------------------------------------------------- */
-
-  const neighborhoods = [
-    "playa",
-    "vedado",
-    "miramar",
-    "siboney",
-    "kohly",
-    "la coronela",
-    "habana vieja",
-    "la habana vieja",
-    "centro habana",
-    "plaza",
-    "cerro",
-    "10 de octubre",
-    "boyeros",
-    "la lisa",
-    "marianao",
-    "guanabacoa",
-    "regla",
-    "arroyo naranjo",
-    "cotorro",
-    "habana del este"
-  ];
-
-
-  for (
-    const zone of neighborhoods
+  if (
+    value.includes("villa") ||
+    value.includes("vila")
   ) {
 
-    if (
-      q.includes(
-        normalize(zone)
-      )
-    ) {
+    return "villa";
 
-      criteria.neighborhood =
-        normalize(zone);
-
-
-      if (
-        !criteria.province
-      ) {
-
-        criteria.province =
-          "la habana";
-      }
-
-      break;
-    }
   }
 
 
-  /* ----------------------------------------------------------
-     BEDROOMS
-  ---------------------------------------------------------- */
+  if (
+    value.includes("terreno")
+  ) {
 
-  let match =
-    q.match(
-      /(\d+)\s*(?:habitaciones|habitacion|dormitorios|dormitorio|cuartos|cuarto)/
+    return "terreno";
+
+  }
+
+
+  if (
+    value.includes("local")
+  ) {
+
+    return "local";
+
+  }
+
+
+  if (
+    value.includes("oficina")
+  ) {
+
+    return "oficina";
+
+  }
+
+
+  return null;
+
+}
+
+
+function detectBedrooms(
+  text
+) {
+
+  const match =
+    String(text)
+      .match(
+        /(\d+)\s*(?:habitaciones?|cuartos?|dormitorios?)/i
+      );
+
+
+  if (!match) {
+
+    return null;
+
+  }
+
+
+  const value =
+    Number(
+      match[1]
+    );
+
+
+  return Number.isFinite(value)
+    ? value
+    : null;
+
+}
+
+
+function detectBudget(
+  text
+) {
+
+  const value =
+    String(text)
+      .replace(
+        /\./g,
+        ""
+      );
+
+
+  const match =
+    value.match(
+      /(?:menos de|hasta|maximo|max|máximo|presupuesto|por debajo de)\s*\$?\s*([\d,]+)/i
     );
 
 
   if (!match) {
 
-    match =
-      q.match(
-        /(\d+)\s*(?:hab|habs)\b/
-      );
+    return null;
+
   }
 
 
-  if (match) {
-
-    criteria.bedrooms_min =
-      Number(
-        match[1]
-      );
-  }
-
-
-  /* ----------------------------------------------------------
-     BATHROOMS
-  ---------------------------------------------------------- */
-
-  match =
-    q.match(
-      /(\d+)\s*(?:baños|banos|baño|bano)/
+  const number =
+    Number(
+      match[1]
+        .replace(
+          /,/g,
+          ""
+        )
     );
 
 
-  if (match) {
+  return Number.isFinite(number)
+    ? number
+    : null;
 
-    criteria.bathrooms_min =
-      Number(
-        match[1]
-      );
-  }
-
-
-  /* ----------------------------------------------------------
-     PRICE MAX
-  ---------------------------------------------------------- */
-
-  match =
-    q.match(
-      /(?:menos de|hasta|maximo|max|por debajo de|menos de)\s*\$?\s*([\d.,]+)\s*(k|mil|m)?/
-    );
-
-
-  if (match) {
-
-    criteria.price_max =
-      parsePrice(
-        match[1],
-        match[2]
-      );
-
-  } else {
-
-    match =
-      q.match(
-        /\$?\s*([\d.,]+)\s*(k|mil|m)?\s*(?:o menos|como maximo|maximo)/
-      );
-
-
-    if (match) {
-
-      criteria.price_max =
-        parsePrice(
-          match[1],
-          match[2]
-        );
-    }
-  }
-
-
-  /* ----------------------------------------------------------
-     PRICE MIN
-  ---------------------------------------------------------- */
-
-  match =
-    q.match(
-      /(?:mas de|más de|desde|minimo|mínimo)\s*\$?\s*([\d.,]+)\s*(k|mil|m)?/
-    );
-
-
-  if (match) {
-
-    criteria.price_min =
-      parsePrice(
-        match[1],
-        match[2]
-      );
-  }
-
-
-  /* ----------------------------------------------------------
-     AREA
-  ---------------------------------------------------------- */
-
-  match =
-    q.match(
-      /(\d+(?:[.,]\d+)?)\s*(?:m2|m²|metros cuadrados)/
-    );
-
-
-  if (match) {
-
-    criteria.area_min =
-      Number(
-        match[1]
-          .replace(
-            ",",
-            "."
-          )
-      );
-  }
-
-
-  return criteria;
 }
 
 
-/* ============================================================
-   BUILD PROPERTY SEARCH
-   ============================================================ */
-
-function buildPropertySearch(
-  criteria,
-  originalQuery = "",
-  limit = MAX_AI_PROPERTIES
+function detectCity(
+  text
 ) {
 
-  let sql = `
-    SELECT
-      id,
-      property_type,
-      title,
-      province,
-      city,
-      neighborhood,
-      address,
-      latitude,
-      longitude,
-      bedrooms,
-      bathrooms,
-      square_meters,
-      price,
-      description,
-      photos,
-      status,
-      created_at
-    FROM properties
-    WHERE status = 'available'
-  `;
+  const cities = [
+
+    "la habana",
+    "habana",
+    "santiago de cuba",
+    "varadero",
+    "matanzas",
+    "camaguey",
+    "cienfuegos",
+    "holguin",
+    "trinidad",
+    "pinar del rio",
+    "pinar del río",
+    "villa clara",
+    "sancti spiritus",
+    "las tunas",
+    "granma",
+    "guantanamo",
+    "guantánamo",
+    "ciego de avila",
+    "cuba"
+
+  ];
 
 
-  const bindings = [];
-
-
-  /* ----------------------------------------------------------
-     TYPE
-  ---------------------------------------------------------- */
-
-  if (
-    criteria.property_type
-  ) {
-
-    sql += `
-      AND LOWER(
-        COALESCE(property_type,'')
-      ) LIKE ?
-    `;
-
-    bindings.push(
-      `%${
-        criteria.property_type
-      }%`
-    );
-  }
-
-
-  /* ----------------------------------------------------------
-     PROVINCE
-  ---------------------------------------------------------- */
-
-  if (
-    criteria.province
-  ) {
-
-    sql += `
-      AND LOWER(
-        COALESCE(province,'')
-      ) LIKE ?
-    `;
-
-    bindings.push(
-      `%${
-        criteria.province
-      }%`
-    );
-  }
-
-
-  /* ----------------------------------------------------------
-     CITY
-  ---------------------------------------------------------- */
-
-  if (
-    criteria.city
-  ) {
-
-    sql += `
-      AND LOWER(
-        COALESCE(city,'')
-      ) LIKE ?
-    `;
-
-    bindings.push(
-      `%${
-        criteria.city
-      }%`
-    );
-  }
-
-
-  /* ----------------------------------------------------------
-     NEIGHBORHOOD
-  ---------------------------------------------------------- */
-
-  if (
-    criteria.neighborhood
-  ) {
-
-    sql += `
-      AND LOWER(
-        COALESCE(neighborhood,'')
-      ) LIKE ?
-    `;
-
-    bindings.push(
-      `%${
-        criteria.neighborhood
-      }%`
-    );
-  }
-
-
-  /* ----------------------------------------------------------
-     BEDROOMS
-  ---------------------------------------------------------- */
-
-  if (
-    Number.isFinite(
-      criteria.bedrooms_min
-    )
-  ) {
-
-    sql += `
-      AND COALESCE(
-        bedrooms,
-        0
-      ) >= ?
-    `;
-
-    bindings.push(
-      criteria.bedrooms_min
-    );
-  }
-
-
-  /* ----------------------------------------------------------
-     BATHROOMS
-  ---------------------------------------------------------- */
-
-  if (
-    Number.isFinite(
-      criteria.bathrooms_min
-    )
-  ) {
-
-    sql += `
-      AND COALESCE(
-        bathrooms,
-        0
-      ) >= ?
-    `;
-
-    bindings.push(
-      criteria.bathrooms_min
-    );
-  }
-
-
-  /* ----------------------------------------------------------
-     PRICE MAX
-  ---------------------------------------------------------- */
-
-  if (
-    Number.isFinite(
-      criteria.price_max
-    )
-  ) {
-
-    sql += `
-      AND CAST(
-        price AS REAL
-      ) <= ?
-    `;
-
-    bindings.push(
-      criteria.price_max
-    );
-  }
-
-
-  /* ----------------------------------------------------------
-     PRICE MIN
-  ---------------------------------------------------------- */
-
-  if (
-    Number.isFinite(
-      criteria.price_min
-    )
-  ) {
-
-    sql += `
-      AND CAST(
-        price AS REAL
-      ) >= ?
-    `;
-
-    bindings.push(
-      criteria.price_min
-    );
-  }
-
-
-  /* ----------------------------------------------------------
-     AREA MIN
-  ---------------------------------------------------------- */
-
-  if (
-    Number.isFinite(
-      criteria.area_min
-    )
-  ) {
-
-    sql += `
-      AND COALESCE(
-        square_meters,
-        0
-      ) >= ?
-    `;
-
-    bindings.push(
-      criteria.area_min
-    );
-  }
-
-
-  /* ----------------------------------------------------------
-     TEXTO LIBRE
-     
-     Solo lo usamos cuando no hay criterios
-     estructurados suficientes.
-  ---------------------------------------------------------- */
-
-  const normalizedQuery =
-    normalize(
-      originalQuery
+  const normalized =
+    normalizeText(
+      text
     );
 
 
-  const hasStructuredCriteria =
-    !!(
-      criteria.property_type ||
-      criteria.province ||
-      criteria.city ||
-      criteria.neighborhood ||
-      Number.isFinite(
-        criteria.bedrooms_min
-      ) ||
-      Number.isFinite(
-        criteria.bathrooms_min
-      ) ||
-      Number.isFinite(
-        criteria.price_max
-      ) ||
-      Number.isFinite(
-        criteria.price_min
-      ) ||
-      Number.isFinite(
-        criteria.area_min
-      )
-    );
-
-
-  /*
-   * Para consultas como:
-   *
-   * "miramar casa"
-   *
-   * los criterios anteriores ya son suficientes.
-   *
-   * Para consultas puramente textuales:
-   *
-   * "casa con piscina"
-   *
-   * buscamos también en título y descripción.
-   */
-
-  if (
-    normalizedQuery &&
-    !hasStructuredCriteria
-  ) {
-
-    const words =
-      normalizedQuery
-        .split(/\s+/)
-        .filter(
-          word =>
-            word.length >= 3
-        )
-        .slice(
-          0,
-          5
-        );
-
-
-    if (words.length) {
-
-      const textConditions =
-        words.map(
-          () => `
-            (
-              LOWER(
-                COALESCE(title,'')
-              ) LIKE ?
-              OR LOWER(
-                COALESCE(description,'')
-              ) LIKE ?
-              OR LOWER(
-                COALESCE(property_type,'')
-              ) LIKE ?
-              OR LOWER(
-                COALESCE(city,'')
-              ) LIKE ?
-              OR LOWER(
-                COALESCE(neighborhood,'')
-              ) LIKE ?
+  return (
+    cities
+      .map(
+        city => ({
+          original:city,
+          normalized:
+            normalizeText(
+              city
             )
-          `
-        );
-
-
-      sql += `
-        AND (
-          ${textConditions.join(
-            " OR "
-          )}
-        )
-      `;
-
-
-      for (
-        const word of words
-      ) {
-
-        const pattern =
-          `%${word}%`;
-
-        bindings.push(
-          pattern,
-          pattern,
-          pattern,
-          pattern,
-          pattern
-        );
-      }
-    }
-  }
-
-
-  /* ----------------------------------------------------------
-     ORDER
-  ---------------------------------------------------------- */
-
-  if (
-    Number.isFinite(
-      criteria.price_max
-    )
-  ) {
-
-    sql += `
-      ORDER BY
-        CAST(price AS REAL) ASC,
-        created_at DESC
-      LIMIT ?
-    `;
-
-  } else {
-
-    sql += `
-      ORDER BY
-        created_at DESC
-      LIMIT ?
-    `;
-  }
-
-
-  bindings.push(
-    clamp(
-      Number(limit),
-      1,
-      MAX_PROPERTIES
-    )
+        })
+      )
+      .sort(
+        (a,b) =>
+          b.normalized.length -
+          a.normalized.length
+      )
+      .find(
+        city =>
+          normalized.includes(
+            city.normalized
+          )
+      )
+      ?.normalized ||
+    null
   );
 
-
-  return {
-    sql,
-    bindings
-  };
 }
 
 
 /* ============================================================
-   GEOCODE — PUBLIC ADMIN ENDPOINT
-   ============================================================ */
+   AI ANSWER
+============================================================ */
+
+function extractAIAnswer(
+  result
+) {
+
+  if (
+    typeof result === "string"
+  ) {
+
+    return result.trim();
+
+  }
+
+
+  if (
+    result &&
+    typeof result.response ===
+      "string"
+  ) {
+
+    return result.response.trim();
+
+  }
+
+
+  if (
+    result &&
+    typeof result.output ===
+      "string"
+  ) {
+
+    return result.output.trim();
+
+  }
+
+
+  if (
+    result &&
+    Array.isArray(
+      result.result
+    )
+  ) {
+
+    return result.result
+      .map(
+        item =>
+          typeof item === "string"
+            ? item
+            : item?.text || ""
+      )
+      .join(" ")
+      .trim();
+
+  }
+
+
+  return "";
+
+}
+
+
+/* ============================================================
+   CONTEXT SANITIZATION
+============================================================ */
+
+function sanitizeContext(
+  context
+) {
+
+  return {
+
+    city:
+      cleanString(
+        context.city
+      ).slice(
+        0,
+        80
+      ) || null,
+
+    property_type:
+      cleanString(
+        context.property_type
+      ).slice(
+        0,
+        50
+      ) || null,
+
+    bedrooms:
+      safeInteger(
+        context.bedrooms
+      ),
+
+    budget:
+      safeNumber(
+        context.budget
+      ),
+
+    questions:
+      safeInteger(
+        context.questions
+      )
+
+  };
+
+}
+
+
+/* ============================================================
+   GEOCODING
+============================================================ */
 
 async function geocodeProperty(
   request,
@@ -2260,6 +2651,7 @@ async function geocodeProperty(
       401,
       request
     );
+
   }
 
 
@@ -2272,25 +2664,12 @@ async function geocodeProperty(
       );
 
 
-    if (
-      !result?.found
-    ) {
-
-      return json(
-        {
-          ok: false,
-          found: false,
-          error:
-            "No encontramos coordenadas para esta dirección."
-        },
-        404,
-        request
-      );
-    }
-
-
     return json(
-      result,
+      {
+        ok: true,
+        success: true,
+        geocode: result
+      },
       200,
       request
     );
@@ -2298,7 +2677,7 @@ async function geocodeProperty(
   } catch (error) {
 
     console.error(
-      "NEXO GEOCODE:",
+      "NEXO geocode:",
       error
     );
 
@@ -2307,36 +2686,45 @@ async function geocodeProperty(
       {
         ok: false,
         error:
-          error?.message ||
-          "No se pudo geocodificar la propiedad."
+          error.message ||
+          "No se pudo ubicar la propiedad."
       },
-      502,
+      500,
       request
     );
+
   }
+
 }
 
 
 /* ============================================================
-   GEOCODE — INTERNAL
-   ============================================================ */
+   GEOCODE INTERNAL
+============================================================ */
 
 async function geocodePropertyInternal(
   env,
   id
 ) {
 
+  if (!env.DB) {
+
+    throw new Error(
+      "Base de datos no configurada."
+    );
+
+  }
+
+
   const property =
     await env.DB
       .prepare(`
         SELECT
           id,
-          province,
-          city,
-          neighborhood,
           address,
-          latitude,
-          longitude
+          neighborhood,
+          city,
+          province
         FROM properties
         WHERE id = ?
         LIMIT 1
@@ -2350,56 +2738,91 @@ async function geocodePropertyInternal(
     throw new Error(
       "Propiedad no encontrada."
     );
+
   }
 
 
-  const address =
-    [
-      property.address,
-      property.neighborhood,
-      property.city,
-      property.province,
-      "Cuba"
-    ]
-      .filter(
-        Boolean
-      )
-      .join(", ");
+  const parts = [
+
+    property.address,
+
+    property.neighborhood,
+
+    property.city,
+
+    property.province,
+
+    "Cuba"
+
+  ]
+    .filter(Boolean);
 
 
-  if (!address) {
+  if (!parts.length) {
 
-    throw new Error(
-      "La propiedad no tiene una ubicación suficiente."
-    );
+    return {
+      found:false,
+      reason:
+        "No hay dirección suficiente."
+    };
+
   }
 
 
-  const encoded =
-    encodeURIComponent(
-      address
+  const query =
+    parts.join(
+      ", "
     );
+
+
+  const endpoint =
+    new URL(
+      NOMINATIM_URL
+    );
+
+
+  endpoint.searchParams.set(
+    "format",
+    "jsonv2"
+  );
+
+  endpoint.searchParams.set(
+    "limit",
+    "1"
+  );
+
+  endpoint.searchParams.set(
+    "countrycodes",
+    "cu"
+  );
+
+  endpoint.searchParams.set(
+    "q",
+    query
+  );
 
 
   const response =
     await fetch(
-      `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=cu&q=${encoded}`,
+      endpoint.toString(),
       {
-        headers: {
+        method:"GET",
+        headers:{
+          "Accept":
+            "application/json",
           "User-Agent":
-            "NEXO-Inmueble/2.0"
+            "NEXO-Inmueble/2.1"
         }
       }
     );
 
 
-  if (
-    !response.ok
-  ) {
+  if (!response.ok) {
 
     throw new Error(
-      "El servicio de geocodificación no respondió correctamente."
+      `Servicio de geocodificación HTTP ${response.status}.`
     );
+
   }
 
 
@@ -2413,64 +2836,38 @@ async function geocodePropertyInternal(
   ) {
 
     return {
-      ok: true,
-      found: false
+      found:false,
+      query
     };
+
   }
+
+
+  const first =
+    results[0];
 
 
   const latitude =
     Number(
-      results[0].lat
+      first.lat
     );
-
 
   const longitude =
     Number(
-      results[0].lon
+      first.lon
     );
 
 
   if (
-    !Number.isFinite(
-      latitude
-    ) ||
-    !Number.isFinite(
-      longitude
-    )
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude)
   ) {
 
     return {
-      ok: true,
-      found: false
+      found:false,
+      query
     };
-  }
 
-
-  /*
-   * Protección adicional:
-   * NEXO solo acepta coordenadas
-   * razonables para Cuba.
-   */
-
-  if (
-    latitude < 19 ||
-    latitude > 24.5 ||
-    longitude < -86 ||
-    longitude > -73
-  ) {
-
-    console.warn(
-      "NEXO rejected out-of-Cuba coordinates:",
-      latitude,
-      longitude
-    );
-
-
-    return {
-      ok: true,
-      found: false
-    };
   }
 
 
@@ -2491,26 +2888,47 @@ async function geocodePropertyInternal(
 
 
   return {
-    ok: true,
-    found: true,
+
+    found:true,
+
     latitude,
+
     longitude,
+
     display_name:
-      results[0]
-        .display_name ||
-      address
+      first.display_name ||
+      "",
+
+    query
+
   };
+
 }
 
 
 /* ============================================================
    ADMIN LOGIN
-   ============================================================ */
+============================================================ */
 
 async function adminLogin(
   request,
   env
 ) {
+
+  if (!env.ADMIN_PASSWORD) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "ADMIN_PASSWORD no está configurado."
+      },
+      500,
+      request
+    );
+
+  }
+
 
   const body =
     await readJSON(
@@ -2519,124 +2937,77 @@ async function adminLogin(
 
 
   const password =
-    String(
-      body?.password ||
-      ""
-    );
+    typeof body?.password ===
+      "string"
+      ? body.password
+      : "";
 
 
-  const expected =
-    String(
-      env.ADMIN_PASSWORD ||
-      ""
-    );
-
-
-  if (
-    !expected ||
-    !password ||
-    password !== expected
-  ) {
+  if (!password) {
 
     return json(
       {
         ok: false,
-        authenticated:
-          false,
         error:
-          "Credenciales incorrectas."
+          "Contraseña requerida."
+      },
+      400,
+      request
+    );
+
+  }
+
+
+  const valid =
+    await constantTimeEqual(
+      password,
+      env.ADMIN_PASSWORD
+    );
+
+
+  if (!valid) {
+
+    return json(
+      {
+        ok: false,
+        authenticated:false,
+        error:
+          "Contraseña incorrecta."
       },
       401,
       request
     );
+
   }
 
 
-  const session =
-    crypto.randomUUID();
-
-
-  const signedToken =
-    await createSignedSession(
-      session,
-      env
+  const token =
+    await createSessionToken(
+      env.ADMIN_PASSWORD
     );
 
 
-  const response =
-    json(
-      {
-        ok: true,
-        authenticated:
-          true
-      },
-      200,
-      request
-    );
-
-
-  /*
-   * Añadimos cookie de sesión
-   * a la respuesta existente.
-   */
-
-  response.headers.set(
-    "Set-Cookie",
-    [
-      `${SESSION_COOKIE}=${signedToken}`,
-      "HttpOnly",
-      "Secure",
-      "SameSite=Lax",
-      "Path=/",
-      "Max-Age=86400"
-    ].join("; ")
+  return json(
+    {
+      ok: true,
+      authenticated:true
+    },
+    200,
+    request,
+    {
+      "Set-Cookie":
+        buildSessionCookie(
+          token
+        )
+    }
   );
 
-
-  return response;
-}
-
-
-/* ============================================================
-   ADMIN LOGOUT
-   ============================================================ */
-
-async function adminLogout(
-  request
-) {
-
-  const response =
-    json(
-      {
-        ok: true,
-        authenticated:
-          false
-      },
-      200,
-      request
-    );
-
-
-  response.headers.set(
-    "Set-Cookie",
-    [
-      `${SESSION_COOKIE}=`,
-      "HttpOnly",
-      "Secure",
-      "SameSite=Lax",
-      "Path=/",
-      "Max-Age=0"
-    ].join("; ")
-  );
-
-
-  return response;
 }
 
 
 /* ============================================================
    ADMIN SESSION
-   ============================================================ */
+============================================================ */
 
 async function adminSession(
   request,
@@ -2644,7 +3015,7 @@ async function adminSession(
 ) {
 
   const authenticated =
-    await hasAdminSession(
+    await requireAdmin(
       request,
       env
     );
@@ -2652,32 +3023,45 @@ async function adminSession(
 
   return json(
     {
-      ok: true,
+      ok:true,
       authenticated
     },
     200,
     request
   );
+
 }
 
 
 /* ============================================================
-   REQUIRE ADMIN
-   ============================================================ */
+   ADMIN LOGOUT
+============================================================ */
 
-async function requireAdmin(
-  request,
-  env
+async function adminLogout(
+  request
 ) {
 
-  return hasAdminSession(
+  return json(
+    {
+      ok:true,
+      authenticated:false
+    },
+    200,
     request,
-    env
+    {
+      "Set-Cookie":
+        `${SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`
+    }
   );
+
 }
 
 
-async function hasAdminSession(
+/* ============================================================
+   ADMIN AUTH
+============================================================ */
+
+async function requireAdmin(
   request,
   env
 ) {
@@ -2687,82 +3071,77 @@ async function hasAdminSession(
   ) {
 
     return false;
+
   }
 
 
-  const cookie =
-    request.headers.get(
-      "Cookie"
-    ) || "";
-
-
-  const match =
-    cookie.match(
-      new RegExp(
-        `${SESSION_COOKIE}=([^;]+)`
+  const cookies =
+    parseCookies(
+      request.headers.get(
+        "Cookie"
       )
     );
 
 
-  if (!match) {
+  const token =
+    cookies[
+      SESSION_COOKIE
+    ];
+
+
+  if (!token) {
 
     return false;
+
   }
 
 
-  const token =
-    match[1];
-
-
-  return verifySignedSession(
+  return verifySessionToken(
     token,
-    env
+    env.ADMIN_PASSWORD
   );
+
 }
 
 
 /* ============================================================
-   SIGNED SESSION
-   ============================================================ */
+   SESSION TOKEN
+============================================================ */
 
-async function createSignedSession(
-  session,
-  env
+async function createSessionToken(
+  secret
 ) {
 
-  const secret =
-    String(
-      env.ADMIN_PASSWORD ||
-      ""
-    );
+  const timestamp =
+    Date.now().toString();
 
 
   const signature =
     await hmac(
-      session,
+      timestamp,
       secret
     );
 
 
   return (
-    base64UrlEncode(
-      session
-    ) +
+    timestamp +
     "." +
     signature
   );
+
 }
 
 
-async function verifySignedSession(
+async function verifySessionToken(
   token,
-  env
+  secret
 ) {
 
   try {
 
     const parts =
-      token.split(".");
+      String(token)
+        .split(".");
 
 
     if (
@@ -2770,36 +3149,44 @@ async function verifySignedSession(
     ) {
 
       return false;
+
     }
 
 
-    const session =
-      base64UrlDecode(
+    const timestamp =
+      Number(
         parts[0]
       );
 
 
-    if (!session) {
+    if (
+      !Number.isFinite(timestamp)
+    ) {
 
       return false;
+
+    }
+
+
+    if (
+      Date.now() -
+        timestamp >
+      SESSION_MAX_AGE * 1000
+    ) {
+
+      return false;
+
     }
 
 
     const expected =
       await hmac(
-        session,
-        String(
-          env.ADMIN_PASSWORD ||
-          ""
-        )
+        String(timestamp),
+        secret
       );
 
 
-    /*
-     * Comparación constante.
-     */
-
-    return safeEqual(
+    return constantTimeStringEqual(
       parts[1],
       expected
     );
@@ -2807,23 +3194,25 @@ async function verifySignedSession(
   } catch (_) {
 
     return false;
+
   }
+
 }
 
-
-/* ============================================================
-   HMAC
-   ============================================================ */
 
 async function hmac(
   value,
   secret
 ) {
 
+  const encoder =
+    new TextEncoder();
+
+
   const key =
     await crypto.subtle.importKey(
       "raw",
-      new TextEncoder().encode(
+      encoder.encode(
         secret
       ),
       {
@@ -2843,150 +3232,55 @@ async function hmac(
     await crypto.subtle.sign(
       "HMAC",
       key,
-      new TextEncoder().encode(
+      encoder.encode(
         value
       )
     );
 
 
-  return [
-    ...new Uint8Array(
-      signature
-    )
-  ]
+  return [...new Uint8Array(
+    signature
+  )]
     .map(
       byte =>
         byte
           .toString(16)
-          .padStart(
-            2,
-            "0"
-          )
+          .padStart(2,"0")
     )
     .join("");
+
 }
 
 
-/* ============================================================
-   BASE64 URL SAFE
-   ============================================================ */
-
-function base64UrlEncode(
-  value
+async function constantTimeEqual(
+  a,
+  b
 ) {
 
-  const bytes =
-    new TextEncoder().encode(
-      value
-    );
+  return constantTimeStringEqual(
+    String(a),
+    String(b)
+  );
 
-
-  let binary =
-    "";
-
-
-  for (
-    const byte of bytes
-  ) {
-
-    binary +=
-      String.fromCharCode(
-        byte
-      );
-  }
-
-
-  return btoa(
-    binary
-  )
-    .replace(
-      /\+/g,
-      "-"
-    )
-    .replace(
-      /\//g,
-      "_"
-    )
-    .replace(
-      /=+$/,
-      ""
-    );
 }
 
 
-function base64UrlDecode(
-  value
-) {
-
-  try {
-
-    let base64 =
-      value
-        .replace(
-          /-/g,
-          "+"
-        )
-        .replace(
-          /_/g,
-          "/"
-        );
-
-
-    while (
-      base64.length % 4
-    ) {
-
-      base64 += "=";
-    }
-
-
-    const binary =
-      atob(
-        base64
-      );
-
-
-    const bytes =
-      Uint8Array.from(
-        binary,
-        char =>
-          char.charCodeAt(0)
-      );
-
-
-    return new TextDecoder()
-      .decode(
-        bytes
-      );
-
-  } catch (_) {
-
-    return "";
-  }
-}
-
-
-/* ============================================================
-   SAFE EQUAL
-   ============================================================ */
-
-function safeEqual(
+function constantTimeStringEqual(
   a,
   b
 ) {
 
   if (
-    typeof a !== "string" ||
-    typeof b !== "string" ||
-    a.length !== b.length
+    a.length !==
+    b.length
   ) {
 
     return false;
+
   }
 
 
-  let result =
-    0;
+  let result = 0;
 
 
   for (
@@ -2998,412 +3292,99 @@ function safeEqual(
     result |=
       a.charCodeAt(i) ^
       b.charCodeAt(i);
+
   }
 
 
   return result === 0;
+
 }
 
 
 /* ============================================================
-   NORMALIZE PROPERTY
-   ============================================================ */
+   COOKIES
+============================================================ */
 
-function normalizeProperty(
-  p
+function parseCookies(
+  header
 ) {
 
-  if (!p) {
-    return null;
+  const cookies = {};
+
+
+  if (!header) {
+
+    return cookies;
+
   }
 
 
-  return {
+  header
+    .split(";")
+    .forEach(
+      part => {
 
-    id:
-      p.id,
-
-    property_type:
-      p.property_type ||
-      "Propiedad",
-
-    title:
-      p.title ||
-      p.property_type ||
-      "Propiedad",
-
-    province:
-      p.province ||
-      "",
-
-    city:
-      p.city ||
-      "",
-
-    neighborhood:
-      p.neighborhood ||
-      "",
-
-    /*
-     * IMPORTANTE:
-     *
-     * address NO se devuelve.
-     *
-     * owner_name NO se devuelve.
-     * owner_phone NO se devuelve.
-     * contact_email NO se devuelve.
-     * notes NO se devuelve.
-     */
-
-    latitude:
-      numberOrNull(
-        p.latitude
-      ),
-
-    longitude:
-      numberOrNull(
-        p.longitude
-      ),
-
-    bedrooms:
-      numberOrNull(
-        p.bedrooms
-      ),
-
-    bathrooms:
-      numberOrNull(
-        p.bathrooms
-      ),
-
-    square_meters:
-      numberOrNull(
-        p.square_meters
-      ),
-
-    price:
-      numberOrNull(
-        p.price
-      ),
-
-    description:
-      p.description ||
-      "",
-
-    photos:
-      parsePhotos(
-        p.photos
-      ),
-
-    status:
-      p.status ||
-      "available",
-
-    created_at:
-      p.created_at ||
-      null
-  };
-}
+        const index =
+          part.indexOf("=");
 
 
-/* ============================================================
-   PROPERTY INPUT
-   ============================================================ */
+        if (
+          index === -1
+        ) {
 
-function propertyInput(
-  body
-) {
+          return;
 
-  return {
-
-    property_type:
-      clean(
-        body.property_type ||
-        body.type
-      ),
-
-    title:
-      clean(
-        body.title ||
-        body.name
-      ),
-
-    province:
-      clean(
-        body.province
-      ),
-
-    city:
-      clean(
-        body.city
-      ),
-
-    neighborhood:
-      clean(
-        body.neighborhood
-      ),
-
-    address:
-      clean(
-        body.address
-      ),
-
-    latitude:
-      numberOrNull(
-        body.latitude
-      ),
-
-    longitude:
-      numberOrNull(
-        body.longitude
-      ),
-
-    bedrooms:
-      numberOrNull(
-        body.bedrooms
-      ),
-
-    bathrooms:
-      numberOrNull(
-        body.bathrooms
-      ),
-
-    square_meters:
-      numberOrNull(
-        body.square_meters
-      ),
-
-    price:
-      numberOrNull(
-        body.price
-      ),
-
-    description:
-      clean(
-        body.description
-      ),
-
-    photos:
-      normalizePhotos(
-        body.photos
-      ),
-
-    owner_name:
-      clean(
-        body.owner_name ||
-        body.contact_name
-      ),
-
-    owner_phone:
-      clean(
-        body.owner_phone ||
-        body.contact_phone
-      ),
-
-    contact_email:
-      clean(
-        body.contact_email ||
-        body.email
-      ),
-
-    notes:
-      clean(
-        body.notes
-      ),
-
-    status:
-      clean(
-        body.status
-      ) ||
-      "available"
-  };
-}
+        }
 
 
-/* ============================================================
-   PHOTOS
-   ============================================================ */
-
-function normalizePhotos(
-  value
-) {
-
-  if (
-    Array.isArray(value)
-  ) {
-
-    return JSON.stringify(
-      value
-        .map(
-          item =>
-            String(
-              item
-            ).trim()
-        )
-        .filter(
-          Boolean
-        )
-    );
-  }
-
-
-  if (
-    typeof value ===
-    "string"
-  ) {
-
-    const text =
-      value.trim();
-
-
-    if (!text) {
-
-      return "[]";
-    }
-
-
-    try {
-
-      const parsed =
-        JSON.parse(
-          text
-        );
-
-
-      if (
-        Array.isArray(
-          parsed
-        )
-      ) {
-
-        return JSON.stringify(
-          parsed
-            .map(
-              item =>
-                String(
-                  item
-                ).trim()
+        const key =
+          part
+            .slice(
+              0,
+              index
             )
-            .filter(
-              Boolean
+            .trim();
+
+
+        const value =
+          part
+            .slice(
+              index + 1
             )
-        );
+            .trim();
+
+
+        cookies[key] =
+          value;
+
       }
-
-    } catch (_) {}
-
-
-    return JSON.stringify(
-      text
-        .split(
-          /[\n,|]+/
-        )
-        .map(
-          item =>
-            item.trim()
-        )
-        .filter(
-          Boolean
-        )
     );
-  }
 
 
-  return "[]";
+  return cookies;
+
 }
 
 
-/* ============================================================
-   PARSE PHOTOS
-   ============================================================ */
-
-function parsePhotos(
-  value
+function buildSessionCookie(
+  token
 ) {
 
-  if (
-    Array.isArray(
-      value
-    )
-  ) {
+  return [
+    `${SESSION_COOKIE}=${token}`,
+    "Path=/",
+    `Max-Age=${SESSION_MAX_AGE}`,
+    "HttpOnly",
+    "Secure",
+    "SameSite=Lax"
+  ].join("; ");
 
-    return value
-      .map(
-        item =>
-          String(
-            item
-          ).trim()
-      )
-      .filter(
-        Boolean
-      );
-  }
-
-
-  if (
-    typeof value !==
-    "string"
-  ) {
-
-    return [];
-  }
-
-
-  const text =
-    value.trim();
-
-
-  if (!text) {
-
-    return [];
-  }
-
-
-  try {
-
-    const parsed =
-      JSON.parse(
-        text
-      );
-
-
-    if (
-      Array.isArray(
-        parsed
-      )
-    ) {
-
-      return parsed
-        .map(
-          item =>
-            String(
-              item
-            ).trim()
-        )
-        .filter(
-          Boolean
-        );
-    }
-
-  } catch (_) {}
-
-
-  return text
-    .split(
-      /[\n,|]+/
-    )
-    .map(
-      item =>
-        item.trim()
-    )
-    .filter(
-      Boolean
-    );
 }
 
 
 /* ============================================================
-   READ JSON
-   ============================================================ */
+   JSON / HTTP
+============================================================ */
 
 async function readJSON(
   request
@@ -3411,60 +3392,103 @@ async function readJSON(
 
   try {
 
-    return await request.json();
+    const text =
+      await request.text();
+
+
+    if (!text) {
+
+      return null;
+
+    }
+
+
+    return JSON.parse(
+      text
+    );
 
   } catch (_) {
 
     return null;
+
   }
+
 }
 
-
-/* ============================================================
-   JSON RESPONSE
-   ============================================================ */
 
 function json(
   data,
   status = 200,
-  request = null
+  request = null,
+  extraHeaders = {}
 ) {
 
-  return corsResponse(
+  const headers = {
+
+    "Content-Type":
+      "application/json; charset=utf-8",
+
+    "Cache-Control":
+      "no-store",
+
+    ...corsHeaders(
+      request
+    ),
+
+    ...extraHeaders
+
+  };
+
+
+  return new Response(
     JSON.stringify(
       data
     ),
-    status,
-    request
+    {
+      status,
+      headers
+    }
   );
+
 }
 
 
-/* ============================================================
-   CORS
-   ============================================================ */
-
 function corsResponse(
-  body,
+  data,
   status,
   request
 ) {
 
-  const headers =
-    new Headers();
+  if (
+    data === null
+  ) {
+
+    return new Response(
+      null,
+      {
+        status,
+        headers:
+          corsHeaders(
+            request
+          )
+      }
+    );
+
+  }
 
 
-  headers.set(
-    "Content-Type",
-    "application/json; charset=utf-8"
+  return json(
+    data,
+    status,
+    request
   );
 
+}
 
-  headers.set(
-    "Cache-Control",
-    "no-store"
-  );
 
+function corsHeaders(
+  request
+) {
 
   const origin =
     request?.headers.get(
@@ -3473,92 +3497,54 @@ function corsResponse(
 
 
   /*
-   * Si la petición viene del propio dominio,
-   * permitimos credenciales.
+   * NEXO normalmente funciona
+   * bajo el mismo dominio.
+   *
+   * Si llega una petición cross-origin,
+   * devolvemos únicamente el origen
+   * recibido.
    */
 
-  if (origin) {
+  return {
 
-    headers.set(
-      "Access-Control-Allow-Origin",
-      origin
-    );
+    "Access-Control-Allow-Origin":
+      origin || "*",
 
-    headers.set(
-      "Access-Control-Allow-Credentials",
-      "true"
-    );
+    "Access-Control-Allow-Credentials":
+      "true",
 
-  } else {
+    "Access-Control-Allow-Methods":
+      "GET,POST,PUT,PATCH,DELETE,OPTIONS",
 
-    headers.set(
-      "Access-Control-Allow-Origin",
-      "*"
-    );
-  }
+    "Access-Control-Allow-Headers":
+      "Content-Type, Accept, X-NEXO-CLIENT, X-NEXO-SESSION"
 
+  };
 
-  headers.set(
-    "Vary",
-    "Origin"
-  );
-
-
-  headers.set(
-    "Access-Control-Allow-Methods",
-    "GET,POST,PUT,PATCH,DELETE,OPTIONS"
-  );
-
-
-  headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, X-NEXO-SESSION"
-  );
-
-
-  return new Response(
-    body,
-    {
-      status,
-      headers
-    }
-  );
 }
 
 
 /* ============================================================
-   CLEAN
-   ============================================================ */
+   HELPERS
+============================================================ */
 
-function clean(
+function cleanString(
   value
 ) {
 
-  if (
-    value === null ||
-    value === undefined
-  ) {
-
-    return null;
-  }
-
-
   return String(
-    value
+    value ?? ""
   )
     .trim()
     .slice(
       0,
-      10000
+      5000
     );
+
 }
 
 
-/* ============================================================
-   NUMBER
-   ============================================================ */
-
-function numberOrNull(
+function nullableNumber(
   value
 ) {
 
@@ -3569,129 +3555,13 @@ function numberOrNull(
   ) {
 
     return null;
-  }
 
-
-  let text =
-    String(
-      value
-    )
-      .trim()
-      .replace(
-        /[$\s]/g,
-        ""
-      );
-
-
-  /*
-   * Manejo de formatos:
-   *
-   * 150000
-   * 150,000
-   * 150.000
-   * 150000.50
-   */
-
-  if (
-    text.includes(",") &&
-    text.includes(".")
-  ) {
-
-    /*
-     * 150,000.50
-     */
-
-    if (
-      text.lastIndexOf(".") >
-      text.lastIndexOf(",")
-    ) {
-
-      text =
-        text.replace(
-          /,/g,
-          ""
-        );
-
-    } else {
-
-      /*
-       * 150.000,50
-       */
-
-      text =
-        text
-          .replace(
-            /\./g,
-            ""
-          )
-          .replace(
-            ",",
-            "."
-          );
-    }
-
-  } else if (
-    text.includes(",")
-  ) {
-
-    const parts =
-      text.split(",");
-
-
-    /*
-     * 10,50 -> decimal
-     * 150,000 -> miles
-     */
-
-    if (
-      parts[1]?.length === 2
-    ) {
-
-      text =
-        text.replace(
-          ",",
-          "."
-        );
-
-    } else {
-
-      text =
-        text.replace(
-          /,/g,
-          ""
-        );
-    }
-
-  } else if (
-    text.includes(".")
-  ) {
-
-    const parts =
-      text.split(".");
-
-
-    /*
-     * 150.000 -> miles
-     * 150.50 -> decimal
-     */
-
-    if (
-      parts.length === 2 &&
-      parts[1].length === 3
-    ) {
-
-      text =
-        text.replace(
-          ".",
-          ""
-        );
-    }
   }
 
 
   const number =
     Number(
-      text
+      value
     );
 
 
@@ -3700,12 +3570,47 @@ function numberOrNull(
   )
     ? number
     : null;
+
 }
 
 
-/* ============================================================
-   CLAMP
-   ============================================================ */
+function safeNumber(
+  value
+) {
+
+  const number =
+    Number(
+      value
+    );
+
+
+  return Number.isFinite(
+    number
+  )
+    ? number
+    : null;
+
+}
+
+
+function safeInteger(
+  value
+) {
+
+  const number =
+    Number(
+      value
+    );
+
+
+  return Number.isInteger(
+    number
+  )
+    ? number
+    : null;
+
+}
+
 
 function clamp(
   value,
@@ -3720,6 +3625,7 @@ function clamp(
   ) {
 
     return min;
+
   }
 
 
@@ -3727,160 +3633,26 @@ function clamp(
     max,
     Math.max(
       min,
-      value
+      Math.floor(value)
     )
   );
+
 }
 
 
-/* ============================================================
-   NORMALIZE TEXT
-   ============================================================ */
-
-function normalize(
+function normalizeText(
   value
 ) {
 
   return String(
-    value || ""
+    value ?? ""
   )
-    .normalize(
-      "NFD"
-    )
+    .normalize("NFD")
     .replace(
       /[\u0300-\u036f]/g,
       ""
     )
     .toLowerCase()
     .trim();
-}
 
-
-/* ============================================================
-   PARSE PRICE
-   ============================================================ */
-
-function parsePrice(
-  number,
-  unit
-) {
-
-  let value =
-    Number(
-      String(
-        number
-      )
-        .replace(
-          /\./g,
-          ""
-        )
-        .replace(
-          ",",
-          "."
-        )
-    );
-
-
-  if (
-    !Number.isFinite(
-      value
-    )
-  ) {
-
-    return null;
-  }
-
-
-  const u =
-    normalize(
-      unit
-    );
-
-
-  if (
-    u === "k" ||
-    u === "mil"
-  ) {
-
-    value *=
-      1000;
-  }
-
-
-  if (
-    u === "m"
-  ) {
-
-    value *=
-      1000000;
-  }
-
-
-  return value;
-}
-
-
-/* ============================================================
-   MONEY
-   ============================================================ */
-
-function formatMoney(
-  value
-) {
-
-  if (
-    value === null ||
-    value === undefined ||
-    !Number.isFinite(
-      Number(value)
-    )
-  ) {
-
-    return "Precio no disponible";
-  }
-
-
-  return "$" +
-    Number(
-      value
-    ).toLocaleString(
-      "en-US",
-      {
-        maximumFractionDigits:
-          0
-      }
-    );
-}
-
-
-/* ============================================================
-   TRUNCATE
-   ============================================================ */
-
-function truncate(
-  value,
-  length
-) {
-
-  const text =
-    String(
-      value || ""
-    );
-
-
-  if (
-    text.length <= length
-  ) {
-
-    return text;
-  }
-
-
-  return (
-    text.slice(
-      0,
-      length - 1
-    ) +
-    "…"
-  );
 }
