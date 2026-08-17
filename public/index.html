@@ -1,2876 +1,3512 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f5f7">
+<meta name="color-scheme" content="light">
+<meta name="description" content="NEXO — Encuentra propiedades en Cuba.">
+<title>NEXO — Encuentra tu próximo lugar</title>
+
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<style>
+:root{
+  --bg:#f5f5f7;
+  --surface:#fff;
+  --surface-soft:#f0f0f2;
+  --text:#111113;
+  --muted:#747478;
+  --line:rgba(0,0,0,.075);
+  --accent:#111113;
+  --radius:24px;
+  --shadow:0 14px 45px rgba(0,0,0,.07);
+  --safe-top:env(safe-area-inset-top);
+  --safe-bottom:env(safe-area-inset-bottom);
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  margin:0;
+  min-width:320px;
+  background:var(--bg);
+  color:var(--text);
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    Inter,
+    system-ui,
+    sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+button,
+input,
+select{
+  font:inherit;
+}
+
+button{
+  border:0;
+  cursor:pointer;
+}
+
+a{
+  color:inherit;
+  text-decoration:none;
+}
+
+.hidden{
+  display:none!important;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.site-header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+
+  padding:
+    calc(10px + var(--safe-top))
+    14px
+    10px;
+
+  background:rgba(245,245,247,.82);
+  border-bottom:1px solid rgba(0,0,0,.05);
+
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+}
+
+.header-inner{
+  width:min(1180px,100%);
+  margin:auto;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+}
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  >
+.logo{
+  font-size:23px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:-.085em;
+}
 
-  <meta
-    name="theme-color"
-    content="#f7f7f5"
-  >
+.header-actions{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
 
-  <meta
-    name="description"
-    content="NEXO — Encuentra propiedades en Cuba."
-  >
+.header-button{
+  min-height:36px;
+  padding:0 12px;
 
-  <title>NEXO — Encuentra tu lugar</title>
+  border-radius:999px;
 
-  <!-- =====================================================
-       LEAFLET
-  ====================================================== -->
+  background:rgba(0,0,0,.055);
+  color:#222;
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIINfQ3mZ8l7k8j8k8k8k8k8k8k8k8k8k8="
-    crossorigin=""
-  >
+  font-size:10px;
+  font-weight:800;
+}
 
-  <!-- =====================================================
-       FUENTE
-  ====================================================== -->
+.header-button.primary{
+  background:#111;
+  color:#fff;
+}
 
-  <link
-    rel="preconnect"
-    href="https://fonts.googleapis.com"
-  >
+/* =========================================================
+   HERO
+========================================================= */
 
-  <link
-    rel="preconnect"
-    href="https://fonts.gstatic.com"
-    crossorigin
-  >
+main{
+  width:min(1180px,calc(100% - 24px));
+  margin:0 auto;
+}
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  >
+.hero{
+  padding:
+    clamp(42px,8vw,90px)
+    0
+    30px;
+}
 
-  <!-- =====================================================
-       ESTILOS
-  ====================================================== -->
+.eyebrow{
+  margin-bottom:13px;
 
-  <style>
+  color:#858589;
 
-    /* =====================================================
-       VARIABLES
-    ====================================================== */
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
 
-    :root {
+.hero h1{
+  max-width:850px;
 
-      --bg: #f7f7f5;
-      --surface: #ffffff;
-      --surface-soft: #f0f0ed;
+  margin:0;
 
-      --text: #111111;
-      --text-soft: #6f6f6b;
-      --text-faint: #9a9a95;
+  font-size:clamp(48px,9vw,92px);
+  line-height:.91;
+  letter-spacing:-.085em;
+  font-weight:900;
+}
 
-      --line: rgba(17,17,17,.08);
+.hero h1 span{
+  color:#88888c;
+}
 
-      --radius-sm: 14px;
-      --radius-md: 20px;
-      --radius-lg: 28px;
+.hero-copy{
+  max-width:560px;
 
-      --max-width: 1180px;
+  margin:20px 0 0;
 
-      --shadow-soft:
-        0 10px 35px rgba(0,0,0,.06);
+  color:var(--muted);
 
-      --shadow-medium:
-        0 20px 70px rgba(0,0,0,.10);
+  font-size:14px;
+  line-height:1.6;
+}
 
-      --ease:
-        cubic-bezier(.22,.61,.36,1);
+/* =========================================================
+   SEARCH
+========================================================= */
 
-    }
+.search-shell{
+  position:relative;
+  z-index:20;
 
+  margin-bottom:22px;
 
-    /* =====================================================
-       RESET
-    ====================================================== */
+  padding:7px;
 
-    * {
-      box-sizing: border-box;
-    }
+  background:rgba(255,255,255,.92);
 
-    html {
-      scroll-behavior: smooth;
-    }
+  border:1px solid var(--line);
+  border-radius:22px;
 
-    body {
+  box-shadow:var(--shadow);
+}
 
-      margin: 0;
+.search-main{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
 
-      background: var(--bg);
+.search-icon{
+  width:42px;
+  height:42px;
+  flex:0 0 42px;
 
-      color: var(--text);
+  display:grid;
+  place-items:center;
 
-      font-family:
-        Inter,
-        -apple-system,
-        BlinkMacSystemFont,
-        "SF Pro Display",
-        "SF Pro Text",
-        "Segoe UI",
-        sans-serif;
+  border-radius:15px;
 
-      -webkit-font-smoothing: antialiased;
+  background:#f0f0f2;
 
-      text-rendering: optimizeLegibility;
-    }
+  color:#666;
 
-    button,
-    input,
-    select {
-      font: inherit;
-    }
+  font-size:18px;
+}
 
-    button {
-      cursor: pointer;
-    }
+.search-input{
+  min-width:0;
+  flex:1;
 
-    img {
-      display: block;
-      max-width: 100%;
-    }
+  height:42px;
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
+  border:0;
+  outline:0;
 
+  background:transparent;
 
-    /* =====================================================
-       HEADER
-    ====================================================== */
+  color:#111;
+  font-size:14px;
+}
 
-    .site-header {
+.search-input::placeholder{
+  color:#929296;
+}
 
-      position: sticky;
+.search-submit{
+  min-height:42px;
+  padding:0 17px;
 
-      top: 0;
+  border-radius:15px;
 
-      z-index: 1000;
+  background:#111;
+  color:#fff;
 
-      background:
-        rgba(247,247,245,.86);
+  font-size:10px;
+  font-weight:800;
+}
 
-      backdrop-filter:
-        blur(22px);
+.filters{
+  display:flex;
+  gap:6px;
 
-      -webkit-backdrop-filter:
-        blur(22px);
+  padding:6px 3px 2px;
 
-      border-bottom:
-        1px solid
-        rgba(17,17,17,.05);
+  overflow-x:auto;
+  scrollbar-width:none;
+}
 
-    }
+.filters::-webkit-scrollbar{
+  display:none;
+}
 
-    .header-inner {
+.filter{
+  flex:0 0 auto;
 
-      width:
-        min(
-          calc(100% - 32px),
-          var(--max-width)
-        );
+  padding:8px 11px;
 
-      height: 64px;
+  border-radius:999px;
 
-      margin: auto;
+  background:#f0f0f2;
+  color:#555;
 
-      display: flex;
+  font-size:9px;
+  font-weight:750;
+}
 
-      align-items: center;
+.filter.active{
+  background:#111;
+  color:#fff;
+}
 
-      justify-content: space-between;
+/* =========================================================
+   CONTENT HEADER
+========================================================= */
 
-    }
+.content-header{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:15px;
 
+  margin:34px 0 14px;
+}
 
-    /* =====================================================
-       LOGO
-    ====================================================== */
+.content-title{
+  margin:0;
 
-    .logo {
+  font-size:27px;
+  line-height:1;
+  letter-spacing:-.06em;
+}
 
-      font-size: 20px;
+.content-count{
+  color:#888;
 
-      font-weight: 800;
+  font-size:10px;
+  font-weight:700;
+}
 
-      letter-spacing:
-        -.075em;
+/* =========================================================
+   INVENTORY
+========================================================= */
 
-      line-height: 1;
+.inventory{
+  display:grid;
+  grid-template-columns:
+    repeat(3,minmax(0,1fr));
 
-    }
+  gap:13px;
+}
 
-    .logo span {
-      opacity: .42;
-    }
+.property-card{
+  overflow:hidden;
 
+  background:var(--surface);
 
-    /* =====================================================
-       NAV
-    ====================================================== */
+  border:1px solid var(--line);
+  border-radius:22px;
 
-    .main-nav {
+  box-shadow:0 8px 30px rgba(0,0,0,.045);
 
-      display: flex;
+  transition:
+    transform .25s ease,
+    box-shadow .25s ease;
+}
 
-      align-items: center;
+.property-card:active{
+  transform:scale(.985);
+}
 
-      gap: 6px;
-    }
+.property-media{
+  position:relative;
 
-    .nav-link {
+  aspect-ratio:1.12;
 
-      border: 0;
+  overflow:hidden;
 
-      background: transparent;
+  background:#dedee1;
+}
 
-      padding: 9px 13px;
+.property-media img{
+  width:100%;
+  height:100%;
 
-      border-radius: 999px;
+  display:block;
 
-      color:
-        var(--text-soft);
+  object-fit:cover;
 
-      font-size: 12px;
+  transition:transform .45s ease;
+}
 
-      font-weight: 600;
+.property-card:hover .property-media img{
+  transform:scale(1.025);
+}
 
-      transition:
-        background .25s var(--ease),
-        color .25s var(--ease);
+.property-placeholder{
+  width:100%;
+  height:100%;
 
-    }
+  display:grid;
+  place-items:center;
 
-    .nav-link:hover {
+  color:#999;
+  font-size:10px;
+}
 
-      background:
-        rgba(0,0,0,.05);
+.property-badge{
+  position:absolute;
+  left:10px;
+  top:10px;
 
-      color:
-        var(--text);
+  padding:7px 9px;
 
-    }
+  border-radius:999px;
 
-    .nav-admin {
+  background:rgba(255,255,255,.84);
+  color:#222;
 
-      background:
-        var(--text);
+  font-size:8px;
+  font-weight:850;
 
-      color:
-        #fff;
+  backdrop-filter:blur(12px);
+}
 
-    }
+.favorite-button{
+  position:absolute;
+  right:10px;
+  top:10px;
 
-    .nav-admin:hover {
+  width:34px;
+  height:34px;
 
-      background:
-        #000;
+  display:grid;
+  place-items:center;
 
-      color:
-        #fff;
+  border-radius:50%;
 
-    }
+  background:rgba(255,255,255,.88);
 
+  font-size:15px;
 
-    /* =====================================================
-       HERO
-    ====================================================== */
+  backdrop-filter:blur(12px);
+}
 
-    .hero {
+.favorite-button.active{
+  background:#111;
+  color:#fff;
+}
 
-      width:
-        min(
-          calc(100% - 32px),
-          var(--max-width)
-        );
+.property-body{
+  padding:14px 14px 16px;
+}
 
-      margin:
-        0 auto;
+.property-price{
+  margin-bottom:6px;
 
-      padding:
-        86px 0 58px;
+  font-size:20px;
+  font-weight:900;
+  letter-spacing:-.055em;
+}
 
-      text-align:
-        center;
+.property-title{
+  overflow:hidden;
 
-    }
+  font-size:13px;
+  font-weight:800;
 
-    .hero-eyebrow {
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
 
-      display:
-        inline-flex;
+.property-location{
+  margin-top:5px;
 
-      align-items:
-        center;
+  color:#7d7d81;
 
-      gap: 7px;
+  font-size:10px;
 
-      margin-bottom:
-        18px;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
 
-      color:
-        var(--text-soft);
+.property-meta{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
 
-      font-size:
-        10px;
+  margin-top:11px;
+}
 
-      font-weight:
-        700;
+.meta{
+  padding:6px 8px;
 
-      letter-spacing:
-        .14em;
+  border-radius:999px;
 
-      text-transform:
-        uppercase;
+  background:#f0f0f2;
+  color:#5d5d61;
 
-    }
+  font-size:8px;
+  font-weight:750;
+}
 
-    .hero-eyebrow::before {
+/* =========================================================
+   EMPTY / LOADING
+========================================================= */
 
-      content: "";
+.inventory-state{
+  grid-column:1/-1;
 
-      width: 5px;
+  padding:65px 20px;
 
-      height: 5px;
+  border-radius:22px;
 
-      border-radius: 50%;
+  background:#fff;
 
-      background:
-        var(--text);
+  border:1px solid var(--line);
 
-    }
+  text-align:center;
+}
 
-    .hero h1 {
+.loader{
+  width:22px;
+  height:22px;
 
-      margin:
-        0 auto;
+  margin:0 auto 13px;
 
-      max-width:
-        780px;
+  border:2px solid #ddd;
+  border-top-color:#111;
+  border-radius:50%;
 
-      font-size:
-        clamp(
-          48px,
-          8vw,
-          92px
-        );
+  animation:spin .8s linear infinite;
+}
 
-      line-height:
-        .9;
+@keyframes spin{
+  to{
+    transform:rotate(360deg);
+  }
+}
 
-      letter-spacing:
-        -.085em;
+.state-title{
+  font-size:13px;
+  font-weight:800;
+}
 
-      font-weight:
-        800;
+.state-copy{
+  max-width:330px;
 
-    }
+  margin:7px auto 0;
 
-    .hero h1 span {
-      color:
-        var(--text-faint);
-    }
+  color:#888;
 
-    .hero-subtitle {
+  font-size:10px;
+  line-height:1.5;
+}
 
-      max-width:
-        500px;
+/* =========================================================
+   MAP SECTION
+========================================================= */
 
-      margin:
-        25px auto 0;
+.map-section{
+  margin-top:65px;
+}
 
-      color:
-        var(--text-soft);
+.section-heading{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:15px;
 
-      font-size:
-        14px;
+  margin-bottom:14px;
+}
 
-      line-height:
-        1.65;
+.section-heading h2{
+  margin:0;
 
-    }
+  font-size:28px;
+  letter-spacing:-.06em;
+}
 
+.section-heading p{
+  margin:0;
 
-    /* =====================================================
-       SEARCH
-    ====================================================== */
+  color:#888;
 
-    .search-wrap {
+  font-size:10px;
+}
 
-      max-width:
-        720px;
+.map-shell{
+  position:relative;
 
-      margin:
-        36px auto 0;
+  overflow:hidden;
 
-    }
+  height:430px;
 
-    .search-form {
+  border-radius:25px;
 
-      position:
-        relative;
+  background:#ddd;
 
-      display:
-        flex;
+  border:1px solid var(--line);
 
-      align-items:
-        center;
+  box-shadow:var(--shadow);
+}
 
-      background:
-        var(--surface);
+#map{
+  width:100%;
+  height:100%;
+}
 
-      border:
-        1px solid
-        var(--line);
+.map-open{
+  position:absolute;
+  z-index:500;
 
-      border-radius:
-        999px;
+  right:12px;
+  top:12px;
 
-      padding:
-        6px;
+  padding:9px 12px;
 
-      box-shadow:
-        var(--shadow-soft);
+  border-radius:999px;
 
-      transition:
-        box-shadow .3s var(--ease),
-        transform .3s var(--ease);
+  background:rgba(255,255,255,.9);
+  color:#111;
 
-    }
+  font-size:9px;
+  font-weight:800;
 
-    .search-form:focus-within {
+  backdrop-filter:blur(12px);
+}
 
-      box-shadow:
-        0 18px 60px
-        rgba(0,0,0,.10);
+/* =========================================================
+   PROPERTY MODAL
+========================================================= */
 
-      transform:
-        translateY(-1px);
+.modal{
+  position:fixed;
+  inset:0;
+  z-index:5000;
 
-    }
+  display:none;
 
-    .search-icon {
+  background:rgba(0,0,0,.42);
 
-      width:
-        46px;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
 
-      height:
-        46px;
+.modal.show{
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+}
 
-      display:
-        grid;
+.modal-card{
+  width:min(760px,100%);
 
-      place-items:
-        center;
+  max-height:
+    calc(100vh - 20px);
 
-      flex:
-        0 0 auto;
+  overflow:auto;
 
-      color:
-        var(--text-soft);
+  padding:9px;
 
-    }
+  background:#fff;
 
-    .search-icon svg {
+  border-radius:28px 28px 0 0;
 
-      width: 19px;
-      height: 19px;
+  box-shadow:
+    0 -20px 80px rgba(0,0,0,.18);
 
-      stroke:
-        currentColor;
+  animation:
+    modalUp .28s ease;
+}
 
-      fill:
-        none;
+@keyframes modalUp{
+  from{
+    transform:translateY(35px);
+    opacity:0;
+  }
+  to{
+    transform:translateY(0);
+    opacity:1;
+  }
+}
 
-      stroke-width:
-        1.8;
+.modal-image{
+  position:relative;
 
-    }
+  aspect-ratio:1.35;
 
-    #searchInput {
+  overflow:hidden;
 
-      min-width:
-        0;
+  border-radius:21px;
 
-      flex:
-        1;
+  background:#ddd;
+}
 
-      border:
-        0;
+.modal-image img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
 
-      outline:
-        0;
+.modal-content{
+  padding:17px 10px 22px;
+}
 
-      background:
-        transparent;
+.modal-close{
+  position:absolute;
+  z-index:3;
 
-      color:
-        var(--text);
+  right:10px;
+  top:10px;
 
-      font-size:
-        14px;
+  width:35px;
+  height:35px;
 
-    }
+  border-radius:50%;
 
-    #searchInput::placeholder {
-      color:
-        var(--text-faint);
-    }
+  background:rgba(255,255,255,.9);
 
-    .search-submit {
+  font-size:16px;
+}
 
-      min-width:
-        46px;
+.modal-price{
+  font-size:32px;
+  font-weight:900;
+  letter-spacing:-.065em;
+}
 
-      height:
-        46px;
+.modal-title{
+  margin-top:6px;
 
-      border:
-        0;
+  font-size:18px;
+  font-weight:800;
+  letter-spacing:-.04em;
+}
 
-      border-radius:
-        50%;
+.modal-location{
+  margin-top:5px;
 
-      background:
-        var(--text);
+  color:#777;
 
-      color:
-        #fff;
+  font-size:11px;
+}
 
-      display:
-        grid;
+.modal-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
 
-      place-items:
-        center;
+  margin-top:15px;
+}
 
-      transition:
-        transform .25s var(--ease);
+.modal-description{
+  margin-top:20px;
 
-    }
+  color:#555;
 
-    .search-submit:hover {
-      transform:
-        scale(1.04);
-    }
+  font-size:12px;
+  line-height:1.65;
+  white-space:pre-line;
+}
 
-    .search-submit svg {
+.modal-contact{
+  width:100%;
 
-      width: 18px;
-      height: 18px;
+  min-height:48px;
 
-      fill:
-        none;
+  margin-top:20px;
 
-      stroke:
-        currentColor;
+  border-radius:15px;
 
-      stroke-width:
-        2;
+  background:#111;
+  color:#fff;
 
-    }
+  font-size:11px;
+  font-weight:800;
+}
 
+/* =========================================================
+   NEXO IA
+========================================================= */
 
-    /* =====================================================
-       QUICK SEARCH
-    ====================================================== */
+.ai-launcher{
+  position:fixed;
+  z-index:4000;
 
-    .quick-search {
+  right:17px;
+  bottom:
+    calc(17px + var(--safe-bottom));
 
-      display:
-        flex;
+  width:58px;
+  height:58px;
 
-      justify-content:
-        center;
+  display:grid;
+  place-items:center;
 
-      flex-wrap:
-        wrap;
+  border-radius:50%;
 
-      gap:
-        7px;
+  background:#111;
+  color:#fff;
 
-      margin-top:
-        14px;
+  box-shadow:
+    0 12px 35px rgba(0,0,0,.23);
 
-    }
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+}
 
-    .quick-search button {
+.ai-launcher:active{
+  transform:scale(.93);
+}
 
-      border:
-        1px solid
-        var(--line);
+.ai-logo{
+  font-size:20px;
+  font-weight:900;
+  letter-spacing:-.08em;
+}
 
-      background:
-        transparent;
+.ai-dot{
+  position:absolute;
 
-      color:
-        var(--text-soft);
+  right:2px;
+  top:1px;
 
-      border-radius:
-        999px;
+  width:11px;
+  height:11px;
 
-      padding:
-        8px 12px;
+  border-radius:50%;
 
-      font-size:
-        11px;
+  background:#34c759;
 
-      font-weight:
-        600;
+  border:2px solid #fff;
+}
 
-      transition:
-        background .25s var(--ease),
-        color .25s var(--ease),
-        border .25s var(--ease);
+.ai-panel{
+  position:fixed;
+  z-index:3999;
 
-    }
+  right:17px;
+  bottom:
+    calc(86px + var(--safe-bottom));
 
-    .quick-search button:hover {
+  width:min(380px,calc(100vw - 30px));
 
-      background:
-        var(--surface);
+  height:min(620px,calc(100vh - 120px));
 
-      color:
-        var(--text);
+  display:none;
+  flex-direction:column;
 
-    }
+  overflow:hidden;
 
+  background:rgba(255,255,255,.96);
 
-    /* =====================================================
-       INVENTORY SECTION
-    ====================================================== */
+  border:1px solid rgba(0,0,0,.08);
 
-    .inventory {
+  border-radius:26px;
 
-      width:
-        min(
-          calc(100% - 32px),
-          var(--max-width)
-        );
+  box-shadow:
+    0 25px 90px rgba(0,0,0,.22);
 
-      margin:
-        0 auto;
+  backdrop-filter:blur(25px);
+}
 
-      padding:
-        25px 0 100px;
+.ai-panel.show{
+  display:flex;
 
-    }
+  animation:
+    aiOpen .22s ease;
+}
 
-    .inventory-head {
+@keyframes aiOpen{
+  from{
+    transform:translateY(12px) scale(.97);
+    opacity:0;
+  }
+  to{
+    transform:translateY(0) scale(1);
+    opacity:1;
+  }
+}
 
-      display:
-        flex;
+.ai-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
 
-      align-items:
-        flex-end;
+  padding:15px;
 
-      justify-content:
-        space-between;
+  border-bottom:1px solid var(--line);
+}
 
-      gap:
-        20px;
+.ai-brand{
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
 
-      margin-bottom:
-        24px;
+.ai-brand-icon{
+  width:34px;
+  height:34px;
 
-    }
+  display:grid;
+  place-items:center;
 
-    .section-label {
+  border-radius:11px;
 
-      margin-bottom:
-        7px;
+  background:#111;
+  color:#fff;
 
-      color:
-        var(--text-faint);
+  font-size:12px;
+  font-weight:900;
+}
 
-      font-size:
-        10px;
+.ai-brand-name{
+  font-size:12px;
+  font-weight:850;
+}
 
-      font-weight:
-        700;
+.ai-brand-status{
+  margin-top:2px;
 
-      letter-spacing:
-        .12em;
+  color:#888;
 
-      text-transform:
-        uppercase;
+  font-size:8px;
+}
 
-    }
+.ai-close{
+  width:32px;
+  height:32px;
 
-    .inventory-title {
+  border-radius:50%;
 
-      margin:
-        0;
+  background:#f0f0f2;
 
-      font-size:
-        clamp(28px,4vw,42px);
+  font-size:15px;
+}
 
-      line-height:
-        .95;
+.ai-messages{
+  flex:1;
 
-      letter-spacing:
-        -.065em;
+  overflow-y:auto;
 
-    }
+  padding:15px;
 
-    #propertyCount {
+  scrollbar-width:none;
+}
 
-      color:
-        var(--text-soft);
+.ai-messages::-webkit-scrollbar{
+  display:none;
+}
 
-      font-size:
-        12px;
+.ai-message{
+  max-width:88%;
 
-      white-space:
-        nowrap;
+  margin-bottom:10px;
 
-    }
+  padding:10px 12px;
 
+  border-radius:15px;
 
-    /* =====================================================
-       FILTERS
-    ====================================================== */
+  font-size:11px;
+  line-height:1.5;
+}
 
-    .filters {
+.ai-message.assistant{
+  margin-right:auto;
 
-      display:
-        flex;
+  background:#f0f0f2;
+  color:#222;
 
-      gap:
-        6px;
+  border-bottom-left-radius:5px;
+}
 
-      overflow-x:
-        auto;
+.ai-message.user{
+  margin-left:auto;
 
-      scrollbar-width:
-        none;
+  background:#111;
+  color:#fff;
 
-      margin-bottom:
-        22px;
+  border-bottom-right-radius:5px;
+}
 
-      padding-bottom:
-        2px;
+.ai-suggestions{
+  display:flex;
+  gap:5px;
 
-    }
+  padding:0 13px 9px;
 
-    .filters::-webkit-scrollbar {
-      display:
-        none;
-    }
+  overflow-x:auto;
 
-    .filter {
+  scrollbar-width:none;
+}
 
-      flex:
-        0 0 auto;
+.ai-suggestions::-webkit-scrollbar{
+  display:none;
+}
 
-      border:
-        1px solid
-        var(--line);
+.ai-suggestion{
+  flex:0 0 auto;
 
-      background:
-        transparent;
+  padding:8px 10px;
 
-      color:
-        var(--text-soft);
+  border-radius:999px;
 
-      padding:
-        9px 14px;
+  background:#f0f0f2;
+  color:#555;
 
-      border-radius:
-        999px;
+  font-size:8px;
+  font-weight:750;
+}
 
-      font-size:
-        11px;
+.ai-composer{
+  display:flex;
+  align-items:flex-end;
+  gap:6px;
 
-      font-weight:
-        600;
+  padding:9px;
 
-      transition:
-        all .25s var(--ease);
+  border-top:1px solid var(--line);
+}
 
-    }
+.ai-input{
+  min-width:0;
+  flex:1;
 
-    .filter:hover {
+  min-height:40px;
+  max-height:105px;
 
-      background:
-        var(--surface);
+  padding:11px;
 
-      color:
-        var(--text);
+  resize:none;
 
-    }
+  border:0;
+  outline:0;
 
-    .filter.active {
+  border-radius:14px;
 
-      background:
-        var(--text);
+  background:#f0f0f2;
 
-      border-color:
-        var(--text);
+  font-size:11px;
+}
 
-      color:
-        #fff;
+.ai-send{
+  width:40px;
+  height:40px;
 
-    }
+  flex:0 0 40px;
 
+  border-radius:13px;
 
-    /* =====================================================
-       PROPERTY GRID
-    ====================================================== */
+  background:#111;
+  color:#fff;
 
-    #propertyGrid {
+  font-size:13px;
+}
 
-      display:
-        grid;
+.ai-send:disabled{
+  opacity:.4;
+}
 
-      grid-template-columns:
-        repeat(
-          3,
-          minmax(0,1fr)
-        );
+.ai-typing{
+  display:none;
 
-      gap:
-        18px;
+  margin-bottom:10px;
 
-    }
+  color:#999;
 
+  font-size:9px;
+}
 
-    /* =====================================================
-       PROPERTY CARD
-    ====================================================== */
+.ai-typing.show{
+  display:block;
+}
 
-    .property {
+.ai-typing span{
+  display:inline-block;
 
-      overflow:
-        hidden;
+  width:4px;
+  height:4px;
 
-      background:
-        var(--surface);
+  margin:0 2px;
 
-      border:
-        1px solid
-        rgba(17,17,17,.055);
+  border-radius:50%;
 
-      border-radius:
-        var(--radius-md);
+  background:#999;
 
-      cursor:
-        pointer;
+  animation:typing 1s infinite;
+}
 
-      box-shadow:
-        0 5px 25px
-        rgba(0,0,0,.035);
+.ai-typing span:nth-child(2){
+  animation-delay:.15s;
+}
 
-      transition:
-        transform .4s var(--ease),
-        box-shadow .4s var(--ease);
+.ai-typing span:nth-child(3){
+  animation-delay:.3s;
+}
 
-    }
+@keyframes typing{
+  0%,60%,100%{
+    opacity:.3;
+  }
+  30%{
+    opacity:1;
+  }
+}
 
-    .property:hover {
+/* =========================================================
+   FOOTER
+========================================================= */
 
-      transform:
-        translateY(-4px);
+footer{
+  margin-top:75px;
+  padding:
+    35px
+    15px
+    calc(35px + var(--safe-bottom));
 
-      box-shadow:
-        var(--shadow-soft);
+  color:#999;
 
-    }
+  text-align:center;
 
-    .property-image {
+  font-size:9px;
+}
 
-      position:
-        relative;
+/* =========================================================
+   TABLET
+========================================================= */
 
-      aspect-ratio:
-        1.22 / 1;
+@media(max-width:950px){
 
-      overflow:
-        hidden;
+  .inventory{
+    grid-template-columns:
+      repeat(2,minmax(0,1fr));
+  }
 
-      background:
-        #e9e9e6;
+}
 
-    }
+/* =========================================================
+   MOBILE
+========================================================= */
 
-    .property-image img {
+@media(max-width:620px){
 
-      width:
-        100%;
+  main{
+    width:calc(100% - 18px);
+  }
 
-      height:
-        100%;
+  .site-header{
+    padding-left:9px;
+    padding-right:9px;
+  }
 
-      object-fit:
-        cover;
+  .header-button{
+    padding:0 10px;
+  }
 
-      transition:
-        transform .7s var(--ease);
+  .header-button.map{
+    display:none;
+  }
 
-    }
+  .hero{
+    padding-top:42px;
+    padding-bottom:24px;
+  }
 
-    .property:hover
-    .property-image img {
+  .hero h1{
+    font-size:51px;
+  }
 
-      transform:
-        scale(1.025);
+  .hero-copy{
+    font-size:13px;
+  }
 
-    }
+  .search-shell{
+    border-radius:19px;
+  }
 
-    .property-badge {
+  .search-main{
+    flex-wrap:wrap;
+  }
 
-      position:
-        absolute;
+  .search-icon{
+    width:38px;
+    height:38px;
+    flex-basis:38px;
+  }
 
-      left:
-        12px;
+  .search-input{
+    height:38px;
+  }
 
-      top:
-        12px;
+  .search-submit{
+    width:100%;
+  }
 
-      padding:
-        7px 9px;
+  .content-header{
+    margin-top:29px;
+  }
 
-      border-radius:
-        999px;
+  .content-title{
+    font-size:24px;
+  }
 
-      background:
-        rgba(255,255,255,.86);
+  .inventory{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
 
-      backdrop-filter:
-        blur(12px);
+  .property-media{
+    aspect-ratio:1.2;
+  }
 
-      color:
-        var(--text);
+  .map-section{
+    margin-top:50px;
+  }
 
-      font-size:
-        9px;
+  .map-shell{
+    height:330px;
+    border-radius:21px;
+  }
 
-      font-weight:
-        700;
+  .ai-launcher{
+    right:14px;
+  }
 
-      letter-spacing:
-        .04em;
+  .ai-panel{
+    right:10px;
+    bottom:
+      calc(82px + var(--safe-bottom));
 
-      text-transform:
-        uppercase;
+    width:calc(100vw - 20px);
 
-    }
+    height:
+      min(650px,calc(100vh - 105px));
 
-    .nexo-favorite {
+    border-radius:24px;
+  }
 
-      transition:
-        transform .25s var(--ease),
-        background .25s var(--ease);
+}
 
-    }
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
 
-    .nexo-favorite:hover {
+@media(prefers-reduced-motion:reduce){
 
-      transform:
-        scale(1.08);
+  *,
+  *::before,
+  *::after{
+    scroll-behavior:auto!important;
+    animation:none!important;
+    transition:none!important;
+  }
 
-      background:
-        #fff !important;
-
-    }
-
-    .property-body {
-
-      padding:
-        17px 17px 19px;
-
-    }
-
-    .property-price {
-
-      margin-bottom:
-        7px;
-
-      font-size:
-        20px;
-
-      line-height:
-        1;
-
-      font-weight:
-        800;
-
-      letter-spacing:
-        -.045em;
-
-    }
-
-    .property-title {
-
-      font-size:
-        13px;
-
-      font-weight:
-        700;
-
-      line-height:
-        1.25;
-
-      overflow:
-        hidden;
-
-      text-overflow:
-        ellipsis;
-
-      white-space:
-        nowrap;
-
-    }
-
-    .property-location {
-
-      margin-top:
-        5px;
-
-      color:
-        var(--text-soft);
-
-      font-size:
-        11px;
-
-      overflow:
-        hidden;
-
-      text-overflow:
-        ellipsis;
-
-      white-space:
-        nowrap;
-
-    }
-
-    .property-meta {
-
-      display:
-        flex;
-
-      gap:
-        12px;
-
-      margin-top:
-        15px;
-
-      color:
-        var(--text-faint);
-
-      font-size:
-        10px;
-
-      font-weight:
-        600;
-
-    }
-
-
-    /* =====================================================
-       EMPTY / LOADING
-    ====================================================== */
-
-    .empty {
-
-      grid-column:
-        1 / -1;
-
-      padding:
-        70px 20px;
-
-      text-align:
-        center;
-
-      color:
-        var(--text-soft);
-
-      font-size:
-        13px;
-
-      line-height:
-        1.6;
-
-      background:
-        var(--surface);
-
-      border-radius:
-        var(--radius-md);
-
-      border:
-        1px solid
-        var(--line);
-
-    }
-
-    .empty strong {
-
-      color:
-        var(--text);
-
-      font-size:
-        15px;
-
-    }
-
-    .loading {
-
-      grid-column:
-        1 / -1;
-
-      min-height:
-        280px;
-
-      display:
-        grid;
-
-      place-items:
-        center;
-
-      color:
-        var(--text-soft);
-
-      font-size:
-        12px;
-
-    }
-
-    .loading-dot {
-
-      width:
-        8px;
-
-      height:
-        8px;
-
-      border-radius:
-        50%;
-
-      background:
-        var(--text);
-
-      animation:
-        pulse 1s infinite
-        alternate;
-
-    }
-
-    @keyframes pulse {
-
-      from {
-        opacity:
-          .25;
-
-        transform:
-          scale(.75);
-      }
-
-      to {
-        opacity:
-          1;
-
-        transform:
-          scale(1);
-      }
-
-    }
-
-
-    /* =====================================================
-       MAP SECTION
-    ====================================================== */
-
-    .map-section {
-
-      width:
-        min(
-          calc(100% - 32px),
-          var(--max-width)
-        );
-
-      margin:
-        0 auto;
-
-      padding:
-        10px 0 100px;
-
-    }
-
-    .map-header {
-
-      display:
-        flex;
-
-      justify-content:
-        space-between;
-
-      align-items:
-        flex-end;
-
-      gap:
-        20px;
-
-      margin-bottom:
-        18px;
-
-    }
-
-    .map-description {
-
-      max-width:
-        420px;
-
-      color:
-        var(--text-soft);
-
-      font-size:
-        12px;
-
-      line-height:
-        1.6;
-
-    }
-
-    .map-button {
-
-      flex:
-        0 0 auto;
-
-      border:
-        0;
-
-      background:
-        var(--text);
-
-      color:
-        #fff;
-
-      border-radius:
-        999px;
-
-      padding:
-        10px 15px;
-
-      font-size:
-        11px;
-
-      font-weight:
-        700;
-
-    }
-
-    #map {
-
-      width:
-        100%;
-
-      height:
-        430px;
-
-      overflow:
-        hidden;
-
-      border-radius:
-        var(--radius-lg);
-
-      background:
-        #e9e9e6;
-
-      box-shadow:
-        var(--shadow-soft);
-
-    }
-
-
-    /* =====================================================
-       AI
-    ====================================================== */
-
-    .ai-section {
-
-      width:
-        min(
-          calc(100% - 32px),
-          760px
-        );
-
-      margin:
-        0 auto;
-
-      padding:
-        15px 0 120px;
-
-    }
-
-    .ai-card {
-
-      padding:
-        34px;
-
-      background:
-        #111;
-
-      color:
-        #fff;
-
-      border-radius:
-        var(--radius-lg);
-
-      box-shadow:
-        var(--shadow-medium);
-
-    }
-
-    .ai-label {
-
-      color:
-        rgba(255,255,255,.48);
-
-      font-size:
-        9px;
-
-      font-weight:
-        700;
-
-      letter-spacing:
-        .14em;
-
-      text-transform:
-        uppercase;
-
-    }
-
-    .ai-title {
-
-      margin:
-        12px 0 9px;
-
-      font-size:
-        clamp(28px,5vw,44px);
-
-      line-height:
-        .95;
-
-      letter-spacing:
-        -.065em;
-
-    }
-
-    .ai-text {
-
-      max-width:
-        500px;
-
-      margin:
-        0;
-
-      color:
-        rgba(255,255,255,.58);
-
-      font-size:
-        12px;
-
-      line-height:
-        1.6;
-
-    }
-
-    .ai-form {
-
-      display:
-        flex;
-
-      gap:
-        7px;
-
-      margin-top:
-        25px;
-
-    }
-
-    #aiInput {
-
-      min-width:
-        0;
-
-      flex:
-        1;
-
-      border:
-        0;
-
-      outline:
-        0;
-
-      border-radius:
-        999px;
-
-      padding:
-        14px 17px;
-
-      background:
-        rgba(255,255,255,.10);
-
-      color:
-        #fff;
-
-      font-size:
-        12px;
-
-    }
-
-    #aiInput::placeholder {
-
-      color:
-        rgba(255,255,255,.40);
-
-    }
-
-    .ai-submit {
-
-      border:
-        0;
-
-      border-radius:
-        999px;
-
-      padding:
-        0 18px;
-
-      background:
-        #fff;
-
-      color:
-        #111;
-
-      font-size:
-        11px;
-
-      font-weight:
-        700;
-
-    }
-
-    #aiResponse {
-
-      display:
-        none;
-
-      margin-top:
-        20px;
-
-      padding:
-        16px;
-
-      border-radius:
-        16px;
-
-      background:
-        rgba(255,255,255,.07);
-
-      color:
-        rgba(255,255,255,.78);
-
-      font-size:
-        12px;
-
-      line-height:
-        1.65;
-
-      white-space:
-        pre-wrap;
-
-    }
-
-
-    /* =====================================================
-       FOOTER
-    ====================================================== */
-
-    footer {
-
-      border-top:
-        1px solid
-        var(--line);
-
-      padding:
-        28px 16px;
-
-    }
-
-    .footer-inner {
-
-      width:
-        min(
-          100%,
-          var(--max-width)
-        );
-
-      margin:
-        auto;
-
-      display:
-        flex;
-
-      align-items:
-        center;
-
-      justify-content:
-        space-between;
-
-      gap:
-        20px;
-
-    }
-
-    .footer-logo {
-
-      font-size:
-        15px;
-
-      font-weight:
-        800;
-
-      letter-spacing:
-        -.07em;
-
-    }
-
-    .footer-text {
-
-      color:
-        var(--text-faint);
-
-      font-size:
-        10px;
-
-    }
-
-
-    /* =====================================================
-       TOAST
-    ====================================================== */
-
-    #nexoToast {
-
-      position:
-        fixed;
-
-      left:
-        50%;
-
-      bottom:
-        22px;
-
-      z-index:
-        10000;
-
-      transform:
-        translate(-50%,20px);
-
-      opacity:
-        0;
-
-      pointer-events:
-        none;
-
-      padding:
-        11px 16px;
-
-      border-radius:
-        999px;
-
-      background:
-        rgba(17,17,17,.92);
-
-      color:
-        #fff;
-
-      font-size:
-        11px;
-
-      box-shadow:
-        0 15px 50px
-        rgba(0,0,0,.2);
-
-      transition:
-        opacity .3s var(--ease),
-        transform .3s var(--ease);
-
-    }
-
-    #nexoToast.show {
-
-      opacity:
-        1;
-
-      transform:
-        translate(-50%,0);
-
-    }
-
-
-    /* =====================================================
-       RESPONSIVE
-    ====================================================== */
-
-    @media (
-      max-width: 900px
-    ) {
-
-      #propertyGrid {
-
-        grid-template-columns:
-          repeat(
-            2,
-            minmax(0,1fr)
-          );
-
-      }
-
-    }
-
-
-    @media (
-      max-width: 640px
-    ) {
-
-      .header-inner {
-
-        height:
-          58px;
-
-      }
-
-      .main-nav {
-
-        gap:
-          2px;
-
-      }
-
-      .nav-link {
-
-        padding:
-          8px;
-
-        font-size:
-          10px;
-
-      }
-
-      .nav-admin {
-
-        display:
-          none;
-
-      }
-
-      .hero {
-
-        padding:
-          66px 0 45px;
-
-      }
-
-      .hero h1 {
-
-        font-size:
-          clamp(
-            48px,
-            15vw,
-            70px
-          );
-
-      }
-
-      .hero-subtitle {
-
-        max-width:
-          330px;
-
-        font-size:
-          12px;
-
-      }
-
-      .search-wrap {
-
-        margin-top:
-          28px;
-
-      }
-
-      .search-form {
-
-        padding:
-          5px;
-
-      }
-
-      .search-icon {
-
-        width:
-          40px;
-
-        height:
-          40px;
-
-      }
-
-      .search-submit {
-
-        min-width:
-          42px;
-
-        height:
-          42px;
-
-      }
-
-      #searchInput {
-
-        font-size:
-          12px;
-
-      }
-
-      .inventory {
-
-        padding-bottom:
-          75px;
-
-      }
-
-      .inventory-head {
-
-        align-items:
-          flex-end;
-
-      }
-
-      .inventory-title {
-
-        font-size:
-          30px;
-
-      }
-
-      #propertyGrid {
-
-        grid-template-columns:
-          1fr;
-
-        gap:
-          14px;
-
-      }
-
-      .property-image {
-
-        aspect-ratio:
-          1.25 / 1;
-
-      }
-
-      .property-body {
-
-        padding:
-          15px 15px 17px;
-
-      }
-
-      .property-price {
-
-        font-size:
-          19px;
-
-      }
-
-      .map-section {
-
-        padding-bottom:
-          75px;
-
-      }
-
-      .map-header {
-
-        align-items:
-          flex-start;
-
-        flex-direction:
-          column;
-
-      }
-
-      #map {
-
-        height:
-          360px;
-
-        border-radius:
-          22px;
-
-      }
-
-      .ai-section {
-
-        padding-bottom:
-          80px;
-
-      }
-
-      .ai-card {
-
-        padding:
-          26px 20px;
-
-        border-radius:
-          24px;
-
-      }
-
-      .ai-form {
-
-        flex-direction:
-          column;
-
-      }
-
-      .ai-submit {
-
-        height:
-          44px;
-
-      }
-
-      .footer-inner {
-
-        align-items:
-          flex-start;
-
-        flex-direction:
-          column;
-
-      }
-
-    }
-
-  </style>
+}
+</style>
 </head>
-
 
 <body>
 
-  <!-- =====================================================
-       HEADER
-  ====================================================== -->
+<header class="site-header">
 
-  <header class="site-header">
+  <div class="header-inner">
 
-    <div class="header-inner">
+    <a
+      href="/"
+      class="logo"
+      aria-label="NEXO"
+    >
+      NEXO
+    </a>
+
+    <div class="header-actions">
+
+      <button
+        class="header-button map"
+        id="mapButton"
+        type="button"
+      >
+        Mapa
+      </button>
 
       <a
-        href="/"
-        class="logo"
-        aria-label="NEXO"
+        class="header-button primary"
+        href="/admin.html"
       >
-        NEXO<span>.</span>
+        Administración
       </a>
-
-      <nav
-        class="main-nav"
-        aria-label="Navegación principal"
-      >
-
-        <a
-          href="#propiedades"
-          class="nav-link"
-        >
-          Propiedades
-        </a>
-
-        <a
-          href="#mapa"
-          class="nav-link"
-        >
-          Mapa
-        </a>
-
-        <a
-          href="#nexoIA"
-          class="nav-link"
-        >
-          NEXO IA
-        </a>
-
-        <a
-          href="/admin.html"
-          class="nav-link nav-admin"
-        >
-          Administración
-        </a>
-
-      </nav>
 
     </div>
 
-  </header>
+  </div>
 
+</header>
 
-  <!-- =====================================================
-       HERO
-  ====================================================== -->
+<main>
 
-  <main>
+  <section class="hero">
 
-    <section class="hero">
+    <div class="eyebrow">
+      NEXO · Inmobiliaria Cuba
+    </div>
 
-      <div class="hero-eyebrow">
-        NEXO · Cuba
-      </div>
+    <h1>
+      Encuentra un lugar
+      <span>que se sienta tuyo.</span>
+    </h1>
 
-      <h1>
-        Encuentra
-        <span>tu lugar.</span>
-      </h1>
+    <p class="hero-copy">
+      Explora propiedades seleccionadas en Cuba
+      desde una experiencia simple, rápida y pensada
+      para encontrar exactamente lo que buscas.
+    </p>
 
-      <p class="hero-subtitle">
-        Explora propiedades en Cuba de una forma
-        simple, clara y diferente.
-      </p>
+  </section>
 
+  <section class="search-shell">
 
-      <!-- =================================================
-           SEARCH
-      ================================================== -->
-
-      <div class="search-wrap">
-
-        <form
-          id="searchForm"
-          class="search-form"
-        >
-
-          <div
-            class="search-icon"
-            aria-hidden="true"
-          >
-
-            <svg
-              viewBox="0 0 24 24"
-            >
-              <circle
-                cx="11"
-                cy="11"
-                r="6.5"
-              />
-
-              <path
-                d="m16 16 5 5"
-              />
-            </svg>
-
-          </div>
-
-          <input
-            id="searchInput"
-            type="search"
-            autocomplete="off"
-            placeholder="Ciudad, zona o tipo de propiedad"
-            aria-label="Buscar propiedades"
-          >
-
-          <button
-            class="search-submit"
-            type="submit"
-            aria-label="Buscar"
-          >
-
-            <svg
-              viewBox="0 0 24 24"
-            >
-
-              <path
-                d="M5 12h13"
-              />
-
-              <path
-                d="m13 6 6 6-6 6"
-              />
-
-            </svg>
-
-          </button>
-
-        </form>
-
-
-        <div class="quick-search">
-
-          <button
-            type="button"
-            data-search="Casa en La Habana"
-          >
-            Casas
-          </button>
-
-          <button
-            type="button"
-            data-search="Apartamento en La Habana"
-          >
-            Apartamentos
-          </button>
-
-          <button
-            type="button"
-            data-search="Playa La Habana"
-          >
-            Playa
-          </button>
-
-          <button
-            type="button"
-            data-search="Vedado La Habana"
-          >
-            Vedado
-          </button>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- ===================================================
-         INVENTORY
-    ==================================================== -->
-
-    <section
-      id="propiedades"
-      class="inventory"
+    <form
+      id="searchForm"
+      class="search-main"
     >
 
-      <div class="inventory-head">
-
-        <div>
-
-          <div class="section-label">
-            Inventario
-          </div>
-
-          <h2 class="inventory-title">
-            Propiedades
-          </h2>
-
-        </div>
-
-        <div id="propertyCount">
-          Cargando…
-        </div>
-
+      <div class="search-icon">
+        ⌕
       </div>
 
-
-      <!-- =================================================
-           FILTERS
-      ================================================== -->
-
-      <div
-        class="filters"
-        aria-label="Filtros de propiedades"
+      <input
+        id="searchInput"
+        class="search-input"
+        type="search"
+        autocomplete="off"
+        placeholder="Ciudad, zona o tipo de propiedad"
+        aria-label="Buscar propiedades"
       >
 
-        <button
-          type="button"
-          class="filter active"
-          data-filter="all"
-        >
-          Todas
-        </button>
+      <button
+        class="search-submit"
+        type="submit"
+      >
+        Buscar
+      </button>
 
-        <button
-          type="button"
-          class="filter"
-          data-filter="casa"
-        >
-          Casas
-        </button>
+    </form>
 
-        <button
-          type="button"
-          class="filter"
-          data-filter="apartamento"
-        >
-          Apartamentos
-        </button>
+    <div class="filters">
 
-        <button
-          type="button"
-          class="filter"
-          data-filter="terreno"
-        >
-          Terrenos
-        </button>
+      <button
+        class="filter active"
+        data-filter="all"
+        type="button"
+      >
+        Todo
+      </button>
 
-        <button
-          type="button"
-          class="filter"
-          data-filter="local"
-        >
-          Locales
-        </button>
+      <button
+        class="filter"
+        data-filter="Casa"
+        type="button"
+      >
+        Casas
+      </button>
 
+      <button
+        class="filter"
+        data-filter="Apartamento"
+        type="button"
+      >
+        Apartamentos
+      </button>
+
+      <button
+        class="filter"
+        data-filter="Villa"
+        type="button"
+      >
+        Villas
+      </button>
+
+      <button
+        class="filter"
+        data-filter="Terreno"
+        type="button"
+      >
+        Terrenos
+      </button>
+
+      <button
+        class="filter"
+        data-filter="price"
+        type="button"
+      >
+        Hasta $100K
+      </button>
+
+    </div>
+
+  </section>
+
+  <section>
+
+    <div class="content-header">
+
+      <h2 class="content-title">
+        Propiedades
+      </h2>
+
+      <div
+        class="content-count"
+        id="propertyCount"
+      >
+        —
       </div>
 
+    </div>
 
-      <!-- =================================================
-           PROPERTY GRID
-      ================================================== -->
-
-      <div id="propertyGrid">
-
-        <div class="loading">
-
-          <div class="loading-dot"></div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- ===================================================
-         MAP
-    ==================================================== -->
-
-    <section
-      id="mapa"
-      class="map-section"
+    <div
+      class="inventory"
+      id="inventory"
     >
 
-      <div class="map-header">
+      <div class="inventory-state">
 
-        <div>
+        <div class="loader"></div>
 
-          <div class="section-label">
-            Explora
-          </div>
-
-          <div class="inventory-title">
-            Encuentra por ubicación.
-          </div>
-
-          <p class="map-description">
-            Explora las propiedades disponibles
-            directamente sobre el mapa.
-          </p>
-
+        <div class="state-title">
+          Cargando propiedades
         </div>
 
-        <a
-          href="/mapa/"
-          class="map-button"
-        >
-          Abrir mapa
-        </a>
+        <div class="state-copy">
+          Estamos preparando el inventario de NEXO.
+        </div>
 
       </div>
+
+    </div>
+
+  </section>
+
+  <section
+    class="map-section"
+    id="mapSection"
+  >
+
+    <div class="section-heading">
+
+      <div>
+        <h2>
+          Explora el mapa.
+        </h2>
+
+        <p>
+          Propiedades disponibles con ubicación.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="map-shell">
 
       <div id="map"></div>
 
-    </section>
+      <button
+        class="map-open"
+        id="openMapButton"
+        type="button"
+      >
+        Ver mapa
+      </button>
+
+    </div>
+
+  </section>
+
+</main>
+
+<footer>
+  NEXO · Cuba
+</footer>
 
 
-    <!-- ===================================================
-         NEXO IA
-    ==================================================== -->
+<!-- =======================================================
+     PROPERTY MODAL
+======================================================= -->
 
-    <section
-      id="nexoIA"
-      class="ai-section"
-    >
+<div
+  class="modal"
+  id="propertyModal"
+  aria-hidden="true"
+>
 
-      <div class="ai-card">
+  <div class="modal-card">
 
-        <div class="ai-label">
+    <div class="modal-image">
+
+      <button
+        class="modal-close"
+        id="modalClose"
+        type="button"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+
+      <img
+        id="modalImage"
+        alt=""
+      >
+
+    </div>
+
+    <div class="modal-content">
+
+      <div
+        class="modal-price"
+        id="modalPrice"
+      >
+        —
+      </div>
+
+      <div
+        class="modal-title"
+        id="modalTitle"
+      >
+        —
+      </div>
+
+      <div
+        class="modal-location"
+        id="modalLocation"
+      >
+        —
+      </div>
+
+      <div
+        class="modal-meta"
+        id="modalMeta"
+      ></div>
+
+      <div
+        class="modal-description"
+        id="modalDescription"
+      ></div>
+
+      <button
+        class="modal-contact"
+        id="modalContact"
+        type="button"
+      >
+        Solicitar información
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =======================================================
+     NEXO IA
+======================================================= -->
+
+<button
+  class="ai-launcher"
+  id="aiLauncher"
+  type="button"
+  aria-label="Abrir NEXO IA"
+  aria-expanded="false"
+>
+  <span class="ai-logo">N</span>
+  <span class="ai-dot"></span>
+</button>
+
+<section
+  class="ai-panel"
+  id="aiPanel"
+  aria-hidden="true"
+>
+
+  <header class="ai-header">
+
+    <div class="ai-brand">
+
+      <div class="ai-brand-icon">
+        N
+      </div>
+
+      <div>
+
+        <div class="ai-brand-name">
           NEXO IA
         </div>
 
-        <h2 class="ai-title">
-          Dile lo que buscas.
-        </h2>
+        <div class="ai-brand-status">
+          Asistente inmobiliario
+        </div>
 
-        <p class="ai-text">
-          Describe la propiedad que tienes en mente
-          y NEXO puede ayudarte a encontrar
-          opciones dentro del inventario disponible.
-        </p>
-
-
-        <form
-          id="aiForm"
-          class="ai-form"
-        >
-
-          <input
-            id="aiInput"
-            type="text"
-            autocomplete="off"
-            placeholder="Ej. una casa en Playa con 3 habitaciones…"
-          >
-
-          <button
-            class="ai-submit"
-            type="submit"
-          >
-            Buscar
-          </button>
-
-        </form>
-
-
-        <div
-          id="aiResponse"
-          aria-live="polite"
-        ></div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-
-  <!-- =====================================================
-       FOOTER
-  ====================================================== -->
-
-  <footer>
-
-    <div class="footer-inner">
-
-      <div class="footer-logo">
-        NEXO.
-      </div>
-
-      <div class="footer-text">
-        Inmobiliaria · Cuba
       </div>
 
     </div>
 
-  </footer>
+    <button
+      class="ai-close"
+      id="aiClose"
+      type="button"
+      aria-label="Cerrar NEXO IA"
+    >
+      ×
+    </button>
 
-
-  <!-- =====================================================
-       TOAST
-  ====================================================== -->
+  </header>
 
   <div
-    id="nexoToast"
-    role="status"
+    class="ai-messages"
+    id="aiMessages"
     aria-live="polite"
   ></div>
 
+  <div
+    class="ai-typing"
+    id="aiTyping"
+  >
+    NEXO está pensando
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
 
-  <!-- =====================================================
-       LEAFLET
-  ====================================================== -->
+  <div class="ai-suggestions">
 
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
+    <button
+      class="ai-suggestion"
+      data-ai-message="Muéstrame casas disponibles en La Habana"
+      type="button"
+    >
+      Casas en La Habana
+    </button>
+
+    <button
+      class="ai-suggestion"
+      data-ai-message="Quiero un apartamento económico"
+      type="button"
+    >
+      Apartamentos económicos
+    </button>
+
+    <button
+      class="ai-suggestion"
+      data-ai-message="¿Qué propiedades tienes disponibles?"
+      type="button"
+    >
+      Ver propiedades
+    </button>
+
+  </div>
+
+  <form
+    class="ai-composer"
+    id="aiForm"
+  >
+
+    <textarea
+      class="ai-input"
+      id="aiInput"
+      rows="1"
+      maxlength="1000"
+      placeholder="¿Qué estás buscando?"
+      aria-label="Mensaje para NEXO IA"
+    ></textarea>
+
+    <button
+      class="ai-send"
+      id="aiSend"
+      type="submit"
+      aria-label="Enviar"
+    >
+      ↑
+    </button>
+
+  </form>
+
+</section>
 
 
-  <!-- =====================================================
-       MAPA
-  ====================================================== -->
-
-  <script>
-
-    (() => {
-
-      "use strict";
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
 
 
-      let map = null;
+<script>
+"use strict";
+
+/* =========================================================
+   NEXO PUBLIC APP
+   Arquitectura compatible con:
+
+   GET  /api/properties
+   POST /api/ia
+
+   La IA está desacoplada de la interfaz.
+   Puede sustituirse posteriormente por una capa
+   de IA más avanzada sin reconstruir la página.
+========================================================= */
+
+const NEXO = {
+
+  properties: [],
+
+  filtered: [],
+
+  activeFilter: "all",
+
+  search: "",
+
+  favorites: new Set(),
+
+  map: null,
+
+  markers: [],
+
+  selectedProperty: null,
+
+  aiHistory: [],
+
+  aiThinking: false,
+
+  config: {
+
+    propertiesAPI:
+      "/api/properties",
+
+    aiAPI:
+      "/api/ia",
+
+    favoritesKey:
+      "nexo_favorites_v1",
+
+    aiHistoryKey:
+      "nexo_ai_history_v1"
+
+  }
+
+};
 
 
-      /*
-       * Cuba.
-       */
+/* =========================================================
+   DOM
+========================================================= */
 
-      const CUBA_CENTER = [
-        21.5218,
-        -77.7812
-      ];
+const inventory =
+  document.getElementById(
+    "inventory"
+  );
+
+const propertyCount =
+  document.getElementById(
+    "propertyCount"
+  );
+
+const searchInput =
+  document.getElementById(
+    "searchInput"
+  );
+
+const searchForm =
+  document.getElementById(
+    "searchForm"
+  );
+
+const propertyModal =
+  document.getElementById(
+    "propertyModal"
+  );
+
+const modalImage =
+  document.getElementById(
+    "modalImage"
+  );
+
+const modalPrice =
+  document.getElementById(
+    "modalPrice"
+  );
+
+const modalTitle =
+  document.getElementById(
+    "modalTitle"
+  );
+
+const modalLocation =
+  document.getElementById(
+    "modalLocation"
+  );
+
+const modalMeta =
+  document.getElementById(
+    "modalMeta"
+  );
+
+const modalDescription =
+  document.getElementById(
+    "modalDescription"
+  );
+
+const modalContact =
+  document.getElementById(
+    "modalContact"
+  );
+
+const mapSection =
+  document.getElementById(
+    "mapSection"
+  );
+
+const aiLauncher =
+  document.getElementById(
+    "aiLauncher"
+  );
+
+const aiPanel =
+  document.getElementById(
+    "aiPanel"
+  );
+
+const aiClose =
+  document.getElementById(
+    "aiClose"
+  );
+
+const aiForm =
+  document.getElementById(
+    "aiForm"
+  );
+
+const aiInput =
+  document.getElementById(
+    "aiInput"
+  );
+
+const aiSend =
+  document.getElementById(
+    "aiSend"
+  );
+
+const aiMessages =
+  document.getElementById(
+    "aiMessages"
+  );
+
+const aiTyping =
+  document.getElementById(
+    "aiTyping"
+  );
 
 
-      document.addEventListener(
-        "DOMContentLoaded",
-        initMap
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function escapeHTML(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+function normalize(value){
+
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .toLowerCase()
+    .trim();
+
+}
+
+
+function money(value){
+
+  const number =
+    Number(
+      String(value ?? "")
+        .replace(/[^\d.-]/g,"")
+    );
+
+  if(!Number.isFinite(number)){
+    return "Precio no disponible";
+  }
+
+  return "$" +
+    number.toLocaleString(
+      "en-US",
+      {
+        maximumFractionDigits:0
+      }
+    );
+
+}
+
+
+function photos(value){
+
+  if(Array.isArray(value)){
+
+    return value
+      .map(String)
+      .map(x=>x.trim())
+      .filter(Boolean);
+
+  }
+
+  if(!value){
+    return [];
+  }
+
+  const text =
+    String(value).trim();
+
+  try{
+
+    const parsed =
+      JSON.parse(text);
+
+    if(Array.isArray(parsed)){
+
+      return parsed
+        .map(String)
+        .map(x=>x.trim())
+        .filter(Boolean);
+
+    }
+
+  }catch(_){}
+
+  return text
+    .split(/[\n,|]+/)
+    .map(x=>x.trim())
+    .filter(Boolean);
+
+}
+
+
+function locationOf(property){
+
+  return [
+
+    property.neighborhood,
+
+    property.city,
+
+    property.province
+
+  ]
+    .filter(Boolean)
+    .join(" · ") || "Cuba";
+
+}
+
+
+function statusOf(property){
+
+  const status =
+    normalize(
+      property.status ||
+      "available"
+    );
+
+  if(status === "sold"){
+    return "Vendida";
+  }
+
+  if(status === "reserved"){
+    return "Reservada";
+  }
+
+  return "Disponible";
+
+}
+
+
+/* =========================================================
+   FAVORITES
+========================================================= */
+
+function loadFavorites(){
+
+  try{
+
+    const saved =
+      JSON.parse(
+        localStorage.getItem(
+          NEXO.config.favoritesKey
+        ) || "[]"
       );
 
+    if(Array.isArray(saved)){
 
-      async function initMap() {
-
-        const mapElement =
-          document.getElementById("map");
-
-        if (!mapElement) return;
-
-        if (
-          typeof L === "undefined"
-        ) {
-
-          mapElement.innerHTML = `
-            <div
-              style="
-                height:100%;
-                display:grid;
-                place-items:center;
-                color:#777;
-                font-size:12px;
-              "
-            >
-              El mapa no está disponible.
-            </div>
-          `;
-
-          return;
-        }
-
-
-        map =
-          L.map(
-            mapElement,
-            {
-              zoomControl: false,
-              minZoom: 5,
-              maxZoom: 18
-            }
-          );
-
-
-        L.control.zoom({
-          position: "bottomright"
-        }).addTo(map);
-
-
-        L.tileLayer(
-          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          {
-            maxZoom: 19,
-            attribution:
-              '&copy; OpenStreetMap contributors'
-          }
-        ).addTo(map);
-
-
-        map.setView(
-          CUBA_CENTER,
-          6
+      NEXO.favorites =
+        new Set(
+          saved.map(String)
         );
 
+    }
 
-        await loadMapProperties();
+  }catch(_){}
+
+}
+
+
+function saveFavorites(){
+
+  try{
+
+    localStorage.setItem(
+
+      NEXO.config.favoritesKey,
+
+      JSON.stringify(
+        [...NEXO.favorites]
+      )
+
+    );
+
+  }catch(_){}
+
+}
+
+
+function toggleFavorite(id){
+
+  const key =
+    String(id);
+
+  if(
+    NEXO.favorites.has(key)
+  ){
+
+    NEXO.favorites.delete(key);
+
+  }else{
+
+    NEXO.favorites.add(key);
+
+  }
+
+  saveFavorites();
+
+  renderInventory();
+
+}
+
+
+/* =========================================================
+   API PROPERTIES
+========================================================= */
+
+async function loadProperties(){
+
+  inventory.innerHTML = `
+    <div class="inventory-state">
+      <div class="loader"></div>
+      <div class="state-title">
+        Cargando propiedades
+      </div>
+      <div class="state-copy">
+        Preparando el inventario de NEXO.
+      </div>
+    </div>
+  `;
+
+  try{
+
+    const response =
+      await fetch(
+        NEXO.config.propertiesAPI,
+        {
+          method:"GET",
+          headers:{
+            Accept:
+              "application/json"
+          }
+        }
+      );
+
+    if(!response.ok){
+
+      throw new Error(
+        `HTTP ${response.status}`
+      );
+
+    }
+
+    const data =
+      await response.json();
+
+    const properties =
+      Array.isArray(
+        data?.properties
+      )
+        ? data.properties
+        : [];
+
+    NEXO.properties =
+      properties;
+
+    applyFilters();
+
+    updateMap();
+
+  }catch(error){
+
+    console.error(
+      "NEXO properties:",
+      error
+    );
+
+    inventory.innerHTML = `
+      <div class="inventory-state">
+        <div class="state-title">
+          No pudimos cargar las propiedades.
+        </div>
+        <div class="state-copy">
+          Comprueba tu conexión e inténtalo nuevamente.
+        </div>
+      </div>
+    `;
+
+    propertyCount.textContent =
+      "Sin conexión";
+
+  }
+
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+function applyFilters(){
+
+  const query =
+    normalize(
+      NEXO.search
+    );
+
+  const filter =
+    NEXO.activeFilter;
+
+  NEXO.filtered =
+    NEXO.properties.filter(
+      property => {
+
+        const text =
+          normalize([
+            property.title,
+            property.property_type,
+            property.city,
+            property.province,
+            property.neighborhood,
+            property.address,
+            property.description
+          ].join(" "));
+
+        if(query && !text.includes(query)){
+          return false;
+        }
+
+        if(
+          filter !== "all" &&
+          filter !== "price" &&
+          normalize(
+            property.property_type
+          ) !== normalize(filter)
+        ){
+
+          return false;
+
+        }
+
+        if(filter === "price"){
+
+          const price =
+            Number(property.price);
+
+          if(
+            !Number.isFinite(price) ||
+            price > 100000
+          ){
+
+            return false;
+
+          }
+
+        }
+
+        return true;
 
       }
+    );
+
+  renderInventory();
+
+}
 
 
-      async function loadMapProperties() {
+document
+  .querySelectorAll(
+    ".filter"
+  )
+  .forEach(button => {
 
-        try {
+    button.addEventListener(
+      "click",
+      () => {
 
-          const response =
-            await fetch(
-              "/api/properties?status=available&limit=200"
-            );
+        document
+          .querySelectorAll(
+            ".filter"
+          )
+          .forEach(
+            item =>
+              item.classList.remove(
+                "active"
+              )
+          );
 
+        button.classList.add(
+          "active"
+        );
 
-          if (!response.ok) {
-            throw new Error(
-              "No se pudo cargar el mapa."
-            );
-          }
+        NEXO.activeFilter =
+          button.dataset.filter ||
+          "all";
 
+        applyFilters();
 
-          const data =
-            await response.json();
+      }
+    );
 
-
-          const properties =
-            Array.isArray(
-              data?.properties
-            )
-              ? data.properties
-              : [];
-
-
-          const located =
-            properties.filter(
-              property =>
-                Number.isFinite(
-                  Number(property.latitude)
-                ) &&
-                Number.isFinite(
-                  Number(property.longitude)
-                )
-            );
+  });
 
 
-          if (!located.length) {
-            return;
-          }
+searchForm.addEventListener(
+  "submit",
+  event => {
+
+    event.preventDefault();
+
+    NEXO.search =
+      searchInput.value.trim();
+
+    applyFilters();
+
+    document
+      .querySelector(
+        ".content-header"
+      )
+      ?.scrollIntoView({
+        behavior:"smooth",
+        block:"start"
+      });
+
+  }
+);
 
 
-          const bounds =
-            [];
+/* =========================================================
+   PROPERTY CARDS
+========================================================= */
 
+function propertyCard(property){
 
-          located.forEach(
-            property => {
+  const image =
+    photos(
+      property.photos
+    )[0];
 
-              const lat =
-                Number(
-                  property.latitude
-                );
+  const favorite =
+    NEXO.favorites.has(
+      String(property.id)
+    );
 
-              const lng =
-                Number(
-                  property.longitude
-                );
+  const meta = [];
 
+  if(property.bedrooms !== null &&
+     property.bedrooms !== undefined &&
+     property.bedrooms !== ""){
 
-              if (
-                lat < 19 ||
-                lat > 24 ||
-                lng < -86 ||
-                lng > -74
-              ) {
-                return;
-              }
+    meta.push(
+      `${escapeHTML(
+        property.bedrooms
+      )} hab.`
+    );
 
+  }
 
-              const marker =
-                L.marker([
-                  lat,
-                  lng
-                ]).addTo(map);
+  if(property.bathrooms !== null &&
+     property.bathrooms !== undefined &&
+     property.bathrooms !== ""){
 
+    meta.push(
+      `${escapeHTML(
+        property.bathrooms
+      )} baños`
+    );
 
-              const price =
-                formatMapPrice(
-                  property.price
-                );
+  }
 
+  if(property.square_meters !== null &&
+     property.square_meters !== undefined &&
+     property.square_meters !== ""){
 
-              const title =
-                escapeMap(
+    meta.push(
+      `${escapeHTML(
+        property.square_meters
+      )} m²`
+    );
+
+  }
+
+  return `
+    <article
+      class="property-card"
+      data-id="${escapeHTML(
+        property.id
+      )}"
+    >
+
+      <div class="property-media">
+
+        ${
+          image
+            ? `
+              <img
+                src="${escapeHTML(image)}"
+                alt="${escapeHTML(
                   property.title ||
                   property.property_type ||
                   "Propiedad"
-                );
-
-
-              const location =
-                escapeMap(
-                  [
-                    property.neighborhood,
-                    property.city,
-                    property.province
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")
-                );
-
-
-              marker.bindPopup(`
-                <div
-                  style="
-                    min-width:180px;
-                    font-family:Inter,
-                    -apple-system,
-                    sans-serif;
-                  "
-                >
-
-                  <div
-                    style="
-                      font-size:15px;
-                      font-weight:800;
-                      margin-bottom:5px;
-                    "
-                  >
-                    ${title}
-                  </div>
-
-                  <div
-                    style="
-                      font-size:13px;
-                      font-weight:700;
-                      margin-bottom:4px;
-                    "
-                  >
-                    ${price}
-                  </div>
-
-                  <div
-                    style="
-                      font-size:10px;
-                      color:#777;
-                    "
-                  >
-                    ${location}
-                  </div>
-
-                </div>
-              `);
-
-
-              bounds.push([
-                lat,
-                lng
-              ]);
-
-            }
-          );
-
-
-          /*
-           * Solo ajustamos el mapa si tenemos
-           * ubicaciones válidas.
-           */
-
-          if (
-            bounds.length === 1
-          ) {
-
-            map.setView(
-              bounds[0],
-              14
-            );
-
-          } else if (
-            bounds.length > 1
-          ) {
-
-            map.fitBounds(
-              bounds,
-              {
-                padding:
-                  [35,35]
-              }
-            );
-
-          }
-
-        } catch (error) {
-
-          console.warn(
-            "NEXO map:",
-            error
-          );
-
+                )}"
+                loading="lazy"
+              >
+            `
+            : `
+              <div class="property-placeholder">
+                NEXO
+              </div>
+            `
         }
 
-      }
+        <div class="property-badge">
+          ${escapeHTML(
+            statusOf(property)
+          )}
+        </div>
 
+        <button
+          class="favorite-button ${
+            favorite ? "active" : ""
+          }"
+          data-favorite="${escapeHTML(
+            property.id
+          )}"
+          type="button"
+          aria-label="${
+            favorite
+              ? "Quitar de favoritos"
+              : "Añadir a favoritos"
+          }"
+        >
+          ${favorite ? "♥" : "♡"}
+        </button>
 
-      function formatMapPrice(
-        value
-      ) {
+      </div>
 
-        if (
-          value === null ||
-          value === undefined
-        ) {
-          return "Precio no disponible";
+      <div class="property-body">
+
+        <div class="property-price">
+          ${money(property.price)}
+        </div>
+
+        <div class="property-title">
+          ${escapeHTML(
+            property.title ||
+            property.property_type ||
+            "Propiedad"
+          )}
+        </div>
+
+        <div class="property-location">
+          ${escapeHTML(
+            locationOf(property)
+          )}
+        </div>
+
+        ${
+          meta.length
+            ? `
+              <div class="property-meta">
+                ${meta
+                  .map(
+                    item =>
+                      `<span class="meta">${item}</span>`
+                  )
+                  .join("")}
+              </div>
+            `
+            : ""
         }
 
+      </div>
 
-        const number =
-          Number(value);
+    </article>
+  `;
 
-
-        if (
-          !Number.isFinite(number)
-        ) {
-          return "Precio no disponible";
-        }
+}
 
 
-        return "$" +
-          number.toLocaleString(
-            "en-US",
-            {
-              maximumFractionDigits:
-                0
-            }
-          );
+function renderInventory(){
 
-      }
+  const properties =
+    NEXO.filtered;
 
+  propertyCount.textContent =
+    properties.length === 1
+      ? "1 propiedad"
+      : `${properties.length} propiedades`;
 
-      function escapeMap(
-        value
-      ) {
+  if(!properties.length){
 
-        return String(
-          value || ""
-        )
-          .replace(
-            /&/g,
-            "&amp;"
-          )
-          .replace(
-            /</g,
-            "&lt;"
-          )
-          .replace(
-            />/g,
-            "&gt;"
-          )
-          .replace(
-            /"/g,
-            "&quot;"
-          )
-          .replace(
-            /'/g,
-            "&#039;"
-          );
+    inventory.innerHTML = `
+      <div class="inventory-state">
 
-      }
+        <div class="state-title">
+          No encontramos propiedades.
+        </div>
 
-    })();
+        <div class="state-copy">
+          Prueba otra ciudad, zona, tipo de propiedad
+          o elimina algún filtro.
+        </div>
 
-  </script>
+      </div>
+    `;
 
+    return;
 
-  <!-- =====================================================
-       NEXO IA
-       Este bloque utiliza el endpoint /api/ia
-  ====================================================== -->
+  }
 
-  <script>
+  inventory.innerHTML =
+    properties
+      .map(propertyCard)
+      .join("");
 
-    (() => {
+  inventory
+    .querySelectorAll(
+      ".property-card"
+    )
+    .forEach(card => {
 
-      "use strict";
+      card.addEventListener(
+        "click",
+        event => {
 
+          if(
+            event.target.closest(
+              "[data-favorite]"
+            )
+          ){
 
-      const form =
-        document.getElementById(
-          "aiForm"
-        );
-
-      const input =
-        document.getElementById(
-          "aiInput"
-        );
-
-      const responseBox =
-        document.getElementById(
-          "aiResponse"
-        );
-
-
-      if (
-        !form ||
-        !input ||
-        !responseBox
-      ) {
-        return;
-      }
-
-
-      const conversation = [];
-
-
-      form.addEventListener(
-        "submit",
-        async event => {
-
-          event.preventDefault();
-
-
-          const message =
-            input.value.trim();
-
-
-          if (!message) {
             return;
+
           }
 
-
-          input.disabled =
-            true;
-
-
-          responseBox.style.display =
-            "block";
-
-
-          responseBox.textContent =
-            "Buscando…";
-
-
-          try {
-
-            const response =
-              await fetch(
-                "/api/ia",
-                {
-                  method:
-                    "POST",
-
-                  headers: {
-                    "Content-Type":
-                      "application/json"
-                  },
-
-                  body:
-                    JSON.stringify({
-                      message,
-                      conversation
-                    })
-                }
-              );
-
-
-            const data =
-              await response.json();
-
-
-            if (
-              !response.ok
-            ) {
-              throw new Error(
-                data?.error ||
-                "No se pudo consultar NEXO IA."
-              );
-            }
-
-
-            const answer =
-              data?.answer ||
-              data?.response ||
-              "No recibimos una respuesta.";
-
-
-            conversation.push({
-              role:
-                "user",
-
-              content:
-                message
-            });
-
-
-            conversation.push({
-              role:
-                "assistant",
-
-              content:
-                answer
-            });
-
-
-            /*
-             * Mantener conversación pequeña.
-             */
-
-            while (
-              conversation.length >
-              20
-            ) {
-              conversation.shift();
-            }
-
-
-            responseBox.textContent =
-              answer;
-
-
-            /*
-             * Si IA devuelve propiedades,
-             * intentamos llevar al usuario
-             * al inventario.
-             */
-
-            if (
-              Array.isArray(
-                data?.properties
-              ) &&
-              data.properties.length
-            ) {
-
-              window.dispatchEvent(
-                new CustomEvent(
-                  "nexo:ai-results",
-                  {
-                    detail:
-                      data.properties
-                  }
+          const property =
+            NEXO.properties.find(
+              item =>
+                String(item.id) ===
+                String(
+                  card.dataset.id
                 )
-              );
-
-            }
-
-          } catch (error) {
-
-            console.error(
-              "NEXO IA:",
-              error
             );
 
+          if(property){
 
-            responseBox.textContent =
-              error.message ||
-              "No pudimos consultar NEXO IA.";
-
-          } finally {
-
-            input.disabled =
-              false;
-
-            input.focus();
+            openProperty(
+              property
+            );
 
           }
 
         }
       );
 
-    })();
+    });
 
-  </script>
+  inventory
+    .querySelectorAll(
+      "[data-favorite]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        event => {
+
+          event.stopPropagation();
+
+          toggleFavorite(
+            button.dataset.favorite
+          );
+
+        }
+      );
+
+    });
+
+}
 
 
-  <!-- =====================================================
-       APP.JS
-  ====================================================== -->
+/* =========================================================
+   PROPERTY MODAL
+========================================================= */
 
-  <script
-    src="/app.js"
-    defer
-  ></script>
+function openProperty(property){
+
+  NEXO.selectedProperty =
+    property;
+
+  const image =
+    photos(
+      property.photos
+    )[0];
+
+  if(image){
+
+    modalImage.src =
+      image;
+
+    modalImage.style.display =
+      "block";
+
+  }else{
+
+    modalImage.removeAttribute(
+      "src"
+    );
+
+    modalImage.style.display =
+      "none";
+
+  }
+
+  modalPrice.textContent =
+    money(
+      property.price
+    );
+
+  modalTitle.textContent =
+    property.title ||
+    property.property_type ||
+    "Propiedad";
+
+  modalLocation.textContent =
+    locationOf(property);
+
+  const meta = [];
+
+  if(property.property_type){
+    meta.push(
+      property.property_type
+    );
+  }
+
+  if(property.bedrooms !== null &&
+     property.bedrooms !== undefined &&
+     property.bedrooms !== ""){
+
+    meta.push(
+      `${property.bedrooms} habitaciones`
+    );
+
+  }
+
+  if(property.bathrooms !== null &&
+     property.bathrooms !== undefined &&
+     property.bathrooms !== ""){
+
+    meta.push(
+      `${property.bathrooms} baños`
+    );
+
+  }
+
+  if(property.square_meters !== null &&
+     property.square_meters !== undefined &&
+     property.square_meters !== ""){
+
+    meta.push(
+      `${property.square_meters} m²`
+    );
+
+  }
+
+  modalMeta.innerHTML =
+    meta
+      .map(
+        item =>
+          `<span class="meta">${escapeHTML(item)}</span>`
+      )
+      .join("");
+
+  modalDescription.textContent =
+    property.description ||
+    "Solicita información para conocer más detalles de esta propiedad.";
+
+  propertyModal.classList.add(
+    "show"
+  );
+
+  propertyModal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  document.body.style.overflow =
+    "hidden";
+
+}
+
+
+function closeProperty(){
+
+  propertyModal.classList.remove(
+    "show"
+  );
+
+  propertyModal.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  document.body.style.overflow =
+    "";
+
+  NEXO.selectedProperty =
+    null;
+
+}
+
+
+document
+  .getElementById(
+    "modalClose"
+  )
+  .addEventListener(
+    "click",
+    closeProperty
+  );
+
+
+propertyModal.addEventListener(
+  "click",
+  event => {
+
+    if(
+      event.target ===
+      propertyModal
+    ){
+
+      closeProperty();
+
+    }
+
+  }
+);
+
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if(
+      event.key === "Escape"
+    ){
+
+      closeProperty();
+
+      closeAI();
+
+    }
+
+  }
+);
+
+
+modalContact.addEventListener(
+  "click",
+  () => {
+
+    const property =
+      NEXO.selectedProperty;
+
+    if(!property){
+
+      return;
+
+    }
+
+    const phone =
+      property.owner_phone ||
+      property.contact_phone ||
+      "";
+
+    if(phone){
+
+      const clean =
+        String(phone)
+          .replace(/[^\d+]/g,"");
+
+      window.location.href =
+        `tel:${clean}`;
+
+      return;
+
+    }
+
+    const subject =
+      encodeURIComponent(
+        `Información sobre ${
+          property.title ||
+          "una propiedad"
+        }`
+      );
+
+    const body =
+      encodeURIComponent(
+        `Hola NEXO,\n\nEstoy interesado en la propiedad "${
+          property.title ||
+          property.property_type ||
+          ""
+        }".\n\n`
+      );
+
+    window.location.href =
+      `mailto:?subject=${subject}&body=${body}`;
+
+  }
+);
+
+
+/* =========================================================
+   MAP
+========================================================= */
+
+function initMap(){
+
+  if(
+    typeof L === "undefined"
+  ){
+
+    return;
+
+  }
+
+  NEXO.map =
+    L.map(
+      "map",
+      {
+        zoomControl:true,
+        attributionControl:true
+      }
+    );
+
+  L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      maxZoom:19,
+      attribution:
+        "&copy; OpenStreetMap"
+    }
+  ).addTo(
+    NEXO.map
+  );
+
+  NEXO.map.setView(
+    [21.5218,-77.7812],
+    6
+  );
+
+}
+
+
+function updateMap(){
+
+  if(!NEXO.map){
+
+    return;
+
+  }
+
+  NEXO.markers.forEach(
+    marker =>
+      NEXO.map.removeLayer(
+        marker
+      )
+  );
+
+  NEXO.markers = [];
+
+  const located =
+    NEXO.properties.filter(
+      property =>
+        Number.isFinite(
+          Number(property.latitude)
+        ) &&
+        Number.isFinite(
+          Number(property.longitude)
+        )
+    );
+
+  if(!located.length){
+
+    return;
+
+  }
+
+  const bounds = [];
+
+  located.forEach(
+    property => {
+
+      const lat =
+        Number(property.latitude);
+
+      const lng =
+        Number(property.longitude);
+
+      const marker =
+        L.marker([
+          lat,
+          lng
+        ])
+        .addTo(
+          NEXO.map
+        );
+
+      marker.bindPopup(
+        `
+          <strong>
+            ${escapeHTML(
+              property.title ||
+              property.property_type ||
+              "Propiedad"
+            )}
+          </strong>
+          <br>
+          ${escapeHTML(
+            money(property.price)
+          )}
+        `
+      );
+
+      marker.on(
+        "click",
+        () =>
+          openProperty(
+            property
+          )
+      );
+
+      NEXO.markers.push(
+        marker
+      );
+
+      bounds.push([
+        lat,
+        lng
+      ]);
+
+    }
+  );
+
+  if(bounds.length === 1){
+
+    NEXO.map.setView(
+      bounds[0],
+      14
+    );
+
+  }else if(bounds.length > 1){
+
+    NEXO.map.fitBounds(
+      bounds,
+      {
+        padding:[35,35],
+        maxZoom:14
+      }
+    );
+
+  }
+
+}
+
+
+document
+  .getElementById(
+    "mapButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      mapSection.scrollIntoView({
+        behavior:"smooth",
+        block:"start"
+      });
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "openMapButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      mapSection.scrollIntoView({
+        behavior:"smooth",
+        block:"start"
+      });
+
+    }
+  );
+
+
+/* =========================================================
+   NEXO IA
+========================================================= */
+
+function openAI(){
+
+  aiPanel.classList.add(
+    "show"
+  );
+
+  aiPanel.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  aiLauncher.setAttribute(
+    "aria-expanded",
+    "true"
+  );
+
+  if(!NEXO.aiHistory.length){
+
+    addAIMessage(
+      "assistant",
+      "Hola. Soy NEXO IA. Puedo ayudarte a encontrar una propiedad según ciudad, zona, precio, tipo o características."
+    );
+
+  }
+
+  setTimeout(
+    () => aiInput.focus(),
+    100
+  );
+
+}
+
+
+function closeAI(){
+
+  aiPanel.classList.remove(
+    "show"
+  );
+
+  aiPanel.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  aiLauncher.setAttribute(
+    "aria-expanded",
+    "false"
+  );
+
+}
+
+
+aiLauncher.addEventListener(
+  "click",
+  () => {
+
+    if(
+      aiPanel.classList.contains(
+        "show"
+      )
+    ){
+
+      closeAI();
+
+    }else{
+
+      openAI();
+
+    }
+
+  }
+);
+
+
+aiClose.addEventListener(
+  "click",
+  closeAI
+);
+
+
+/* =========================================================
+   IA HISTORY
+========================================================= */
+
+function loadAIHistory(){
+
+  try{
+
+    const saved =
+      JSON.parse(
+        localStorage.getItem(
+          NEXO.config.aiHistoryKey
+        ) || "[]"
+      );
+
+    if(
+      Array.isArray(saved)
+    ){
+
+      NEXO.aiHistory =
+        saved
+          .filter(
+            item =>
+              item &&
+              (
+                item.role === "user" ||
+                item.role === "assistant"
+              ) &&
+              typeof item.content ===
+                "string"
+          )
+          .slice(-20);
+
+    }
+
+  }catch(_){}
+
+}
+
+
+function saveAIHistory(){
+
+  try{
+
+    localStorage.setItem(
+      NEXO.config.aiHistoryKey,
+      JSON.stringify(
+        NEXO.aiHistory.slice(-20)
+      )
+    );
+
+  }catch(_){}
+
+}
+
+
+/* =========================================================
+   IA UI
+========================================================= */
+
+function addAIMessage(
+  role,
+  text
+){
+
+  const element =
+    document.createElement(
+      "div"
+    );
+
+  element.className =
+    `ai-message ${role}`;
+
+  element.textContent =
+    text;
+
+  aiMessages.appendChild(
+    element
+  );
+
+  NEXO.aiHistory.push({
+    role,
+    content:text
+  });
+
+  saveAIHistory();
+
+  aiMessages.scrollTop =
+    aiMessages.scrollHeight;
+
+}
+
+
+function setAIThinking(
+  value
+){
+
+  NEXO.aiThinking =
+    Boolean(value);
+
+  aiTyping.classList.toggle(
+    "show",
+    NEXO.aiThinking
+  );
+
+  aiSend.disabled =
+    NEXO.aiThinking;
+
+}
+
+
+/* =========================================================
+   IA REQUEST
+========================================================= */
+
+async function askAI(
+  message
+){
+
+  const history =
+    NEXO.aiHistory
+      .slice(-12)
+      .map(
+        item => ({
+          role:item.role,
+          content:
+            String(
+              item.content || ""
+            ).slice(0,2000)
+        })
+      );
+
+  const propertyContext =
+    NEXO.properties
+      .slice(0,100)
+      .map(
+        property => ({
+          id:property.id,
+          title:property.title,
+          property_type:
+            property.property_type,
+          province:
+            property.province,
+          city:
+            property.city,
+          neighborhood:
+            property.neighborhood,
+          bedrooms:
+            property.bedrooms,
+          bathrooms:
+            property.bathrooms,
+          square_meters:
+            property.square_meters,
+          price:
+            property.price,
+          status:
+            property.status,
+          latitude:
+            property.latitude,
+          longitude:
+            property.longitude
+        })
+      );
+
+  const response =
+    await fetch(
+      NEXO.config.aiAPI,
+      {
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+            "application/json",
+
+          "Accept":
+            "application/json",
+
+          "X-NEXO-CLIENT":
+            "nexo-public-v3"
+        },
+
+        body:
+          JSON.stringify({
+
+            message,
+
+            conversation:
+              history,
+
+            properties:
+              propertyContext,
+
+            capabilities:{
+
+              propertySearch:true,
+
+              recommendations:true,
+
+              comparisons:true,
+
+              map:true,
+
+              favorites:true
+
+            }
+
+          })
+
+      }
+    );
+
+  let data = {};
+
+  try{
+
+    data =
+      await response.json();
+
+  }catch(_){
+
+    throw new Error(
+      "NEXO IA recibió una respuesta inválida."
+    );
+
+  }
+
+  if(
+    !response.ok ||
+    !data?.success
+  ){
+
+    throw new Error(
+      data?.error ||
+      "NEXO IA no está disponible en este momento."
+    );
+
+  }
+
+  if(
+    typeof data.answer !==
+      "string"
+  ){
+
+    throw new Error(
+      "NEXO IA no devolvió una respuesta válida."
+    );
+
+  }
+
+  return data.answer.trim();
+
+}
+
+
+/* =========================================================
+   IA FALLBACK LOCAL
+========================================================= */
+
+function localAI(
+  message
+){
+
+  const text =
+    normalize(message);
+
+  const matches =
+    NEXO.properties.filter(
+      property => {
+
+        const searchable =
+          normalize([
+            property.title,
+            property.property_type,
+            property.province,
+            property.city,
+            property.neighborhood,
+            property.description
+          ].join(" "));
+
+        return text
+          .split(/\s+/)
+          .filter(word => word.length > 3)
+          .some(
+            word =>
+              searchable.includes(word)
+          );
+
+      }
+    );
+
+  if(matches.length){
+
+    return `
+Encontré ${matches.length} ${
+      matches.length === 1
+        ? "propiedad"
+        : "propiedades"
+    } que podrían coincidir con tu búsqueda. Revisa el inventario y dime si quieres que afinemos por precio, zona o características.
+    `.trim();
+
+  }
+
+  return `
+Puedo ayudarte a buscar por ciudad, zona, tipo de propiedad, precio, habitaciones o metros cuadrados. ¿Qué estás buscando?
+  `.trim();
+
+}
+
+
+/* =========================================================
+   IA SEND
+========================================================= */
+
+async function sendAI(){
+
+  if(
+    NEXO.aiThinking
+  ){
+
+    return;
+
+  }
+
+  const message =
+    aiInput.value.trim();
+
+  if(!message){
+
+    return;
+
+  }
+
+  addAIMessage(
+    "user",
+    message
+  );
+
+  aiInput.value =
+    "";
+
+  resizeAIInput();
+
+  setAIThinking(
+    true
+  );
+
+  try{
+
+    let answer;
+
+    try{
+
+      answer =
+        await askAI(
+          message
+        );
+
+    }catch(error){
+
+      console.warn(
+        "NEXO IA backend:",
+        error
+      );
+
+      answer =
+        localAI(
+          message
+        );
+
+    }
+
+    addAIMessage(
+      "assistant",
+      answer
+    );
+
+  }finally{
+
+    setAIThinking(
+      false
+    );
+
+    aiInput.focus();
+
+  }
+
+}
+
+
+aiForm.addEventListener(
+  "submit",
+  event => {
+
+    event.preventDefault();
+
+    sendAI();
+
+  }
+);
+
+
+/* =========================================================
+   IA SUGGESTIONS
+========================================================= */
+
+document
+  .querySelectorAll(
+    ".ai-suggestion"
+  )
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        aiInput.value =
+          button.dataset.aiMessage ||
+          "";
+
+        resizeAIInput();
+
+        aiInput.focus();
+
+      }
+    );
+
+  });
+
+
+/* =========================================================
+   IA INPUT
+========================================================= */
+
+function resizeAIInput(){
+
+  aiInput.style.height =
+    "auto";
+
+  aiInput.style.height =
+    Math.min(
+      aiInput.scrollHeight,
+      105
+    ) + "px";
+
+}
+
+
+aiInput.addEventListener(
+  "input",
+  resizeAIInput
+);
+
+
+aiInput.addEventListener(
+  "keydown",
+  event => {
+
+    if(
+      event.key === "Enter" &&
+      !event.shiftKey
+    ){
+
+      event.preventDefault();
+
+      sendAI();
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   INIT
+========================================================= */
+
+loadFavorites();
+
+loadAIHistory();
+
+initMap();
+
+loadProperties();
+
+resizeAIInput();
+
+</script>
 
 </body>
 </html>
