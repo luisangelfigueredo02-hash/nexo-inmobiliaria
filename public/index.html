@@ -8,11 +8,6 @@
 <meta name="description" content="NEXO — Encuentra propiedades en Cuba.">
 <title>NEXO — Encuentra tu próximo lugar</title>
 
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
-
 <style>
 :root{
   --bg:#fbfbfd;
@@ -747,13 +742,14 @@ main{
 
   height:430px;
 
-  border-radius:25px;
+  border-radius:18px;
 
-  background:#ddd;
+  background:#e9ebed;
 
   border:1px solid var(--line);
 
-  box-shadow:var(--shadow);
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.08);
 }
 
 #map{
@@ -1684,29 +1680,117 @@ footer{
   font-weight:700;
 }
 
-/* controles de mapa leaflet en vidrio */
-.leaflet-container .leaflet-control-zoom a{
+/* =========================================================
+   MAP — MapLibre GL + OpenFreeMap
+========================================================= */
 
-  background:
-    linear-gradient(
-      175deg,
-      rgba(255,255,255,.78),
-      rgba(255,255,255,.42)
-    )!important;
+.maplibregl-map{
+  width:100%;
+  height:100%;
 
-  color:#111!important;
+  font-family:inherit;
+}
+
+/* píldora de precio flotante (estilo Apple/Airbnb) */
+.nexo-price-marker{
+
+  padding:7px 11px;
+
+  border:0;
+  border-radius:999px;
+
+  background:#fff;
+  color:#111;
 
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.85),
-    0 8px 22px rgba(13,18,30,.12)!important;
+    0 2px 8px rgba(0,0,0,.10),
+    0 10px 28px rgba(0,0,0,.12);
 
-  backdrop-filter:
-    blur(30px) saturate(190%);
-  -webkit-backdrop-filter:
-    blur(30px) saturate(190%);
+  font-family:inherit;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:-.01em;
 
-  border-color:transparent!important;
+  white-space:nowrap;
 
+  cursor:pointer;
+
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    background .18s ease,
+    color .18s ease;
+}
+
+.nexo-price-marker:hover,
+.nexo-price-marker.active{
+
+  transform:scale(1.07);
+
+  background:#111;
+  color:#fff;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.18),
+    0 14px 34px rgba(0,0,0,.20);
+}
+
+/* centrado del punto en el motor alternativo */
+.leaflet-marker-icon .nexo-price-marker{
+  transform:
+    translate(-50%,-50%);
+}
+
+.leaflet-marker-icon .nexo-price-marker:hover{
+  transform:
+    translate(-50%,-50%) scale(1.07);
+}
+
+.leaflet-container{
+  font-family:inherit;
+}
+
+.leaflet-control-attribution{
+  font-size:8px;
+  background:rgba(255,255,255,.7)!important;
+  backdrop-filter:blur(10px);
+}
+
+.maplibregl-popup-content{
+
+  padding:10px 13px;
+
+  border-radius:14px;
+
+  background:#fff;
+
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.12);
+
+  font-family:inherit;
+  font-size:12px;
+}
+
+.maplibregl-popup-tip{
+  border-top-color:#fff;
+}
+
+.maplibregl-popup-close-button{
+
+  padding:0 6px;
+
+  color:#888;
+
+  font-size:14px;
+}
+
+.maplibregl-ctrl-attrib{
+
+  font-size:8px;
+
+  background:rgba(255,255,255,.7);
+
+  backdrop-filter:blur(10px);
 }
 
 </style>
@@ -2214,11 +2298,6 @@ footer{
   </form>
 
 </section>
-
-
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-></script>
 
 
 <script>
@@ -3369,43 +3448,210 @@ modalContact.addEventListener(
 
 
 /* =========================================================
-   MAP
+   MAP — MapLibre GL + OpenFreeMap
+   Vectorial gratuito, sin API key,
+   con píldoras de precio flotantes.
 ========================================================= */
 
-function initMap(){
+const MAP_STYLE =
+  "https://tiles.openfreemap.org/styles/positron";
 
-  if(
-    typeof L === "undefined"
-  ){
+const MAP_TILES_FALLBACK =
+  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png";
+
+const MAP_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>';
+
+const MAP_HOME = {
+  lat:21.5218,
+  lng:-77.7812,
+  zoom:6
+};
+
+let mapEnginePromise = null;
+
+function webglAvailable(){
+
+  try{
+
+    const canvas =
+      document.createElement(
+        "canvas"
+      );
+
+    return Boolean(
+      canvas.getContext("webgl2") ||
+      canvas.getContext("webgl")
+    );
+
+  }catch(e){
+
+    return false;
+
+  }
+
+}
+
+function loadScript(
+  src
+){
+
+  return new Promise((resolve,reject) => {
+
+    const script =
+      document.createElement(
+        "script"
+      );
+
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+
+    document.head.appendChild(script);
+
+  });
+
+}
+
+function loadCSS(
+  href
+){
+
+  const link =
+    document.createElement(
+      "link"
+    );
+
+  link.rel = "stylesheet";
+  link.href = href;
+
+  document.head.appendChild(link);
+
+}
+
+/*
+ * Motor del mapa: MapLibre GL (vectorial)
+ * cuando hay WebGL, Leaflet + CartoDB
+ * Positron Retina como alternativa.
+ * Ambos 100% gratuitos, sin API key.
+ */
+
+function loadMapEngine(){
+
+  if(!mapEnginePromise){
+
+    mapEnginePromise =
+      (async () => {
+
+        if(webglAvailable()){
+
+          loadCSS(
+            "https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css"
+          );
+
+          await loadScript(
+            "https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"
+          );
+
+          return "maplibre";
+
+        }
+
+        loadCSS(
+          "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        );
+
+        await loadScript(
+          "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        );
+
+        return "leaflet";
+
+      })();
+
+  }
+
+  return mapEnginePromise;
+
+}
+
+async function initMap(){
+
+  let engine;
+
+  try{
+
+    engine =
+      await loadMapEngine();
+
+  }catch(error){
+
+    console.warn(
+      "NEXO MAP: no se pudo cargar el motor del mapa.",
+      error
+    );
 
     return;
 
   }
 
-  NEXO.map =
-    L.map(
-      "map",
+  if(engine === "maplibre"){
+
+    NEXO.map =
+      new maplibregl.Map({
+
+        container:"map",
+
+        style:MAP_STYLE,
+
+        center:[
+          MAP_HOME.lng,
+          MAP_HOME.lat
+        ],
+
+        zoom:MAP_HOME.zoom,
+
+        attributionControl:{
+          compact:true
+        }
+
+      });
+
+  }else{
+
+    NEXO.map =
+      L.map(
+        "map",
+        {
+          zoomControl:false,
+          attributionControl:true
+        }
+      );
+
+    L.tileLayer(
+      MAP_TILES_FALLBACK,
       {
-        zoomControl:true,
-        attributionControl:true
+        subdomains:"abcd",
+        maxZoom:20,
+        attribution:MAP_ATTRIBUTION
       }
+    ).addTo(
+      NEXO.map
     );
 
-  L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      maxZoom:19,
-      attribution:
-        "&copy; OpenStreetMap"
-    }
-  ).addTo(
-    NEXO.map
-  );
+    NEXO.map.setView(
+      [
+        MAP_HOME.lat,
+        MAP_HOME.lng
+      ],
+      MAP_HOME.zoom
+    );
 
-  NEXO.map.setView(
-    [21.5218,-77.7812],
-    6
-  );
+  }
+
+  NEXO.mapEngine = engine;
+
+  updateMap();
 
 }
 
@@ -3420,9 +3666,7 @@ function updateMap(){
 
   NEXO.markers.forEach(
     marker =>
-      NEXO.map.removeLayer(
-        marker
-      )
+      marker.remove()
   );
 
   NEXO.markers = [];
@@ -3430,6 +3674,12 @@ function updateMap(){
   const located =
     NEXO.properties.filter(
       property =>
+        property.latitude !== null &&
+        property.latitude !== undefined &&
+        property.latitude !== "" &&
+        property.longitude !== null &&
+        property.longitude !== undefined &&
+        property.longitude !== "" &&
         Number.isFinite(
           Number(property.latitude)
         ) &&
@@ -3455,32 +3705,19 @@ function updateMap(){
       const lng =
         Number(property.longitude);
 
-      const marker =
-        L.marker([
-          lat,
-          lng
-        ])
-        .addTo(
-          NEXO.map
+      const pill =
+        document.createElement(
+          "button"
         );
 
-      marker.bindPopup(
-        `
-          <strong>
-            ${escapeHTML(
-              property.title ||
-              property.property_type ||
-              "Propiedad"
-            )}
-          </strong>
-          <br>
-          ${escapeHTML(
-            money(property.price)
-          )}
-        `
-      );
+      pill.type = "button";
+      pill.className =
+        "nexo-price-marker";
 
-      marker.on(
+      pill.textContent =
+        money(property.price);
+
+      pill.addEventListener(
         "click",
         () =>
           openProperty(
@@ -3488,34 +3725,123 @@ function updateMap(){
           )
       );
 
-      NEXO.markers.push(
-        marker
-      );
+      if(
+        NEXO.mapEngine ===
+        "maplibre"
+      ){
 
-      bounds.push([
-        lat,
-        lng
-      ]);
+        const marker =
+          new maplibregl.Marker({
+            element:pill
+          });
+
+        marker
+          .setLngLat([lng,lat])
+          .addTo(NEXO.map);
+
+        NEXO.markers.push({
+          remove:() =>
+            marker.remove()
+        });
+
+      }else{
+
+        const marker =
+          L.marker(
+            [lat,lng],
+            {
+              icon:
+                L.divIcon({
+                  className:"",
+                  html:pill,
+                  iconSize:null
+                })
+            }
+          )
+          .addTo(
+            NEXO.map
+          );
+
+        NEXO.markers.push({
+          remove:() =>
+            NEXO.map.removeLayer(
+              marker
+            )
+        });
+
+      }
+
+      bounds.push([lng,lat]);
 
     }
   );
 
-  if(bounds.length === 1){
+  const first =
+    located[0];
 
-    NEXO.map.setView(
-      bounds[0],
-      14
-    );
+  if(
+    NEXO.mapEngine ===
+    "maplibre"
+  ){
 
-  }else if(bounds.length > 1){
+    if(located.length === 1){
 
-    NEXO.map.fitBounds(
-      bounds,
-      {
-        padding:[35,35],
-        maxZoom:14
-      }
-    );
+      NEXO.map.jumpTo({
+
+        center:[
+          Number(first.longitude),
+          Number(first.latitude)
+        ],
+
+        zoom:14
+
+      });
+
+    }else{
+
+      NEXO.map.fitBounds(
+        bounds.reduce(
+          (acc,point) =>
+            acc.extend(point),
+          new maplibregl.LngLatBounds(
+            bounds[0],
+            bounds[0]
+          )
+        ),
+        {
+          padding:35,
+          maxZoom:14
+        }
+      );
+
+    }
+
+  }else{
+
+    const latLngBounds =
+      bounds.map(
+        ([lng,lat]) =>
+          [lat,lng]
+      );
+
+    if(located.length === 1){
+
+      NEXO.map.setView(
+        latLngBounds[0],
+        14
+      );
+
+    }else{
+
+      NEXO.map.fitBounds(
+        latLngBounds,
+        {
+          padding:[35,35],
+          maxZoom:14
+        }
+      );
+
+    }
 
   }
 
@@ -4127,31 +4453,74 @@ loadProperties();
 resizeAIInput();
 
 /*
- * Contacto desde página de detalle:
- * /?contacto=<id> abre NEXO IA con el
- * mensaje de interés prellenado.
+ * Parámetros de entrada:
+ * ?contacto=<id> abre NEXO IA con mensaje
+ * prellenado; ?property=<id> abre el modal
+ * de la propiedad cuando llegue del mapa.
  */
 
 (function(){
 
-  const contactId =
+  const params =
     new URLSearchParams(
       location.search
-    ).get("contacto");
+    );
 
-  if(!contactId){
+  const contactId =
+    params.get("contacto");
+
+  if(contactId){
+
+    aiInput.value =
+      `Me interesa la propiedad #${contactId}. ` +
+      "¿Cómo puedo contactar al propietario?";
+
+    openAI();
+
+    aiInput.focus();
 
     return;
 
   }
 
-  aiInput.value =
-    `Me interesa la propiedad #${contactId}. ` +
-    "¿Cómo puedo contactar al propietario?";
+  const propertyId =
+    params.get("property");
 
-  openAI();
+  if(propertyId){
 
-  aiInput.focus();
+    const finder =
+      () => {
+
+        const property =
+          NEXO.properties.find(
+            item =>
+              String(item.id) ===
+              String(propertyId)
+          );
+
+        if(property){
+
+          openProperty(
+            property
+          );
+
+        }
+
+      };
+
+    if(
+      NEXO.properties.length
+    ){
+
+      finder();
+
+    }else{
+
+      setTimeout(finder,1500);
+
+    }
+
+  }
 
 })();
 

@@ -9,12 +9,6 @@
 
 <title>NEXO · Explorar mapa</title>
 
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  crossorigin=""
->
-
 <style>
 :root{
   --bg:#fbfbfd;
@@ -80,16 +74,14 @@ a{
   position:fixed;
   inset:0;
   z-index:1;
-  background:#dfe4e4;
+  background:#e9ebed;
 }
 
-.leaflet-container{
-  width:100%;
-  height:100%;
+.maplibregl-map{
   font-family:inherit;
 }
 
-.leaflet-control-attribution{
+.maplibregl-ctrl-attrib{
   font-size:8px;
   background:rgba(255,255,255,.7)!important;
   backdrop-filter:blur(10px);
@@ -104,17 +96,11 @@ a{
    MAPA
 ===================================================== */
 
-.leaflet-tile{
+.maplibregl-canvas{
   filter:
-    saturate(.78)
-    contrast(.96)
-    brightness(1.03);
-}
-
-.leaflet-marker-icon,
-.leaflet-marker-shadow{
-  transition:
-    transform .25s ease;
+    saturate(.82)
+    contrast(.98)
+    brightness(1.02);
 }
 
 /* =====================================================
@@ -778,9 +764,48 @@ a{
 }
 
 /* =====================================================
-   POPUP LEAFLET
+   POPUP DEL MAPA
 ===================================================== */
 
+.maplibregl-popup-content{
+  padding:0;
+
+  overflow:hidden;
+
+  width:245px;
+
+  border-radius:18px;
+
+  background:#fff;
+
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.18);
+}
+
+.maplibregl-popup-close-button{
+  z-index:5;
+
+  top:7px;
+  right:7px;
+
+  position:absolute;
+
+  width:30px;
+  height:30px;
+
+  border-radius:50%;
+
+  background:rgba(255,255,255,.86);
+
+  color:#111;
+
+  font-size:20px;
+  line-height:28px;
+
+  text-align:center;
+}
+
+/* popup del motor alternativo */
 .leaflet-popup-content-wrapper{
   padding:0;
 
@@ -916,35 +941,83 @@ a{
    MARKER PERSONALIZADO
 ===================================================== */
 
+/* píldora de precio flotante (estilo Apple/Airbnb) */
 .nexo-marker{
-  width:34px;
-  height:34px;
 
-  display:grid;
-  place-items:center;
+  padding:7px 11px;
 
-  border-radius:50%;
+  border:0;
+  border-radius:999px;
 
-  background:#111113;
-
-  border:3px solid #fff;
+  background:#fff;
+  color:#111;
 
   box-shadow:
-    0 6px 18px rgba(0,0,0,.25);
+    0 2px 8px rgba(0,0,0,.10),
+    0 10px 28px rgba(0,0,0,.12);
 
-  color:#fff;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:-.01em;
 
-  font-size:9px;
-  font-weight:850;
+  white-space:nowrap;
 
-  letter-spacing:-.06em;
+  cursor:pointer;
 
   transition:
-    transform .2s ease;
+    transform .2s ease,
+    box-shadow .2s ease,
+    background .2s ease,
+    color .2s ease;
 }
 
 .nexo-marker.active{
-  transform:scale(1.18);
+
+  transform:scale(1.15);
+
+  background:#111113;
+  color:#fff;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.18),
+    0 14px 36px rgba(0,0,0,.22);
+}
+
+/* punto de ubicación del usuario */
+.nexo-user-dot{
+  width:16px;
+  height:16px;
+
+  border-radius:50%;
+
+  background:#fff;
+
+  border:3px solid #111;
+
+  box-shadow:
+    0 2px 10px rgba(0,0,0,.25);
+}
+
+/* centrado de marcadores en el motor alternativo */
+.leaflet-marker-icon .nexo-marker,
+.leaflet-marker-icon .nexo-user-dot{
+  transform:
+    translate(-50%,-50%);
+}
+
+.leaflet-marker-icon .nexo-marker.active{
+  transform:
+    translate(-50%,-50%) scale(1.15);
+}
+
+.leaflet-container{
+  font-family:inherit;
+}
+
+.leaflet-control-attribution{
+  font-size:8px;
+  background:rgba(255,255,255,.7)!important;
+  backdrop-filter:blur(10px);
 }
 
 /* =====================================================
@@ -1208,31 +1281,6 @@ a[class*="btn"]:active{
 .glass-ink{
   color:#111;
   font-weight:700;
-}
-
-/* controles de mapa leaflet en vidrio */
-.leaflet-container .leaflet-control-zoom a{
-
-  background:
-    linear-gradient(
-      175deg,
-      rgba(255,255,255,.78),
-      rgba(255,255,255,.42)
-    )!important;
-
-  color:#111!important;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.85),
-    0 8px 22px rgba(13,18,30,.12)!important;
-
-  backdrop-filter:
-    blur(30px) saturate(190%);
-  -webkit-backdrop-filter:
-    blur(30px) saturate(190%);
-
-  border-color:transparent!important;
-
 }
 
 </style>
@@ -1517,12 +1565,6 @@ a[class*="btn"]:active{
 ></div>
 
 
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  crossorigin=""
-></script>
-
-
 <script>
 "use strict";
 
@@ -1605,70 +1647,338 @@ async function init(){
 
 
 /* =====================================================
-   MAPA
+   MAPA — MapLibre GL + OpenFreeMap
+   Vectorial gratuito, sin API key.
 ===================================================== */
 
-function createMap(){
+const MAP_STYLE =
+  "https://tiles.openfreemap.org/styles/positron";
 
-  state.map =
-    L.map(
-      "map",
-      {
-        zoomControl:false,
+const MAP_TILES_FALLBACK =
+  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png";
+
+const MAP_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>';
+
+let mapEnginePromise = null;
+
+function webglAvailable(){
+
+  try{
+
+    const canvas =
+      document.createElement(
+        "canvas"
+      );
+
+    return Boolean(
+      canvas.getContext("webgl2") ||
+      canvas.getContext("webgl")
+    );
+
+  }catch(e){
+
+    return false;
+
+  }
+
+}
+
+function loadScript(
+  src
+){
+
+  return new Promise((resolve,reject) => {
+
+    const script =
+      document.createElement(
+        "script"
+      );
+
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+
+    document.head.appendChild(
+      script
+    );
+
+  });
+
+}
+
+function loadCSS(
+  href
+){
+
+  const link =
+    document.createElement(
+      "link"
+    );
+
+  link.rel = "stylesheet";
+  link.href = href;
+
+  document.head.appendChild(
+    link
+  );
+
+}
+
+/*
+ * Motor del mapa: MapLibre GL (vectorial)
+ * cuando hay WebGL, Leaflet + CartoDB
+ * Positron Retina como alternativa.
+ * Ambos 100% gratuitos, sin API key.
+ */
+
+function loadMapEngine(){
+
+  if(!mapEnginePromise){
+
+    mapEnginePromise =
+      (async () => {
+
+        if(webglAvailable()){
+
+          loadCSS(
+            "https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css"
+          );
+
+          await loadScript(
+            "https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"
+          );
+
+          return "maplibre";
+
+        }
+
+        loadCSS(
+          "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        );
+
+        await loadScript(
+          "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        );
+
+        return "leaflet";
+
+      })();
+
+  }
+
+  return mapEnginePromise;
+
+}
+
+
+async function createMap(){
+
+  let engine;
+
+  try{
+
+    engine =
+      await loadMapEngine();
+
+  }catch(error){
+
+    console.warn(
+      "NEXO MAP: no se pudo cargar el motor del mapa.",
+      error
+    );
+
+    toast(
+      "No pudimos cargar el mapa. Revisa tu conexión."
+    );
+
+    return;
+
+  }
+
+
+  if(engine === "maplibre"){
+
+    state.map =
+      new maplibregl.Map({
+
+        container:"map",
+
+        style:MAP_STYLE,
+
+        center:[
+          CUBA.lng,
+          CUBA.lat
+        ],
+
+        zoom:CUBA.zoom,
 
         minZoom:5,
 
         maxZoom:18,
 
-        maxBounds:
-          CUBA.bounds,
+        maxBounds:[
+          [-86.5,19.5],
+          [-73.0,24.0]
+        ],
 
-        maxBoundsViscosity:.65,
+        attributionControl:{
+          compact:true
+        }
 
-        preferCanvas:true
+      });
+
+  }else{
+
+    state.map =
+      L.map(
+        "map",
+        {
+          zoomControl:false,
+
+          minZoom:5,
+
+          maxZoom:18,
+
+          maxBounds:[
+            [19.5,-86.5],
+            [24.0,-73.0]
+          ],
+
+          maxBoundsViscosity:.65,
+
+          attributionControl:true
+        }
+      );
+
+
+    L.tileLayer(
+      MAP_TILES_FALLBACK,
+      {
+        subdomains:"abcd",
+
+        maxZoom:20,
+
+        attribution:MAP_ATTRIBUTION
       }
+    ).addTo(
+      state.map
     );
 
 
-  L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      attribution:
-        '&copy; OpenStreetMap contributors',
+    state.map.setView(
+      [
+        CUBA.lat,
+        CUBA.lng
+      ],
+      CUBA.zoom
+    );
 
-      maxZoom:19,
-
-      updateWhenIdle:true,
-
-      keepBuffer:3
-    }
-  ).addTo(
-    state.map
-  );
+  }
 
 
-  L.control.zoom({
-
-    position:"bottomright"
-
-  }).addTo(
-    state.map
-  );
-
-
-  state.map.setView(
-    [
-      CUBA.lat,
-      CUBA.lng
-    ],
-    CUBA.zoom
-  );
+  state.mapEngine = engine;
 
 
   state.map.on(
     "zoomend moveend",
     updateMapStatus
   );
+
+
+  applyFilter();
+
+}
+
+
+/* navegación del mapa unificada por motor */
+function mapFlyTo(
+  point,
+  zoom,
+  duration
+){
+
+  if(!state.map){
+
+    return;
+
+  }
+
+  if(
+    state.mapEngine ===
+    "maplibre"
+  ){
+
+    state.map.flyTo({
+      center:point,
+      zoom,
+      duration
+    });
+
+  }else{
+
+    state.map.flyTo(
+      [point[1],point[0]],
+      zoom,
+      {
+        duration:duration/1000
+      }
+    );
+
+  }
+
+}
+
+
+function mapFitBounds(
+  points,
+  padding,
+  maxZoom
+){
+
+  if(!state.map){
+
+    return;
+
+  }
+
+  if(
+    state.mapEngine ===
+    "maplibre"
+  ){
+
+    state.map.fitBounds(
+      points.reduce(
+        (acc,point) =>
+          acc.extend(point),
+        new maplibregl.LngLatBounds(
+          points[0],
+          points[0]
+        )
+      ),
+      {
+        padding,
+        maxZoom
+      }
+    );
+
+  }else{
+
+    state.map.fitBounds(
+      points.map(
+        ([lng,lat]) =>
+          [lat,lng]
+      ),
+      {
+        padding:[
+          padding,
+          padding
+        ],
+        maxZoom
+      }
+    );
+
+  }
 
 }
 
@@ -2044,10 +2354,10 @@ function performSearch(
       .map(
         property => [
           Number(
-            property.latitude
+            property.longitude
           ),
           Number(
-            property.longitude
+            property.latitude
           )
         ]
       );
@@ -2057,12 +2367,10 @@ function performSearch(
     points.length === 1
   ){
 
-    state.map.flyTo(
+    mapFlyTo(
       points[0],
       15,
-      {
-        duration:.65
-      }
+      650
     );
 
 
@@ -2070,20 +2378,10 @@ function performSearch(
     points.length > 1
   ){
 
-    state.map.fitBounds(
-      L.latLngBounds(
-        points
-      ),
-      {
-        padding:[
-          80,
-          80
-        ],
-
-        maxZoom:14,
-
-        animate:true
-      }
+    mapFitBounds(
+      points,
+      80,
+      14
     );
 
 
@@ -2113,6 +2411,13 @@ function performSearch(
 function renderMarkers(
   properties
 ){
+
+  if(!state.map){
+
+    return;
+
+  }
+
 
   state.markers.forEach(
     marker =>
@@ -2159,54 +2464,126 @@ function renderMarkers(
         );
 
 
-      const marker =
-        L.marker(
-          [
-            lat,
-            lng
-          ],
-          {
-            title:
-              property.title ||
-              property.property_type ||
-              "Propiedad",
-
-            icon:
-              createMarkerIcon()
-          }
-        )
-        .addTo(
-          state.map
+      const element =
+        createMarkerElement(
+          property
         );
 
 
-      marker.bindPopup(
-        popupHTML(
-          property
-        ),
-        {
-          maxWidth:280,
-
-          minWidth:245,
-
-          closeButton:true,
-
-          autoPan:true,
-
-          autoPanPadding:[
-            30,
-            30
-          ]
-        }
-      );
+      const handle = {
+        element
+      };
 
 
-      marker.on(
+      if(
+        state.mapEngine ===
+        "maplibre"
+      ){
+
+        const marker =
+          new maplibregl.Marker({
+            element
+          });
+
+
+        marker
+          .setLngLat([
+            lng,
+            lat
+          ])
+          .addTo(
+            state.map
+          );
+
+
+        marker.setPopup(
+          new maplibregl.Popup({
+
+            maxWidth:"280px",
+
+            closeButton:true,
+
+            offset:14
+
+          })
+          .setHTML(
+            popupHTML(
+              property
+            )
+          )
+        );
+
+
+        handle.openPopup =
+          () => {
+
+            const popup =
+              marker.getPopup();
+
+
+            if(
+              popup &&
+              !popup.isOpen()
+            ){
+
+              marker.togglePopup();
+
+            }
+
+          };
+
+
+        handle.marker =
+          marker;
+
+      }else{
+
+        const marker =
+          L.marker(
+            [lat,lng],
+            {
+              icon:
+                L.divIcon({
+                  className:"",
+                  html:element,
+                  iconSize:null
+                })
+            }
+          )
+          .addTo(
+            state.map
+          );
+
+
+        marker.bindPopup(
+          popupHTML(
+            property
+          ),
+          {
+            maxWidth:280,
+            minWidth:245,
+            closeButton:true
+          }
+        );
+
+
+        handle.openPopup =
+          () =>
+            marker.openPopup();
+
+
+        handle.marker =
+          marker;
+
+      }
+
+
+      element.addEventListener(
         "click",
         () => {
 
           activateMarker(
-            marker,
+            handle,
             property.id
           );
 
@@ -2219,13 +2596,13 @@ function renderMarkers(
 
 
       state.markers.push(
-        marker
+        handle.marker
       );
 
 
       state.markerById.set(
         id,
-        marker
+        handle
       );
 
     }
@@ -2235,51 +2612,45 @@ function renderMarkers(
 
 
 /* =====================================================
-   ICONO NEXO
+   PÍLDORA DE PRECIO
 ===================================================== */
 
-function createMarkerIcon(
-  active = false
+function createMarkerElement(
+  property
 ){
 
-  return L.divIcon({
+  const element =
+    document.createElement(
+      "button"
+    );
 
-    className:"",
 
-    html:`
-      <div
-        class="nexo-marker ${
-          active
-            ? "active"
-            : ""
-        }"
-      >
-        N
-      </div>
-    `,
+  element.type = "button";
 
-    iconSize:[
-      34,
-      34
-    ],
+  element.className =
+    "nexo-marker";
 
-    iconAnchor:[
-      17,
-      17
-    ],
+  element.textContent =
+    formatPrice(
+      property.price
+    );
 
-    popupAnchor:[
-      0,
-      -18
-    ]
 
-  });
+  element.setAttribute(
+    "aria-label",
+    property.title ||
+      property.property_type ||
+      "Propiedad"
+  );
+
+
+  return element;
 
 }
 
 
 function activateMarker(
-  marker,
+  handle,
   id
 ){
 
@@ -2287,20 +2658,24 @@ function activateMarker(
     state.activeMarker
   ){
 
-    state.activeMarker.setIcon(
-      createMarkerIcon(false)
-    );
+    state.activeMarker
+      .element
+      .classList.remove(
+        "active"
+      );
 
   }
 
 
-  marker.setIcon(
-    createMarkerIcon(true)
-  );
+  handle
+    .element
+    .classList.add(
+      "active"
+    );
 
 
   state.activeMarker =
-    marker;
+    handle;
 
 }
 
@@ -2776,17 +3151,17 @@ function focusProperty(
   const point = [
 
     Number(
-      property.latitude
+      property.longitude
     ),
 
     Number(
-      property.longitude
+      property.latitude
     )
 
   ];
 
 
-  const marker =
+  const handle =
     state.markerById.get(
       String(
         property.id
@@ -2794,33 +3169,28 @@ function focusProperty(
     );
 
 
-  if(marker){
+  if(handle){
 
     activateMarker(
-      marker,
+      handle,
       property.id
     );
 
   }
 
 
-  state.map.flyTo(
+  mapFlyTo(
     point,
     15,
-    {
-      duration:.7
-    }
+    700
   );
 
 
-  if(marker){
+  if(handle){
 
     setTimeout(
-      () => {
-
-        marker.openPopup();
-
-      },
+      () =>
+        handle.openPopup(),
       450
     );
 
@@ -2926,6 +3296,13 @@ function locateUser(){
         position.coords.longitude;
 
 
+      if(!state.map){
+
+        return;
+
+      }
+
+
       if(
         state.userMarker
       ){
@@ -2935,43 +3312,88 @@ function locateUser(){
       }
 
 
-      state.userMarker =
-        L.circleMarker(
-          [
-            lat,
-            lng
-          ],
-          {
-            radius:8,
-
-            color:"#111",
-
-            fillColor:"#fff",
-
-            fillOpacity:1,
-
-            weight:3
-          }
-        )
-        .addTo(
-          state.map
+      const dot =
+        document.createElement(
+          "div"
         );
 
 
-      state.userMarker.bindPopup(
-        "Tu ubicación"
-      );
+      dot.className =
+        "nexo-user-dot";
 
 
-      state.map.flyTo(
+      if(
+        state.mapEngine ===
+        "maplibre"
+      ){
+
+        const marker =
+          new maplibregl.Marker({
+            element:dot
+          });
+
+
+        marker
+          .setLngLat([
+            lng,
+            lat
+          ])
+          .addTo(
+            state.map
+          );
+
+
+        marker.setPopup(
+          new maplibregl.Popup({
+            closeButton:false,
+            offset:10
+          })
+          .setText(
+            "Tu ubicación"
+          )
+        );
+
+
+        state.userMarker =
+          marker;
+
+      }else{
+
+        const marker =
+          L.marker(
+            [lat,lng],
+            {
+              icon:
+                L.divIcon({
+                  className:"",
+                  html:dot,
+                  iconSize:null
+                })
+            }
+          )
+          .addTo(
+            state.map
+          );
+
+
+        marker.bindPopup(
+          "Tu ubicación"
+        );
+
+
+        state.userMarker =
+          marker;
+
+      }
+
+
+      mapFlyTo(
         [
-          lat,
-          lng
+          lng,
+          lat
         ],
         13,
-        {
-          duration:.8
-        }
+        800
       );
 
 
@@ -3067,15 +3489,13 @@ function resetMap(){
     );
 
 
-  state.map.flyTo(
+  mapFlyTo(
     [
-      CUBA.lat,
-      CUBA.lng
+      CUBA.lng,
+      CUBA.lat
     ],
     CUBA.zoom,
-    {
-      duration:.7
-    }
+    700
   );
 
 
@@ -3094,6 +3514,13 @@ function resetMap(){
 ===================================================== */
 
 function updateMapStatus(){
+
+  if(!state.map){
+
+    return;
+
+  }
+
 
   const zoom =
     state.map.getZoom();
