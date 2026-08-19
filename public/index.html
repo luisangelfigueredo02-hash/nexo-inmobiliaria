@@ -501,11 +501,15 @@ main{
   background:#dedee1;
 }
 
+.property-media picture,
 .property-media img{
   width:100%;
   height:100%;
 
   display:block;
+}
+
+.property-media img{
 
   object-fit:cover;
 
@@ -2745,6 +2749,95 @@ function photos(value){
 }
 
 
+/*
+ * Proxy de imágenes con redimensionamiento
+ * (same-origin ⇒ cubierto por la CSP).
+ */
+
+function imageURL(
+  photo,
+  width,
+  format = "auto"
+){
+
+  if(!photo){
+
+    return "";
+
+  }
+
+  const params =
+    new URLSearchParams({
+      url:photo,
+      width:String(width),
+      format
+    });
+
+  return `/api/images?${params}`;
+
+}
+
+
+/*
+ * <picture> responsiva: WebP con
+ * fallback nativo y srcset multi-ancho.
+ */
+
+function pictureHTML(
+  photo,
+  alt,
+  {
+    sizes =
+      "(max-width:700px) 100vw, 33vw",
+    widths = [400,800,1200],
+    eager = false
+  } = {}
+){
+
+  if(!photo){
+
+    return "";
+
+  }
+
+  const esc =
+    value =>
+      escapeHTML(String(value));
+
+
+  const srcsetFor =
+    format =>
+      widths
+        .map(
+          w =>
+            `${esc(imageURL(photo,w,format))} ${w}w`
+          )
+        .join(", ");
+
+  const fallback =
+    widths[Math.min(1,widths.length-1)];
+
+
+  return `
+    <picture>
+      <source
+        type="image/webp"
+        srcset="${srcsetFor("webp")}"
+        sizes="${esc(sizes)}"
+      >
+      <img
+        src="${esc(imageURL(photo,fallback))}"
+        srcset="${srcsetFor("auto")}"
+        sizes="${esc(sizes)}"
+        alt="${esc(alt)}"
+        ${eager ? "" : 'loading="lazy"'}
+      >
+    </picture>
+  `;
+
+}
+
+
 function locationOf(property){
 
   return [
@@ -3254,11 +3347,11 @@ function propertyCardHTML(property){
     >
       <div class="property-media">
         ${image
-          ? `<img
-               src="${escapeHTML(image)}"
-               alt="${escapeHTML(property.title || "Propiedad")}"
-               loading="lazy"
-             >`
+          ? pictureHTML(
+              image,
+              property.title ||
+                "Propiedad"
+            )
           : `<div class="property-placeholder">
                NEXO
              </div>`
@@ -3427,7 +3520,7 @@ function openProperty(property){
   if(image){
 
     modalImage.src =
-      image;
+      imageURL(image,1200);
 
     modalImage.alt =
       property.title ||

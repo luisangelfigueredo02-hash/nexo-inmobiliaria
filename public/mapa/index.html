@@ -2990,7 +2990,7 @@ function popupHTML(
 
             <img
               class="popup-image"
-              src="${safeURL(image)}"
+              src="${safeURL(imageURL(image,400))}"
               alt="${escapeAttr(title)}"
               onerror="
                 this.style.display='none'
@@ -3659,6 +3659,30 @@ function searchableText(
       .join(" ")
 
   );
+
+}
+
+
+function imageURL(
+  photo,
+  width,
+  format = "auto"
+){
+
+  if(!photo){
+
+    return "";
+
+  }
+
+  const params =
+    new URLSearchParams({
+      url:photo,
+      width:String(width),
+      format
+    });
+
+  return `/api/images?${params}`;
 
 }
 

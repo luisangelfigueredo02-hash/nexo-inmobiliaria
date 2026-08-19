@@ -352,6 +352,203 @@ async function cachedPublicGET(
 
 
 /* ============================================================
+   IMAGE PROXY (preparación R2)
+   Sirve y opcionalmente redimensiona imágenes
+   de hosts autorizados con cf.image.
+   TODO: migrar a BUCKET_IMAGENES (R2) cuando
+   se cree el bucket de producción.
+============================================================ */
+
+const IMAGE_HOSTS = [
+  "images.unsplash.com",
+  "unsplash.com"
+];
+
+const IMAGE_WIDTH_MAX = 2000;
+
+const IMAGE_WIDTH_MIN = 16;
+
+const IMAGE_FORMATS = [
+  "auto",
+  "webp",
+  "avif",
+  "jpeg",
+  "png"
+];
+
+
+function imageURLAllowed(
+  candidate
+) {
+
+  let parsed;
+
+  try {
+
+    parsed =
+      new URL(candidate);
+
+  } catch (error) {
+
+    return false;
+
+  }
+
+
+  if (parsed.protocol !== "https:") {
+
+    return false;
+
+  }
+
+
+  return IMAGE_HOSTS.some(
+    host =>
+      parsed.hostname === host ||
+      parsed.hostname.endsWith(
+        `.${host}`
+      )
+  );
+
+}
+
+
+async function imageProxy(
+  request,
+  env,
+  url
+) {
+
+  const params =
+    url.searchParams;
+
+
+  const target =
+    params.get("url") || "";
+
+
+  if (!imageURLAllowed(target)) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "Imagen no permitida."
+      },
+      403,
+      request
+    );
+
+  }
+
+
+  const width =
+    Number(
+      params.get("width") || 0
+    );
+
+  const format = (
+    params.get("format") ||
+    "auto"
+  ).toLowerCase();
+
+
+  const options = {};
+
+
+  if (width) {
+
+    if (
+      !Number.isInteger(width) ||
+      width < IMAGE_WIDTH_MIN ||
+      width > IMAGE_WIDTH_MAX
+    ) {
+
+      return json(
+        {
+          ok: false,
+          error:
+            "Ancho inválido."
+        },
+        400,
+        request
+      );
+
+    }
+
+    options.width = width;
+
+  }
+
+  options.format = IMAGE_FORMATS.includes(
+    format
+  )
+    ? format
+    : "auto";
+
+
+  const upstream =
+  await fetch(
+    target,
+    {
+      cf: {
+        image: options,
+        cacheEverything: true,
+        cacheTtl: 86400
+      }
+    }
+  );
+
+
+  if (!upstream.ok) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "No se pudo obtener la imagen.",
+        status:
+          upstream.status
+      },
+      502,
+      request
+    );
+
+  }
+
+
+  const headers = {
+
+    "Content-Type":
+      upstream.headers.get(
+        "content-type"
+      ) ||
+      "image/jpeg",
+
+    "Cache-Control":
+      "public, max-age=86400, immutable",
+
+    ...securityHeaders(),
+
+    ...corsHeaders(
+      request
+    )
+
+  };
+
+
+  return new Response(
+    upstream.body,
+    {
+      status: 200,
+      headers
+    }
+  );
+
+}
+
+
+/* ============================================================
    SEO EDGE-SIDE RENDERING
    Inyecta Open Graph en la página de
    detalle consultando D1 en el borde.
@@ -790,6 +987,25 @@ async function handleAPI(
       );
 
     }
+
+  }
+
+
+  /* ----------------------------------------------------------
+     IMAGE PROXY (pre-R2)
+     /api/images?url=<https-url>&width=400&format=webp
+  ---------------------------------------------------------- */
+
+  if (
+    path === "/api/images" &&
+    request.method === "GET"
+  ) {
+
+    return imageProxy(
+      request,
+      env,
+      url
+    );
 
   }
 
