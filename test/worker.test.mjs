@@ -460,7 +460,7 @@ test("GET /api/metrics sin auth → 401", async () => {
 ========================================================= */
 
 test("proxy de imágenes rechaza host no autorizado", async () => {
-  const res = await worker.fetch(
+    const res = await worker.fetch(
     req(
       "/api/images?url=" +
         encodeURIComponent(
@@ -474,4 +474,57 @@ test("proxy de imágenes rechaza host no autorizado", async () => {
     res.status,
     403
   );
+});
+
+
+/* =========================================================
+   N-001 — aislamiento de PII y código público
+========================================================= */
+
+test("respuesta pública no expone campos privados", async () => {
+
+  const res = await worker.fetch(
+    req("/api/properties"),
+    makeEnv()
+  );
+
+  const data = await res.json();
+  const prop = data.properties[0];
+
+  const forbidden = [
+    "owner_name",
+    "owner_phone",
+    "contact_email",
+    "notes",
+    "address",
+    "agreed_price",
+    "commission"
+  ];
+
+  for (const key of forbidden) {
+
+    assert.equal(
+      key in prop,
+      false,
+      `campo privado expuesto: ${key}`
+    );
+
+  }
+
+});
+
+test("public_code aparece (vacía si no existe)", async () => {
+
+  const res = await worker.fetch(
+    req("/api/properties"),
+    makeEnv()
+  );
+
+  const data = await res.json();
+
+  assert.ok(
+    "public_code" in
+    data.properties[0]
+  );
+
 });

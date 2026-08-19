@@ -784,6 +784,7 @@ async function renderPropertyPage(
       .prepare(`
         SELECT
           id,
+          public_code,
           property_type,
           title,
           province,
@@ -1414,6 +1415,7 @@ async function semanticSearchReal(
       .prepare(`
         SELECT
           id,
+          public_code,
           property_type,
           title,
           province,
@@ -1550,6 +1552,7 @@ async function syncEmbeddings(
         .prepare(`
           SELECT
             id,
+          public_code,
             property_type,
             title,
             province,
@@ -1761,22 +1764,46 @@ async function trackMetric(
       .slice(0, 10);
 
 
-  await env.DB
-    .prepare(`
-      INSERT INTO
-        analytics_counters
-      (kind, day, count)
-      VALUES (?, ?, 1)
+  const propertyId =
+    safeInteger(
+      body?.property_id
+    );
 
-      ON CONFLICT (kind, day)
-      DO UPDATE SET
-        count = count + 1
-    `)
-    .bind(
-      kind,
-      day
-    )
-    .run();
+
+  await Promise.all([
+
+    env.DB
+      .prepare(`
+        INSERT INTO
+          analytics_counters
+        (kind, day, count)
+        VALUES (?, ?, 1)
+
+        ON CONFLICT (kind, day)
+        DO UPDATE SET
+          count = count + 1
+      `)
+      .bind(
+        kind,
+        day
+      )
+      .run(),
+
+    env.DB
+      .prepare(`
+        INSERT INTO
+          analytics_events
+        (kind, property_id)
+        VALUES (?, ?)
+      `)
+      .bind(
+        kind,
+        propertyId ??
+          null
+      )
+      .run()
+
+  ]);
 
 
   return json(
@@ -1876,6 +1903,27 @@ async function getMetrics(
       .slice(0, 10);
 
 
+  /*
+   * Desglose por propiedad (whatsapp_click).
+   */
+
+  const topRows =
+    await env.DB
+      .prepare(`
+        SELECT
+          property_id,
+          COUNT(*) AS
+          clicks
+        FROM analytics_events
+        WHERE kind = 'whatsapp_click'
+          AND property_id IS NOT NULL
+        GROUP BY property_id
+        ORDER BY clicks DESC
+        LIMIT 10
+      `)
+      .all();
+
+
   return json(
     {
       ok: true,
@@ -1889,7 +1937,9 @@ async function getMetrics(
               today
           ),
       series:
-        rows.results || []
+        rows.results || [],
+      topProperties:
+        topRows.results || []
     },
     200,
     request
@@ -2449,6 +2499,7 @@ async function getProperties(
   let sql = `
     SELECT
       id,
+          public_code,
       property_type,
       title,
       province,
@@ -2624,6 +2675,7 @@ async function getProperty(
       .prepare(`
         SELECT
           id,
+          public_code,
           property_type,
           title,
           province,
@@ -2645,6 +2697,8 @@ async function getProperty(
           owner_name,
           owner_phone,
           contact_email,
+          agreed_price,
+          commission,
           notes,
           status,
           verified,
@@ -2688,6 +2742,7 @@ async function getProperty(
   const similarSql = `
     SELECT
       id,
+          public_code,
       property_type,
       title,
       province,
@@ -2863,6 +2918,8 @@ async function createProperty(
           owner_name,
           owner_phone,
           contact_email,
+          agreed_price,
+          commission,
           notes,
           status,
           verified,
@@ -3605,6 +3662,9 @@ function normalizeProperty(
     id:
       property.id,
 
+    public_code:
+      property.public_code || "",
+
     property_type:
       property.property_type || "",
 
@@ -3698,6 +3758,16 @@ function normalizeProperty(
 
     base.owner_phone =
       property.owner_phone || "";
+
+    base.agreed_price =
+      nullableNumber(
+        property.agreed_price
+      );
+
+    base.commission =
+      nullableNumber(
+        property.commission
+      );
 
     base.contact_email =
       property.contact_email || "";
@@ -4569,6 +4639,7 @@ async function fetchSearchProperties(
         .prepare(`
           SELECT
             id,
+          public_code,
             property_type,
             title,
             province,
@@ -5316,6 +5387,7 @@ async function geocodePropertyInternal(
       .prepare(`
         SELECT
           id,
+          public_code,
           address,
           neighborhood,
           city,

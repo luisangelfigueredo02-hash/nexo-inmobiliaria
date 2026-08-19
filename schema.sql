@@ -40,8 +40,22 @@ CREATE TABLE IF NOT EXISTS properties (
   -- ID del vector en Cloudflare Vectorize (nexo-index)
   -- para búsqueda semántica (NEXO IA 2.0).
   embedding_id  TEXT,
+  -- Código público de listado (N-001...).
+  public_code   TEXT    UNIQUE,
+  -- Datos privados de administración: precio
+  -- acordado con el propietario y comisión.
+  -- NUNCA se exponen en la API pública.
+  agreed_price  REAL,
+  commission    REAL,
   created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Bases ya existentes: aplicar una sola vez con
+--   wrangler d1 execute nexo-db --remote --command=
+-- "ALTER TABLE properties ADD COLUMN public_code TEXT;
+--  ALTER TABLE properties ADD COLUMN agreed_price REAL;
+--  ALTER TABLE properties ADD COLUMN commission REAL;"
+-- (ignora el error "duplicate column name" si ya existe).
 
 -- Bases ya existentes: aplicar una sola vez con
 --   wrangler d1 execute nexo-db --remote \
@@ -137,3 +151,16 @@ CREATE TABLE IF NOT EXISTS analytics_counters (
 
 CREATE INDEX IF NOT EXISTS idx_analytics_day
   ON analytics_counters (day);
+
+-- Eventos individuales (opción: analytics con property_id,
+-- sin PII ni cookies). Los totales agregados siguen en
+-- analytics_counters.
+CREATE TABLE IF NOT EXISTS analytics_events (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  kind        TEXT    NOT NULL,
+  property_id INTEGER,
+  created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_analytics_events_kind
+  ON analytics_events (kind);

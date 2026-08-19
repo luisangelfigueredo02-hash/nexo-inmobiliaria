@@ -14,6 +14,8 @@
   NEXO · Detalle de propiedad
 </title>
 
+<script src="/config.js"></script>
+
 
 <link rel="stylesheet" href="/variables.css">
 <link rel="manifest" href="/manifest.json">
@@ -1060,7 +1062,8 @@ async function fetchPropertyDetails(){
  */
 
 function track(
-  kind
+  kind,
+  propertyId = null
 ){
 
   try{
@@ -1074,9 +1077,15 @@ function track(
             "application/json"
         },
         body:
-          JSON.stringify({
-            kind
-          }),
+          JSON.stringify(
+            propertyId
+              ? {
+                  kind,
+                  property_id:
+                    propertyId
+                }
+              : { kind }
+          ),
         keepalive:true
       }
     ).catch(
@@ -1086,6 +1095,42 @@ function track(
   }catch(_){
     /* best-effort */
   }
+
+}
+
+
+/*
+ * Contacto por WhatsApp con el número
+ * público NEXO (config.js) y código
+ * público del listado cuando exista.
+ */
+
+function whatsappLink(
+  prop
+){
+
+  const number =
+    window.NEXO_CONTACT?.whatsapp ||
+    "";
+
+  if(!number){
+
+    return "#";
+
+  }
+
+  const code =
+    prop.public_code
+      ? `la propiedad ${prop.public_code}`
+      : `esta propiedad (#${prop.id})`;
+
+
+  const message =
+    `Hola, me interesa ${code}.`;
+
+
+  return `https://wa.me/${number}` +
+    `?text=${encodeURIComponent(message)}`;
 
 }
 
@@ -1485,9 +1530,12 @@ function renderProperty(
         <div class="sticky-cta">
 <a
           class="btn-contact"
-          href="/?contacto=${encodeURIComponent(prop.id)}"
+          href="${whatsappLink(prop)}"
+            target="_blank"
+            rel="noopener noreferrer"
+            onclick="track('whatsapp_click',prop.id)"
         >
-          Solicitar información
+          Contactar por WhatsApp
         </a>
 
         <a
