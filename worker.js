@@ -3168,10 +3168,21 @@ async function verifySessionToken(
     }
 
 
-    if (
+    const age =
       Date.now() -
-        timestamp >
-      SESSION_MAX_AGE * 1000
+        timestamp;
+
+
+    /*
+     * Rechaza tokens expirados y tokens
+     * con timestamp en el futuro (60s skew).
+     */
+
+    if (
+      age >
+        SESSION_MAX_AGE * 1000 ||
+      age <
+        -60 * 1000
     ) {
 
       return false;

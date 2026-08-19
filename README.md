@@ -54,11 +54,14 @@ NEXO comienza enfocado en Cuba, con especial atención inicial a **La Habana**.
 ├── public/
 │   ├── index.html
 │   ├── app.js
+│   ├── property.html
 │   ├── admin.html
-│   │
+│   ├── ia/
+│   │   └── index.html
 │   └── mapa/
 │       └── index.html
 │
 ├── worker.js
+├── schema.sql
 ├── wrangler.toml
 └── README.md
