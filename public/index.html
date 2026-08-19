@@ -426,14 +426,16 @@ main{
 .filter{
   flex:0 0 auto;
 
-  padding:8px 11px;
+  min-height:44px;
+
+  padding:9px 13px;
 
   border-radius:999px;
 
   background:#f0f0f2;
   color:#555;
 
-  font-size:9px;
+  font-size:10px;
   font-weight:750;
 }
 
@@ -2279,7 +2281,10 @@ footer{
 <div
   class="modal"
   id="propertyModal"
+  role="dialog"
+  aria-modal="true"
   aria-hidden="true"
+  aria-label="Detalle de la propiedad"
 >
 
   <div class="modal-card">
@@ -3682,8 +3687,17 @@ function openProperty(property){
     "false"
   );
 
+
+  NEXO.modalReturnFocus =
+    document.activeElement;
+
+
   document.body.style.overflow =
     "hidden";
+
+  document.getElementById(
+    "modalClose"
+  ).focus();
 
 }
 
@@ -3704,6 +3718,17 @@ function closeProperty(){
 
   NEXO.selectedProperty =
     null;
+
+
+  if(
+    NEXO.modalReturnFocus &&
+    typeof NEXO.modalReturnFocus
+      .focus === "function"
+  ){
+
+    NEXO.modalReturnFocus.focus();
+
+  }
 
 }
 
@@ -3746,6 +3771,61 @@ document.addEventListener(
       closeProperty();
 
       closeAI();
+
+    }
+
+
+    /* Focus trap en el modal de propiedad */
+
+    if(
+      event.key === "Tab" &&
+      propertyModal.classList.contains(
+        "show"
+      )
+    ){
+
+      const focusables =
+        propertyModal
+          .querySelectorAll(
+            "button, a, [tabindex]"
+          );
+
+
+      if(!focusables.length){
+
+        return;
+
+      }
+
+      const first = focusables[0];
+
+      const last =
+        focusables[
+          focusables.length - 1
+        ];
+
+
+      if(
+        event.shiftKey &&
+        document.activeElement ===
+          first
+      ){
+
+        event.preventDefault();
+
+        last.focus();
+
+      }else if(
+        !event.shiftKey &&
+        document.activeElement ===
+          last
+      ){
+
+        event.preventDefault();
+
+        first.focus();
+
+      }
 
     }
 
@@ -4925,7 +5005,46 @@ loadFavorites();
 
 loadAIHistory();
 
-initMap();
+/*
+ * El mapa se inicializa al entrar
+ * en viewport (lazy init) para no
+ * bloquear el arranque en móviles.
+ */
+
+if(
+  "IntersectionObserver" in window
+){
+
+  const mapLazy =
+    new IntersectionObserver(
+      entries => {
+
+        if(
+          entries.some(
+            entry =>
+              entry.isIntersecting
+          )
+        ){
+
+          mapLazy.disconnect();
+
+          initMap();
+
+        }
+
+      },
+      { rootMargin: "400px" }
+    );
+
+  mapLazy.observe(
+    mapSection
+  );
+
+}else{
+
+  initMap();
+
+}
 
 loadProperties();
 

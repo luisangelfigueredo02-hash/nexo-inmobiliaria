@@ -2439,6 +2439,64 @@ async function getProperty(
     );
 
 
+  /*
+   * Similares reales: misma ciudad y
+   * precio ±30%, excluyendo la propia.
+   * Solo campos reales de D1.
+   */
+
+  const similarSql = `
+    SELECT
+      id,
+      property_type,
+      title,
+      province,
+      city,
+      neighborhood,
+      bedrooms,
+      bathrooms,
+      square_meters,
+      price,
+      photos,
+      status
+    FROM properties
+    WHERE id != ?
+      AND status = 'available'
+      AND (
+        city = ?
+        OR province = ?
+      )
+      AND price BETWEEN ? AND ?
+    ORDER BY ABS(price - ?)
+    LIMIT 4
+  `;
+
+
+  const price =
+    Number(
+      result.price
+    );
+
+
+  const similarRows =
+    Number.isFinite(price) &&
+    price > 0
+      ? (
+          await env.DB
+            .prepare(similarSql)
+            .bind(
+              id,
+              result.city || "",
+              result.province || "",
+              price * 0.7,
+              price * 1.3,
+              price
+            )
+            .all()
+        ).results || []
+      : [];
+
+
   return json(
     {
       ok: true,
@@ -2446,6 +2504,14 @@ async function getProperty(
         normalizeProperty(
           result,
           admin
+        ),
+      similar:
+        similarRows.map(
+          row =>
+            normalizeProperty(
+              row,
+              false
+            )
         )
     },
     200,
@@ -3872,14 +3938,46 @@ async function nexAI(
     );
 
 
+  /*
+   * Boost semántico (Vectorize): cuando el
+   * índice está poblado, las propiedades
+   * similares al mensaje suben en el ranking
+   * alfabético. Degrada a keyword si falla.
+   */
+
+  const semanticScores =
+    await semanticPropertyScores(
+      env,
+      message
+    );
+
+
   const relevant =
     rankProperties(
       message,
       properties
     )
+      .map(
+        property => ({
+          property,
+          boost:
+            semanticScores?.get(
+              property.id
+            ) || 0
+        })
+      )
+      .sort(
+        (a,b) =>
+          b.boost -
+          a.boost
+      )
       .slice(
         0,
         MAX_AI_PROPERTIES
+      )
+      .map(
+        item =>
+          item.property
       );
 
 
@@ -4106,6 +4204,104 @@ ${propertyContext || "No hay propiedades relevantes."}
 /* ============================================================
    FETCH SEARCH PROPERTIES
 ============================================================ */
+
+/*
+ * Score semántico Map<id,score> o null.
+ * Se usa como boost opcional del ranking
+ * clásico de keywords.
+ */
+
+async function semanticPropertyScores(
+  env,
+  message
+) {
+
+  if (
+    !env.VECTOR_INDEX ||
+    !env.AI
+  ) {
+
+    return null;
+
+  }
+
+
+  try {
+
+    const vectors =
+      await embedTexts(
+        env,
+        [message]
+      );
+
+
+    if (
+      !Array.isArray(
+        vectors[0]
+      )
+    ) {
+
+      return null;
+
+    }
+
+
+    const matches =
+      await env.VECTOR_INDEX.query(
+        vectors[0],
+        {
+          topK: 8,
+          returnMetadata: "none"
+        }
+      );
+
+
+    const scores =
+      new Map();
+
+
+    for (
+      const match of
+      matches?.matches || []
+    ) {
+
+      const id =
+        Number(
+          String(match.id)
+            .replace("prop-", "")
+        );
+
+
+      if (
+        Number.isInteger(id)
+      ) {
+
+        scores.set(
+          id,
+          match.score || 0
+        );
+
+      }
+
+    }
+
+
+    return scores;
+
+  } catch (error) {
+
+    console.warn(
+      "NEXO semantic boost:",
+      error?.message ||
+        error
+    );
+
+    return null;
+
+  }
+
+}
+
 
 async function fetchSearchProperties(
   env
