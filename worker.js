@@ -1123,7 +1123,7 @@ async function syncEmbeddings(
 ) {
 
   if (
-    !(await requireAdmin(
+    !(await requireAuth(
       request,
       env
     ))
@@ -2037,7 +2037,7 @@ async function createProperty(
 ) {
 
   if (
-    !(await requireAdmin(
+    !(await requireAuth(
       request,
       env
     ))
@@ -2232,7 +2232,7 @@ async function updateProperty(
 ) {
 
   if (
-    !(await requireAdmin(
+    !(await requireAuth(
       request,
       env
     ))
@@ -2437,7 +2437,7 @@ async function deleteProperty(
 ) {
 
   if (
-    !(await requireAdmin(
+    !(await requireAuth(
       request,
       env
     ))
@@ -4158,7 +4158,7 @@ async function geocodeProperty(
 ) {
 
   if (
-    !(await requireAdmin(
+    !(await requireAuth(
       request,
       env
     ))
@@ -4532,10 +4532,35 @@ async function adminLogin(
     );
 
 
+  /*
+   * JWT para clientes API (Hito 4):
+   * se emite además de la cookie.
+   */
+
+  const jwtSecret =
+    env.JWT_SECRET ||
+    env.ADMIN_PASSWORD;
+
+
+  const jwt =
+    await jwtSign(
+      {
+        sub: "admin",
+        role: "admin"
+      },
+      jwtSecret,
+      SESSION_MAX_AGE
+    );
+
+
   return json(
     {
       ok: true,
-      authenticated:true
+      authenticated:true,
+      token: jwt,
+      token_type: "Bearer",
+      expires_in:
+        SESSION_MAX_AGE
     },
     200,
     request,
@@ -4644,6 +4669,323 @@ async function requireAdmin(
   return verifySessionToken(
     token,
     env.ADMIN_PASSWORD
+  );
+
+}
+
+
+/* ============================================================
+   JWT (Hito 4)
+   HS256 con WebCrypto. Se acepta la cookie
+   de sesión admin O un Bearer JWT válido.
+   Secreto: env.JWT_SECRET (recomendado);
+   fallback documentado: ADMIN_PASSWORD.
+============================================================ */
+
+function base64urlEncode(
+  value
+) {
+
+  const bytes =
+    typeof value === "string"
+      ? new TextEncoder().encode(value)
+      : new Uint8Array(value);
+
+  let binary = "";
+
+  for (const byte of bytes) {
+
+    binary += String.fromCharCode(byte);
+
+  }
+
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+
+}
+
+
+function base64urlDecode(
+  value
+) {
+
+  const normalized =
+    String(value)
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+  const binary =
+    atob(
+      normalized +
+      "=".repeat(
+        (4 - (normalized.length % 4)) % 4
+      )
+    );
+
+  return Uint8Array.from(
+    binary,
+    char => char.charCodeAt(0)
+  );
+
+}
+
+
+async function jwtSign(
+  payload,
+  secret,
+  ttlSeconds
+) {
+
+  const header =
+    base64urlEncode(
+      JSON.stringify({
+        alg: "HS256",
+        typ: "JWT"
+      })
+    );
+
+
+  const body =
+    base64urlEncode(
+      JSON.stringify({
+        ...payload,
+        iat: Math.floor(
+          Date.now() / 1000
+        ),
+        exp:
+          Math.floor(
+            Date.now() / 1000
+          ) + ttlSeconds
+      })
+    );
+
+
+  const signature =
+    await hmacBinary(
+      `${header}.${body}`,
+      secret
+    );
+
+
+  return (
+    `${header}.${body}.` +
+    base64urlEncode(
+      signature
+    )
+  );
+
+}
+
+
+async function jwtVerify(
+  token,
+  secret
+) {
+
+  try {
+
+    const parts =
+      String(token).split(".");
+
+
+    if (parts.length !== 3) {
+
+      return null;
+
+    }
+
+
+    const signature =
+      base64urlDecode(
+        parts[2]
+      );
+
+
+    const expected =
+      await hmacBinary(
+        `${parts[0]}.${parts[1]}`,
+        secret
+      );
+
+
+    if (
+      !constantTimeBytesEqual(
+        signature,
+        expected
+      )
+    ) {
+
+      return null;
+
+    }
+
+
+    const payload =
+      JSON.parse(
+        new TextDecoder()
+          .decode(
+            base64urlDecode(
+              parts[1]
+            )
+          )
+      );
+
+
+    const now =
+      Math.floor(
+        Date.now() / 1000
+      );
+
+
+    if (
+      !payload ||
+      typeof payload.exp !==
+        "number" ||
+      payload.exp < now - 60
+    ) {
+
+      return null;
+
+    }
+
+
+    return payload;
+
+  } catch (_) {
+
+    return null;
+
+  }
+
+}
+
+
+async function hmacBinary(
+  value,
+  secret
+) {
+
+  const encoder =
+    new TextEncoder();
+
+
+  const key =
+    await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(
+        secret
+      ),
+      {
+        name: "HMAC",
+        hash: "SHA-256"
+      },
+      false,
+      ["sign"]
+    );
+
+
+  return new Uint8Array(
+    await crypto.subtle.sign(
+      "HMAC",
+      key,
+      encoder.encode(
+        value
+      )
+    )
+  );
+
+}
+
+
+function constantTimeBytesEqual(
+  a,
+  b
+) {
+
+  if (
+    !(a instanceof Uint8Array) ||
+    !(b instanceof Uint8Array) ||
+    a.length !== b.length
+  ) {
+
+    return false;
+
+  }
+
+
+  let diff = 0;
+
+  for (let i = 0; i < a.length; i++) {
+
+    diff |= a[i] ^ b[i];
+
+  }
+
+  return diff === 0;
+
+}
+
+
+/*
+ * Guardia única para mutaciones:
+ * cookie de sesión admin O Bearer JWT.
+ */
+
+async function requireAuth(
+  request,
+  env
+) {
+
+  if (
+    await requireAdmin(
+      request,
+      env
+    )
+  ) {
+
+    return true;
+
+  }
+
+
+  const secret =
+    env.JWT_SECRET ||
+    env.ADMIN_PASSWORD;
+
+
+  if (!secret) {
+
+    return false;
+
+  }
+
+
+  const header =
+    request.headers.get(
+      "Authorization"
+    ) || "";
+
+
+  const match =
+    header.match(
+      /^Bearer\s+(.+)$/i
+    );
+
+
+  if (!match) {
+
+    return false;
+
+  }
+
+
+  return (
+    (await jwtVerify(
+      match[1],
+      secret
+    )) !== null
   );
 
 }
