@@ -121,8 +121,17 @@ listos para escala geográfica.
 wrangler d1 execute nexo-db --remote --file=schema.sql
 
 # Secreto de administración
-wrangler secret put ADMIN_TOKEN
+wrangler secret put ADMIN_PASSWORD
 
 # Publicar
 wrangler deploy
+```
+
+---
+
+# 🧪 Tests
+
+```bash
+npm test     # suite del Worker (15 pruebas: rutas, auth, CORS, límites, privacidad)
+npm run check  # validación de sintaxis del Worker
 ```

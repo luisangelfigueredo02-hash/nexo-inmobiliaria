@@ -1,0 +1,9 @@
+{
+  "name": "nexo-inmobiliaria",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/worker.test.mjs",
+    "check": "node --check worker.js"
+  }
+}

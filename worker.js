@@ -150,9 +150,41 @@ export default {
 
       if (env.ASSETS) {
 
-        return env.ASSETS.fetch(
-          request
-        );
+        const response =
+          await env.ASSETS.fetch(
+            request
+          );
+
+
+        /*
+         * Los assets pueden traer headers
+         * inmutables; envolvemos la respuesta
+         * para añadir seguridad.
+         */
+
+        const wrapped =
+          new Response(
+            response.body,
+            response
+          );
+
+
+        for (
+          const [key, value] of
+          Object.entries(
+            securityHeaders()
+          )
+        ) {
+
+          wrapped.headers.set(
+            key,
+            value
+          );
+
+        }
+
+
+        return wrapped;
 
       }
 
@@ -3698,6 +3730,8 @@ function json(
     "Cache-Control":
       "no-store",
 
+    ...securityHeaders(),
+
     ...corsHeaders(
       request
     ),
@@ -3716,6 +3750,46 @@ function json(
       headers
     }
   );
+
+}
+
+
+/*
+ * Cabeceras de seguridad aplicables
+ * a toda la plataforma.
+ */
+
+function securityHeaders() {
+
+  const policy = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://unpkg.com",
+    "style-src 'self' 'unsafe-inline' https://unpkg.com",
+    "img-src 'self' https: data:",
+    "font-src 'self' https: data:",
+    "connect-src 'self' https://unpkg.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'"
+  ].join("; ");
+
+
+  return {
+
+    "X-Content-Type-Options":
+      "nosniff",
+
+    "Referrer-Policy":
+      "strict-origin-when-cross-origin",
+
+    "X-Frame-Options":
+      "DENY",
+
+    "Content-Security-Policy":
+      policy
+
+  };
 
 }
 
