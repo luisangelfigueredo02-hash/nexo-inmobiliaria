@@ -434,6 +434,60 @@ a{
   color:#fff;
 }
 
+.filters-secondary{
+  display:flex;
+  gap:6px;
+
+  margin-top:6px;
+}
+
+.select-filter{
+  position:relative;
+
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex:none;
+
+  padding:0 4px 0 12px;
+
+  border:1px solid var(--line);
+  border-radius:999px;
+
+  background:#fff;
+}
+
+.select-filter span{
+  font-size:9px;
+  font-weight:750;
+  color:#656569;
+  white-space:nowrap;
+}
+
+.select-filter select{
+  appearance:none;
+
+  padding:8px 22px 8px 0;
+
+  border:none;
+  border-radius:999px;
+
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M1 1l3 3 3-3' fill='none' stroke='%23656569' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E")
+    no-repeat right center/8px;
+
+  color:#111113;
+
+  font-size:10px;
+  font-weight:750;
+
+  cursor:pointer;
+}
+
+.select-filter:focus-within{
+  border-color:#111113;
+}
+
 /* =====================================================
    LISTA
 ===================================================== */
@@ -1200,6 +1254,90 @@ a{
 
     </div>
 
+
+    <div class="filters-secondary">
+
+      <label class="select-filter">
+
+        <span>
+          Presupuesto
+        </span>
+
+        <select
+          id="budgetFilter"
+          aria-label="Presupuesto máximo"
+        >
+
+          <option value="0">
+            Cualquiera
+          </option>
+
+          <option value="25000">
+            ≤ $25k
+          </option>
+
+          <option value="50000">
+            ≤ $50k
+          </option>
+
+          <option value="100000">
+            ≤ $100k
+          </option>
+
+          <option value="150000">
+            ≤ $150k
+          </option>
+
+          <option value="250000">
+            ≤ $250k
+          </option>
+
+          <option value="500000">
+            ≤ $500k
+          </option>
+
+        </select>
+
+      </label>
+
+
+      <label class="select-filter">
+
+        <span>
+          Habitaciones
+        </span>
+
+        <select
+          id="bedroomsFilter"
+          aria-label="Habitaciones mínimas"
+        >
+
+          <option value="0">
+            Cualquiera
+          </option>
+
+          <option value="1">
+            1+
+          </option>
+
+          <option value="2">
+            2+
+          </option>
+
+          <option value="3">
+            3+
+          </option>
+
+          <option value="4">
+            4+
+          </option>
+
+        </select>
+
+      </label>
+
+    </div>
+
   </div>
 
 
@@ -1277,7 +1415,11 @@ const state = {
 
   filter:"all",
 
-  search:""
+  search:"",
+
+  budget:0,
+
+  bedrooms:0
 
 };
 
@@ -1431,6 +1573,44 @@ function bindControls(){
 
           }
         );
+
+      }
+    );
+
+
+  $("#budgetFilter")
+    .addEventListener(
+      "change",
+      event => {
+
+        state.budget =
+          Math.max(
+            0,
+            Number(
+              event.target.value
+            ) || 0
+          );
+
+        applyFilter();
+
+      }
+    );
+
+
+  $("#bedroomsFilter")
+    .addEventListener(
+      "change",
+      event => {
+
+        state.bedrooms =
+          Math.max(
+            0,
+            Number(
+              event.target.value
+            ) || 0
+          );
+
+        applyFilter();
 
       }
     );
@@ -1612,6 +1792,62 @@ function applyFilter(){
           ).includes(
             query
           )
+      );
+
+  }
+
+
+  if(
+    state.budget > 0
+  ){
+
+
+    list =
+      list.filter(
+        property => {
+
+          const price =
+            Number(
+              property.price
+            );
+
+          return (
+            Number.isFinite(
+              price
+            ) &&
+            price <=
+              state.budget
+          );
+
+        }
+      );
+
+  }
+
+
+  if(
+    state.bedrooms > 0
+  ){
+
+
+    list =
+      list.filter(
+        property => {
+
+          const bedrooms =
+            Number(
+              property.bedrooms
+            );
+
+          return (
+            Number.isFinite(
+              bedrooms
+            ) &&
+            bedrooms >=
+              state.bedrooms
+          );
+
+        }
       );
 
   }

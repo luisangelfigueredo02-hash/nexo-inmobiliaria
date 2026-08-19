@@ -1327,6 +1327,14 @@ footer{
       </button>
 
       <button
+        id="geocodeButton"
+        class="secondary hidden"
+        type="button"
+      >
+        📍 Reubicar
+      </button>
+
+      <button
         id="deleteButton"
         class="danger hidden"
         type="button"
@@ -1513,6 +1521,9 @@ const submitButton =
 
 const deleteButton =
   $("#deleteButton");
+
+const geocodeButton =
+  $("#geocodeButton");
 
 const cancelEdit =
   $("#cancelEdit");
@@ -2317,6 +2328,10 @@ function resetForm(){
     .classList
     .add("hidden");
 
+  geocodeButton
+    .classList
+    .add("hidden");
+
   cancelEdit
     .classList
     .add("hidden");
@@ -2433,6 +2448,10 @@ function editProperty(
     .classList
     .remove("hidden");
 
+  geocodeButton
+    .classList
+    .remove("hidden");
+
   cancelEdit
     .classList
     .remove("hidden");
@@ -2503,6 +2522,81 @@ deleteButton.addEventListener(
 
       deleteButton.disabled =
         false;
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   GEOCODE MANUAL
+========================================================= */
+
+geocodeButton.addEventListener(
+  "click",
+  async () => {
+
+    if(!editingId){
+      return;
+    }
+
+    clearNotice();
+
+    geocodeButton.disabled =
+      true;
+
+    geocodeButton.textContent =
+      "Ubicando...";
+
+    try{
+
+      const data =
+        await api(
+          `/api/properties/${editingId}/geocode`,
+          {
+            method:"POST"
+          }
+        );
+
+      const geocode =
+        data?.geocode;
+
+      if(geocode?.found){
+
+        showNotice(
+          "✓ Propiedad ubicada en el mapa.",
+          "success"
+        );
+
+      }else{
+
+        showNotice(
+          "No se encontraron coordenadas para esta dirección.",
+          "warning"
+        );
+
+      }
+
+      await loadProperties();
+
+    }catch(error){
+
+      showNotice(
+        `No se pudo ubicar la propiedad.\n\n${
+          error.message ||
+          "Error desconocido."
+        }`,
+        "error"
+      );
+
+    }finally{
+
+      geocodeButton.disabled =
+        false;
+
+      geocodeButton.textContent =
+        "📍 Reubicar";
 
     }
 
