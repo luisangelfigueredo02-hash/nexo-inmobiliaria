@@ -3143,6 +3143,24 @@ async function setStatus(
    PROPERTY CARD
 ========================================================= */
 
+function qualityFlagLabel(
+  flag
+){
+
+  const labels = {
+    sin_fotos: "sin fotos",
+    sin_ubicacion: "sin ubicación",
+    sin_titulo: "sin título",
+    sin_descripcion:
+      "descripción pobre",
+    sin_contacto: "sin contacto"
+  };
+
+  return labels[flag] || flag;
+
+}
+
+
 function propertyHTML(
   property
 ){
@@ -3249,6 +3267,32 @@ function propertyHTML(
             property.price
           )}
         </div>
+
+        ${
+          property.quality
+            ? `
+              <div class="property-location">
+                Calidad:
+                <strong>
+                  ${property.quality.score}/100
+                </strong>
+                ${
+                  property.quality.flags
+                    ?.length
+                    ? "· " +
+                      escapeHTML(
+                        property.quality.flags
+                          .map(
+                            qualityFlagLabel
+                          )
+                          .join(", ")
+                      )
+                    : "· completa"
+                }
+              </div>
+            `
+            : ""
+        }
 
       </div>
 

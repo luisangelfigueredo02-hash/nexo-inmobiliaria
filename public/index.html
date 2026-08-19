@@ -546,6 +546,25 @@ main{
   display:none;
 }
 
+.property-badge-quality{
+  position:absolute;
+  left:10px;
+  top:38px;
+
+  padding:6px 9px;
+
+  border-radius:999px;
+
+  background:rgba(255,255,255,.92);
+  color:#8a6d00;
+
+  font-size:8px;
+  font-weight:800;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,.08);
+}
+
 .property-badge{
   position:absolute;
   left:10px;
@@ -3369,6 +3388,15 @@ function propertyCardHTML(property){
         <span class="property-badge">
           ${escapeHTML(statusOf(property))}
         </span>
+        ${
+          property.quality &&
+          !property.quality.complete &&
+          property.quality.score < 60
+            ? `<span class="property-badge-quality">
+                 Datos incompletos
+               </span>`
+            : ""
+        }
         <button
           class="favorite-button ${
             favorite ? "active" : ""
@@ -3998,6 +4026,107 @@ async function initMap(){
 }
 
 
+/*
+ * Separa marcadores con coordenadas
+ * idénticas en espiral determinista
+ * (ángulo áureo) para que todas las
+ * píldoras sean visibles y clicables.
+ */
+
+function spreadMarkers(
+  located
+){
+
+  const groups =
+    new Map();
+
+  located.forEach(
+    property => {
+
+      const key =
+        `${Number(property.latitude).toFixed(5)},` +
+        `${Number(property.longitude).toFixed(5)}`;
+
+      if(!groups.has(key)){
+
+        groups.set(key, []);
+
+      }
+
+      groups
+        .get(key)
+        .push(property);
+
+    }
+  );
+
+
+  const spread =
+    new Map();
+
+  groups.forEach(
+    list => {
+
+      const ordered =
+        [...list].sort(
+          (a,b) =>
+            String(a.id)
+              .localeCompare(
+                String(b.id)
+              )
+        );
+
+      ordered.forEach(
+        (property, index) => {
+
+          const baseLat =
+            Number(property.latitude);
+
+          const baseLng =
+            Number(property.longitude);
+
+          if(index === 0){
+
+            spread.set(
+              String(property.id),
+              [baseLng, baseLat]
+            );
+
+            return;
+
+          }
+
+          const angle =
+            (index - 1) * 2.4;
+
+          const ring =
+            Math.ceil(index / 6);
+
+          const radius =
+            0.0009 * ring;
+
+          spread.set(
+            String(property.id),
+            [
+              baseLng +
+                Math.cos(angle) * radius,
+              baseLat +
+                Math.sin(angle) * radius
+            ]
+          );
+
+        }
+      );
+
+    }
+  );
+
+
+  return spread;
+
+}
+
+
 function updateMap(){
 
   if(!NEXO.map){
@@ -4036,16 +4165,24 @@ function updateMap(){
 
   }
 
+  const spread =
+    spreadMarkers(located);
+
   const bounds = [];
 
   located.forEach(
     property => {
 
-      const lat =
+      const realLng =
+        Number(property.longitude);
+
+      const realLat =
         Number(property.latitude);
 
-      const lng =
-        Number(property.longitude);
+      const [lng, lat] =
+        spread.get(
+          String(property.id)
+        ) || [realLng, realLat];
 
       const pill =
         document.createElement(

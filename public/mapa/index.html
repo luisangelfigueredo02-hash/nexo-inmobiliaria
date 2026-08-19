@@ -2420,6 +2420,106 @@ function performSearch(
    MARCADORES
 ===================================================== */
 
+/*
+ * Separa marcadores con coordenadas
+ * idénticas en espiral determinista
+ * (ángulo áureo).
+ */
+
+function spreadMarkers(
+  located
+){
+
+  const groups =
+    new Map();
+
+  located.forEach(
+    property => {
+
+      const key =
+        `${Number(property.latitude).toFixed(5)},` +
+        `${Number(property.longitude).toFixed(5)}`;
+
+      if(!groups.has(key)){
+
+        groups.set(key, []);
+
+      }
+
+      groups
+        .get(key)
+        .push(property);
+
+    }
+  );
+
+
+  const spread =
+    new Map();
+
+  groups.forEach(
+    list => {
+
+      const ordered =
+        [...list].sort(
+          (a,b) =>
+            String(a.id)
+              .localeCompare(
+                String(b.id)
+              )
+        );
+
+      ordered.forEach(
+        (property, index) => {
+
+          const baseLat =
+            Number(property.latitude);
+
+          const baseLng =
+            Number(property.longitude);
+
+          if(index === 0){
+
+            spread.set(
+              String(property.id),
+              [baseLng, baseLat]
+            );
+
+            return;
+
+          }
+
+          const angle =
+            (index - 1) * 2.4;
+
+          const ring =
+            Math.ceil(index / 6);
+
+          const radius =
+            0.0009 * ring;
+
+          spread.set(
+            String(property.id),
+            [
+              baseLng +
+                Math.cos(angle) * radius,
+              baseLat +
+                Math.sin(angle) * radius
+            ]
+          );
+
+        }
+      );
+
+    }
+  );
+
+
+  return spread;
+
+}
+
+
 function renderMarkers(
   properties
 ){
@@ -2444,30 +2544,42 @@ function renderMarkers(
   state.activeMarker = null;
 
 
-  properties.forEach(
+  const located =
+    properties.filter(
+      hasCoordinates
+    );
+
+
+  const spread =
+    spreadMarkers(
+      located
+    );
+
+
+  located.forEach(
     property => {
 
-      if(
-        !hasCoordinates(
-          property
-        )
-      ){
-
-        return;
-
-      }
+      const display =
+        spread.get(
+          String(
+            property.id
+          )
+        ) || [
+          Number(
+            property.longitude
+          ),
+          Number(
+            property.latitude
+          )
+        ];
 
 
       const lat =
-        Number(
-          property.latitude
-        );
+        display[1];
 
 
       const lng =
-        Number(
-          property.longitude
-        );
+        display[0];
 
 
       const id =

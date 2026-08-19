@@ -64,6 +64,99 @@ const NOMINATIM_URL =
 
 
 /*
+ * Observabilidad mínima: aviso JSON cuando
+ * una petición supera el umbral de lentitud.
+ */
+
+const SLOW_REQUEST_MS =
+  2000;
+
+function logIfSlow(
+  request,
+  started,
+  status
+) {
+
+  const ms =
+    Date.now() - started;
+
+  if (ms > SLOW_REQUEST_MS) {
+
+    console.warn(
+      JSON.stringify({
+        level: "warn",
+        event:
+          "slow_request",
+        route:
+          new URL(
+            request.url
+          ).pathname,
+        method:
+          request.method,
+        status,
+        ms
+      })
+    );
+
+  }
+
+}
+
+
+/*
+ * Rate limiting best-effort por IP (en
+ * memoria por instancia). Protege los
+ * endpoints con coste de Workers AI.
+ */
+
+const rateBuckets =
+  new Map();
+
+function rateLimited(
+  key,
+  max,
+  windowMs
+) {
+
+  const now =
+    Date.now();
+
+  const list = (
+    (rateBuckets.get(key) || [])
+      .filter(
+        time =>
+          now - time < windowMs
+      )
+  );
+
+  list.push(now);
+
+  rateBuckets.set(
+    key,
+    list
+  );
+
+  return (
+    list.length > max
+  );
+
+}
+
+
+function requestIP(
+  request
+) {
+
+  return (
+    request.headers.get(
+      "CF-Connecting-IP"
+    ) || "unknown"
+  );
+
+}
+
+
+/*
  * Protección best-effort contra fuerza bruta
  * en el login (en memoria por instancia).
  */
@@ -122,6 +215,9 @@ export default {
     const url =
       new URL(request.url);
 
+    const started =
+      Date.now();
+
     try {
 
       if (
@@ -140,12 +236,21 @@ export default {
         url.pathname.startsWith("/api/")
       ) {
 
-        return await handleAPI(
+        const response =
+          await handleAPI(
+            request,
+            env,
+            url,
+            ctx
+          );
+
+        logIfSlow(
           request,
-          env,
-          url,
-          ctx
+          started,
+          response.status
         );
+
+        return response;
 
       }
 
@@ -175,6 +280,45 @@ export default {
           Number(
             ogMatch[1]
           )
+        );
+
+      }
+
+
+      /*
+       * Sitemap dinámico: solo content-
+       * routes reales desde D1. Nada de
+       * thin content.
+       */
+
+      if (
+        url.pathname === "/sitemap.xml" &&
+        env.DB &&
+        request.method === "GET"
+      ) {
+
+        return renderSitemap(
+          request,
+          env,
+          url
+        );
+
+      }
+
+
+      /*
+       * robots.txt propio (el de Cloudflare
+       * por defecto no enlaza el sitemap).
+       */
+
+      if (
+        url.pathname === "/robots.txt" &&
+        request.method === "GET"
+      ) {
+
+        return renderRobots(
+          request,
+          url
         );
 
       }
@@ -232,9 +376,31 @@ export default {
 
     } catch (error) {
 
+      /*
+       * Log estructurado JSON: una línea
+       * parseable por error, con ruta,
+       * método y duración.
+       */
+
       console.error(
-        "NEXO WORKER ERROR:",
-        error
+        JSON.stringify({
+          level: "error",
+          event:
+            "worker_error",
+          route:
+            url.pathname,
+          method:
+            request.method,
+          status: 500,
+          ms:
+            Date.now() -
+              started,
+          error:
+            String(
+              error?.message ||
+              error
+            )
+        })
       );
 
       return json(
@@ -727,6 +893,95 @@ async function renderPropertyPage(
       .join("\n");
 
 
+    /*
+     * Structured Data (schema.org) con
+     * campos reales de D1. Los crawlers
+     * de Google/Meta lo usan para rich
+     * snippets inmobiliarios.
+     */
+
+    const jsonLD = {
+
+      "@context":
+        "https://schema.org",
+
+      "@type":
+        "RealEstateListing",
+
+      name: title,
+
+      url: pageURL,
+
+      ...(image
+        ? { image: [image] }
+        : {}),
+
+      description,
+
+      address: {
+        "@type": "PostalAddress",
+        ...(location
+          ? {
+              addressLocality:
+                location
+            }
+          : {}),
+        addressCountry: "CU"
+      },
+
+      ...(
+        Number.isFinite(price) &&
+        price > 0
+          ? {
+              offers: {
+                "@type": "Offer",
+                price,
+                priceCurrency: "USD"
+              }
+            }
+          : {}
+      ),
+
+      ...(
+        Number(property.square_meters) >
+          0
+          ? {
+              floorSize: {
+                "@type":
+                  "QuantitativeValue",
+                value: Number(
+                  property.square_meters
+                ),
+                unitCode: "MTK"
+              }
+            }
+          : {}
+      ),
+
+      ...(
+        Number(property.bedrooms) >
+          0
+          ? {
+              numberOfRooms: Number(
+                property.bedrooms
+              )
+            }
+          : {}
+      )
+
+    };
+
+
+    const jsonLDSafe =
+      JSON.stringify(jsonLD)
+        .replace(/</g, "\\u003c");
+
+
+    const tags2 =
+      tags +
+      `\n<script type="application/ld+json">${jsonLDSafe}</script>`;
+
+
     html =
       html.replace(
         /<title>[^<]*<\/title>/,
@@ -737,7 +992,7 @@ async function renderPropertyPage(
     html =
       html.replace(
         "</head>",
-        `${tags}\n</head>`
+        `${tags2}\n</head>`
       );
 
   }
@@ -773,6 +1028,137 @@ async function renderPropertyPage(
     {
       status: 200,
       headers
+    }
+  );
+
+}
+
+
+/* ============================================================
+   SITEMAP + ROBOTS (SEO Growth)
+============================================================ */
+
+function escapeXML(
+  value
+) {
+
+  return String(
+    value ?? ""
+  )
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+
+}
+
+
+async function renderSitemap(
+  request,
+  env,
+  url
+) {
+
+  const result =
+    await env.DB
+      .prepare(`
+        SELECT id, created_at
+        FROM properties
+        WHERE status = 'available'
+        ORDER BY id
+        LIMIT 5000
+      `)
+      .all();
+
+
+  const origin =
+    url.origin;
+
+
+  const staticPages = [
+    "/",
+    "/mapa/",
+    "/ia/",
+    "/comparar/"
+  ];
+
+
+  const entries = [
+    ...staticPages.map(
+      path => `
+  <url>
+    <loc>${origin}${path}</loc>
+    <changefreq>daily</changefreq>
+  </url>`
+    ),
+    ...(result.results || [])
+      .map(
+        row => `
+  <url>
+    <loc>${origin}/propiedad/${row.id}</loc>
+    <lastmod>${
+      escapeXML(
+        String(
+          row.created_at || ""
+        ).split(" ")[0]
+      )
+    }</lastmod>
+    <changefreq>weekly</changefreq>
+  </url>`
+      )
+  ];
+
+
+  const xml =
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` +
+    entries.join("") +
+    `\n</urlset>\n`;
+
+
+  return new Response(
+    xml,
+    {
+      status: 200,
+      headers: {
+        "Content-Type":
+          "application/xml; charset=utf-8",
+        "Cache-Control":
+          "public, max-age=3600",
+        ...securityHeaders()
+      }
+    }
+  );
+
+}
+
+
+function renderRobots(
+  request,
+  url
+) {
+
+  const text =
+    `User-agent: *\n` +
+    `Allow: /\n` +
+    `Disallow: /admin.html\n` +
+    `Disallow: /api/\n` +
+    `\n` +
+    `Sitemap: ${url.origin}/sitemap.xml\n`;
+
+
+  return new Response(
+    text,
+    {
+      status: 200,
+      headers: {
+        "Content-Type":
+          "text/plain; charset=utf-8",
+        "Cache-Control":
+          "public, max-age=3600",
+        ...securityHeaders()
+      }
     }
   );
 
@@ -1583,6 +1969,48 @@ async function handleAPI(
       request,
       env
     );
+
+  }
+
+
+  /* ----------------------------------------------------------
+     RATE LIMIT (endpoints con coste
+     de Workers AI: IA + semantic)
+  ---------------------------------------------------------- */
+
+  const aiCostedRoutes = [
+    "/api/ia",
+    "/api/search/semantic"
+  ];
+
+  if (
+    aiCostedRoutes.includes(path) &&
+    request.method === "POST"
+  ) {
+
+    const ip =
+      requestIP(request);
+
+
+    if (
+      rateLimited(
+        ip,
+        20,
+        60 * 1000
+      )
+    ) {
+
+      return json(
+        {
+          ok: false,
+          error:
+            "Demasiadas solicitudes. Inténtalo en un minuto."
+        },
+        429,
+        request
+      );
+
+    }
 
   }
 
@@ -2738,6 +3166,129 @@ function normalizeStatus(
    NORMALIZE PROPERTY
 ============================================================ */
 
+/*
+ * Quality Score (Trust System, 0–100).
+ * Pesos pensados para lo que más pesa
+ * en la decisión de un comprador cubano:
+ * fotos reales, ubicación en el mapa,
+ * título y descripción informativas.
+ * `contact` solo se evalúa en vistas
+ * administrativas (datos privados).
+ */
+
+function computeQuality(
+  property,
+  includePrivate = false
+) {
+
+  const flags = [];
+
+  let score = 0;
+
+
+  const photos =
+    firstPhoto(
+      property.photos
+    );
+
+
+  if (photos) {
+
+    score += 30;
+
+  } else {
+
+    flags.push("sin_fotos");
+
+  }
+
+
+  if (
+    Number.isFinite(
+      property.latitude
+    ) &&
+    Number.isFinite(
+      property.longitude
+    )
+  ) {
+
+    score += 25;
+
+  } else {
+
+    flags.push("sin_ubicacion");
+
+  }
+
+
+  if (
+    String(property.title || "")
+      .trim().length >= 4
+  ) {
+
+    score += 15;
+
+  } else {
+
+    flags.push("sin_titulo");
+
+  }
+
+
+  if (
+    String(
+      property.description || ""
+    ).trim().length >= 40
+  ) {
+
+    score += 20;
+
+  } else {
+
+    flags.push(
+      "sin_descripcion"
+    );
+
+  }
+
+
+  if (includePrivate) {
+
+    if (
+      property.owner_phone ||
+      property.contact_email
+    ) {
+
+      score += 10;
+
+    } else {
+
+      flags.push("sin_contacto");
+
+    }
+
+  } else {
+
+    /*
+     * En la vista pública no penalizamos
+     * por contacto (es canalizado por NEXO).
+     */
+
+    score += 10;
+
+  }
+
+
+  return {
+    score,
+    complete:
+      flags.length === 0,
+    flags
+  };
+
+}
+
+
 function normalizeProperty(
   property,
   includePrivate = false
@@ -2849,6 +3400,19 @@ function normalizeProperty(
       property.notes || "";
 
   }
+
+
+  /*
+   * Quality Score (Trust System):
+   * se deriva SOLO de campos reales.
+   * Nunca se inventa ni se maquilla.
+   */
+
+  base.quality =
+    computeQuality(
+      base,
+      includePrivate
+    );
 
 
   return base;

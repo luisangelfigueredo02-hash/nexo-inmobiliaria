@@ -323,3 +323,76 @@ test("cabeceras de seguridad presentes en JSON", async () => {
     "DENY"
   );
 });
+
+
+/* =========================================================
+   TRUST SYSTEM — quality score (P0)
+========================================================= */
+
+test("quality score se deriva de campos reales", async () => {
+  const res = await worker.fetch(
+    req("/api/properties"),
+    makeEnv()
+  );
+
+  const data = await res.json();
+  const quality =
+    data.properties[0].quality;
+
+  assert.ok(quality);
+  assert.ok(
+    quality.score > 0 &&
+      quality.score <= 100
+  );
+  assert.ok(
+    Array.isArray(quality.flags)
+  );
+});
+
+
+/* =========================================================
+   SEO — sitemap + robots (P0)
+========================================================= */
+
+test("sitemap.xml es XML válido con URLs reales", async () => {
+  const res = await worker.fetch(
+    req("/sitemap.xml"),
+    makeEnv()
+  );
+
+  assert.equal(res.status, 200);
+  const text = await res.text();
+
+  assert.ok(
+    text.includes(
+      "<urlset xmlns="
+    )
+  );
+  assert.ok(
+    text.includes(
+      "/propiedad/1"
+    )
+  );
+  assert.equal(
+    res.headers.get("content-type")
+    ,
+    "application/xml; charset=utf-8"
+  );
+});
+
+
+test("robots.txt enlaza el sitemap", async () => {
+  const res = await worker.fetch(
+    req("/robots.txt"),
+    makeEnv()
+  );
+
+  assert.equal(res.status, 200);
+  const text = await res.text();
+
+  assert.ok(
+    text.includes(
+      "Sitemap: https://nexo.test/sitemap.xml"
+    )
+  );
+});
