@@ -16,6 +16,16 @@
 
 
 <link rel="stylesheet" href="/variables.css">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<script>
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("/sw.js").catch(()=>{});
+  });
+}
+</script>
+
 <meta
   name="description"
   content="Compara propiedades de NEXO lado a lado: precio, habitaciones, área, ubicación y estado."

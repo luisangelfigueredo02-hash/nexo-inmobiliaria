@@ -11,6 +11,16 @@
 
 
 <link rel="stylesheet" href="/variables.css">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<script>
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("/sw.js").catch(()=>{});
+  });
+}
+</script>
+
 <style>
 :root{
   --bg:#fbfbfd;

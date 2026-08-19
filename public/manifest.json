@@ -1,0 +1,27 @@
+{
+  "name": "Nexo Inmobiliaria — Propiedades en Cuba",
+  "short_name": "NEXO",
+  "description": "Explora propiedades seleccionadas en Cuba con una experiencia simple, rápida y premium.",
+  "lang": "es",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fbfbfd",
+  "theme_color": "#f5f5f7",
+  "categories": ["real estate", "shopping", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
