@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, viewport-fit=cover"
+>
+
+<title>
+  NEXO · Comparar propiedades
+</title>
+
+<meta
+  name="description"
+  content="Compara propiedades de NEXO lado a lado: precio, habitaciones, área, ubicación y estado."
+>
+
+<style>
+
+:root{
+
+  --bg:#f6f6f8;
+  --panel:#fff;
+  --ink:#111113;
+  --muted:#68686c;
+  --line:#e4e4e7;
+
+  --brand:#15803d;
+  --brand-soft:#eaf8ee;
+
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+body{
+
+  background:var(--bg);
+  color:var(--ink);
+
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+
+  -webkit-font-smoothing:antialiased;
+
+}
+
+
+/* HEADER
+------------------------------------------------- */
+
+header{
+
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  padding:12px 16px;
+
+  border-bottom:1px solid var(--line);
+
+  background:var(--panel);
+
+}
+
+.brand{
+
+  text-decoration:none;
+  color:var(--ink);
+
+  font-size:15px;
+  font-weight:850;
+  letter-spacing:0.5px;
+
+}
+
+.head-title{
+
+  flex:1;
+
+  font-size:11px;
+  font-weight:750;
+
+  color:var(--muted);
+
+}
+
+.head-links{
+
+  display:flex;
+  gap:6px;
+
+}
+
+.head-links a{
+
+  padding:6px 11px;
+
+  border-radius:999px;
+
+  font-size:10px;
+  font-weight:750;
+
+  text-decoration:none;
+  color:var(--muted);
+
+}
+
+.head-links a:hover{
+  color:var(--ink);
+
+  background:var(--bg);
+
+}
+
+
+/* LAYOUT
+------------------------------------------------- */
+
+main{
+
+  max-width:1100px;
+
+  margin:0 auto;
+
+  padding:20px 14px;
+
+}
+
+
+/* STATE
+------------------------------------------------- */
+
+.state{
+
+  padding:60px 20px;
+
+  text-align:center;
+
+  font-size:13px;
+
+  color:var(--muted);
+
+}
+
+.state a{
+  color:var(--ink);
+
+  font-weight:700;
+
+}
+
+.summary{
+
+  margin-bottom:12px;
+
+  padding:10px 14px;
+
+  border-radius:12px;
+
+  background:var(--brand-soft);
+  color:var(--brand);
+
+  font-size:11.5px;
+  font-weight:750;
+
+}
+
+
+/* COMPARE
+------------------------------------------------- */
+
+.compare{
+
+  display:grid;
+  grid-template-columns:repeat(
+    var(--cols, 2),
+    minmax(0, 1fr)
+  );
+  gap:10px;
+
+}
+
+@media (max-width:680px){
+  .compare{
+    grid-template-columns:1fr;
+  }
+}
+
+.compare-card{
+
+  display:flex;
+  flex-direction:column;
+
+  overflow:hidden;
+
+  border:1px solid var(--line);
+  border-radius:14px;
+
+  background:var(--panel);
+
+}
+
+.compare-photo{
+
+  position:relative;
+
+  height:170px;
+
+  background:var(--bg);
+
+}
+
+.compare-photo img{
+
+  width:100%;
+  height:100%;
+
+  object-fit:cover;
+  display:block;
+
+}
+
+.compare-badge{
+
+  position:absolute;
+  top:8px;
+  left:8px;
+
+  padding:4px 9px;
+
+  border-radius:999px;
+
+  background:var(--ink);
+  color:#fff;
+
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:0.2px;
+
+}
+
+.compare-badge.reserved{
+  background:#7a4c0a;
+}
+
+.compare-badge.sold{
+  background:#8b1a1a;
+}
+
+.compare-body{
+  padding:13px;
+
+}
+
+.compare-title{
+
+  font-size:13.5px;
+  font-weight:775;
+
+  margin-bottom:2px;
+
+}
+
+.compare-location{
+
+  font-size:10.5px;
+
+  color:var(--muted);
+
+  margin-bottom:9px;
+
+}
+
+.compare-price{
+
+  font-size:17px;
+  font-weight:850;
+
+  margin-bottom:11px;
+
+}
+
+.compare-row{
+
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+
+  padding:7px 0;
+
+  border-top:1px solid var(--line);
+
+  font-size:11px;
+
+}
+
+.compare-row .label{
+  color:var(--muted);
+  font-weight:650;
+}
+
+.compare-row .value{
+  font-weight:750;
+
+  text-align:right;
+
+}
+
+.compare-row.best .value{
+  color:var(--brand);
+}
+
+.compare-row.best .value::after{
+  content:" ★";
+  font-size:9px;
+}
+
+.compare-chip{
+
+  display:inline-block;
+
+  margin-top:10px;
+
+  padding:5px 12px;
+
+  border-radius:999px;
+
+  background:var(--brand-soft);
+  color:var(--brand);
+
+  font-size:9.5px;
+  font-weight:800;
+
+  text-decoration:none;
+
+}
+
+.compare-chip:hover{
+  background:var(--brand);
+  color:#fff;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+  <a
+    href="/"
+    class="brand"
+  >
+    NEXO
+  </a>
+
+  <div class="head-title">
+    Comparación lado a lado
+  </div>
+
+  <nav class="head-links">
+
+    <a href="/">Catálogo</a>
+
+    <a href="/mapa/">Mapa</a>
+
+  </nav>
+
+</header>
+
+<main>
+
+  <div
+    id="state"
+    class="state"
+  >
+    Comparando propiedades...
+  </div>
+
+  <div
+    id="compare"
+    class="compare"
+  ></div>
+
+</main>
+
+<script>
+
+"use strict";
+
+/* =========================================================
+   NEXO · COMPARACIÓN INTELIGENTE
+   Lado a lado sobre inventario real
+========================================================= */
+
+const stateEl =
+  document.getElementById("state");
+
+const compareEl =
+  document.getElementById("compare");
+
+
+function escapeHTML(value){
+
+  return String(value ?? "")
+
+    .replace(/&/g,"&amp;")
+
+    .replace(/</g,"&lt;")
+
+    .replace(/>/g,"&gt;")
+
+    .replace(/"/g,"&quot;")
+
+    .replace(/'/g,"&#039;");
+
+}
+
+
+function safePhoto(property){
+
+  try{
+
+    const parsed =
+      JSON.parse(
+        property?.photos || "[]"
+      );
+
+    if(
+      !Array.isArray(parsed)
+    ){
+
+      return "";
+
+    }
+
+    const url =
+      parsed.find(
+        item =>
+          typeof item === "string" &&
+          item.length
+      );
+
+    if(!url){
+      return "";
+    }
+
+    const parsedURL =
+      new URL(
+        url,
+        window.location.origin
+      );
+
+    if(
+      !["http:","https:"]
+        .includes(
+          parsedURL.protocol
+        )
+    ){
+
+      return "";
+
+    }
+
+    return parsedURL.href;
+
+  }catch(_){
+
+    return "";
+
+  }
+
+}
+
+
+function numeric(value){
+
+  const number =
+    Number(value);
+
+  return Number.isFinite(number)
+    ? number
+    : null;
+
+}
+
+
+const MONEY = (
+  new Intl.NumberFormat(
+    "en-US",
+    {
+      style:"currency",
+      currency:"USD",
+      maximumFractionDigits:0
+    }
+  )
+);
+
+
+function money(value){
+
+  const number =
+    numeric(value);
+
+  return number !== null
+    ? MONEY.format(number)
+    : "Precio a convenir";
+
+}
+
+
+const STATUS_LABELS = {
+
+  available:"Disponible",
+  reserved:"Reservada",
+  sold:"Vendida"
+
+};
+
+
+/* =========================================================
+   BEST: destaca la mejor opción entre columnas
+========================================================= */
+
+function bestIndex(
+  properties,
+  getter,
+  direction
+){
+
+  let best = -1;
+  let bestValue = null;
+
+
+  properties.forEach(
+    (property, index) => {
+
+      const value =
+        getter(property);
+
+      if(
+        value === null
+      ){
+
+        return;
+
+      }
+
+
+      if(
+        bestValue === null ||
+        (
+          direction === "min"
+            ? value < bestValue
+            : value > bestValue
+        )
+      ){
+
+        bestValue = value;
+        best = index;
+
+      }
+
+    }
+  );
+
+
+  return best;
+
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function rowHTML(
+  label,
+  value,
+  isBest
+){
+
+  return `
+
+    <div class="compare-row ${
+      isBest ? "best" : ""
+    }">
+
+      <span class="label">
+        ${escapeHTML(label)}
+      </span>
+
+      <span class="value">
+        ${escapeHTML(value)}
+      </span>
+
+    </div>
+
+  `;
+
+}
+
+
+function renderCompare(properties){
+
+  compareEl.style.setProperty(
+    "--cols",
+    Math.min(
+      properties.length,
+      3
+    )
+  );
+
+
+  const bestPrice =
+    bestIndex(
+      properties,
+      property => numeric(
+        property.price
+      ),
+      "min"
+    );
+
+  const bestBedrooms =
+    bestIndex(
+      properties,
+      property => numeric(
+        property.bedrooms
+      ),
+      "max"
+    );
+
+  const bestArea =
+    bestIndex(
+      properties,
+      property => numeric(
+        property.square_meters
+      ),
+      "max"
+    );
+
+  const bestBathrooms =
+    bestIndex(
+      properties,
+      property => numeric(
+        property.bathrooms
+      ),
+      "max"
+    );
+
+
+  compareEl.innerHTML =
+    properties.map(
+      (property, index) => {
+
+        const photo =
+          safePhoto(property);
+
+        const status =
+          STATUS_LABELS[
+            property.status
+          ] ||
+          property.status ||
+          "—";
+
+        const specs = {
+
+          bedrooms:
+            numeric(property.bedrooms),
+          bathrooms:
+            numeric(property.bathrooms),
+          area:
+            numeric(property.square_meters)
+
+        };
+
+        return `
+
+          <article class="compare-card">
+
+            <div class="compare-photo">
+
+              ${
+                photo
+                  ? `
+                    <img
+                      src="${escapeHTML(photo)}"
+                      alt=""
+                      loading="lazy"
+                      onerror="this.remove()"
+                    >
+                  `
+                  : ""
+              }
+
+              <span class="compare-badge ${
+                escapeHTML(
+                  property.status || ""
+                )
+              }">
+                ${escapeHTML(status)}
+              </span>
+
+            </div>
+
+            <div class="compare-body">
+
+              <div class="compare-title">
+                ${escapeHTML(
+                  property.title ||
+                  property.property_type ||
+                  "Propiedad"
+                )}
+              </div>
+
+              <div class="compare-location">
+                ${escapeHTML(
+                  [
+                    property.neighborhood,
+                    property.city,
+                    property.province
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") ||
+                  "Cuba"
+                )}
+              </div>
+
+              <div class="compare-price">
+                ${escapeHTML(
+                  money(property.price)
+                )}
+              </div>
+
+              ${rowHTML(
+                "Tipo",
+                property.property_type || "—",
+                false
+              )}
+
+              ${rowHTML(
+                "Provincia",
+                property.province || "—",
+                false
+              )}
+
+              ${rowHTML(
+                "Habitaciones",
+                specs.bedrooms !== null
+                  ? String(specs.bedrooms)
+                  : "—",
+                index === bestBedrooms &&
+                specs.bedrooms !== null
+              )}
+
+              ${rowHTML(
+                "Baños",
+                specs.bathrooms !== null
+                  ? String(specs.bathrooms)
+                  : "—",
+                index === bestBathrooms &&
+                specs.bathrooms !== null
+              )}
+
+              ${rowHTML(
+                "Área",
+                specs.area !== null
+                  ? specs.area + " m²"
+                  : "—",
+                index === bestArea &&
+                specs.area !== null
+              )}
+
+              <a
+                class="compare-chip"
+                href="/property.html?id=${
+                  encodeURIComponent(
+                    property.id
+                  )
+                }"
+              >
+                Ver detalle completo
+              </a>
+
+            </div>
+
+          </article>
+
+        `;
+
+      }
+    )
+    .join("");
+
+
+  if(
+    bestPrice >= 0
+  ){
+
+    const best =
+      properties[bestPrice];
+
+    stateEl.className =
+      "summary";
+
+    stateEl.textContent =
+      `★ Mejor precio: ${best.title || "Propiedad"} · ` +
+      money(best.price) +
+      (properties.length > 1
+        ? ` · Comparando ${properties.length} propiedades`
+        : "");
+
+  }else{
+
+    stateEl.remove();
+
+  }
+
+}
+
+
+/* =========================================================
+   LOAD
+========================================================= */
+
+async function loadCompare(){
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const ids = (
+    params.get("ids") ||
+    ""
+  )
+    .split(",")
+    .map(
+      value => value.trim()
+    )
+    .filter(
+      Boolean
+    )
+    .slice(0, 5);
+
+
+  if(
+    !ids.length
+  ){
+
+    stateEl.innerHTML = `
+
+      Añade propiedades a comparar escribiendo
+      <strong>?ids=A,B</strong> en la URL, desde
+      las tarjetas del catálogo o desde el mapa.
+
+      <br><br>
+
+      <a href="/">Ir al catálogo</a>
+
+    `;
+
+    return;
+
+  }
+
+
+  try{
+
+    const response =
+      await fetch(
+        `/api/properties?ids=${
+          ids
+            .map(encodeURIComponent)
+            .join(",")
+        }`
+      );
+
+
+    const data =
+      await response.json();
+
+
+    const properties =
+      Array.isArray(
+        data?.properties
+      )
+        ? data.properties.slice(0, 5)
+        : [];
+
+
+    if(
+      !properties.length
+    ){
+
+      stateEl.textContent =
+        "No encontramos propiedades disponibles para comparar.";
+
+      return;
+
+    }
+
+
+    renderCompare(properties);
+
+  }catch(error){
+
+    stateEl.textContent =
+      "No se pudo cargar la comparación.";
+
+  }
+
+}
+
+
+loadCompare();
+
+</script>
+
+</body>
+
+</html>

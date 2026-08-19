@@ -560,6 +560,45 @@ async function getProperties(
   }
 
 
+  /*
+   * Comparación lado a lado:
+   * /api/properties?ids=a,b,c (máx. 5)
+   */
+
+  const ids = (
+    params.get("ids") ||
+    ""
+  )
+    .split(",")
+    .map(
+      value =>
+        value.trim()
+    )
+    .filter(
+      value =>
+        value.length &&
+        value.length <= 64
+    )
+    .slice(0, 5);
+
+
+  if (
+    ids.length
+  ) {
+
+    sql += `
+      AND id IN (${ids
+      .map(() => "?")
+      .join(",")})
+    `;
+
+    bindings.push(
+      ...ids
+    );
+
+  }
+
+
   sql += `
     ORDER BY created_at DESC
     LIMIT ?

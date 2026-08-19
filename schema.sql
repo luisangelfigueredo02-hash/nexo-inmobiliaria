@@ -48,3 +48,43 @@ CREATE INDEX IF NOT EXISTS idx_properties_city
 
 CREATE INDEX IF NOT EXISTS idx_properties_type
   ON properties (property_type);
+
+-- Escalabilidad provincial: búsquedas/geo por provincia.
+CREATE INDEX IF NOT EXISTS idx_properties_province
+  ON properties (province);
+
+-- Comparación lado a lado: resolución por IDs ya cubierta por
+-- la PRIMARY KEY. Orden futura por precio.
+CREATE INDEX IF NOT EXISTS idx_properties_price
+  ON properties (price);
+
+-- ============================================================
+-- PREPARACIÓN FUTURA (vacías hasta su activación)
+-- Favoritos y cuentas de usuario.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS users (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  email         TEXT    NOT NULL UNIQUE,
+  password_hash TEXT    NOT NULL,
+  name          TEXT,
+  role          TEXT    NOT NULL DEFAULT 'user'
+                CHECK (role IN ('user', 'admin')),
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS favorites (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id       INTEGER NOT NULL
+                REFERENCES users (id) ON DELETE CASCADE,
+  property_id   INTEGER NOT NULL
+                REFERENCES properties (id) ON DELETE CASCADE,
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+  UNIQUE (user_id, property_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_favorites_user
+  ON favorites (user_id);
+
+CREATE INDEX IF NOT EXISTS idx_favorites_property
+  ON favorites (property_id);

@@ -35,12 +35,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 1rem;
+        }
+
+        header span {
+            display: flex;
+            gap: 1rem;
         }
 
         header a {
             color: var(--primary);
             text-decoration: none;
             font-weight: 600;
+        }
+
+        header a:hover {
+            color: var(--primary-hover);
         }
 
         .container {
@@ -168,7 +178,10 @@
 
     <header>
         <strong>Nexo Inmueble</strong>
-        <a href="/">← Volver al catálogo</a>
+        <span>
+            <a id="compareLink" href="/comparar/">⚖ Comparar</a>
+            <a href="/">← Volver al catálogo</a>
+        </span>
     </header>
 
     <div class="container" id="app">
@@ -210,6 +223,11 @@
         const propertyId = urlParams.get('id');
 
         const appContainer = document.getElementById('app');
+
+        if (propertyId) {
+            document.getElementById('compareLink').href =
+                `/comparar/?ids=${encodeURIComponent(propertyId)}`;
+        }
 
         async function fetchPropertyDetails() {
             if (!propertyId) {
