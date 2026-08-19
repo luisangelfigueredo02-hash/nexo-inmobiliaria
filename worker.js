@@ -1594,6 +1594,10 @@ function normalizeProperty(
       property.status ||
       "available",
 
+    // Sello público de confianza
+    verified:
+      property.verified ? 1 : 0,
+
     created_at:
       property.created_at || null
 
