@@ -450,6 +450,49 @@ header a:hover{
   transform:translateY(-1px);
 }
 
+.btn-whatsapp{
+
+  display:block;
+
+  margin:10px 0 0;
+
+  padding:13px;
+
+  border:1px solid rgba(0,0,0,.14);
+  border-radius:14px;
+
+  background:#fff;
+  color:#111;
+
+  font-size:13px;
+  font-weight:700;
+
+  text-align:center;
+  text-decoration:none;
+
+  transition:
+    transform .18s ease,
+    background .18s ease,
+    color .18s ease;
+
+}
+
+.btn-whatsapp:hover{
+
+  background:#25d366;
+  color:#fff;
+
+  transform:translateY(-1px);
+
+}
+
+.btn-whatsapp svg{
+  width:15px;
+  height:15px;
+
+  vertical-align:-2px;
+}
+
 
 /* =========================================================
    NEXO MOTION SYSTEM — fisica spring unificada
@@ -686,7 +729,19 @@ const urlParams =
     window.location.search
   );
 
+/*
+ * Admite tanto /propiedad/<id>
+ * (con OG inyectado desde el Worker)
+ * como /property.html?id=<id>.
+ */
+
+const pathMatch =
+  window.location.pathname.match(
+    /\/propiedad\/(\d+)/
+  );
+
 const propertyId =
+  (pathMatch && pathMatch[1]) ||
   urlParams.get("id");
 
 const appContainer =
@@ -756,6 +811,40 @@ async function fetchPropertyDetails(){
 /* =========================================================
    RENDER
 ========================================================= */
+
+/*
+ * Enlace de conversión a WhatsApp con
+ * título y URL canónica (/propiedad/<id>)
+ * predefinidos en el mensaje.
+ */
+
+function whatsappURL(
+  prop
+){
+
+  const title =
+    prop.title ||
+    prop.property_type ||
+    "esta propiedad";
+
+
+  const pageURL =
+    `${window.location.origin}/propiedad/${
+      encodeURIComponent(prop.id)
+    }`;
+
+
+  const message =
+    `Hola NEXO, me interesa "${title}". ` +
+    `¿Me pueden dar más información?\n${pageURL}`;
+
+
+  return `https://wa.me/?text=${
+    encodeURIComponent(message)
+  }`;
+
+}
+
 
 function renderProperty(
   prop
@@ -1028,6 +1117,16 @@ function renderProperty(
           href="/?contacto=${encodeURIComponent(prop.id)}"
         >
           Solicitar información
+        </a>
+
+        <a
+          class="btn-whatsapp"
+          href="${whatsappURL(prop)}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.25-1.5A9.9 9.9 0 1 0 12.04 2Zm0 1.8a8.1 8.1 0 1 1-4.1 15.08l-.3-.18-3.03.87.85-2.95-.2-.3a8.1 8.1 0 0 1 6.78-12.52Zm-3.1 4.03c-.17 0-.45.06-.68.31-.23.25-.9.87-.9 2.13 0 1.25.92 2.47 1.04 2.64.12.17 1.78 2.85 4.4 3.88 2.17.85 2.61.68 3.08.64.47-.04 1.52-.62 1.73-1.22.21-.6.21-1.11.15-1.22-.06-.1-.23-.17-.49-.29-.25-.13-1.51-.75-1.75-.83-.23-.09-.4-.13-.57.12-.17.25-.65.83-.8 1-.15.17-.29.19-.54.06a6.6 6.6 0 0 1-1.96-1.2 7.4 7.4 0 0 1-1.35-1.68c-.14-.25-.02-.38.11-.5.11-.12.25-.3.37-.44.12-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.57-1.36-.78-1.86-.2-.46-.41-.4-.57-.41l-.58-.01Z"/></svg>
+          Compartir por WhatsApp
         </a>
 
       </div>

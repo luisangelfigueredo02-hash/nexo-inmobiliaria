@@ -149,6 +149,36 @@ export default {
 
       }
 
+      /*
+       * SEO Edge-Side Rendering:
+       * /propiedad/<id> sirve la página de
+       * detalle con metaetiquetas Open Graph
+       * inyectadas desde D1.
+       */
+
+      const ogMatch =
+        url.pathname.match(
+          /^\/propiedad\/(\d+)\/?$/
+        );
+
+      if (
+        ogMatch &&
+        env.ASSETS &&
+        env.DB &&
+        request.method === "GET"
+      ) {
+
+        return renderPropertyPage(
+          request,
+          env,
+          url,
+          Number(
+            ogMatch[1]
+          )
+        );
+
+      }
+
       if (env.ASSETS) {
 
         const response =
@@ -317,6 +347,237 @@ async function cachedPublicGET(
 
 
   return response;
+
+}
+
+
+/* ============================================================
+   SEO EDGE-SIDE RENDERING
+   Inyecta Open Graph en la página de
+   detalle consultando D1 en el borde.
+============================================================ */
+
+function escapeAttr(
+  value
+) {
+
+  return String(
+    value ?? ""
+  )
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+
+function firstPhoto(
+  value
+) {
+
+  if (!value) {
+
+    return null;
+
+  }
+
+  try {
+
+    const parsed =
+      typeof value === "string"
+        ? JSON.parse(value)
+        : value;
+
+    if (
+      Array.isArray(parsed) &&
+      parsed.length &&
+      typeof parsed[0] === "string"
+    ) {
+
+      return parsed[0];
+
+    }
+
+  } catch (error) {
+
+    /* photos vacías o mal formadas */
+
+  }
+
+  return null;
+
+}
+
+
+async function renderPropertyPage(
+  request,
+  env,
+  url,
+  id
+) {
+
+  const property =
+    await env.DB
+      .prepare(`
+        SELECT
+          id,
+          property_type,
+          title,
+          province,
+          city,
+          neighborhood,
+          price,
+          square_meters,
+          bedrooms,
+          bathrooms,
+          description,
+          photos
+        FROM properties
+        WHERE id = ?
+      `)
+      .bind(id)
+      .first();
+
+
+  /*
+   * Página base del detalle (SPA estática).
+   */
+
+  const assetURL =
+    new URL(
+      "/property",
+      url.origin
+    );
+
+  const assetResponse =
+    await env.ASSETS.fetch(
+      new Request(
+        assetURL.toString(),
+        request
+      )
+    );
+
+
+  let html =
+    await assetResponse.text();
+
+
+  if (property) {
+
+    const title =
+      property.title ||
+      property.property_type ||
+      `Propiedad #${id}`;
+
+
+    const location =
+      [
+        property.neighborhood,
+        property.city,
+        property.province
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+
+    const price =
+      Number(property.price);
+
+    const priceText =
+      Number.isFinite(price)
+        ? "$" +
+          price.toLocaleString("en-US")
+        : "";
+
+
+    const description =
+      (
+        property.description ||
+        [
+          property.property_type,
+          location,
+          priceText
+        ]
+          .filter(Boolean)
+          .join(" · ")
+      )
+        .slice(0, 220);
+
+
+    const image =
+      firstPhoto(
+        property.photos
+      );
+
+
+    const pageURL =
+      `${url.origin}/propiedad/${id}`;
+
+
+    const tags = [
+      `<meta property="og:type" content="website">`,
+      `<meta property="og:site_name" content="NEXO">`,
+      `<meta property="og:title" content="${escapeAttr(title)} — ${escapeAttr(priceText || "NEXO")}">`,
+      `<meta property="og:description" content="${escapeAttr(description)}">`,
+      `<meta property="og:url" content="${escapeAttr(pageURL)}">`,
+      image
+        ? `<meta property="og:image" content="${escapeAttr(image)}">`
+        : "",
+      `<meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}">`,
+      `<link rel="canonical" href="${escapeAttr(pageURL)}">`
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+
+    html =
+      html.replace(
+        /<title>[^<]*<\/title>/,
+        `<title>${escapeAttr(title)} — NEXO</title>`
+      );
+
+
+    html =
+      html.replace(
+        "</head>",
+        `${tags}\n</head>`
+      );
+
+  }
+
+
+  const headers =
+    new Headers(
+      assetResponse.headers
+    );
+
+  headers.set(
+    "Content-Type",
+    "text/html; charset=utf-8"
+  );
+
+  for (
+    const [key, value] of
+    Object.entries(
+      securityHeaders()
+    )
+  ) {
+
+    headers.set(
+      key,
+      value
+    );
+
+  }
+
+
+  return new Response(
+    html,
+    {
+      status: 200,
+      headers
+    }
+  );
 
 }
 
