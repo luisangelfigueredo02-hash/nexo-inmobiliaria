@@ -1910,6 +1910,12 @@ async function nexAI(
     );
 
 
+  const intent =
+    detectIntent(
+      message
+    );
+
+
   const relevant =
     rankProperties(
       message,
@@ -1999,6 +2005,19 @@ REGLAS OBLIGATORIAS:
 14. Cuando sea útil, menciona ID de propiedad.
 15. No afirmes que una propiedad existe si no
    aparece en PROPERTY DATA.
+
+MODO DE RESPUESTA (${intent}):
+
+- search: presenta los resultados de PROPERTY DATA
+  ordenados por relevancia, con datos concretos
+  (tipo, zona, habitaciones, precio, ID).
+- recommend: además de listar, explica brevemente
+  por qué cada propiedad encaja con la petición
+  del usuario y señala la mejor opción.
+- compare: analiza las propiedades de PROPERTY DATA
+  lado a lado: precio, habitaciones, metros,
+  ubicación y estado. Termina con una conclusión
+  de cuál ofrece mejor valor.
 
 CLIENT CONTEXT:
 ${context}
@@ -2094,6 +2113,7 @@ ${propertyContext || "No hay propiedades relevantes."}
       ok: true,
       success: true,
       answer,
+      intent,
       properties:
         relevant.map(
           property =>
@@ -2431,6 +2451,11 @@ function detectBudget(
   text
 ) {
 
+  /*
+   * Soporta "por $150k", "hasta 150.000",
+   * "presupuesto 150 mil" y sufijos k/mil.
+   */
+
   const value =
     String(text)
       .replace(
@@ -2439,10 +2464,19 @@ function detectBudget(
       );
 
 
-  const match =
+  const keywordMatch =
     value.match(
-      /(?:menos de|hasta|maximo|max|máximo|presupuesto|por debajo de)\s*\$?\s*([\d,]+)/i
+      /(?:menos de|hasta|maximo|max|máximo|presupuesto|por debajo de|por)\s*\$?\s*([\d,]+)\s*(k|mil)?/i
     );
+
+  const dollarMatch =
+    value.match(
+      /\$\s*([\d,]+)\s*(k|mil)?/i
+    );
+
+  const match =
+    keywordMatch ||
+    dollarMatch;
 
 
   if (!match) {
@@ -2452,7 +2486,7 @@ function detectBudget(
   }
 
 
-  const number =
+  let number =
     Number(
       match[1]
         .replace(
@@ -2462,9 +2496,65 @@ function detectBudget(
     );
 
 
+  if (
+    match[2]
+  ) {
+
+    number *=
+      match[2] === "k" ||
+      match[2] === "mil"
+        ? 1000
+        : 1;
+
+  }
+
+
   return Number.isFinite(number)
     ? number
     : null;
+
+}
+
+
+/* ============================================================
+   INTENT (búsqueda / recomendación / comparación)
+============================================================ */
+
+function detectIntent(
+  text
+) {
+
+  const value =
+    normalizeText(
+      text
+    );
+
+
+  if (
+    /compar|comparacion|versus|\bvs\b|entre\s/
+      .test(
+        value
+      )
+  ) {
+
+    return "compare";
+
+  }
+
+
+  if (
+    /recomienda|recomendacion|sugiere|mejor opcion|me conviene|aconsej/
+      .test(
+        value
+      )
+  ) {
+
+    return "recommend";
+
+  }
+
+
+  return "search";
 
 }
 
