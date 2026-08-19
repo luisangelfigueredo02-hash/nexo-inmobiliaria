@@ -286,6 +286,29 @@ export default {
 
 
       /*
+       * Media público desde R2 (nexo-media).
+       * GET /media/<key>
+       * Solo lectura; claves saneadas
+       * (sin "..", solo caracteres seguros).
+       */
+
+      if (
+        url.pathname.startsWith(
+          "/media/"
+        ) &&
+        request.method === "GET"
+      ) {
+
+        return serveMedia(
+          request,
+          env,
+          url
+        );
+
+      }
+
+
+      /*
        * Sitemap dinámico: solo content-
        * routes reales desde D1. Nada de
        * thin content.
@@ -868,10 +891,25 @@ async function renderPropertyPage(
         .slice(0, 220);
 
 
-    const image =
+    let image =
       firstPhoto(
         property.photos
       );
+
+
+    /* R2 propio: subir a URL absoluta. */
+
+    if (
+      image &&
+      image.startsWith(
+        "/media/"
+      )
+    ) {
+
+      image =
+        url.origin + image;
+
+    }
 
 
     const pageURL =
@@ -1026,6 +1064,136 @@ async function renderPropertyPage(
 
   return new Response(
     html,
+    {
+      status: 200,
+      headers
+    }
+  );
+
+}
+
+
+/* ============================================================
+   MEDIA PÚBLICO (R2 nexo-media)
+   Sirve originales y variantes WebP.
+============================================================ */
+
+const MEDIA_TYPES = {
+  jpg:
+    "image/jpeg",
+  jpeg:
+    "image/jpeg",
+  png:
+    "image/png",
+  webp:
+    "image/webp",
+  avif:
+    "image/avif"
+};
+
+
+async function serveMedia(
+  request,
+  env,
+  url
+) {
+
+  if (!env.BUCKET_IMAGENES) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "Almacenamiento de medios no configurado."
+      },
+      503,
+      request
+    );
+
+  }
+
+
+  /*
+   * Claves restringidas a un formato seguro:
+   * n001/photo-01.jpg, n001/photo-01-w800.webp...
+   * Sin traversal ni caracteres raros.
+   */
+
+  const key =
+    decodeURIComponent(
+      url.pathname.slice(
+        "/media/".length
+      )
+    );
+
+
+  if (
+    !/^[a-z0-9/._-]{1,200}$/i.test(
+      key
+    ) ||
+    key.includes("..")
+  ) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "Ruta inválida."
+      },
+      400,
+      request
+    );
+
+  }
+
+
+  const object =
+    await env.BUCKET_IMAGENES.get(
+      key
+    );
+
+
+  if (!object) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "Imagen no encontrada."
+      },
+      404,
+      request
+    );
+
+  }
+
+
+  const extension =
+    key
+      .split(".")
+      .pop()
+      .toLowerCase();
+
+  const contentType =
+    object.httpMetadata?.contentType ||
+    MEDIA_TYPES[extension] ||
+    "application/octet-stream";
+
+
+  const headers = {
+
+    "Content-Type": contentType,
+
+    "Cache-Control":
+      "public, max-age=31536000, immutable",
+
+    ...securityHeaders()
+
+  };
+
+
+  return new Response(
+    object.body,
     {
       status: 200,
       headers

@@ -2800,6 +2800,34 @@ function imageURL(
 
   }
 
+  /*
+   * Medios propios (R2 nexo-media): la ruta
+   * usa variantes pregeneradas -w{width}.webp;
+   * externos (unsplash) pasan por el proxy.
+   */
+
+  if(
+    typeof photo === "string" &&
+    photo.includes(
+      "/media/"
+    )
+  ){
+
+    const variants =
+      [400, 800, 1200];
+
+    const snapped =
+      variants.find(
+        v => width <= v
+      ) || 1200;
+
+    return photo.replace(
+      /\.(jpg|jpeg|png)$/i,
+      `-w${snapped}.webp`
+    );
+
+  }
+
   const params =
     new URLSearchParams({
       url:photo,

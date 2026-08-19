@@ -27,10 +27,8 @@ binding = "AI"
 binding = "VECTOR_INDEX"
 index_name = "nexo-index"
 
-# R2 para medios (Hito 1): descomentar cuando se cree
-# el bucket de producción con:
+# R2 para medios — bucket creado con:
 #   npx wrangler r2 bucket create nexo-media
-#
-# [[r2_buckets]]
-# binding = "BUCKET_IMAGENES"
-# bucket_name = "nexo-media"
+[[r2_buckets]]
+binding = "BUCKET_IMAGENES"
+bucket_name = "nexo-media"

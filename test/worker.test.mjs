@@ -528,3 +528,83 @@ test("public_code aparece (vacía si no existe)", async () => {
   );
 
 });
+
+
+/* =========================================================
+   MEDIA R2 (N-001)
+========================================================= */
+
+test("media sin bucket → 503", async () => {
+  const res = await worker.fetch(
+    req("/media/n001/photo-01.jpg"),
+    makeEnv()
+  );
+
+  assert.equal(res.status, 503);
+});
+
+test("media rechaza path traversal", async () => {
+
+  const env = makeEnv();
+
+  env.BUCKET_IMAGENES = {
+    async get(key) {
+      return null;
+    }
+  };
+
+  const res = await worker.fetch(
+    req(
+      "/media/..%2Fwrangler.toml"
+    ),
+    env
+  );
+
+  assert.equal(res.status, 400);
+});
+
+test("media sirve objeto con content-type", async () => {
+
+  const env = makeEnv();
+
+  env.BUCKET_IMAGENES = {
+    async get(key) {
+
+      if (
+        key !==
+        "n001/photo-01.jpg"
+      ) {
+
+        return null;
+
+      }
+
+      return {
+        body: new Uint8Array([
+          0xff, 0xd8
+        ]),
+
+        httpMetadata: {
+          contentType:
+            "image/jpeg"
+        }
+      };
+
+    }
+  };
+
+  const res = await worker.fetch(
+    req("/media/n001/photo-01.jpg"),
+    env
+  );
+
+  assert.equal(res.status, 200);
+
+  assert.equal(
+    res.headers.get(
+      "content-type"
+    ),
+    "image/jpeg"
+  );
+
+});
