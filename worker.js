@@ -56,8 +56,59 @@ const MAX_CONVERSATION =
 const MAX_MESSAGE_LENGTH =
   1000;
 
+const MAX_BODY_BYTES =
+  64 * 1024;
+
 const NOMINATIM_URL =
   "https://nominatim.openstreetmap.org/search";
+
+
+/*
+ * Protección best-effort contra fuerza bruta
+ * en el login (en memoria por instancia).
+ */
+
+const loginAttempts =
+  new Map();
+
+const LOGIN_WINDOW_MS =
+  10 * 60 * 1000;
+
+const LOGIN_MAX_ATTEMPTS =
+  10;
+
+
+function loginLimited(
+  ip
+) {
+
+  const now =
+    Date.now();
+
+  const list = (
+    loginAttempts.get(ip) || []
+  )
+    .filter(
+      time =>
+        now - time < LOGIN_WINDOW_MS
+    );
+
+  list.push(
+    now
+  );
+
+  loginAttempts.set(
+    ip,
+    list
+  );
+
+
+  return (
+    list.length >
+    LOGIN_MAX_ATTEMPTS
+  );
+
+}
 
 
 /* ============================================================
@@ -152,6 +203,41 @@ async function handleAPI(
 
   const path =
     url.pathname;
+
+
+  /*
+   * Límite de tamaño para peticiones
+   * que envían cuerpo (JSON).
+   */
+
+  if (
+    request.method !== "GET"
+  ) {
+
+    const size =
+      Number(
+        request.headers.get(
+          "content-length"
+        ) || 0
+      );
+
+    if (
+      size > MAX_BODY_BYTES
+    ) {
+
+      return json(
+        {
+          ok: false,
+          error:
+            "La solicitud es demasiado grande."
+        },
+        413,
+        request
+      );
+
+    }
+
+  }
 
 
   /* ----------------------------------------------------------
@@ -3077,6 +3163,29 @@ async function adminLogin(
   }
 
 
+  const ip =
+    request.headers.get(
+      "CF-Connecting-IP"
+    ) || "unknown";
+
+
+  if (
+    loginLimited(ip)
+  ) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "Demasiados intentos. Inténtalo más tarde."
+      },
+      429,
+      request
+    );
+
+  }
+
+
   const body =
     await readJSON(
       request
@@ -3648,25 +3757,62 @@ function corsHeaders(
   request
 ) {
 
+  /*
+   * NEXO funciona bajo el mismo dominio.
+   *
+   * Solo reflejamos el Origin cuando coincide
+   * con el host de la propia petición.
+   * Cualquier otro origen recibe una respuesta
+   * sin cabeceras CORS y el navegador la bloquea.
+   */
+
   const origin =
     request?.headers.get(
       "Origin"
     );
 
 
-  /*
-   * NEXO normalmente funciona
-   * bajo el mismo dominio.
-   *
-   * Si llega una petición cross-origin,
-   * devolvemos únicamente el origen
-   * recibido.
-   */
+  if (
+    !origin ||
+    !request
+  ) {
+
+    return {};
+
+  }
+
+
+  let allowed =
+    false;
+
+  try {
+
+    const originURL =
+      new URL(origin);
+
+    const requestURL =
+      new URL(request.url);
+
+    allowed =
+      originURL.host ===
+        requestURL.host;
+
+  } catch (_){
+    allowed = false;
+  }
+
+
+  if (!allowed) {
+
+    return {};
+
+  }
+
 
   return {
 
     "Access-Control-Allow-Origin":
-      origin || "*",
+      origin,
 
     "Access-Control-Allow-Credentials":
       "true",
