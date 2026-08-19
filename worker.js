@@ -654,6 +654,7 @@ async function getProperties(
       contact_email,
       notes,
       status,
+      verified,
       created_at
     FROM properties
     WHERE 1 = 1
@@ -947,6 +948,7 @@ async function createProperty(
           contact_email,
           notes,
           status,
+          verified,
           created_at
         )
         VALUES (
