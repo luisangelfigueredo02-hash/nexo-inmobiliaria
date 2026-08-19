@@ -2869,17 +2869,218 @@ searchForm.addEventListener(
    PROPERTY CARDS
 ========================================================= */
 
-function propertyCard(property){
+function propertyCardHTML(property){
 
   const image =
     photos(
       property.photos
     )[0];
 
-  const favorite =
-    NEXO.favorites.has(
-      String(property.id)
+  const meta = [];
+
+  if(property.property_type)
+    meta.push(property.property_type);
+
+  if(property.bedrooms != null && property.bedrooms !== "")
+    meta.push(`${property.bedrooms} hab`);
+
+  if(property.bathrooms != null && property.bathrooms !== "")
+    meta.push(`${property.bathrooms} baños`);
+
+  if(Number(property.placa_libre)===1)
+    meta.push("⚡ Placa libre");
+
+  if(Number(property.gas_calle)===1)
+    meta.push("🔥 Gas calle");
+
+  if(Number(property.agua_247)===1)
+    meta.push("💧 Agua 24/7");
+
+  if(Number(property.pago_exterior)===1)
+    meta.push("🌍 Pago exterior");
+
+  return `
+    <article
+      class="property-card"
+      data-id="${escapeHTML(String(property.id))}"
+      data-reveal
+    >
+      <div class="property-media">
+        ${image
+          ? `<img
+               src="${escapeHTML(image)}"
+               alt="${escapeHTML(property.title || "Propiedad")}"
+               loading="lazy"
+             >`
+          : `<div class="property-placeholder">
+               NEXO
+             </div>`
+        }
+        ${Number(property.verified)===1
+          ? `<span class="property-badge">
+               ✓ Verificado
+             </span>`
+          : ""
+        }
+      </div>
+      <div class="property-body">
+        <div class="property-price">
+          ${escapeHTML(money(property.price))}
+        </div>
+        <div class="property-title">
+          ${escapeHTML(
+            property.title ||
+            property.property_type ||
+            "Propiedad"
+          )}
+        </div>
+        <div class="property-location">
+          ${escapeHTML(
+            [
+              property.neighborhood,
+              property.city,
+              property.province
+            ]
+              .filter(Boolean)
+              .join(", ") ||
+            "Cuba"
+          )}
+        </div>
+        <div class="property-meta">
+          ${meta
+            .map(
+              item =>
+                `<span class="meta">${escapeHTML(item)}</span>`
+            )
+            .join("")}
+        </div>
+      </div>
+    </article>
+  `;
+
+}
+
+
+function renderInventory(){
+
+  const list =
+    NEXO.filtered;
+
+  propertyCount.textContent =
+    list.length === 1
+      ? "1 propiedad"
+      : `${list.length} propiedades`;
+
+  if(!list.length){
+
+    inventory.innerHTML = `
+      <div class="inventory-state">
+        <div class="state-title">
+          Sin resultados
+        </div>
+        <div class="state-copy">
+          Prueba ajustando la búsqueda o los filtros.
+        </div>
+      </div>
+    `;
+
+    return;
+
+  }
+
+  inventory.innerHTML =
+    list
+      .map(propertyCardHTML)
+      .join("");
+
+  inventory
+    .querySelectorAll(
+      ".property-card"
+    )
+    .forEach((card, index) => {
+
+      card.addEventListener(
+        "click",
+        () => {
+
+          const property =
+            NEXO.filtered.find(
+              item =>
+                String(item.id) ===
+                card.dataset.id
+            );
+
+          if(property){
+
+            openProperty(
+              property
+            );
+
+          }
+
+        }
+      );
+
+      // Reveal con stagger al estilo del hero
+      card.style.transitionDelay =
+        `${Math.min(index * 0.045, 0.45)}s`;
+
+      requestAnimationFrame(() =>
+        card.classList.add("is-visible")
+      );
+
+    });
+
+}
+
+
+function openProperty(property){
+
+  NEXO.selectedProperty =
+    property;
+
+  const image =
+    photos(
+      property.photos
+    )[0];
+
+  if(image){
+
+    modalImage.src =
+      image;
+
+    modalImage.alt =
+      property.title ||
+      "Propiedad";
+
+  }else{
+
+    modalImage.removeAttribute(
+      "src"
     );
+
+    modalImage.alt =
+      "";
+
+  }
+
+  modalPrice.textContent =
+    money(property.price);
+
+  modalTitle.textContent =
+    property.title ||
+    property.property_type ||
+    "Propiedad";
+
+  modalLocation.textContent =
+    [
+      property.neighborhood,
+      property.city,
+      property.province
+    ]
+      .filter(Boolean)
+      .join(", ") ||
+    "Cuba";
 
   const meta = [];
 
