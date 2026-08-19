@@ -587,14 +587,47 @@ textarea{
   color:#278340;
 }
 
+.status-available:hover{
+  background:#d9f1de;
+}
+
 .status-reserved{
   background:#fff4dc;
   color:#966700;
 }
 
+.status-reserved:hover{
+  background:#f7e8c5;
+}
+
 .status-sold{
   background:#ffeceb;
   color:#c52b22;
+}
+
+.status-sold:hover{
+  background:#f9dfe2;
+}
+
+.status-actions{
+  display:flex;
+  gap:4px;
+  align-self:center;
+}
+
+.status-actions button{
+  padding:4px 7px;
+  border:none;
+  border-radius:999px;
+  cursor:pointer;
+  font-size:10px;
+  line-height:1;
+  opacity:0.45;
+  transition:opacity 0.15s ease;
+}
+
+.status-actions button:hover{
+  opacity:1;
 }
 
 .empty{
@@ -2611,7 +2644,7 @@ function renderProperties(
 
         element.addEventListener(
           "click",
-          () => {
+          event => {
 
             const id =
               element.dataset.id;
@@ -2625,19 +2658,163 @@ function renderProperties(
                   String(id)
               );
 
-            if(property){
+            if(!property){
 
-              editProperty(
-                property
-              );
+              return;
 
             }
+
+            const statusButton =
+              event.target.closest(
+                "button[data-status]"
+              );
+
+            if(statusButton){
+
+              setStatus(
+                property,
+                statusButton.dataset.status
+              );
+
+              return;
+
+            }
+
+            editProperty(
+              property
+            );
 
           }
         );
 
       }
     );
+
+}
+
+
+/* =========================================================
+   QUICK STATUS (publicar / reservar / vender)
+========================================================= */
+
+async function setStatus(
+  property,
+  status
+){
+
+  if(
+    !property ||
+    status === property.status
+  ){
+
+    return;
+
+  }
+
+  const labels = {
+
+    available:"Disponible",
+    reserved:"Reservada",
+    sold:"Vendida"
+
+  };
+
+  const payload = {
+
+    title:
+      property.title,
+
+    property_type:
+      property.property_type,
+
+    price:
+      property.price,
+
+    status,
+
+    province:
+      property.province,
+
+    city:
+      property.city,
+
+    neighborhood:
+      property.neighborhood,
+
+    address:
+      property.address,
+
+    bedrooms:
+      property.bedrooms,
+
+    bathrooms:
+      property.bathrooms,
+
+    square_meters:
+      property.square_meters,
+
+    description:
+      property.description,
+
+    photos:
+      parsePhotos(
+        property.photos
+      ),
+
+    contact_name:
+      property.owner_name,
+
+    contact_phone:
+      property.owner_phone,
+
+    contact_email:
+      property.contact_email,
+
+    notes:
+      property.notes
+
+  };
+
+  clearNotice();
+
+  try{
+
+    await api(
+      `/api/properties/${property.id}`,
+      {
+        method:"PUT",
+
+        body:
+          JSON.stringify(
+            payload
+          )
+      }
+    );
+
+    showNotice(
+      `✓ ${
+        property.title ||
+        "Propiedad"
+      } → ${
+        labels[status] ||
+        status
+      }.`,
+      "success"
+    );
+
+    await loadProperties();
+
+  }catch(error){
+
+    showNotice(
+      `No se pudo cambiar el estado.\n\n${
+        error.message ||
+        "Error desconocido."
+      }`,
+      "error"
+    );
+
+  }
 
 }
 
@@ -2759,6 +2936,31 @@ function propertyHTML(
         class="property-status ${statusClass}"
       >
         ${statusText}
+      </div>
+
+      <div class="status-actions">
+
+        <button
+          data-status="available"
+          title="Marcar disponible"
+        >
+          ✓
+        </button>
+
+        <button
+          data-status="reserved"
+          title="Marcar reservada"
+        >
+          ⏳
+        </button>
+
+        <button
+          data-status="sold"
+          title="Marcar vendida"
+        >
+          ✕
+        </button>
+
       </div>
 
     </div>

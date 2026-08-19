@@ -462,9 +462,39 @@ async function getProperties(
   const params =
     url.searchParams;
 
-  const status =
+
+  /*
+   * Solo mostramos información privada
+   * cuando existe una sesión administrativa.
+   */
+
+  const admin =
+    await requireAdmin(
+      request,
+      env
+    );
+
+
+  /*
+   * El listado "all" (disponibles + reservadas +
+   * vendidas) es una vista administrativa.
+   * Público: solo propiedades disponibles.
+   */
+
+  let status =
     params.get("status") ||
     "available";
+
+  if (
+    status === "all" &&
+    !admin
+  ) {
+
+    status =
+      "available";
+
+  }
+
 
   const limit =
     clamp(
@@ -481,18 +511,6 @@ async function getProperties(
       Number(
         params.get("offset") || 0
       )
-    );
-
-
-  /*
-   * Solo mostramos información privada
-   * cuando existe una sesión administrativa.
-   */
-
-  const admin =
-    await requireAdmin(
-      request,
-      env
     );
 
 
