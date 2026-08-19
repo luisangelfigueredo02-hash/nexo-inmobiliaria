@@ -37,8 +37,16 @@ CREATE TABLE IF NOT EXISTS properties (
   gas_calle     INTEGER NOT NULL DEFAULT 0,
   agua_247      INTEGER NOT NULL DEFAULT 0,
   pago_exterior INTEGER NOT NULL DEFAULT 0,
+  -- ID del vector en Cloudflare Vectorize (nexo-index)
+  -- para búsqueda semántica (NEXO IA 2.0).
+  embedding_id  TEXT,
   created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Bases ya existentes: aplicar una sola vez con
+--   wrangler d1 execute nexo-db --remote \
+--     --command="ALTER TABLE properties ADD COLUMN embedding_id TEXT"
+-- (ignora el error "duplicate column name" si ya existe).
 
 -- Listado público: propiedades disponibles ordenadas por fecha.
 CREATE INDEX IF NOT EXISTS idx_properties_status_created
@@ -94,3 +102,23 @@ CREATE INDEX IF NOT EXISTS idx_favorites_user
 
 CREATE INDEX IF NOT EXISTS idx_favorites_property
   ON favorites (property_id);
+
+-- ============================================================
+-- V2 — Favoritos de usuario (tabla canónica)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS user_favorites (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id       INTEGER NOT NULL
+                REFERENCES users (id) ON DELETE CASCADE,
+  property_id   INTEGER NOT NULL
+                REFERENCES properties (id) ON DELETE CASCADE,
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+  UNIQUE (user_id, property_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_favorites_user
+  ON user_favorites (user_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_favorites_property
+  ON user_favorites (property_id);

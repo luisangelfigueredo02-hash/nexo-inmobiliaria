@@ -780,6 +780,529 @@ async function renderPropertyPage(
 
 
 /* ============================================================
+   SEMANTIC SEARCH (Hito 3)
+   Embeddings con Workers AI (bge, 768 dims)
+   y consulta a Vectorize (nexo-index).
+   Degrada con elegancia si el índice aún
+   no está configurado (mock inicial).
+============================================================ */
+
+const EMBED_MODEL =
+  "@cf/baai/bge-base-en-v1.5";
+
+
+function propertyEmbeddingText(
+  property
+) {
+
+  return [
+    property.title,
+    property.property_type,
+    property.neighborhood,
+    property.city,
+    property.province,
+    property.price
+      ? `precio ${property.price} USD`
+      : "",
+    property.description
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .slice(0, 800);
+
+}
+
+
+async function embedTexts(
+  env,
+  texts
+) {
+
+  const result =
+    await env.AI.run(
+      EMBED_MODEL,
+      { text: texts }
+    );
+
+
+  return (
+    Array.isArray(
+      result?.data
+    )
+      ? result.data
+      : []
+  );
+
+}
+
+
+async function semanticSearch(
+  request,
+  env
+) {
+
+  const body =
+    await readJSON(
+      request
+    );
+
+
+  /*
+   * En desarrollo local el binding de
+   * Vectorize puede lanzar (requiere
+   * ejecución remota): degradamos a mock.
+   */
+
+  try {
+
+    return await semanticSearchReal(
+      request,
+      env,
+      body
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "NEXO SEMANTIC (mock):",
+      error?.message ||
+        error
+    );
+
+    return json(
+      {
+        ok: true,
+        semantic: false,
+        note:
+          "Búsqueda semántica en preparación: índice vectorial pendiente de configuración.",
+        results: []
+      },
+      200,
+      request
+    );
+
+  }
+
+}
+
+
+async function semanticSearchReal(
+  request,
+  env,
+  body
+) {
+
+
+  const prompt =
+    String(
+      body?.prompt || ""
+    )
+      .trim()
+      .slice(0, 500);
+
+
+  if (!prompt) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "El prompt es obligatorio."
+      },
+      400,
+      request
+    );
+
+  }
+
+
+  const limit =
+    clamp(
+      Number(
+        body?.limit || 5
+      ),
+      1,
+      20
+    );
+
+
+  /*
+   * Mock inicial: sin Vectorize/AI todavía
+   * configurados, se responde de forma
+   * explícita sin romper al cliente.
+   */
+
+  if (
+    !env.VECTOR_INDEX ||
+    !env.AI ||
+    !env.DB
+  ) {
+
+    return json(
+      {
+        ok: true,
+        semantic: false,
+        note:
+          "Búsqueda semántica en preparación: índice vectorial pendiente de configuración.",
+        results: []
+      },
+      200,
+      request
+    );
+
+  }
+
+
+  const vectors =
+    await embedTexts(
+      env,
+      [prompt]
+    );
+
+
+  const vector =
+    vectors[0];
+
+
+  if (
+    !Array.isArray(vector) ||
+    !vector.length
+  ) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "No se pudo generar el embedding."
+      },
+      502,
+      request
+    );
+
+  }
+
+
+  const matches =
+    await env.VECTOR_INDEX.query(
+      vector,
+      {
+        topK: limit,
+        returnMetadata: "none"
+      }
+    );
+
+
+  const hits = (
+    matches?.matches || []
+  )
+    .map(match => ({
+      id: match.id,
+      score: match.score
+    }))
+    .filter(hit => hit.id);
+
+
+  if (!hits.length) {
+
+    return json(
+      {
+        ok: true,
+        semantic: true,
+        results: []
+      },
+      200,
+      request
+    );
+
+  }
+
+
+  const placeholders =
+    hits
+      .map(() => "?")
+      .join(",");
+
+
+  const rows =
+    await env.DB
+      .prepare(`
+        SELECT
+          id,
+          property_type,
+          title,
+          province,
+          city,
+          neighborhood,
+          latitude,
+          longitude,
+          bedrooms,
+          bathrooms,
+          square_meters,
+          price,
+          placa_libre,
+          gas_calle,
+          agua_247,
+          pago_exterior,
+          description,
+          photos,
+          status,
+          verified,
+          created_at,
+          embedding_id
+        FROM properties
+        WHERE embedding_id
+          IN (${placeholders})
+          AND status = 'available'
+      `)
+      .bind(
+        ...hits.map(hit => hit.id)
+      )
+      .all();
+
+
+  const byEmbedding = new Map(
+    (rows.results || [])
+      .map(row => [
+        row.embedding_id,
+        row
+      ])
+  );
+
+
+  const results =
+    hits
+      .map(hit => {
+
+        const property =
+          byEmbedding.get(
+            hit.id
+          );
+
+        if (!property) {
+
+          return null;
+
+        }
+
+        return {
+          ...normalizeProperty(
+            property,
+            false
+          ),
+          score: hit.score
+        };
+
+      })
+      .filter(Boolean);
+
+
+  return json(
+    {
+      ok: true,
+      semantic: true,
+      model: EMBED_MODEL,
+      results
+    },
+    200,
+    request
+  );
+
+}
+
+
+/*
+ * Sincroniza propiedades sin embedding_id:
+ * genera el vector con Workers AI, lo sube
+ * a Vectorize y guarda el ID en D1.
+ * Ruta administrativa (cookie o JWT).
+ */
+
+async function syncEmbeddings(
+  request,
+  env
+) {
+
+  if (
+    !(await requireAdmin(
+      request,
+      env
+    ))
+  ) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "No autorizado."
+      },
+      401,
+      request
+    );
+
+  }
+
+
+  let rows;
+
+  try {
+
+    if (
+      !env.VECTOR_INDEX ||
+      !env.AI ||
+      !env.DB
+    ) {
+
+      throw new Error(
+        "bindings no configurados"
+      );
+
+    }
+
+
+    rows =
+      await env.DB
+        .prepare(`
+          SELECT
+            id,
+            property_type,
+            title,
+            province,
+            city,
+            neighborhood,
+            price,
+            description
+          FROM properties
+          WHERE embedding_id IS NULL
+          LIMIT 25
+        `)
+        .all();
+
+  } catch (error) {
+
+    console.warn(
+      "NEXO EMBEDDINGS SYNC:",
+      error?.message ||
+        error
+    );
+
+    return json(
+      {
+        ok: false,
+        error:
+          "Vectorize o Workers AI no están configurados."
+      },
+      503,
+      request
+    );
+
+  }
+
+
+  const pending =
+    rows.results || [];
+
+
+  if (!pending.length) {
+
+    return json(
+      {
+        ok: true,
+        synced: 0,
+        note:
+          "Todas las propiedades ya están sincronizadas."
+      },
+      200,
+      request
+    );
+
+  }
+
+
+  const texts =
+    pending.map(
+      propertyEmbeddingText
+    );
+
+
+  const vectors =
+    await embedTexts(
+      env,
+      texts
+    );
+
+
+  const entries = [];
+
+
+  for (
+    let i = 0;
+    i < pending.length;
+    i++
+  ) {
+
+    if (
+      Array.isArray(vectors[i]) &&
+      vectors[i].length
+    ) {
+
+      entries.push({
+        id:
+          `prop-${pending[i].id}`,
+        values: vectors[i]
+      });
+
+    }
+
+  }
+
+
+  if (entries.length) {
+
+    await env.VECTOR_INDEX.upsert(
+      entries
+    );
+
+
+    for (const entry of entries) {
+
+      await env.DB
+        .prepare(`
+          UPDATE properties
+          SET embedding_id = ?
+          WHERE id = ?
+        `)
+        .bind(
+          entry.id,
+          Number(
+            entry.id.replace(
+              "prop-",
+              ""
+            )
+          )
+        )
+        .run();
+
+    }
+
+  }
+
+
+  return json(
+    {
+      ok: true,
+      synced: entries.length,
+      remaining:
+        pending.length -
+        entries.length
+    },
+    200,
+    request
+  );
+
+}
+
+
+/* ============================================================
    ROUTER
 ============================================================ */
 
@@ -1020,6 +1543,43 @@ async function handleAPI(
   ) {
 
     return intelligentSearch(
+      request,
+      env
+    );
+
+  }
+
+
+  /* ----------------------------------------------------------
+     SEMANTIC SEARCH (Hito 3)
+     POST /api/search/semantic
+     {prompt, limit?}
+  ---------------------------------------------------------- */
+
+  if (
+    path === "/api/search/semantic" &&
+    request.method === "POST"
+  ) {
+
+    return semanticSearch(
+      request,
+      env
+    );
+
+  }
+
+
+  /* ----------------------------------------------------------
+     EMBEDDINGS SYNC (Hito 3)
+     POST /api/admin/embeddings/sync
+  ---------------------------------------------------------- */
+
+  if (
+    path === "/api/admin/embeddings/sync" &&
+    request.method === "POST"
+  ) {
+
+    return syncEmbeddings(
       request,
       env
     );

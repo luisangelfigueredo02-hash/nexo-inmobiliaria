@@ -20,6 +20,13 @@ database_id = "03a0f232-751a-4d5b-a865-473062fbefbe"
 [ai]
 binding = "AI"
 
+# Vectorize (NEXO IA 2.0) — índice creado con:
+#   npx wrangler vectorize create nexo-index \
+#     --dimensions=768 --metric=cosine
+[[vectorize]]
+binding = "VECTOR_INDEX"
+index_name = "nexo-index"
+
 # R2 para medios (Hito 1): descomentar cuando se cree
 # el bucket de producción con:
 #   npx wrangler r2 bucket create nexo-media
