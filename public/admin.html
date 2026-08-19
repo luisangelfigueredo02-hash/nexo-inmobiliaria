@@ -1229,6 +1229,50 @@ a[class*="btn"]:active{
 
       </div>
 
+      <div class="field">
+
+        <label>
+          Contexto Cuba
+        </label>
+
+        <label class="check">
+          <input
+            id="placa_libre"
+            name="placa_libre"
+            type="checkbox"
+          >
+          <span>Placa libre</span>
+        </label>
+
+        <label class="check">
+          <input
+            id="gas_calle"
+            name="gas_calle"
+            type="checkbox"
+          >
+          <span>Gas de la calle</span>
+        </label>
+
+        <label class="check">
+          <input
+            id="agua_247"
+            name="agua_247"
+            type="checkbox"
+          >
+          <span>Agua 24/7</span>
+        </label>
+
+        <label class="check">
+          <input
+            id="pago_exterior"
+            name="pago_exterior"
+            type="checkbox"
+          >
+          <span>Acepta pago exterior</span>
+        </label>
+
+      </div>
+
     </div>
 
     <div class="field">
@@ -2239,6 +2283,18 @@ function buildPayload(){
     verified:
       data.get("verified") ? 1 : 0,
 
+    placa_libre:
+      data.get("placa_libre") ? 1 : 0,
+
+    gas_calle:
+      data.get("gas_calle") ? 1 : 0,
+
+    agua_247:
+      data.get("agua_247") ? 1 : 0,
+
+    pago_exterior:
+      data.get("pago_exterior") ? 1 : 0,
+
     province:
       String(
         data.get("province") || ""
@@ -2606,6 +2662,28 @@ function editProperty(
           property.verified || 0
         )
       );
+
+  }
+
+  for (const flag of [
+    "placa_libre",
+    "gas_calle",
+    "agua_247",
+    "pago_exterior"
+  ]) {
+
+    const el = $(`#${flag}`);
+
+    if(el){
+
+      el.checked =
+        Boolean(
+          Number(
+            property[flag] || 0
+          )
+        );
+
+    }
 
   }
 

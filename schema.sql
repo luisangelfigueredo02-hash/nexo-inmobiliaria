@@ -33,6 +33,10 @@ CREATE TABLE IF NOT EXISTS properties (
                 CHECK (status IN ('available', 'reserved', 'sold')),
   -- Sello de verificación interno (badge público).
   verified      INTEGER NOT NULL DEFAULT 0,
+  placa_libre   INTEGER NOT NULL DEFAULT 0,
+  gas_calle     INTEGER NOT NULL DEFAULT 0,
+  agua_247      INTEGER NOT NULL DEFAULT 0,
+  pago_exterior INTEGER NOT NULL DEFAULT 0,
   created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 

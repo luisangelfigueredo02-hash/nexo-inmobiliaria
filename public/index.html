@@ -969,6 +969,12 @@ main{
   font-weight:850;
 }
 
+.modal-meta .meta-ctx{
+  background:#eef7ef;
+  color:#1c6b31;
+  font-weight:750;
+}
+
 .modal-meta .meta-calc{
   background:#f6f3fe;
   color:#634e9e;
@@ -1863,6 +1869,38 @@ footer{
         Hasta $100K
       </button>
 
+      <button
+        class="filter filter-context"
+        data-context="placa_libre"
+        type="button"
+      >
+        ⚡ Placa libre
+      </button>
+
+      <button
+        class="filter filter-context"
+        data-context="gas_calle"
+        type="button"
+      >
+        🔥 Gas de la calle
+      </button>
+
+      <button
+        class="filter filter-context"
+        data-context="agua_247"
+        type="button"
+      >
+        💧 Agua 24/7
+      </button>
+
+      <button
+        class="filter filter-context"
+        data-context="pago_exterior"
+        type="button"
+      >
+        🌍 Pago exterior
+      </button>
+
     </div>
 
   </section>
@@ -2192,6 +2230,14 @@ const NEXO = {
   filtered: [],
 
   activeFilter: "all",
+
+  // Filtros de contexto cubano (toggle independiente)
+  contextFilter: {
+    placa_libre: 0,
+    gas_calle: 0,
+    agua_247: 0,
+    pago_exterior: 0
+  },
 
   search: "",
 
@@ -2690,6 +2736,25 @@ function applyFilters(){
 
         }
 
+        /*
+         * Contexto cubano: cada flag activa exige
+         * que la propiedad la tenga.
+         */
+        for (const [key, on] of Object.entries(
+          NEXO.contextFilter
+        )) {
+
+          if(
+            on === 1 &&
+            Number(property[key]) !== 1
+          ){
+
+            return false;
+
+          }
+
+        }
+
         return true;
 
       }
@@ -2702,7 +2767,7 @@ function applyFilters(){
 
 document
   .querySelectorAll(
-    ".filter"
+    ".filter:not(.filter-context)"
   )
   .forEach(button => {
 
@@ -2712,7 +2777,7 @@ document
 
         document
           .querySelectorAll(
-            ".filter"
+            ".filter:not(.filter-context)"
           )
           .forEach(
             item =>
@@ -2728,6 +2793,45 @@ document
         NEXO.activeFilter =
           button.dataset.filter ||
           "all";
+
+        applyFilters();
+
+      }
+    );
+
+  });
+
+
+/*
+ * Chips de contexto: toggles independientes.
+ * Combinables entre sí y con el filtro de tipo.
+ */
+document
+  .querySelectorAll(
+    ".filter-context"
+  )
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        const key =
+          button.dataset.context;
+
+        if(!key) return;
+
+        const active =
+          !button.classList
+            .contains("active");
+
+        button.classList.toggle(
+          "active",
+          active
+        );
+
+        NEXO.contextFilter[key] =
+          active ? 1 : 0;
 
         applyFilters();
 
@@ -2784,6 +2888,19 @@ function propertyCard(property){
 
   if(Number(property.verified)===1)
     chip("✓ Verificado", "meta meta-verified");
+
+  // Contexto Cuba: badges ligados al inventario
+  const contextBadges = {
+    placa_libre: "⚡ Placa libre",
+    gas_calle: "🔥 Gas de la calle",
+    agua_247: "💧 Agua 24/7",
+    pago_exterior: "🌍 Pago exterior"
+  };
+
+  for (const [key, label] of Object.entries(contextBadges)) {
+    if(Number(property[key])===1)
+      chip(label, "meta meta-ctx");
+  }
 
   if(property.property_type)
     chip(property.property_type);

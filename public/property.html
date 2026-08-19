@@ -897,6 +897,18 @@ function renderProperty(
          </div>`
       : ""
     }
+    ${[
+      ["placa_libre", "⚡ Placa libre"],
+      ["gas_calle", "🔥 Gas de la calle"],
+      ["agua_247", "💧 Agua 24/7"],
+      ["pago_exterior", "🌍 Pago exterior"]
+    ].filter(([key]) => Number(prop[key]) === 1)
+     .map(([key, label]) =>
+       `<div class="feature-item">
+          <span>Contexto Cuba</span>
+          <span>${label}</span>
+        </div>`)
+     .join("")}
   `;
 
   appContainer.innerHTML = `

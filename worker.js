@@ -647,6 +647,10 @@ async function getProperties(
       bathrooms,
       square_meters,
       price,
+      placa_libre,
+      gas_calle,
+      agua_247,
+      pago_exterior,
       description,
       photos,
       owner_name,
@@ -675,6 +679,31 @@ async function getProperties(
     bindings.push(
       status
     );
+
+  }
+
+
+    /*
+   * Filtros de contexto cubano (1 = requerido):
+   * ?placa_libre=1&gas_calle=1&agua_247=1&pago_exterior=1
+   */
+
+  const contextFlags = [
+    "placa_libre",
+    "gas_calle",
+    "agua_247",
+    "pago_exterior"
+  ];
+
+  for (const flag of contextFlags) {
+
+    if (params.get(flag) === "1") {
+
+      sql += `
+        AND ${flag} = 1
+      `;
+
+    }
 
   }
 
@@ -793,6 +822,10 @@ async function getProperty(
           bathrooms,
           square_meters,
           price,
+          placa_libre,
+          gas_calle,
+          agua_247,
+          pago_exterior,
           description,
           photos,
           owner_name,
@@ -941,6 +974,10 @@ async function createProperty(
           bathrooms,
           square_meters,
           price,
+          placa_libre,
+          gas_calle,
+          agua_247,
+          pago_exterior,
           description,
           photos,
           owner_name,
@@ -956,6 +993,7 @@ async function createProperty(
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?,
+          ?, ?, ?, ?,
           datetime('now')
         )
       `)
@@ -972,6 +1010,10 @@ async function createProperty(
         data.bathrooms,
         data.square_meters,
         data.price,
+        data.placa_libre,
+        data.gas_calle,
+        data.agua_247,
+        data.pago_exterior,
         data.description,
         data.photos,
         data.owner_name,
@@ -1154,6 +1196,10 @@ async function updateProperty(
         bathrooms = ?,
         square_meters = ?,
         price = ?,
+        placa_libre = ?,
+        gas_calle = ?,
+        agua_247 = ?,
+        pago_exterior = ?,
         description = ?,
         photos = ?,
         owner_name = ?,
@@ -1177,6 +1223,10 @@ async function updateProperty(
       data.bathrooms,
       data.square_meters,
       data.price,
+      data.placa_libre,
+      data.gas_calle,
+      data.agua_247,
+      data.pago_exterior,
       data.description,
       data.photos,
       data.owner_name,
@@ -1370,6 +1420,19 @@ function propertyInput(
       nullableNumber(
         body.price
       ),
+
+    // Filtros de contexto cubano
+    placa_libre:
+      body.placa_libre ? 1 : 0,
+
+    gas_calle:
+      body.gas_calle ? 1 : 0,
+
+    agua_247:
+      body.agua_247 ? 1 : 0,
+
+    pago_exterior:
+      body.pago_exterior ? 1 : 0,
 
     description:
       cleanString(
@@ -1597,6 +1660,19 @@ function normalizeProperty(
     // Sello público de confianza
     verified:
       property.verified ? 1 : 0,
+
+    // Filtros cubanos (públicos)
+    placa_libre:
+      property.placa_libre ? 1 : 0,
+
+    gas_calle:
+      property.gas_calle ? 1 : 0,
+
+    agua_247:
+      property.agua_247 ? 1 : 0,
+
+    pago_exterior:
+      property.pago_exterior ? 1 : 0,
 
     created_at:
       property.created_at || null
