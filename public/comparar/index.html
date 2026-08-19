@@ -40,6 +40,10 @@
   padding:0;
 }
 
+html{
+  scroll-behavior:smooth;
+}
+
 body{
 
   background:var(--bg);
@@ -54,7 +58,23 @@ body{
     sans-serif;
 
   -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
 
+}
+
+@keyframes compareIn{
+  from{
+    opacity:0;
+    transform:translateY(9px);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+.compare-card{
+  animation:compareIn .3s ease;
 }
 
 
