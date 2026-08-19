@@ -35,7 +35,6 @@ NEXO comienza enfocado en Cuba, con especial atención inicial a **La Habana**.
 |---|---|
 | Frontend | HTML, CSS, JavaScript |
 | Aplicación pública | `public/index.html` |
-| Aplicación pública JS | `public/app.js` |
 | Administración | `public/admin.html` |
 | Mapa | Leaflet + OpenStreetMap |
 | Backend | Cloudflare Workers |
@@ -53,7 +52,6 @@ NEXO comienza enfocado en Cuba, con especial atención inicial a **La Habana**.
 /
 ├── public/
 │   ├── index.html          # Catálogo público + mapa + IA launcher
-│   ├── app.js              # (legado — no referenciado por el catálogo)
 │   ├── property.html       # Ficha pública de propiedad
 │   ├── admin.html          # Panel privado de administración
 │   ├── ia/
