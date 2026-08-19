@@ -117,7 +117,7 @@ function loginLimited(
 
 export default {
 
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
 
     const url =
       new URL(request.url);
@@ -143,7 +143,8 @@ export default {
         return await handleAPI(
           request,
           env,
-          url
+          url,
+          ctx
         );
 
       }
@@ -224,13 +225,111 @@ export default {
 
 
 /* ============================================================
+   CACHE API (respuestas públicas GET, 60s)
+   Si la petición trae cookie de sesión de
+   administración, se sirve siempre fresco.
+============================================================ */
+
+async function cachedPublicGET(
+  request,
+  ctx,
+  handler
+) {
+
+  const hasSession =
+    request.headers
+      .get("cookie")
+      ?.includes(SESSION_COOKIE);
+
+  /*
+   * Sin sesión administrativa ni fuera del
+   * runtime de Cloudflare (tests/dev), se
+   * sirve directamente sin cachear.
+   */
+
+  if (
+    hasSession ||
+    typeof caches === "undefined" ||
+    !caches.default ||
+    !ctx ||
+    !ctx.waitUntil
+  ) {
+
+    return handler();
+
+  }
+
+
+  const cache =
+    caches.default;
+
+
+  const key =
+    new Request(
+      request.url,
+      { method: "GET" }
+    );
+
+
+  const hit =
+    await cache.match(
+      key
+    );
+
+
+  if (hit) {
+
+    const wrapped =
+      new Response(
+        hit.body,
+        hit
+      );
+
+    wrapped.headers.set(
+      "X-Nexo-Cache",
+      "HIT"
+    );
+
+    return wrapped;
+
+  }
+
+
+  const response =
+    await handler();
+
+
+  if (response.status === 200) {
+
+    response.headers.set(
+      "Cache-Control",
+      "public, max-age=60"
+    );
+
+    ctx.waitUntil(
+      cache.put(
+        key,
+        response.clone()
+      )
+    );
+
+  }
+
+
+  return response;
+
+}
+
+
+/* ============================================================
    ROUTER
 ============================================================ */
 
 async function handleAPI(
   request,
   env,
-  url
+  url,
+  ctx
 ) {
 
   const path =
@@ -407,10 +506,15 @@ async function handleAPI(
       request.method === "GET"
     ) {
 
-      return getProperties(
+      return cachedPublicGET(
         request,
-        env,
-        url
+        ctx,
+        () =>
+          getProperties(
+            request,
+            env,
+            url
+          )
       );
 
     }
@@ -501,10 +605,15 @@ async function handleAPI(
       request.method === "GET"
     ) {
 
-      return getProperty(
+      return cachedPublicGET(
         request,
-        env,
-        id
+        ctx,
+        () =>
+          getProperty(
+            request,
+            env,
+            id
+          )
       );
 
     }
@@ -3878,7 +3987,9 @@ function securityHeaders() {
     "style-src 'self' 'unsafe-inline' https://unpkg.com",
     "img-src 'self' https: data:",
     "font-src 'self' https: data:",
-    "connect-src 'self' https://unpkg.com",
+    "connect-src 'self' https://unpkg.com https://tiles.openfreemap.org https://*.basemaps.cartocdn.com",
+    "worker-src 'self' blob:",
+    "child-src blob:",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
