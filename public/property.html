@@ -847,6 +847,55 @@ function renderProperty(
   }
 
 
+  const nexoPrice = Number(prop.price);
+  const nexoM2 = Number(prop.square_meters);
+
+  const nexoPriceM2 =
+    nexoPrice > 0 && nexoM2 > 0
+      ? Math.round(nexoPrice / nexoM2)
+      : null;
+
+  const nexoR = 0.08/12;
+  const nexoN = 120;
+  const nexoF =
+    nexoPrice > 0
+      ? nexoR / (1-Math.pow(1+nexoR, -nexoN))
+      : null;
+
+  const nexoMonthly =
+    nexoPrice > 0
+      ? Math.round(nexoPrice * nexoF)
+      : null;
+
+  const extraFeatures = `
+    ${nexoPriceM2 != null
+      ? `<div class="feature-item">
+           <span>Precio/m²</span>
+           <span>
+             $${nexoPriceM2.toLocaleString()}
+           </span>
+         </div>`
+      : ""
+    }
+    ${nexoMonthly != null
+      ? `<div class="feature-item">
+           <span>Hipoteca est.</span>
+           <span>
+             ≈ $${nexoMonthly.toLocaleString()}/mes
+             (10y · 8%)
+           </span>
+         </div>`
+      : ""
+    }
+    ${Number(prop.verified) === 1
+      ? `<div class="feature-item">
+           <span>Sello</span>
+           <span>✓ Verificado</span>
+         </div>`
+      : ""
+    }
+  `;
+
   appContainer.innerHTML = `
     <a
       href="/"
@@ -934,6 +983,8 @@ function renderProperty(
               )}
             </span>
           </div>
+
+          ${extraFeatures}
 
         </div>
 

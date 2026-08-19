@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS properties (
   notes         TEXT,
   status        TEXT    NOT NULL DEFAULT 'available'
                 CHECK (status IN ('available', 'reserved', 'sold')),
+  -- Sello de verificación interno (badge público).
+  verified      INTEGER NOT NULL DEFAULT 0,
   created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 

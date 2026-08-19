@@ -963,6 +963,18 @@ main{
   margin-top:15px;
 }
 
+.modal-meta .meta-verified{
+  background:#e8f3ff;
+  color:#0056b3;
+  font-weight:850;
+}
+
+.modal-meta .meta-calc{
+  background:#f6f3fe;
+  color:#634e9e;
+  font-weight:750;
+}
+
 .modal-description{
   margin-top:20px;
 
@@ -2767,322 +2779,40 @@ function propertyCard(property){
 
   const meta = [];
 
-  if(property.bedrooms !== null &&
-     property.bedrooms !== undefined &&
-     property.bedrooms !== ""){
+  const chip = (text, cls="meta") =>
+    meta.push({ text, cls });
 
-    meta.push(
-      `${escapeHTML(
-        property.bedrooms
-      )} hab.`
-    );
+  if(Number(property.verified)===1)
+    chip("✓ Verificado", "meta meta-verified");
 
-  }
+  if(property.property_type)
+    chip(property.property_type);
 
-  if(property.bathrooms !== null &&
-     property.bathrooms !== undefined &&
-     property.bathrooms !== ""){
+  if(property.bedrooms != null && property.bedrooms !== "")
+    chip(`${property.bedrooms} habitaciones`);
 
-    meta.push(
-      `${escapeHTML(
-        property.bathrooms
-      )} baños`
-    );
+  if(property.bathrooms != null && property.bathrooms !== "")
+    chip(`${property.bathrooms} baños`);
 
-  }
+  const squares = Number(property.square_meters);
+  const price   = Number(property.price);
 
-  if(property.square_meters !== null &&
-     property.square_meters !== undefined &&
-     property.square_meters !== ""){
+  if(squares)
+    chip(`${property.square_meters} m²`);
 
-    meta.push(
-      `${escapeHTML(
-        property.square_meters
-      )} m²`
-    );
+  if(price > 0 && squares > 0)
+    chip(`$${Math.round(price/squares).toLocaleString()} /m²`);
 
-  }
+  if(price > 0){
 
-  return `
-    <article
-      class="property-card"
-      data-id="${escapeHTML(
-        property.id
-      )}"
-    >
+    const r = 0.08/12;
+    const n = 120;
+    const f = r / (1-Math.pow(1+r, -n));
+    const m = Math.round(price*f);
 
-      <div class="property-media">
-
-        ${
-          image
-            ? `
-              <img
-                src="${escapeHTML(image)}"
-                alt="${escapeHTML(
-                  property.title ||
-                  property.property_type ||
-                  "Propiedad"
-                )}"
-                loading="lazy"
-              >
-            `
-            : `
-              <div class="property-placeholder">
-                NEXO
-              </div>
-            `
-        }
-
-        <div class="property-badge">
-          ${escapeHTML(
-            statusOf(property)
-          )}
-        </div>
-
-        <button
-          class="favorite-button ${
-            favorite ? "active" : ""
-          }"
-          data-favorite="${escapeHTML(
-            property.id
-          )}"
-          type="button"
-          aria-label="${
-            favorite
-              ? "Quitar de favoritos"
-              : "Añadir a favoritos"
-          }"
-        >
-          ${favorite ? "♥" : "♡"}
-        </button>
-
-      </div>
-
-      <div class="property-body">
-
-        <div class="property-price">
-          ${money(property.price)}
-        </div>
-
-        <div class="property-title">
-          ${escapeHTML(
-            property.title ||
-            property.property_type ||
-            "Propiedad"
-          )}
-        </div>
-
-        <div class="property-location">
-          ${escapeHTML(
-            locationOf(property)
-          )}
-        </div>
-
-        ${
-          meta.length
-            ? `
-              <div class="property-meta">
-                ${meta
-                  .map(
-                    item =>
-                      `<span class="meta">${item}</span>`
-                  )
-                  .join("")}
-              </div>
-            `
-            : ""
-        }
-
-      </div>
-
-    </article>
-  `;
-
-}
-
-
-function renderInventory(){
-
-  const properties =
-    NEXO.filtered;
-
-  propertyCount.textContent =
-    properties.length === 1
-      ? "1 propiedad"
-      : `${properties.length} propiedades`;
-
-  if(!properties.length){
-
-    inventory.innerHTML = `
-      <div class="inventory-state">
-
-        <div class="state-title">
-          No encontramos propiedades.
-        </div>
-
-        <div class="state-copy">
-          Prueba otra ciudad, zona, tipo de propiedad
-          o elimina algún filtro.
-        </div>
-
-      </div>
-    `;
-
-    return;
-
-  }
-
-  inventory.innerHTML =
-    properties
-      .map(propertyCard)
-      .join("");
-
-  inventory
-    .querySelectorAll(
-      ".property-card"
-    )
-    .forEach(card => {
-
-      card.addEventListener(
-        "click",
-        event => {
-
-          if(
-            event.target.closest(
-              "[data-favorite]"
-            )
-          ){
-
-            return;
-
-          }
-
-          const property =
-            NEXO.properties.find(
-              item =>
-                String(item.id) ===
-                String(
-                  card.dataset.id
-                )
-            );
-
-          if(property){
-
-            openProperty(
-              property
-            );
-
-          }
-
-        }
-      );
-
-    });
-
-  inventory
-    .querySelectorAll(
-      "[data-favorite]"
-    )
-    .forEach(button => {
-
-      button.addEventListener(
-        "click",
-        event => {
-
-          event.stopPropagation();
-
-          toggleFavorite(
-            button.dataset.favorite
-          );
-
-        }
-      );
-
-    });
-
-}
-
-
-/* =========================================================
-   PROPERTY MODAL
-========================================================= */
-
-function openProperty(property){
-
-  NEXO.selectedProperty =
-    property;
-
-  const image =
-    photos(
-      property.photos
-    )[0];
-
-  if(image){
-
-    modalImage.src =
-      image;
-
-    modalImage.style.display =
-      "block";
-
-  }else{
-
-    modalImage.removeAttribute(
-      "src"
-    );
-
-    modalImage.style.display =
-      "none";
-
-  }
-
-  modalPrice.textContent =
-    money(
-      property.price
-    );
-
-  modalTitle.textContent =
-    property.title ||
-    property.property_type ||
-    "Propiedad";
-
-  modalLocation.textContent =
-    locationOf(property);
-
-  const meta = [];
-
-  if(property.property_type){
-    meta.push(
-      property.property_type
-    );
-  }
-
-  if(property.bedrooms !== null &&
-     property.bedrooms !== undefined &&
-     property.bedrooms !== ""){
-
-    meta.push(
-      `${property.bedrooms} habitaciones`
-    );
-
-  }
-
-  if(property.bathrooms !== null &&
-     property.bathrooms !== undefined &&
-     property.bathrooms !== ""){
-
-    meta.push(
-      `${property.bathrooms} baños`
-    );
-
-  }
-
-  if(property.square_meters !== null &&
-     property.square_meters !== undefined &&
-     property.square_meters !== ""){
-
-    meta.push(
-      `${property.square_meters} m²`
+    chip(
+      `≈ $${m.toLocaleString()}/mes (10 y, 8%)`,
+      "meta meta-calc"
     );
 
   }
@@ -3091,7 +2821,7 @@ function openProperty(property){
     meta
       .map(
         item =>
-          `<span class="meta">${escapeHTML(item)}</span>`
+          `<span class="${item.cls}">${escapeHTML(item.text)}</span>`
       )
       .join("");
 

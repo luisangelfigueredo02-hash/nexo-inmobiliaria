@@ -1210,6 +1210,25 @@ a[class*="btn"]:active{
 
       </div>
 
+      <div class="field">
+
+        <label for="verified">
+          Sello verificado
+        </label>
+
+        <label class="check">
+          <input
+            id="verified"
+            name="verified"
+            type="checkbox"
+          >
+          <span>
+            Arriba "✓ Verificado"
+          </span>
+        </label>
+
+      </div>
+
     </div>
 
     <div class="field">
@@ -2217,6 +2236,9 @@ function buildPayload(){
         "available"
       ).trim(),
 
+    verified:
+      data.get("verified") ? 1 : 0,
+
     province:
       String(
         data.get("province") || ""
@@ -2572,6 +2594,20 @@ function editProperty(
     parsePhotos(
       property.photos
     ).join("\n");
+
+  const verifiedCheckbox =
+    $("#verified");
+
+  if(verifiedCheckbox){
+
+    verifiedCheckbox.checked =
+      Boolean(
+        Number(
+          property.verified || 0
+        )
+      );
+
+  }
 
   formTitle.textContent =
     "Editar propiedad";

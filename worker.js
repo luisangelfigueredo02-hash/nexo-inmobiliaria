@@ -799,6 +799,7 @@ async function getProperty(
           contact_email,
           notes,
           status,
+          verified,
           created_at
         FROM properties
         WHERE id = ?
@@ -952,7 +953,7 @@ async function createProperty(
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?,
-          ?, ?, ?, ?,
+          ?, ?, ?, ?, ?,
           datetime('now')
         )
       `)
@@ -975,7 +976,8 @@ async function createProperty(
         data.owner_phone,
         data.contact_email,
         data.notes,
-        data.status
+        data.status,
+        data.verified
       )
       .run();
 
@@ -1156,7 +1158,8 @@ async function updateProperty(
         owner_phone = ?,
         contact_email = ?,
         notes = ?,
-        status = ?
+        status = ?,
+        verified = ?
       WHERE id = ?
     `)
     .bind(
@@ -1179,6 +1182,7 @@ async function updateProperty(
       data.contact_email,
       data.notes,
       data.status,
+      data.verified,
       id
     )
     .run();
@@ -1400,7 +1404,10 @@ function propertyInput(
     status:
       normalizeStatus(
         body.status
-      )
+      ),
+
+    verified:
+      body.verified ? 1 : 0
 
   };
 
