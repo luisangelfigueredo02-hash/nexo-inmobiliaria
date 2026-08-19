@@ -15,15 +15,19 @@
 
 <style>
 :root{
-  --bg:#f5f5f7;
+  --bg:#fbfbfd;
   --surface:#fff;
-  --surface-soft:#f0f0f2;
-  --text:#111113;
-  --muted:#747478;
-  --line:rgba(0,0,0,.075);
-  --accent:#111113;
-  --radius:24px;
-  --shadow:0 14px 45px rgba(0,0,0,.07);
+  --surface-soft:#f2f2f4;
+  --text:#1d1d1f;
+  --muted:#86868b;
+  --line:rgba(0,0,0,.08);
+  --accent:#0071e3;
+  --accent-ink:#fff;
+  --radius:28px;
+  --shadow:0 4px 24px rgba(0,0,0,.05);
+  --shadow-lift:0 22px 48px rgba(0,0,0,.10);
+  --spring:cubic-bezier(.16,1,.3,1);
+  --spring-back:cubic-bezier(.34,1.56,.64,1);
   --safe-top:env(safe-area-inset-top);
   --safe-bottom:env(safe-area-inset-bottom);
 }
@@ -87,11 +91,12 @@ a{
     14px
     10px;
 
-  background:rgba(245,245,247,.82);
-  border-bottom:1px solid rgba(0,0,0,.05);
+  background:rgba(251,251,253,.78);
+  border-bottom:1px solid rgba(0,0,0,.055);
 
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
+  backdrop-filter:blur(28px) saturate(190%);
+  -webkit-backdrop-filter:
+    blur(28px) saturate(190%);
 }
 
 .header-inner{
@@ -107,32 +112,50 @@ a{
 .logo{
   font-size:23px;
   line-height:1;
-  font-weight:900;
-  letter-spacing:-.085em;
+  font-weight:800;
+  letter-spacing:-.06em;
 }
 
 .header-actions{
   display:flex;
   align-items:center;
-  gap:7px;
+  gap:8px;
 }
 
 .header-button{
-  min-height:36px;
-  padding:0 12px;
+  min-height:34px;
+  padding:0 14px;
 
   border-radius:999px;
 
-  background:rgba(0,0,0,.055);
-  color:#222;
+  background:rgba(0,0,0,.05);
+  color:#1d1d1f;
 
-  font-size:10px;
-  font-weight:800;
+  font-size:12px;
+  font-weight:600;
+
+  transition:
+    background .35s var(--spring),
+    transform .35s var(--spring),
+    color .35s var(--spring);
+}
+
+.header-button:hover{
+  background:rgba(0,0,0,.08);
+  transform:translateY(-1px);
+}
+
+.header-button:active{
+  transform:scale(.96);
 }
 
 .header-button.primary{
-  background:#111;
+  background:#1d1d1f;
   color:#fff;
+}
+
+.header-button.primary:hover{
+  background:#000;
 }
 
 /* =========================================================
@@ -145,20 +168,49 @@ main{
 }
 
 .hero{
+  position:relative;
+
   padding:
-    clamp(42px,8vw,90px)
+    clamp(52px,9vw,110px)
     0
-    30px;
+    36px;
+}
+
+.hero::before{
+  content:"";
+
+  position:absolute;
+  top:-120px;
+  left:50%;
+  transform:translateX(-50%);
+
+  width:min(920px,120vw);
+  height:520px;
+
+  background:
+    radial-gradient(
+      520px 280px at 30% 30%,
+      rgba(0,113,227,.09),
+      transparent 70%
+    ),
+    radial-gradient(
+      420px 240px at 70% 60%,
+      rgba(88,86,214,.07),
+      transparent 70%
+    );
+
+  pointer-events:none;
+  z-index:-1;
 }
 
 .eyebrow{
-  margin-bottom:13px;
+  margin-bottom:16px;
 
-  color:#858589;
+  color:var(--accent);
 
-  font-size:10px;
-  font-weight:850;
-  letter-spacing:.14em;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.18em;
   text-transform:uppercase;
 }
 
@@ -167,25 +219,97 @@ main{
 
   margin:0;
 
-  font-size:clamp(48px,9vw,92px);
-  line-height:.91;
-  letter-spacing:-.085em;
-  font-weight:900;
+  font-size:clamp(48px,9vw,88px);
+  line-height:.94;
+  letter-spacing:-.045em;
+  font-weight:700;
 }
 
 .hero h1 span{
-  color:#88888c;
+  color:var(--muted);
 }
 
 .hero-copy{
-  max-width:560px;
+  max-width:520px;
 
-  margin:20px 0 0;
+  margin:24px 0 0;
 
   color:var(--muted);
 
-  font-size:14px;
+  font-size:17px;
   line-height:1.6;
+}
+
+.hero-cta{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:14px;
+
+  margin-top:34px;
+}
+
+.cta{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+
+  min-height:46px;
+  padding:0 26px;
+
+  border-radius:999px;
+
+  background:var(--accent);
+  color:var(--accent-ink);
+
+  font-size:14px;
+  font-weight:600;
+
+  box-shadow:
+    0 10px 26px rgba(0,113,227,.26);
+
+  transition:
+    transform .45s var(--spring),
+    box-shadow .45s var(--spring),
+    background .35s var(--spring);
+}
+
+.cta:hover{
+  transform:translateY(-2px);
+
+  box-shadow:
+    0 16px 34px rgba(0,113,227,.32);
+}
+
+.cta:active{
+  transform:scale(.96);
+}
+
+.cta-secondary{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+
+  min-height:46px;
+  padding:0 20px;
+
+  color:var(--accent);
+
+  font-size:14px;
+  font-weight:600;
+
+  transition:
+    transform .45s var(--spring),
+    opacity .3s var(--spring);
+}
+
+.cta-secondary:hover{
+  opacity:.75;
+  transform:translateY(-1px);
+}
+
+.cta-secondary:active{
+  transform:scale(.96);
 }
 
 /* =========================================================
@@ -1259,6 +1383,101 @@ footer{
    REDUCED MOTION
 ========================================================= */
 
+/* =========================================================
+   MOTION SYSTEM — revelado progresivo y microinteracciones
+========================================================= */
+
+[data-reveal]{
+  opacity:0;
+
+  transform:translateY(26px);
+
+  transition:
+    opacity .9s var(--spring) var(--d,0s),
+    transform .9s var(--spring) var(--d,0s);
+
+  will-change:opacity,transform;
+}
+
+[data-reveal].is-visible{
+  opacity:1;
+  transform:none;
+}
+
+@keyframes card-in{
+  from{
+    opacity:0;
+    transform:translateY(18px) scale(.985);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+.property-card{
+  animation:card-in .7s var(--spring) both;
+}
+
+.property-card:hover{
+  transform:translateY(-6px);
+  box-shadow:var(--shadow-lift);
+}
+
+.property-card{
+  transition:
+    transform .6s var(--spring),
+    box-shadow .6s var(--spring);
+}
+
+.search-shell{
+  transition:
+    box-shadow .45s var(--spring),
+    transform .45s var(--spring),
+    border-color .3s var(--spring);
+}
+
+.search-shell:focus-within{
+  border-color:rgba(0,113,227,.45);
+
+  box-shadow:
+    0 0 0 4px rgba(0,113,227,.12),
+    var(--shadow);
+}
+
+.filter{
+  transition:
+    background .3s var(--spring),
+    color .3s var(--spring),
+    transform .35s var(--spring);
+}
+
+.filter:hover{
+  transform:translateY(-1px);
+}
+
+.filter:active{
+  transform:scale(.94);
+}
+
+.ai-launcher{
+  transition:
+    transform .4s var(--spring-back),
+    box-shadow .4s var(--spring);
+}
+
+.ai-launcher:hover{
+  transform:translateY(-3px) scale(1.04);
+}
+
+.ai-launcher:active{
+  transform:scale(.94);
+}
+
+.ai-message{
+  animation:card-in .45s var(--spring) both;
+}
+
 @media(prefers-reduced-motion:reduce){
 
   *,
@@ -1314,24 +1533,49 @@ footer{
 
   <section class="hero">
 
-    <div class="eyebrow">
+    <div class="eyebrow" data-reveal>
       NEXO · Inmobiliaria Cuba
     </div>
 
-    <h1>
+    <h1 data-reveal style="--d:.06s">
       Encuentra un lugar
       <span>que se sienta tuyo.</span>
     </h1>
 
-    <p class="hero-copy">
+    <p
+      class="hero-copy"
+      data-reveal
+      style="--d:.12s"
+    >
       Explora propiedades seleccionadas en Cuba
       desde una experiencia simple, rápida y pensada
       para encontrar exactamente lo que buscas.
     </p>
 
+    <div
+      class="hero-cta"
+      data-reveal
+      style="--d:.18s"
+    >
+
+      <a class="cta" href="#searchForm">
+        Explorar inventario
+        <span aria-hidden="true">↓</span>
+      </a>
+
+      <a class="cta-secondary" href="/ia/">
+        Preguntar a Nexo AI
+        <span aria-hidden="true">→</span>
+      </a>
+
+    </div>
+
   </section>
 
-  <section class="search-shell">
+  <section
+    class="search-shell"
+    data-reveal
+  >
 
     <form
       id="searchForm"
@@ -1416,7 +1660,10 @@ footer{
 
   <section>
 
-    <div class="content-header">
+    <div
+      class="content-header"
+      data-reveal
+    >
 
       <h2 class="content-title">
         Propiedades
@@ -1457,6 +1704,7 @@ footer{
   <section
     class="map-section"
     id="mapSection"
+    data-reveal
   >
 
     <div class="section-heading">
@@ -3549,6 +3797,66 @@ initMap();
 loadProperties();
 
 resizeAIInput();
+
+/* =========================================================
+   MOTION SYSTEM — revelado progresivo al entrar en viewport
+========================================================= */
+
+(function(){
+
+  const reduceMotion =
+    window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+  const revealElements =
+    document.querySelectorAll(
+      "[data-reveal]"
+    );
+
+  if (
+    reduceMotion ||
+    !("IntersectionObserver" in window)
+  ) {
+
+    revealElements.forEach(el =>
+      el.classList.add("is-visible")
+    );
+
+    return;
+
+  }
+
+  const observer =
+    new IntersectionObserver(
+      entries => {
+
+        entries.forEach(entry => {
+
+          if (!entry.isIntersecting) return;
+
+          entry.target.classList.add(
+            "is-visible"
+          );
+
+          observer.unobserve(
+            entry.target
+          );
+
+        });
+
+      },
+      {
+        threshold:.15,
+        rootMargin:"0px 0px -8% 0px"
+      }
+    );
+
+  revealElements.forEach(el =>
+    observer.observe(el)
+  );
+
+})();
 
 </script>
 
