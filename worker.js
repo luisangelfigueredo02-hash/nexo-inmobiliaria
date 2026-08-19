@@ -1689,6 +1689,216 @@ async function syncEmbeddings(
 
 
 /* ============================================================
+   ANALYTICS PRIVADO
+   Solo tipos y contadores agregados por día.
+   Nada de PII, cookies ni fingerprints.
+============================================================ */
+
+const METRIC_KINDS = [
+  "contact_open",
+  "whatsapp_click",
+  "search_no_results"
+];
+
+const METRIC_DAYS =
+  30;
+
+
+async function trackMetric(
+  request,
+  env
+) {
+
+  if (!env.DB) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "Base de datos no configurada."
+      },
+      503,
+      request
+    );
+
+  }
+
+
+  const body =
+    await readJSON(
+      request
+    );
+
+
+  const kind =
+    String(
+      body?.kind || ""
+    );
+
+
+  if (
+    !METRIC_KINDS.includes(
+      kind
+    )
+  ) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "Tipo de métrica inválido."
+      },
+      400,
+      request
+    );
+
+  }
+
+
+  const day =
+    new Date()
+      .toISOString()
+      .slice(0, 10);
+
+
+  await env.DB
+    .prepare(`
+      INSERT INTO
+        analytics_counters
+      (kind, day, count)
+      VALUES (?, ?, 1)
+
+      ON CONFLICT (kind, day)
+      DO UPDATE SET
+        count = count + 1
+    `)
+    .bind(
+      kind,
+      day
+    )
+    .run();
+
+
+  return json(
+    { ok: true },
+    200,
+    request
+  );
+
+}
+
+
+async function getMetrics(
+  request,
+  env
+) {
+
+  if (
+    !(await requireAuth(
+      request,
+      env
+    ))
+  ) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "No autorizado."
+      },
+      401,
+      request
+    );
+
+  }
+
+
+  if (!env.DB) {
+
+    return json(
+      {
+        ok: false,
+        error:
+          "Base de datos no configurada."
+      },
+      503,
+      request
+    );
+
+  }
+
+
+  const since =
+    new Date(
+      Date.now() -
+        METRIC_DAYS *
+          24 *
+          3600 *
+          1000
+    )
+      .toISOString()
+      .slice(0, 10);
+
+
+  const rows =
+    await env.DB
+      .prepare(`
+        SELECT
+          kind,
+          day,
+          count
+        FROM analytics_counters
+        WHERE day >= ?
+        ORDER BY day DESC
+      `)
+      .bind(since)
+      .all();
+
+
+  const totals = {};
+
+  for (
+    const row of
+    rows.results || []
+  ) {
+
+    totals[row.kind] =
+      (totals[row.kind] ||
+        0) +
+      row.count;
+
+  }
+
+
+  const today =
+    new Date()
+      .toISOString()
+      .slice(0, 10);
+
+
+  return json(
+    {
+      ok: true,
+      days: METRIC_DAYS,
+      totals,
+      today:
+        (rows.results || [])
+          .filter(
+            row =>
+              row.day ===
+              today
+          ),
+      series:
+        rows.results || []
+    },
+    200,
+    request
+  );
+
+}
+
+
+/* ============================================================
    ROUTER
 ============================================================ */
 
@@ -2011,6 +2221,36 @@ async function handleAPI(
       );
 
     }
+
+  }
+
+
+  /* ----------------------------------------------------------
+     ANALYTICS PRIVADO (agregado,
+     sin PII ni cookies)
+  ---------------------------------------------------------- */
+
+  if (
+    path === "/api/metrics/track" &&
+    request.method === "POST"
+  ) {
+
+    return trackMetric(
+      request,
+      env
+    );
+
+  }
+
+  if (
+    path === "/api/metrics" &&
+    request.method === "GET"
+  ) {
+
+    return getMetrics(
+      request,
+      env
+    );
 
   }
 
@@ -4076,6 +4316,14 @@ REGLAS OBLIGATORIAS:
    pago_exterior=1 (acepta pago desde el exterior),
    verified=1 (sello ✓ Verificado).
    Menciónalas cuando sean relevantes.
+17. Si el usuario pide COMPARAR, GUARDAR en
+   favoritos, VER en el mapa o ABRIR una
+   propiedad concreta, termina tu respuesta
+   con una línea técnica exacta:
+   ACTION:{"type":"compare"|"favorite"|"map"|"show_property","property_id":<id>}
+   Solo una acción cuando el usuario la pida
+   explícitamente. Es para la aplicación,
+   no para el usuario.
 
 MODO DE RESPUESTA (${intent}):
 
@@ -4869,6 +5117,69 @@ function sanitizeContext(
   context
 ) {
 
+  const property =
+    context.property &&
+    typeof context.property ===
+      "object"
+      ? {
+
+          id:
+            safeInteger(
+              context.property.id
+            ),
+
+          title:
+            cleanString(
+              context.property.title
+            ).slice(
+              0,
+              140
+            ),
+
+          property_type:
+            cleanString(
+              context.property
+                .property_type
+            ).slice(
+              0,
+              50
+            ),
+
+          price:
+            safeNumber(
+              context.property.price
+            ),
+
+          city:
+            cleanString(
+              context.property.city
+            ).slice(
+              0,
+              80
+            ),
+
+          province:
+            cleanString(
+              context.property
+                .province
+            ).slice(
+              0,
+              80
+            ),
+
+          neighborhood:
+            cleanString(
+              context.property
+                .neighborhood
+            ).slice(
+              0,
+              80
+            )
+
+        }
+      : null;
+
+
   return {
 
     city:
@@ -4900,7 +5211,9 @@ function sanitizeContext(
     questions:
       safeInteger(
         context.questions
-      )
+      ),
+
+    property
 
   };
 

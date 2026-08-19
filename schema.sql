@@ -122,3 +122,18 @@ CREATE INDEX IF NOT EXISTS idx_user_favorites_user
 
 CREATE INDEX IF NOT EXISTS idx_user_favorites_property
   ON user_favorites (property_id);
+
+-- ============================================================
+-- V2 — Analytics privado (contadores agregados por día,
+-- sin PII, sin cookies)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS analytics_counters (
+  kind          TEXT    NOT NULL,
+  day           TEXT    NOT NULL,
+  count         INTEGER NOT NULL DEFAULT 0,
+  UNIQUE (kind, day)
+);
+
+CREATE INDEX IF NOT EXISTS idx_analytics_day
+  ON analytics_counters (day);

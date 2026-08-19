@@ -396,3 +396,82 @@ test("robots.txt enlaza el sitemap", async () => {
     )
   );
 });
+
+
+/* =========================================================
+   ANALYTICS (P2)
+========================================================= */
+
+test("métrica válida se acepta", async () => {
+  const res = await worker.fetch(
+    req("/api/metrics/track", {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+      body:
+        JSON.stringify({
+          kind:
+            "contact_open"
+        })
+    }),
+    makeEnv()
+  );
+
+  assert.equal(res.status, 200);
+});
+
+test("métrica inválida → 400", async () => {
+  const res = await worker.fetch(
+    req("/api/metrics/track", {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+      body:
+        JSON.stringify({
+          kind:
+            "no_permitido"
+        })
+    }),
+    makeEnv()
+  );
+
+  assert.equal(res.status, 400);
+});
+
+test("GET /api/metrics sin auth → 401", async () => {
+  const res = await worker.fetch(
+    req("/api/metrics"),
+    makeEnv()
+  );
+
+  assert.equal(
+    res.status,
+    401
+  );
+});
+
+
+/* =========================================================
+   IMAGE PROXY (P2)
+========================================================= */
+
+test("proxy de imágenes rechaza host no autorizado", async () => {
+  const res = await worker.fetch(
+    req(
+      "/api/images?url=" +
+        encodeURIComponent(
+          "https://example.com/x.jpg"
+        )
+    ),
+    makeEnv()
+  );
+
+  assert.equal(
+    res.status,
+    403
+  );
+});

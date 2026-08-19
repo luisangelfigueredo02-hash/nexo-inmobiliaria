@@ -1054,6 +1054,42 @@ async function fetchPropertyDetails(){
  * predefinidos en el mensaje.
  */
 
+/*
+ * Analytics privado: solo el tipo
+ * del evento, sin PII.
+ */
+
+function track(
+  kind
+){
+
+  try{
+
+    fetch(
+      "/api/metrics/track",
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
+        body:
+          JSON.stringify({
+            kind
+          }),
+        keepalive:true
+      }
+    ).catch(
+      () => {}
+    );
+
+  }catch(_){
+    /* best-effort */
+  }
+
+}
+
+
 function whatsappURL(
   prop
 ){
@@ -1459,6 +1495,7 @@ function renderProperty(
           href="${whatsappURL(prop)}"
           target="_blank"
           rel="noopener noreferrer"
+          onclick="track('whatsapp_click')"
         >
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.25-1.5A9.9 9.9 0 1 0 12.04 2Zm0 1.8a8.1 8.1 0 1 1-4.1 15.08l-.3-.18-3.03.87.85-2.95-.2-.3a8.1 8.1 0 0 1 6.78-12.52Zm-3.1 4.03c-.17 0-.45.06-.68.31-.23.25-.9.87-.9 2.13 0 1.25.92 2.47 1.04 2.64.12.17 1.78 2.85 4.4 3.88 2.17.85 2.61.68 3.08.64.47-.04 1.52-.62 1.73-1.22.21-.6.21-1.11.15-1.22-.06-.1-.23-.17-.49-.29-.25-.13-1.51-.75-1.75-.83-.23-.09-.4-.13-.57.12-.17.25-.65.83-.8 1-.15.17-.29.19-.54.06a6.6 6.6 0 0 1-1.96-1.2 7.4 7.4 0 0 1-1.35-1.68c-.14-.25-.02-.38.11-.5.11-.12.25-.3.37-.44.12-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.57-1.36-.78-1.86-.2-.46-.41-.4-.57-.41l-.58-.01Z"/></svg>
           Compartir por WhatsApp

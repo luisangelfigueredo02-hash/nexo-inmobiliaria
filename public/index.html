@@ -3016,6 +3016,42 @@ function skeletonHTML(
 }
 
 
+/*
+ * Analytics privado: solo el tipo
+ * del evento, sin PII.
+ */
+
+function track(
+  kind
+){
+
+  try{
+
+    fetch(
+      "/api/metrics/track",
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
+        body:
+          JSON.stringify({
+            kind
+          }),
+        keepalive:true
+      }
+    ).catch(
+      () => {}
+    );
+
+  }catch(_){
+    /* best-effort */
+  }
+
+}
+
+
 function toast(
   message,
   duration = 3400
@@ -3222,6 +3258,24 @@ function applyFilters(){
 
       }
     );
+
+
+  /*
+   * Telemetría: búsqueda sin resultados
+   * (solo el tipo, nada de la query).
+   */
+
+  if(
+    NEXO.search &&
+    !NEXO.filtered.length
+  ){
+
+    track(
+      "search_no_results"
+    );
+
+  }
+
 
   renderInventory();
 
@@ -3836,6 +3890,10 @@ document.addEventListener(
 modalContact.addEventListener(
   "click",
   () => {
+
+    track(
+      "contact_open"
+    );
 
     const property =
       NEXO.selectedProperty;
@@ -4640,6 +4698,201 @@ function setAIThinking(
    IA REQUEST
 ========================================================= */
 
+/*
+ * Solo campos públicos de la propiedad
+ * seleccionada (nada privado).
+ */
+
+function sanitizePropertyContext(
+  property
+){
+
+  return {
+    id:
+      property?.id ?? null,
+    title:
+      property?.title ?? "",
+    property_type:
+      property?.property_type ?? "",
+    price:
+      property?.price ?? null,
+    city:
+      property?.city ?? "",
+    province:
+      property?.province ?? "",
+    neighborhood:
+      property?.neighborhood ?? ""
+  };
+
+}
+
+
+/* =========================================================
+   IA ACTIONS (estructuradas)
+   El backend puede terminar con una línea
+   ACTION:{...}; la ejecutamos en cliente.
+========================================================= */
+
+function parseAIAction(
+  text
+){
+
+  if(
+    typeof text !== "string"
+  ){
+
+    return null;
+
+  }
+
+  const match =
+    text.match(
+      /ACTION:\s*(\{[\s\S]*\})/
+    );
+
+  if(!match){
+
+    return null;
+
+  }
+
+  try{
+
+    const action =
+      JSON.parse(
+        match[1]
+      );
+
+    const allowed =
+      [
+        "compare",
+        "favorite",
+        "map",
+        "show_property"
+      ];
+
+    if(
+      action &&
+      allowed.includes(
+        action.type
+      )
+    ){
+
+      return action;
+
+    }
+
+  }catch(_){
+    /* JSON inválido → fallback texto */
+  }
+
+  return null;
+
+}
+
+
+function stripAIAction(
+  text
+){
+
+  return String(text)
+    .replace(
+      /ACTION:\s*\{[\s\S]*\}/,
+      ""
+    )
+    .trim();
+
+}
+
+
+function executeAIAction(
+  action
+){
+
+  const propertyId =
+    Number(
+      action?.property_id
+    );
+
+
+  if(
+    !Number.isInteger(
+      propertyId
+    )
+  ){
+
+    return;
+
+  }
+
+
+  if(
+    action.type ===
+      "compare"
+  ){
+
+    location.href =
+      `/comparar/?ids=${encodeURIComponent(propertyId)}`;
+
+    return;
+
+  }
+
+
+  const property =
+    NEXO.properties.find(
+      item =>
+        String(item.id) ===
+        String(propertyId)
+    );
+
+
+  if(
+    action.type ===
+      "favorite"
+  ){
+
+    toggleFavorite(
+      propertyId
+    );
+
+    return;
+
+  }
+
+
+  if(
+    action.type ===
+      "map"
+  ){
+
+    mapSection.scrollIntoView(
+      {
+        behavior:"smooth",
+        block:"start"
+      }
+    );
+
+    return;
+
+  }
+
+
+  if(
+    action.type ===
+      "show_property" &&
+    property
+  ){
+
+    openProperty(
+      property
+    );
+
+  }
+
+}
+
+
 async function askAI(
   message
 ){
@@ -4716,6 +4969,16 @@ async function askAI(
 
             properties:
               propertyContext,
+
+            context:
+              NEXO.selectedProperty
+                ? {
+                    property:
+                      sanitizePropertyContext(
+                        NEXO.selectedProperty
+                      )
+                  }
+                : {},
 
             capabilities:{
 
@@ -4881,6 +5144,29 @@ async function sendAI(){
         await askAI(
           message
         );
+
+      const action =
+        parseAIAction(
+          answer
+        );
+
+      if(action){
+
+        executeAIAction(
+          action
+        );
+
+      }
+
+
+      const stripped =
+        stripAIAction(
+          answer
+        );
+
+      answer =
+        stripped ||
+        "Hecho. Ejecuté la acción que pediste.";
 
     }catch(error){
 
