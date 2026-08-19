@@ -418,6 +418,36 @@ header a:hover{
   border-radius:6px;
 }
 
+.btn-contact{
+
+  display:block;
+
+  margin:18px 0 0;
+
+  padding:14px;
+
+  border-radius:14px;
+
+  background:var(--ink);
+  color:#fff;
+
+  font-size:13px;
+  font-weight:700;
+
+  text-align:center;
+  text-decoration:none;
+
+  transition:
+    transform .18s ease,
+    opacity .18s ease;
+
+}
+
+.btn-contact:hover{
+  opacity:.88;
+  transform:translateY(-1px);
+}
+
 
 /* =========================================================
    NEXO MOTION SYSTEM — fisica spring unificada
@@ -1015,6 +1045,13 @@ function renderProperty(
         </div>
 
         ${privateSection}
+
+        <a
+          class="btn-contact"
+          href="/?contacto=${encodeURIComponent(prop.id)}"
+        >
+          Solicitar información
+        </a>
 
       </div>
 

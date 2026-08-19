@@ -530,6 +530,11 @@ main{
   font-size:10px;
 }
 
+.property-placeholder[hidden],
+#modalImage[hidden]{
+  display:none;
+}
+
 .property-badge{
   position:absolute;
   left:10px;
@@ -2019,6 +2024,14 @@ footer{
         alt=""
       >
 
+      <div
+        class="property-placeholder"
+        id="modalPlaceholder"
+        hidden
+      >
+        NEXO
+      </div>
+
     </div>
 
     <div class="modal-content">
@@ -2304,6 +2317,11 @@ const propertyModal =
 const modalImage =
   document.getElementById(
     "modalImage"
+  );
+
+const modalPlaceholder =
+  document.getElementById(
+    "modalPlaceholder"
   );
 
 const modalPrice =
@@ -2876,7 +2894,15 @@ function propertyCardHTML(property){
       property.photos
     )[0];
 
+  const favorite =
+    NEXO.favorites.has(
+      String(property.id)
+    );
+
   const meta = [];
+
+  if(Number(property.verified)===1)
+    meta.push("✓ Verificado");
 
   if(property.property_type)
     meta.push(property.property_type);
@@ -2886,6 +2912,9 @@ function propertyCardHTML(property){
 
   if(property.bathrooms != null && property.bathrooms !== "")
     meta.push(`${property.bathrooms} baños`);
+
+  if(property.square_meters != null && property.square_meters !== "")
+    meta.push(`${property.square_meters} m²`);
 
   if(Number(property.placa_libre)===1)
     meta.push("⚡ Placa libre");
@@ -2916,12 +2945,23 @@ function propertyCardHTML(property){
                NEXO
              </div>`
         }
-        ${Number(property.verified)===1
-          ? `<span class="property-badge">
-               ✓ Verificado
-             </span>`
-          : ""
-        }
+        <span class="property-badge">
+          ${escapeHTML(statusOf(property))}
+        </span>
+        <button
+          class="favorite-button ${
+            favorite ? "active" : ""
+          }"
+          data-favorite="${escapeHTML(String(property.id))}"
+          type="button"
+          aria-label="${
+            favorite
+              ? "Quitar de favoritos"
+              : "Añadir a favoritos"
+          }"
+        >
+          ${favorite ? "♥" : "♡"}
+        </button>
       </div>
       <div class="property-body">
         <div class="property-price">
@@ -2935,16 +2975,7 @@ function propertyCardHTML(property){
           )}
         </div>
         <div class="property-location">
-          ${escapeHTML(
-            [
-              property.neighborhood,
-              property.city,
-              property.province
-            ]
-              .filter(Boolean)
-              .join(", ") ||
-            "Cuba"
-          )}
+          ${escapeHTML(locationOf(property))}
         </div>
         <div class="property-meta">
           ${meta
@@ -3001,7 +3032,17 @@ function renderInventory(){
 
       card.addEventListener(
         "click",
-        () => {
+        event => {
+
+          if(
+            event.target.closest(
+              "[data-favorite]"
+            )
+          ){
+
+            return;
+
+          }
 
           const property =
             NEXO.filtered.find(
@@ -3031,6 +3072,27 @@ function renderInventory(){
 
     });
 
+  inventory
+    .querySelectorAll(
+      "[data-favorite]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        event => {
+
+          event.stopPropagation();
+
+          toggleFavorite(
+            button.dataset.favorite
+          );
+
+        }
+      );
+
+    });
+
 }
 
 
@@ -3053,6 +3115,12 @@ function openProperty(property){
       property.title ||
       "Propiedad";
 
+    modalImage.hidden =
+      false;
+
+    modalPlaceholder.hidden =
+      true;
+
   }else{
 
     modalImage.removeAttribute(
@@ -3061,6 +3129,12 @@ function openProperty(property){
 
     modalImage.alt =
       "";
+
+    modalImage.hidden =
+      true;
+
+    modalPlaceholder.hidden =
+      false;
 
   }
 
@@ -3270,25 +3344,25 @@ modalContact.addEventListener(
 
     }
 
-    const subject =
-      encodeURIComponent(
-        `Información sobre ${
-          property.title ||
-          "una propiedad"
-        }`
-      );
+    /*
+     * Sin teléfono público: canalizamos
+     * el interés por NEXO IA, que tiene
+     * acceso al inventario y guía al
+     * usuario hasta el contacto con NEXO.
+     */
 
-    const body =
-      encodeURIComponent(
-        `Hola NEXO,\n\nEstoy interesado en la propiedad "${
-          property.title ||
-          property.property_type ||
-          ""
-        }".\n\n`
-      );
+    closeProperty();
 
-    window.location.href =
-      `mailto:?subject=${subject}&body=${body}`;
+    aiInput.value =
+      `Me interesa la propiedad #${property.id}` +
+      (property.title
+        ? ` — ${property.title}`
+        : "") +
+      ". ¿Cómo puedo contactar al propietario?";
+
+    openAI();
+
+    aiInput.focus();
 
   }
 );
@@ -4051,6 +4125,35 @@ initMap();
 loadProperties();
 
 resizeAIInput();
+
+/*
+ * Contacto desde página de detalle:
+ * /?contacto=<id> abre NEXO IA con el
+ * mensaje de interés prellenado.
+ */
+
+(function(){
+
+  const contactId =
+    new URLSearchParams(
+      location.search
+    ).get("contacto");
+
+  if(!contactId){
+
+    return;
+
+  }
+
+  aiInput.value =
+    `Me interesa la propiedad #${contactId}. ` +
+    "¿Cómo puedo contactar al propietario?";
+
+  openAI();
+
+  aiInput.focus();
+
+})();
 
 /* =========================================================
    MOTION SYSTEM — revelado progresivo al entrar en viewport

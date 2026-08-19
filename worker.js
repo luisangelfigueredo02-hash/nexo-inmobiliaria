@@ -36,7 +36,7 @@
  */
 
 const AI_MODEL =
-  "@cf/meta/llama-3.1-8b-instruct";
+  "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
 const SESSION_COOKIE =
   "NEXO_ADMIN_SESSION";
@@ -2201,7 +2201,17 @@ async function nexAI(
             description:
               property.description,
             status:
-              property.status
+              property.status,
+            verified:
+              property.verified,
+            placa_libre:
+              property.placa_libre,
+            gas_calle:
+              property.gas_calle,
+            agua_247:
+              property.agua_247,
+            pago_exterior:
+              property.pago_exterior
           })
       )
       .join("\n");
@@ -2251,6 +2261,13 @@ REGLAS OBLIGATORIAS:
 14. Cuando sea útil, menciona ID de propiedad.
 15. No afirmes que una propiedad existe si no
    aparece en PROPERTY DATA.
+16. Las banderas de contexto cubano significan:
+   placa_libre=1 (documentación en regla),
+   gas_calle=1 (gas de la calle instalado),
+   agua_247=1 (agua 24/7),
+   pago_exterior=1 (acepta pago desde el exterior),
+   verified=1 (sello ✓ Verificado).
+   Menciónalas cuando sean relevantes.
 
 MODO DE RESPUESTA (${intent}):
 
@@ -2412,6 +2429,11 @@ async function fetchSearchProperties(
             description,
             photos,
             status,
+            verified,
+            placa_libre,
+            gas_calle,
+            agua_247,
+            pago_exterior,
             created_at
           FROM properties
           WHERE status != 'sold'

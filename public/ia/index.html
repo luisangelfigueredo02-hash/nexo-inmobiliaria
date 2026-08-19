@@ -277,6 +277,69 @@ body{
 }
 
 
+/* SUGERENCIAS
+------------------------------------------------- */
+
+#suggestions{
+
+  display:flex;
+  gap:8px;
+
+  padding:0 12px 10px;
+
+  overflow-x:auto;
+
+  scrollbar-width:none;
+
+  -webkit-overflow-scrolling:
+    touch;
+
+}
+
+#suggestions::-webkit-scrollbar{
+  display:none;
+}
+
+#suggestions:empty{
+  padding:0;
+}
+
+.suggestion{
+
+  flex:0 0 auto;
+
+  padding:9px 14px;
+
+  border:1px solid var(--line);
+  border-radius:999px;
+
+  background:var(--panel);
+  color:var(--muted);
+
+  font-family:inherit;
+  font-size:11px;
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:
+    transform .18s ease,
+    color .18s ease,
+    border-color .18s ease;
+
+}
+
+.suggestion:hover{
+  color:var(--ink);
+  border-color:var(--ink);
+  transform:translateY(-1px);
+}
+
+.suggestion:active{
+  transform:scale(.97);
+}
+
+
 /* COMPOSER
 ------------------------------------------------- */
 
@@ -656,7 +719,41 @@ a[class*="btn"]:active{
     NEXO IA está escribiendo...
   </div>
 
-  <div id="suggestions"></div>
+  <div id="suggestions">
+
+    <button
+      class="suggestion"
+      data-message="¿Qué casas tienes en La Habana?"
+      type="button"
+    >
+      Casas en La Habana
+    </button>
+
+    <button
+      class="suggestion"
+      data-message="Quiero un apartamento económico"
+      type="button"
+    >
+      Apartamentos económicos
+    </button>
+
+    <button
+      class="suggestion"
+      data-message="¿Qué propiedades tienen placa libre?"
+      type="button"
+    >
+      Con placa libre
+    </button>
+
+    <button
+      class="suggestion"
+      data-message="¿Qué propiedades tienes disponibles?"
+      type="button"
+    >
+      Ver propiedades
+    </button>
+
+  </div>
 
   <form
     id="chatForm"
@@ -3127,6 +3224,29 @@ loadSession();
 initVoiceRecognition();
 
 restoreChat();
+
+/*
+ * Primera visita: saludo de bienvenida
+ * si no hay conversación guardada.
+ */
+
+if(
+  !state.conversation.length
+){
+
+  addMessage(
+
+    "Hola. Soy NEXO IA.\n\n" +
+
+    "Cuéntame qué estás buscando — " +
+    "zona, tipo de propiedad, presupuesto — " +
+    "y te muestro las mejores opciones del inventario.",
+
+    "assistant"
+
+  );
+
+}
 
 createVoiceButton();
 
