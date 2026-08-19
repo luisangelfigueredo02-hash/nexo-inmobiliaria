@@ -8,6 +8,8 @@
 <meta name="description" content="NEXO — Encuentra propiedades en Cuba.">
 <title>NEXO — Encuentra tu próximo lugar</title>
 
+
+<link rel="stylesheet" href="/variables.css">
 <style>
 :root{
   --bg:#fbfbfd;
@@ -691,10 +693,10 @@ main{
   background:var(--surface);
 
   border:1px solid var(--line);
-  border-radius:22px;
+  border-radius:var(--radius-lg,22px);
 
   box-shadow:
-    0 8px 30px rgba(0,0,0,.045);
+    var(--shadow-sm,0 4px 24px rgba(0,0,0,.05));
 
   pointer-events:none;
 }
@@ -788,13 +790,13 @@ main{
 
   padding:11px 18px;
 
-  border-radius:999px;
+  border-radius:var(--radius-pill,999px);
 
   background:rgba(17,17,19,.92);
   color:#fff;
 
   box-shadow:
-    0 10px 30px rgba(0,0,0,.18);
+    var(--shadow-lg,0 10px 30px rgba(0,0,0,.18));
 
   font-size:12px;
   font-weight:700;
