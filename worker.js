@@ -3787,7 +3787,27 @@ function securityHeaders() {
       "DENY",
 
     "Content-Security-Policy":
-      policy
+      policy,
+
+    /*
+     * HSTS: HTTPS obligatorio. Sin
+     * includeSubDomains para no afectar
+     * a futuros subdominios.
+     */
+
+    "Strict-Transport-Security":
+      "max-age=15552000",
+
+    /*
+     * Restringe APIs del navegador:
+     * cámara/micrófono deshabilitados;
+     * geolocalización solo propia (la
+     * usa el mapa para ubicar al usuario).
+     */
+
+    "Permissions-Policy":
+      "camera=(), microphone=(), " +
+      "geolocation=(self)"
 
   };
 

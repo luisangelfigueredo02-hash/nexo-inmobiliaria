@@ -2,6 +2,11 @@ name = "nexo-inmobiliaria"
 main = "worker.js"
 compatibility_date = "2026-08-15"
 
+# Coloca el Worker cerca del backend D1 cuando Cloudflare
+# detecta que reduce latencia (automático, seguro de revertir).
+[placement]
+mode = "smart"
+
 [assets]
 directory = "./public"
 binding = "ASSETS"
