@@ -724,10 +724,13 @@ async function fetchPropertyDetails(){
       );
     }
 
-    const property =
+    const data =
       await response.json();
 
-    renderProperty(property);
+    renderProperty(
+      data.property ||
+      data
+    );
 
   }catch(error){
 
