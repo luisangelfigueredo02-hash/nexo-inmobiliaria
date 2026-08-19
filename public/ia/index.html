@@ -23,13 +23,15 @@
 
 :root{
 
-  --bg:#f6f6f8;
+  --bg:#fbfbfd;
   --panel:#ffffff;
-  --ink:#111113;
-  --muted:#656569;
-  --line:#e4e4e7;
-  --brand:#0a7a4c;
-  --brand-soft:#eaf8ed;
+  --ink:#1d1d1f;
+  --muted:#86868b;
+  --line:rgba(0,0,0,.08);
+  --brand:#0071e3;
+  --brand-soft:rgba(0,113,227,.09);
+  --spring:cubic-bezier(.16,1,.3,1);
+  --spring-back:cubic-bezier(.34,1.56,.64,1);
 
 }
 
@@ -229,6 +231,8 @@ body{
 }
 
 .bubble{
+  animation:nexo-card-in .45s var(--spring) both;
+
 
   padding:11px 14px;
 
@@ -357,6 +361,8 @@ body{
 }
 
 .intent-chip{
+  transition:transform .35s var(--spring),background .3s var(--spring);
+
 
   display:inline-block;
 
@@ -477,6 +483,41 @@ body{
 
 }
 
+
+/* =========================================================
+   NEXO MOTION SYSTEM — fisica spring unificada
+========================================================= */
+
+@keyframes nexo-card-in{
+  from{
+    opacity:0;
+    transform:translateY(18px) scale(.99);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+button:active,
+a[class*="btn"]:active{
+  transform:scale(.96);
+}
+
+@media(prefers-reduced-motion:reduce){
+
+  *,
+  *::before,
+  *::after{
+
+    animation:none!important;
+    transition:none!important;
+
+    scroll-behavior:auto;
+
+  }
+
+}
 </style>
 
 </head>
