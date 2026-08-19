@@ -140,7 +140,7 @@ export default {
         url.pathname.startsWith("/api/")
       ) {
 
-        return handleAPI(
+        return await handleAPI(
           request,
           env,
           url
