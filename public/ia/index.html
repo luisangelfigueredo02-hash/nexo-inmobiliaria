@@ -369,4 +369,192 @@
                 <button class="suggestion-pill" onclick="sendSuggestedQuery('Departamentos modernos con terraza')">
                     "Departamentos modernos con terraza"
                 </button>
-                <button class="suggestion-pill" onclick="sendSuggestedQuery('Casas f
+                <button class="suggestion-pill" onclick="sendSuggestedQuery('Casas familiares de menos de $200,000 USD')">
+                    "Casas de menos de $200k USD"
+                </button>
+            </div>
+        </div>
+
+        <!-- Registro de Conversación Activa -->
+        <section class="chat-log" id="chat-container" style="display: none;"></section>
+
+    </main>
+
+    <!-- Barra de Entrada Flotante -->
+    <footer class="input-wrapper">
+        <form class="input-bar" id="chat-form" onsubmit="event.preventDefault(); submitMessage();">
+            <input type="text" id="chat-input" placeholder="Pregunta a NEXO IA..." autocomplete="off">
+            <button type="submit" class="send-btn" aria-label="Enviar mensaje">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </form>
+    </footer>
+
+    <!-- Lógica Conversacional Integrada de NEXO IA (Vanilla engine) -->
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+
+        // Enviar consulta sugerida desde las píldoras
+        function sendSuggestedQuery(queryText) {
+            chatInput.value = queryText;
+            submitMessage();
+        }
+
+        // Procesar y enviar el mensaje
+        async function submitMessage() {
+            const query = chatInput.value.trim();
+            if (!query) return;
+
+            // Transición fluida de pantalla de bienvenida a chat log
+            if (welcomeScreen.style.display !== 'none') {
+                welcomeScreen.style.display = 'none';
+                chatContainer.style.display = 'flex';
+            }
+
+            // 1. Renderizar mensaje del usuario de forma inmediata (Optimistic UI)
+            appendMessage('user', query);
+            chatInput.value = ''; // Limpiar barra inmediatamente
+
+            // 2. Renderizar indicador de pensamiento "NEXO IA está pensando..."
+            const typingIndicatorId = appendTypingIndicator();
+
+            try {
+                // Petición a la API de Workers AI de NEXO
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: query })
+                });
+
+                // Remover indicador de escritura
+                removeTypingIndicator(typingIndicatorId);
+
+                if (!response.ok) throw new Error('Error al conectar con la API de IA.');
+
+                const data = await response.json();
+                
+                // 3. Renderizar la respuesta conversacional de la IA
+                appendMessage('ai', data.reply || 'Aquí tienes las mejores opciones de NEXO para ti.');
+
+                // 4. Si la IA recomendó propiedades específicas, inyectar el grid de propiedades directamente
+                if (data.properties && data.properties.length > 0) {
+                    appendPropertiesGrid(data.properties);
+                }
+
+            } catch (error) {
+                console.error(error);
+                removeTypingIndicator(typingIndicatorId);
+                appendMessage('ai', 'Lo siento, tuve dificultades al procesar tu consulta con la base de datos de NEXO. ¿Podrías reintentarlo?');
+            }
+        }
+
+        // Renderizar burbuja de mensaje con semántica premium
+        function appendMessage(sender, text) {
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${sender}`;
+
+            // Avatar de Siri/Sparkle si es IA, o avatar genérico si es usuario
+            const avatarHtml = sender === 'ai' ? `
+                <div class="bubble-avatar">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2l2.4 4.9L19.3 7.6l-3.6 3.5.9 5.3-4.6-2.4-4.6 2.4.9-5.3-3.6-3.5 4.9-.7L12 2z"/>
+                    </svg>
+                </div>
+            ` : '';
+
+            bubble.innerHTML = `
+                ${avatarHtml}
+                <div class="bubble-text">${text}</div>
+            `;
+
+            chatContainer.appendChild(bubble);
+            scrollToBottom();
+        }
+
+        // Renderizar el indicador animado de escritura
+        function appendTypingIndicator() {
+            const indicatorId = 'indicator_' + Date.now();
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble ai';
+            bubble.id = indicatorId;
+
+            bubble.innerHTML = `
+                <div class="bubble-avatar">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2l2.4 4.9L19.3 7.6l-3.6 3.5.9 5.3-4.6-2.4-4.6 2.4.9-5.3-3.6-3.5 4.9-.7L12 2z"/>
+                    </svg>
+                </div>
+                <div class="bubble-text">
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+
+            chatContainer.appendChild(bubble);
+            scrollToBottom();
+            return indicatorId;
+        }
+
+        function removeTypingIndicator(id) {
+            const indicator = document.getElementById(id);
+            if (indicator) indicator.remove();
+        }
+
+        // Renderizar cuadrícula de propiedades en formato .property-card compatible con variables.css
+        function appendPropertiesGrid(properties) {
+            const grid = document.createElement('div');
+            grid.className = 'ai-recommendations';
+
+            properties.forEach(property => {
+                const card = document.createElement('article');
+                card.className = 'property-card';
+
+                const formattedPrice = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    maximumFractionDigits: 0
+                }).format(property.price);
+
+                card.innerHTML = `
+                    <div class="image-container" style="aspect-ratio: 16/10;">
+                        <span class="badge" style="font-size: 10px; padding: 2px 6px;">${property.type_transaction || 'Venta'}</span>
+                        <img src="${property.image_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=600&q=80'}" alt="${property.title}" loading="lazy">
+                    </div>
+                    <div class="details-container" style="padding: var(--space-3); gap: 4px;">
+                        <div class="price" style="font-size: var(--text-base);">${formattedPrice}</div>
+                        <h4 class="title" style="font-size: var(--text-sm);">${property.title}</h4>
+                        <div class="location" style="font-size: var(--text-xs);">${property.location || 'Ubicación no disponible'}</div>
+                    </div>
+                `;
+
+                // Clic directo a la propiedad desde el chat de IA
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', () => {
+                    window.location.href = `/property.html?id=${property.id}`;
+                });
+
+                grid.appendChild(card);
+            });
+
+            chatContainer.appendChild(grid);
+            scrollToBottom();
+        }
+
+        // Scroll de vista automático suave
+        function scrollToBottom() {
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+</body>
+</html>
