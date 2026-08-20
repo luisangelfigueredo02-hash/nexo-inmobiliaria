@@ -37,6 +37,10 @@ jobs:
           npm run check
           echo "✔ Sintaxis del Worker verificada"
 
+      # Suite de tests: rutas, PII, auth, CRUD admin
+      - name: Auditoría funcional (pruebas de integración)
+        run: npm test
+
       # Auditoría de rendimiento: peso de assets estáticos (Mobile-First / 3G)
       - name: Auditoría de rendimiento (peso de assets)
         run: |
