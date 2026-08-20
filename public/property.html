@@ -1,301 +1,147 @@
+/// public/property.html
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <!-- El interceptor del worker inyectará aquí los metatags SEO si se consulta dinámicamente -->
     <!-- SEO_TAGS -->
     <title>NEXO — Propiedad Exclusiva</title>
-    <!-- CSS de Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/variables.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ffffff">
     <style>
-        :root {
-            --bg-color: #f5f5f7;
-            --card-color: #ffffff;
-            --text-primary: #1d1d1f;
-            --text-secondary: #86868b;
-            --accent: #0071e3;
-            --border: rgba(0, 0, 0, 0.08);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
+        body { padding-bottom: calc(100px + var(--safe-bottom-mobile)); background: var(--bg-primary); }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            padding-bottom: calc(100px + var(--safe-bottom));
-        }
-
-        /* Cabecera Flotante */
+        /* Navbar Flotante Glass */
         .nav-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 64px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: 500;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            border-bottom: 1px solid var(--border);
+            position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: blur(20px);
+            z-index: 500; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 var(--space-4); border-bottom: 1px solid var(--border-subtle);
         }
+        .btn-back { display: flex; align-items: center; gap: 4px; color: var(--interactive-blue); font-weight: var(--weight-medium); font-size: var(--text-base); }
+        .nav-id { font-weight: var(--weight-semibold); color: var(--text-primary); font-size: var(--text-sm); }
 
-        .btn-back {
-            background: none;
-            border: none;
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--accent);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        /* Galería Horizontal Snap (PWA Touch Optimized) */
+        .gallery-wrapper {
+            position: relative; width: 100%; height: 50vh; max-height: 500px;
+            margin-top: var(--header-height); background: var(--bg-tertiary); overflow: hidden;
         }
-
-        /* Galería de Imágenes Optimizada con Swipe */
-        .gallery-container {
-            position: relative;
-            width: 100%;
-            height: 55vh;
-            background: #000;
-            margin-top: 64px;
-            overflow: hidden;
-        }
-
         .gallery-track {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scroll-behavior: smooth;
+            display: flex; width: 100%; height: 100%; overflow-x: auto;
+            scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
         }
-
-        .gallery-track::-webkit-scrollbar {
-            display: none;
-        }
-
-        .gallery-slide {
-            min-width: 100%;
-            height: 100%;
-            scroll-snap-align: start;
-            position: relative;
-        }
-
-        .gallery-slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
+        .gallery-track::-webkit-scrollbar { display: none; }
+        .gallery-slide { min-width: 100%; height: 100%; scroll-snap-align: start; }
+        .gallery-slide img { width: 100%; height: 100%; object-fit: cover; }
+        
         .gallery-counter {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.6);
-            color: #fff;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            backdrop-filter: blur(10px);
+            position: absolute; bottom: 16px; right: 16px;
+            background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(10px); color: white;
+            padding: 4px 12px; border-radius: var(--radius-round);
+            font-size: 12px; font-weight: var(--weight-semibold); letter-spacing: 0.05em;
         }
 
-        /* Contenido Principal */
-        .content {
-            padding: 24px;
-            max-width: 800px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
+        /* Layout Centralizado */
+        .content { max-width: 800px; margin: 0 auto; padding: var(--space-5) var(--space-4); display: flex; flex-direction: column; gap: var(--space-6); }
 
-        .main-info {
-            background: var(--card-color);
-            padding: 24px;
-            border-radius: 24px;
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        /* Cabecera Info */
+        .info-header { display: flex; flex-direction: column; gap: var(--space-3); }
+        .tags-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+        .tag { background: var(--bg-tertiary); padding: 4px 12px; border-radius: var(--radius-sm); font-size: 11px; font-weight: var(--weight-bold); text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em;}
+        .tag.premium { background: rgba(0, 113, 227, 0.1); color: var(--interactive-blue); }
+        
+        .prop-title { font-size: var(--text-xxl); font-weight: var(--weight-bold); line-height: var(--line-height-tight); letter-spacing: -0.03em; }
+        .prop-price { font-size: 32px; font-weight: 800; color: var(--text-primary); margin-top: -4px; }
+        .prop-loc { font-size: var(--text-base); color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
 
-        .tag-row {
-            display: flex;
-            gap: 8px;
-        }
-
-        .tag {
-            background: var(--bg-color);
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-        }
-
-        .tag.premium {
-            background: rgba(0, 113, 227, 0.1);
-            color: var(--accent);
-        }
-
-        .prop-title {
-            font-size: 24px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .prop-price {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--accent);
-        }
-
+        /* Grid Specs Físicas */
         .specs-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            padding: 16px 0;
-            margin-top: 8px;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3);
+            border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-default);
+            padding: var(--space-4) 0;
         }
+        .spec-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .spec-val { font-weight: var(--weight-bold); font-size: var(--text-lg); color: var(--text-primary); }
+        .spec-lbl { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
 
-        .spec-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
+        /* Secciones Bloque */
+        .section-block { display: flex; flex-direction: column; gap: var(--space-3); }
+        .section-title { font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: -0.02em; }
+        .desc-text { font-size: var(--text-base); line-height: var(--line-height-relaxed); color: #3a3a3c; white-space: pre-line; }
 
-        .spec-val {
-            font-weight: 700;
-            font-size: 17px;
-        }
+        /* Módulo Ruta Segura (Acordeón P1) */
+        .ruta-segura { background: var(--bg-tertiary); border-radius: var(--radius-lg); padding: 0 var(--space-4); border: 1px solid var(--border-default); }
+        .accordion-item { border-bottom: 1px solid var(--border-default); }
+        .accordion-item:last-child { border-bottom: none; }
+        .accordion-btn { width: 100%; text-align: left; padding: var(--space-4) 0; font-weight: var(--weight-semibold); font-size: var(--text-sm); display: flex; justify-content: space-between; align-items: center; color: var(--text-primary); cursor: pointer; }
+        .accordion-btn span { transition: transform 0.3s var(--ease-spring); font-size: 18px; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s var(--ease-spring); }
+        .accordion-content p { padding-bottom: var(--space-4); font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; }
+        .accordion-item.active .accordion-content { max-height: 300px; }
+        .accordion-item.active .accordion-btn span { transform: rotate(45deg); color: var(--interactive-blue); }
 
-        .spec-lbl {
-            font-size: 11px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-        }
+        /* Mapa Privacidad (Lazy Loaded) */
+        #map-container { width: 100%; height: 250px; border-radius: var(--radius-lg); background: var(--bg-tertiary); margin-top: 8px; position: relative; z-index: 1; overflow: hidden; box-shadow: var(--shadow-sm); }
 
-        /* Descripción */
-        .block-section {
-            background: var(--card-color);
-            padding: 24px;
-            border-radius: 24px;
-            border: 1px solid var(--border);
-        }
+        /* Grid Similares Reales */
+        .similar-grid { display: flex; gap: var(--space-4); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: var(--space-2); margin-top: var(--space-2); -webkit-overflow-scrolling: touch; }
+        .similar-grid::-webkit-scrollbar { display: none; }
+        .similar-card { min-width: 240px; display: flex; flex-direction: column; text-decoration: none; border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-primary); border: 1px solid var(--border-subtle); transition: var(--transition-fast); box-shadow: var(--shadow-sm); scroll-snap-align: start; }
+        .similar-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; background: var(--bg-tertiary); }
+        .similar-info { padding: var(--space-3); display: flex; flex-direction: column; gap: 4px; }
+        .similar-price { font-weight: var(--weight-bold); font-size: var(--text-base); color: var(--text-primary); }
+        .similar-title { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary); }
 
-        .section-title {
-            font-size: 17px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: var(--text-primary);
-        }
-
-        .description-text {
-            font-size: 15px;
-            line-height: 1.6;
-            color: #3a3a3c;
-            white-space: pre-line;
-        }
-
-        /* Mapa Privacidad (Geolocalización Difuminada) */
-        #map {
-            width: 100%;
-            height: 250px;
-            border-radius: 16px;
-            margin-top: 12px;
-            z-index: 10;
-        }
-
-        /* Barra Inferior Fija */
+        /* Barra Inferior Fija (Safe Area iOS) */
         .bottom-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--border);
-            padding: 16px 24px calc(16px + var(--safe-bottom));
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 500;
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-default); padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--safe-bottom-mobile));
+            display: flex; justify-content: space-between; align-items: center;
         }
-
-        .price-col {
-            display: flex;
-            flex-direction: column;
+        .price-col { display: flex; flex-direction: column; }
+        .price-col span { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: var(--weight-medium); }
+        .price-col strong { font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--text-primary); }
+        
+        .btn-contact {
+            background: var(--success); color: white; border-radius: var(--radius-round); padding: 0 var(--space-5);
+            height: 48px; font-weight: var(--weight-semibold); font-size: var(--text-base); display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 16px rgba(52, 199, 89, 0.3); transition: var(--transition-normal);
         }
-
-        .price-col span {
-            font-size: 11px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-        }
-
-        .price-col strong {
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .btn-whatsapp {
-            background: #34c759;
-            color: white;
-            text-decoration: none;
-            padding: 14px 28px;
-            border-radius: 24px;
-            font-weight: 600;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 15px rgba(52, 199, 89, 0.2);
-        }
+        .btn-contact:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(52, 199, 89, 0.4); }
     </style>
 </head>
 <body>
 
     <header class="nav-header">
-        <button class="btn-back" onclick="window.history.back()">⟨ Propiedades</button>
-        <span style="font-weight: 600; font-size: 15px;" id="nav-id">...</span>
-        <div style="width: 40px;"></div> <!-- Spacer para balance visual -->
+        <button class="btn-back" onclick="window.history.back()" aria-label="Volver">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Propiedades
+        </button>
+        <span class="nav-id" id="nav-id">...</span>
+        <div style="width: 40px;"></div> <!-- Spacer -->
     </header>
 
-    <div class="gallery-container">
-        <div class="gallery-track" id="gallery-track">
-            <!-- Slides dinámicos -->
-        </div>
+    <div class="gallery-wrapper">
+        <div class="gallery-track" id="gallery-track"></div>
         <div class="gallery-counter" id="gallery-counter">1 / 1</div>
     </div>
 
     <main class="content">
-        <section class="main-info">
-            <div class="tag-row">
+        <section class="info-header">
+            <div class="tags-row">
                 <span class="tag" id="tag-op">...</span>
                 <span class="tag premium" id="tag-type">...</span>
             </div>
-            <h1 class="prop-title" id="prop-title">Cargando Propiedad...</h1>
-            <div class="prop-price" id="prop-price">$0 USD</div>
-            <div style="font-size: 14px; color: var(--text-secondary);" id="prop-loc">...</div>
+            <div>
+                <h1 class="prop-title" id="prop-title">Cargando...</h1>
+                <div class="prop-price" id="prop-price">...</div>
+            </div>
+            <div class="prop-loc">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span id="prop-loc-text">...</span>
+            </div>
 
             <div class="specs-grid">
                 <div class="spec-item">
@@ -313,45 +159,92 @@
             </div>
         </section>
 
-        <section class="block-section">
+        <section class="section-block">
             <h2 class="section-title">Sobre esta propiedad</h2>
-            <p class="description-text" id="prop-description">...</p>
+            <p class="desc-text" id="prop-description">...</p>
         </section>
 
-        <section class="block-section">
-            <h2 class="section-title">Ubicación aproximada</h2>
-            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Por razones de privacidad, la ubicación exacta se reserva y se muestra únicamente un radio de cobertura en la zona.</div>
-            <div id="map"></div>
+        <!-- P1: RUTA SEGURA (Guía Legal Cubana) -->
+        <section class="section-block">
+            <h2 class="section-title">Guía de Compra Segura</h2>
+            <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; margin-top: -8px;">Conoce los pasos legales para adquirir esta propiedad sin contratiempos.</p>
+            <div class="ruta-segura">
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <button class="accordion-btn">1. Título y Gravámenes <span>+</span></button>
+                    <div class="accordion-content">
+                        <p>Exija siempre el título de propiedad original y actualizado. El notario verificará en el Registro de la Propiedad que la vivienda no tenga gravámenes (hipotecas, usufructos) ni deudas pendientes con el banco.</p>
+                    </div>
+                </div>
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <button class="accordion-btn">2. Cheque de Gerencia <span>+</span></button>
+                    <div class="accordion-content">
+                        <p>El pago oficial estipulado en la escritura debe realizarse mediante cheque de gerencia emitido por un banco cubano. Recuerde que el cheque tiene vigencia de 60 días desde su emisión.</p>
+                    </div>
+                </div>
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <button class="accordion-btn">3. Impuesto del 4% <span>+</span></button>
+                    <div class="accordion-content">
+                        <p>El comprador está obligado a pagar un impuesto sobre Transmisión de Bienes y Herencias del 4% sobre el precio de venta (o valor referencial, el que sea mayor) ante la ONAT, en un plazo de 30 días.</p>
+                    </div>
+                </div>
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <button class="accordion-btn">4. Poder desde el exterior <span>+</span></button>
+                    <div class="accordion-content">
+                        <p>Si usted no está en Cuba, necesitará emitir un Poder Especial ante el consulado cubano a nombre de un apoderado en la isla. El documento debe especificar claramente las facultades para comprar, pagar e inscribir.</p>
+                    </div>
+                </div>
+            </div>
         </section>
+
+        <!-- Mapa Lazy Loaded -->
+        <section class="section-block" id="map-section">
+            <h2 class="section-title">Ubicación aproximada</h2>
+            <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; margin-top: -8px;">Por razones de privacidad, se muestra un radio de cobertura en la zona.</p>
+            <div id="map-container"></div>
+        </section>
+
+        <!-- Similares -->
+        <section class="section-block" id="similar-section" style="display: none;">
+            <h2 class="section-title">Propiedades similares</h2>
+            <div class="similar-grid" id="similar-grid"></div>
+        </section>
+
     </main>
 
     <div class="bottom-bar">
         <div class="price-col">
             <span>Precio Total</span>
-            <strong id="bar-price">$0 USD</strong>
+            <strong id="bar-price">...</strong>
         </div>
-        <a href="#" class="btn-whatsapp" id="btn-whatsapp" target="_blank">
-            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle;">
-                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.69-4.98c-.202-.1-1.195-.59-1.388-.66-.193-.07-.333-.1-.474.1-.14.2-.543.66-.667.8-.124.14-.248.15-.45.05-.203-.1-.856-.315-1.63-1.002-.602-.537-1.008-1.2-1.127-1.4-.118-.2-.012-.307.088-.407.09-.09.2-.233.3-.35.1-.117.133-.2.2-.33.067-.133.033-.25-.017-.35-.05-.1-474-1.142-.65-1.575-.172-.43-.362-.37-.49-.375h-.415c-.14 0-.367.053-.56.26-.193.207-.733.717-.733 1.748s.75 2.025.855 2.162c.104.137 1.472 2.25 3.566 3.153.498.215.886.34 1.189.437.5.158.955.136 1.314.083.4-.06 1.195-.49 1.363-.96.168-.47.168-.875.118-.96-.05-.083-.183-.133-.385-.233z"/>
-            </svg>
-            Contactar por WhatsApp
+        <a href="#" class="btn-contact" id="btn-whatsapp" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+            Contactar
         </a>
     </div>
 
-    <!-- Scripts de Leaflet -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const propId = urlParams.get("id");
 
+        function toggleAccordion(el) {
+            el.classList.toggle("active");
+        }
+
+        function loadLeaflet() {
+            return new Promise((resolve) => {
+                if (window.L) return resolve();
+                const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                document.head.appendChild(link);
+                const script = document.createElement('script'); script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+                script.onload = resolve; document.body.appendChild(script);
+            });
+        }
+
         async function initProperty() {
-            if (!propId) {
-                document.body.innerHTML = `<p style="text-align:center; padding: 100px;">ID de propiedad no especificado.</p>`;
-                return;
-            }
+            if (!propId) { document.body.innerHTML = `<p style="text-align:center; padding:100px;">ID Inválido.</p>`; return; }
 
             try {
-                // Recuperar configuraciones globales de manera centralizada
+                // Fetch datos locales/cache offline
                 const configRes = await fetch("/api/config");
                 const configData = await configRes.json();
                 const whatsappNumber = configData.whatsapp_phone || "+5350000000";
@@ -360,61 +253,82 @@
                 if (!response.ok) throw new Error();
                 const data = await response.json();
 
-                // Hydrate HTML UI
+                // Hydration
                 document.getElementById("nav-id").textContent = data.id;
                 document.getElementById("tag-op").textContent = data.operation;
                 document.getElementById("tag-type").textContent = data.type;
                 document.getElementById("prop-title").textContent = data.title;
-                document.getElementById("prop-price").textContent = `$${parseFloat(data.price).toLocaleString()} USD`;
-                document.getElementById("bar-price").textContent = `$${parseFloat(data.price).toLocaleString()} USD`;
-                document.getElementById("prop-loc").textContent = `${data.neighborhood}, ${data.city}, ${data.province}`;
-                document.getElementById("spec-beds").textContent = data.bedrooms;
-                document.getElementById("spec-baths").textContent = data.bathrooms;
-                document.getElementById("spec-area").textContent = data.area;
-                document.getElementById("prop-description").textContent = data.description;
-
-                // 3. Renderizado de Galería
-                const track = document.getElementById("gallery-track");
-                const images = data.images.length > 0 ? data.images : ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80"];
                 
-                track.innerHTML = images.map(img => `
-                    <div class="gallery-slide">
-                        <img src="${img}" alt="Fotografía del inmueble" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80'">
-                    </div>
-                `).join('');
+                const fPrice = `$${parseFloat(data.price).toLocaleString()} USD`;
+                document.getElementById("prop-price").textContent = fPrice;
+                document.getElementById("bar-price").textContent = fPrice;
+                
+                document.getElementById("prop-loc-text").textContent = `${data.neighborhood}, ${data.city}`;
+                document.getElementById("spec-beds").textContent = data.bedrooms || 0;
+                document.getElementById("spec-baths").textContent = data.bathrooms || 0;
+                document.getElementById("spec-area").textContent = data.area || 0;
+                document.getElementById("prop-description").textContent = data.description || 'Sin descripción detallada.';
 
+                // Galería con soporte PWA
+                const track = document.getElementById("gallery-track");
+                const images = (data.images && data.images.length > 0) ? data.images : ["data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='10' height='10' fill='%23f5f5f7'/%3E%3C/svg%3E"];
+                
+                track.innerHTML = images.map(img => `<div class="gallery-slide"><img src="${img}" alt="Fotografía del inmueble" loading="lazy"></div>`).join('');
                 const counter = document.getElementById("gallery-counter");
                 counter.textContent = `1 / ${images.length}`;
-
+                
                 track.addEventListener("scroll", () => {
                     const page = Math.round(track.scrollLeft / track.clientWidth) + 1;
                     counter.textContent = `${page} / ${images.length}`;
                 });
 
-                // 9. Mapa difuminado para protección de datos
+                // Lazy Load Mapa de Privacidad (Ahorra ~2MB en Load Time)
                 if (data.latitude && data.longitude) {
-                    const map = L.map('map', { zoomControl: false, dragging: false, scrollWheelZoom: false }).setView([data.latitude, data.longitude], 15);
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                        attribution: '&copy; OpenStreetMap contributors'
-                    }).addTo(map);
-
-                    // Representación en radio difuso de 250 metros
-                    L.circle([data.latitude, data.longitude], {
-                        color: '#0071e3',
-                        fillColor: '#0071e3',
-                        fillOpacity: 0.15,
-                        radius: 250
-                    }).addTo(map);
+                    const mapSection = document.getElementById("map-section");
+                    const observer = new IntersectionObserver(async (entries) => {
+                        if (entries[0].isIntersecting) {
+                            observer.disconnect();
+                            await loadLeaflet();
+                            const map = L.map('map-container', { zoomControl: false, dragging: false, scrollWheelZoom: false }).setView([data.latitude, data.longitude], 15);
+                            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+                            L.circle([data.latitude, data.longitude], { color: '#0071e3', fillColor: '#0071e3', fillOpacity: 0.15, radius: 250 }).addTo(map);
+                        }
+                    }, { rootMargin: "200px" });
+                    observer.observe(mapSection);
                 } else {
-                    document.getElementById("map").parentElement.style.display = "none";
+                    document.getElementById("map-section").style.display = "none";
                 }
 
-                // 8. CTA Dinámico de WhatsApp
-                const textMsg = `Hola NEXO, me interesa la propiedad [${data.id}]: "${data.title}" publicada en ${data.neighborhood}. Solicito más información. Enlace: ${window.location.href}`;
+                // Cargar Similares (P1)
+                try {
+                    const simRes = await fetch(`/api/properties/${propId}/similar`);
+                    if (simRes.ok) {
+                        const similarData = await simRes.json();
+                        if (similarData.length > 0) {
+                            document.getElementById("similar-grid").innerHTML = similarData.map(p => {
+                                const mainImg = (p.images && p.images[0]) ? p.images[0] : "";
+                                return `
+                                    <a href="/property.html?id=${p.id}" class="similar-card">
+                                        <img src="${mainImg}" class="similar-img" alt="${p.title}" loading="lazy">
+                                        <div class="similar-info">
+                                            <div class="similar-price">$${parseFloat(p.price).toLocaleString()} USD</div>
+                                            <div class="similar-title">${p.title}</div>
+                                            <div style="font-size:11px; color:var(--text-secondary);">${p.neighborhood}</div>
+                                        </div>
+                                    </a>
+                                `;
+                            }).join('');
+                            document.getElementById("similar-section").style.display = "block";
+                        }
+                    }
+                } catch (e) { console.error("Similares fallback offline."); }
+
+                // CTA WhatsApp
+                const textMsg = `Hola NEXO, me interesa la propiedad [${data.id}]: "${data.title}" en ${data.neighborhood}. Solicito más información. URL: ${window.location.href}`;
                 document.getElementById("btn-whatsapp").href = `https://wa.me/${whatsappNumber.replace("+", "")}?text=${encodeURIComponent(textMsg)}`;
 
             } catch (err) {
-                document.body.innerHTML = `<p style="text-align:center; padding: 100px;">La propiedad seleccionada no existe o ha sido despublicada.</p>`;
+                document.body.innerHTML = `<p style="text-align:center; padding:100px;">Propiedad no disponible o sin conexión (Isla).</p>`;
             }
         }
 
