@@ -1,27 +1,23 @@
 {
-  "name": "Nexo Inmobiliaria — Propiedades en Cuba",
-  "short_name": "NEXO",
-  "description": "Explora propiedades seleccionadas en Cuba con una experiencia simple, rápida y premium.",
-  "lang": "es",
-  "start_url": "/",
-  "scope": "/",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#fbfbfd",
-  "theme_color": "#f5f5f7",
-  "categories": ["real estate", "shopping", "utilities"],
+  "short_name": "Nexo",
+  "name": "Nexo Inmobiliaria",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192' fill='%231C1917'><rect width='192' height='192' rx='40'/><path d='M60 60h32v32H60zm40 40h32v32h-32zm0-40h32v32h-32zm-40 40h32v32H60z' fill='%23C2410C'/></svg>",
+      "type": "image/svg+xml",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%231C1917'><rect width='512' height='512' rx='110'/><path d='M150 150h90v90h-90zm122 122h90v90h-90zm0-122h90v90h-90zm-122 122h90v90h-90z' fill='%23C2410C'/></svg>",
+      "type": "image/svg+xml",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "start_url": "/",
+  "background_color": "#FAF9F6",
+  "theme_color": "#1C1917",
+  "display": "standalone",
+  "orientation": "portrait"
 }
