@@ -1,9 +1,7 @@
-name = "nexo-inmobiliaria"
+name = "nexo-platform"
 main = "worker.js"
-compatibility_date = "2026-08-15"
+compatibility_date = "2026-08-19"
 
-# Coloca el Worker cerca del backend D1 cuando Cloudflare
-# detecta que reduce latencia (automático, seguro de revertir).
 [placement]
 mode = "smart"
 
@@ -17,18 +15,16 @@ binding = "DB"
 database_name = "nexo-db"
 database_id = "03a0f232-751a-4d5b-a865-473062fbefbe"
 
-[ai]
-binding = "AI"
-
-# Vectorize (NEXO IA 2.0) — índice creado con:
-#   npx wrangler vectorize create nexo-index \
-#     --dimensions=768 --metric=cosine
 [[vectorize]]
 binding = "VECTOR_INDEX"
 index_name = "nexo-index"
 
-# R2 para medios — bucket creado con:
-#   npx wrangler r2 bucket create nexo-media
+[ai]
+binding = "AI"
+
 [[r2_buckets]]
 binding = "BUCKET_IMAGENES"
 bucket_name = "nexo-media"
+
+[vars]
+WHATSAPP_PHONE = "+5350000000"
