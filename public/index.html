@@ -7,6 +7,7 @@
     <title>NEXO — Propiedades Premium en Cuba</title>
     <link rel="stylesheet" href="/variables.css">
     <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#fbfbfd">
     <style>
         /* Estructura Base */
         body { padding-bottom: calc(90px + var(--safe-bottom-mobile)); background: var(--bg-secondary); }
@@ -40,7 +41,7 @@
         }
         .filters-container::-webkit-scrollbar { display: none; }
         .filter-select, .filter-input {
-            height: 44px; /* Touch target */
+            height: 44px; /* Touch target accesible */
             padding: 0 var(--space-4);
             border-radius: var(--radius-round);
             border: 1px solid var(--border-default);
@@ -51,12 +52,12 @@
             white-space: nowrap;
             transition: var(--transition-fast);
             box-shadow: var(--shadow-sm);
-            appearance: none; /* Eliminar flechas por defecto */
+            appearance: none; 
         }
         .filter-select:focus, .filter-input:focus { border-color: var(--interactive-blue); box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15); }
 
         /* Vistas y Controles */
-        .view-controls { display: flex; justify-content: flex-end; padding: var(--space-3) var(--space-4); gap: var(--space-2); }
+        .view-controls { display: flex; justify-content: flex-end; padding: var(--space-3) var(--space-4); gap: var(--space-2); max-width: var(--max-width-content); margin: 0 auto; }
         .btn-view {
             height: 36px; padding: 0 var(--space-4); border-radius: var(--radius-round);
             font-size: var(--text-xs); font-weight: var(--weight-semibold);
@@ -65,13 +66,13 @@
         }
         .btn-view.active { background: var(--accent); color: var(--text-on-accent); border-color: var(--accent); }
 
-        /* Grid de Inmuebles (Cards Nivel Apple) */
+        /* Grid de Inmuebles */
         .catalog {
             padding: 0 var(--space-4);
             max-width: var(--max-width-content);
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: var(--space-5);
         }
 
@@ -92,12 +93,12 @@
             position: relative; width: 100%; aspect-ratio: 4/3; overflow: hidden; background: var(--bg-tertiary);
         }
         .card-img-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s var(--ease-apple); }
-        .property-card:hover .card-img-wrapper img { transform: scale(1.05); }
+        .property-card:hover .card-img-wrapper img { transform: scale(1.03); }
 
         /* Badges Flotantes Premium */
         .badge-status {
             position: absolute; top: 12px; left: 12px;
-            background: var(--bg-overlay); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            background: var(--bg-overlay); backdrop-filter: saturate(180%) blur(10px); -webkit-backdrop-filter: blur(10px);
             padding: 6px 12px; border-radius: var(--radius-round);
             font-size: 11px; font-weight: var(--weight-bold); letter-spacing: 0.05em; text-transform: uppercase;
             box-shadow: var(--shadow-sm); z-index: 2; color: var(--text-primary);
@@ -105,9 +106,10 @@
         .badge-verified {
             position: absolute; bottom: 12px; right: 12px;
             background: var(--success); color: white;
-            width: 24px; height: 24px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.4); z-index: 2;
+            padding: 4px 10px; border-radius: var(--radius-round);
+            font-size: 10px; font-weight: var(--weight-bold);
+            display: flex; align-items: center; gap: 4px;
+            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3); z-index: 2;
         }
 
         .card-content { padding: var(--space-4); display: flex; flex-direction: column; gap: 6px; }
@@ -129,46 +131,50 @@
             background: var(--text-primary); color: var(--bg-primary);
             box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 8px;
             font-weight: var(--weight-semibold); font-size: var(--text-sm);
-            cursor: pointer; z-index: 99; transition: var(--transition-normal);
+            cursor: pointer; z-index: 90; transition: var(--transition-normal);
         }
-        .ai-fab:hover { transform: scale(1.05); }
+        .ai-fab:hover { transform: scale(1.05); background: var(--accent-hover); }
 
-        /* Chat Drawer */
+        /* Chat Drawer Modal */
         .chat-drawer {
             position: fixed; bottom: 0; left: 0; right: 0; height: 85vh;
             background: var(--bg-primary); border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.1); transform: translateY(100%);
-            transition: var(--transition-normal); z-index: 1000; display: flex; flex-direction: column;
-            will-change: transform;
+            box-shadow: 0 -20px 40px rgba(0,0,0,0.15); transform: translateY(100%);
+            transition: transform 0.5s var(--ease-spring); z-index: 1000; display: flex; flex-direction: column;
+            will-change: transform; visibility: hidden;
         }
-        .chat-drawer.open { transform: translateY(0); }
-        .chat-header { padding: var(--space-4); border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; font-weight: var(--weight-semibold); }
-        .btn-close { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .chat-drawer.open { transform: translateY(0); visibility: visible; }
+        .chat-header { padding: var(--space-4); border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; font-weight: var(--weight-semibold); font-size: var(--text-md); }
+        .btn-close { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 18px; transition: var(--transition-fast); }
+        .btn-close:hover { background: var(--border-default); }
         .chat-body { flex: 1; padding: var(--space-4); overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-3); }
-        .msg { max-width: 85%; padding: var(--space-3); border-radius: var(--radius-lg); font-size: var(--text-sm); line-height: var(--line-height-normal); }
+        .msg { max-width: 85%; padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); font-size: var(--text-sm); line-height: var(--line-height-normal); }
         .msg.user { background: var(--interactive-blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg.ai { background: var(--bg-tertiary); color: var(--text-primary); align-self: flex-start; border-bottom-left-radius: 4px; }
-        .chat-input-wrapper { padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--safe-bottom-mobile)); border-top: 1px solid var(--border-subtle); display: flex; gap: var(--space-2); }
-        .chat-input-wrapper input { flex: 1; height: 44px; padding: 0 var(--space-3); border-radius: var(--radius-round); background: var(--bg-tertiary); }
-        .chat-input-wrapper button { width: 44px; height: 44px; border-radius: 50%; background: var(--text-primary); color: white; display: flex; align-items: center; justify-content: center; }
+        .chat-input-wrapper { padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--safe-bottom-mobile)); border-top: 1px solid var(--border-subtle); display: flex; gap: var(--space-2); background: var(--bg-primary); }
+        .chat-input-wrapper input { flex: 1; height: 48px; padding: 0 var(--space-4); border-radius: var(--radius-round); background: var(--bg-tertiary); font-size: var(--text-base); }
+        .chat-input-wrapper button { width: 48px; height: 48px; border-radius: 50%; background: var(--text-primary); color: white; display: flex; align-items: center; justify-content: center; }
 
         /* Contenedor del Mapa diferido */
-        #map-view { width: 100%; height: 60vh; border-radius: var(--radius-lg); display: none; margin: 0 auto; max-width: var(--max-width-content); box-shadow: var(--shadow-md); }
+        #map-view { width: 100%; height: 65vh; border-radius: var(--radius-lg); display: none; margin: 0 auto; max-width: var(--max-width-content); box-shadow: var(--shadow-md); z-index: 10; }
+        
+        @media (max-width: 768px) {
+            .view-controls { padding: var(--space-3); }
+            #map-view { height: calc(100vh - 200px); border-radius: 0; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Header Glass -->
     <header class="glass-effect">
-        <a href="/" class="logo">
+        <a href="/" class="logo" aria-label="NEXO Inicio">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L2 12h3v8h14v-8h3L12 3zm0 13.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
             NE<span>X</span>O
         </a>
         <a href="/admin.html" class="admin-link">Gestión</a>
     </header>
 
-    <!-- Filtros de Contexto (Scroll Horizontal Rápido) -->
-    <div class="filters-container">
+    <div class="filters-container" role="search">
         <select id="filter-type" class="filter-select" aria-label="Tipo de propiedad">
             <option value="">Cualquier tipo</option>
             <option value="casa">Casa</option>
@@ -190,45 +196,44 @@
     </div>
 
     <div class="view-controls">
-        <button class="btn-view active" id="btn-grid">Catálogo</button>
-        <button class="btn-view" id="btn-map">Ver en Mapa</button>
+        <button class="btn-view active" id="btn-grid" aria-label="Vista de cuadrícula">Catálogo</button>
+        <button class="btn-view" id="btn-map" aria-label="Vista de mapa">Ver en Mapa</button>
     </div>
 
-    <!-- Contenedor Mapa -->
-    <div id="map-view"></div>
+    <div id="map-view" aria-hidden="true"></div>
 
-    <!-- Catálogo de Propiedades -->
-    <main class="catalog" id="catalog">
+    <main class="catalog" id="catalog" aria-live="polite">
         <!-- Inyección Skeletons por defecto -->
     </main>
 
-    <!-- FAB de IA -->
-    <div class="ai-fab" onclick="toggleChat(true)" role="button" tabindex="0">
+    <button class="ai-fab" onclick="toggleChat(true)" aria-label="Abrir asistente NEXO IA">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 4.9L19.3 7.6l-3.6 3.5.9 5.3-4.6-2.4-4.6 2.4.9-5.3-3.6-3.5 4.9-.7L12 2z"/></svg>
         Preguntar a NEXO IA
-    </div>
+    </button>
 
-    <!-- Modal Drawer Chat -->
-    <div class="chat-drawer" id="chat-drawer" role="dialog" aria-modal="true" aria-label="Asistente Virtual IA">
+    <!-- Modal Drawer Chat con Focus Trap (WCAG) -->
+    <div class="chat-drawer" id="chat-drawer" role="dialog" aria-modal="true" aria-labelledby="chat-title">
         <div class="chat-header">
-            <span>✨ Asistente NEXO IA</span>
+            <span id="chat-title">✨ Asistente NEXO IA</span>
             <button class="btn-close" onclick="toggleChat(false)" aria-label="Cerrar chat">✕</button>
         </div>
-        <div class="chat-body" id="chat-messages">
-            <div class="msg ai">Hola, soy el asistente inteligente de NEXO. Dime qué tipo de hogar buscas, tu presupuesto o tus preferencias en Cuba y buscaré opciones reales en segundos.</div>
+        <div class="chat-body" id="chat-messages" aria-live="polite">
+            <div class="msg ai">Hola, soy el asistente inteligente de NEXO. Dime qué tipo de hogar buscas o tu presupuesto en Cuba, y buscaré opciones reales en segundos.</div>
         </div>
         <form class="chat-input-wrapper" onsubmit="event.preventDefault(); sendChatMessage();">
             <input type="text" id="chat-input" placeholder="Ej: Apartamento en Vedado..." autocomplete="off">
-            <button type="submit" aria-label="Enviar mensaje">↑</button>
+            <button type="submit" aria-label="Enviar mensaje">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+            </button>
         </form>
     </div>
 
     <script>
-        // Lógica de carga robusta
         let propertiesData = [];
         let map = null;
+        let markersGroup = null;
 
-        // Lazy load Leaflet
+        // Lazy load Leaflet solo si se solicita el mapa
         function loadLeaflet() {
             return new Promise((resolve) => {
                 if (window.L) return resolve();
@@ -258,7 +263,6 @@
 
         async function loadProperties() {
             showSkeletons();
-            
             const params = new URLSearchParams();
             ['type', 'operation', 'province'].forEach(id => {
                 const val = document.getElementById(`filter-${id}`).value;
@@ -268,31 +272,40 @@
             if(price) params.append('maxPrice', price);
 
             try {
+                // Fetch apalancado por Stale-While-Revalidate en SW (Modo Isla)
                 const response = await fetch(`/api/properties?${params.toString()}`);
                 propertiesData = await response.json();
                 renderCatalog();
+                if (map && document.getElementById("map-view").style.display === "block") {
+                    syncMapMarkers();
+                }
             } catch (err) {
-                document.getElementById("catalog").innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">No se pudo conectar. Navegando en Modo Offline (Island Mode).</p>`;
+                document.getElementById("catalog").innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">Conexión limitada. Asegúrese de estar online para ver inventario nuevo.</p>`;
             }
         }
 
         function renderCatalog() {
             const catalog = document.getElementById("catalog");
             if (propertiesData.length === 0) {
-                catalog.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">No hay propiedades que coincidan con esta búsqueda.</p>`;
+                catalog.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">No hay propiedades que coincidan.</p>`;
                 return;
             }
 
             catalog.innerHTML = propertiesData.map(p => {
                 const mainImg = (p.images && p.images[0]) ? p.images[0] : 'data:image/svg+xml;charset=UTF-8,%3Csvg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="100%25" height="100%25" fill="%23f5f5f7"/%3E%3C/svg%3E';
-                // Lógica decorativa para la Insignia NEXO basada en campos completos
-                const isVerified = (p.images && p.images.length >= 3 && p.description.length > 50) ? true : false;
+                // Regla de Trust (Fase 1): Una propiedad gana la insignia si tiene buena data.
+                const isVerified = (p.images && p.images.length >= 3 && p.description && p.description.length > 40) ? true : false;
                 
                 return `
                     <a href="/property.html?id=${p.id}" class="property-card">
                         <div class="card-img-wrapper">
                             <div class="badge-status">${p.operation}</div>
-                            ${isVerified ? `<div class="badge-verified" title="Inmueble Verificado"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>` : ''}
+                            ${isVerified ? `
+                                <div class="badge-verified" title="Inmueble Verificado">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    NEXO
+                                </div>
+                            ` : ''}
                             <img src="${mainImg}" loading="lazy" alt="${p.title}">
                         </div>
                         <div class="card-content">
@@ -303,8 +316,8 @@
                                 ${p.neighborhood}, ${p.city}
                             </div>
                             <div class="card-features">
-                                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg> ${p.bedrooms} hab</span>
-                                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M7 12v10M17 12v10"></path></svg> ${p.bathrooms} ba</span>
+                                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg> ${p.bedrooms}</span>
+                                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M7 12v10M17 12v10"></path></svg> ${p.bathrooms}</span>
                                 <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"></path></svg> ${p.area} m²</span>
                             </div>
                         </div>
@@ -313,7 +326,14 @@
             }).join('');
         }
 
-        // --- Vista Mapa Deferred ---
+        // Cambio de vistas (Catálogo / Mapa)
+        document.getElementById("btn-grid").addEventListener("click", () => {
+            document.getElementById("btn-grid").classList.add("active");
+            document.getElementById("btn-map").classList.remove("active");
+            document.getElementById("catalog").style.display = "grid";
+            document.getElementById("map-view").style.display = "none";
+        });
+
         document.getElementById("btn-map").addEventListener("click", async () => {
             document.getElementById("btn-map").classList.add("active");
             document.getElementById("btn-grid").classList.remove("active");
@@ -321,3 +341,124 @@
             
             const mapView = document.getElementById("map-view");
             mapView.style.display = "block";
+            
+            // Carga diferida de recursos pesados
+            await loadLeaflet();
+            if (!map) {
+                map = L.map('map-view').setView([23.1136, -82.3666], 12);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(map);
+                markersGroup = L.layerGroup().addTo(map);
+            }
+            syncMapMarkers();
+            setTimeout(() => { map.invalidateSize(); }, 200);
+        });
+
+        function syncMapMarkers() {
+            if (!map || !markersGroup) return;
+            markersGroup.clearLayers();
+            const validCoords = [];
+
+            propertiesData.forEach(p => {
+                if (p.latitude && p.longitude) {
+                    const marker = L.marker([p.latitude, p.longitude]);
+                    const mainImg = (p.images && p.images[0]) ? p.images[0] : "data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='10' height='10' fill='%23ccc'/%3E%3C/svg%3E";
+                    marker.bindPopup(`
+                        <div style="font-family:inherit; min-width:140px;">
+                            <img src="${mainImg}" style="width:100%; height:80px; object-fit:cover; border-radius:8px;">
+                            <strong style="display:block; margin-top:6px; font-size:14px;">$${parseFloat(p.price).toLocaleString()} USD</strong>
+                            <span style="font-size:12px; color:#666;">${p.title}</span>
+                            <a href="/property.html?id=${p.id}" style="display:block; font-size:12px; color:var(--interactive-blue); margin-top:4px; font-weight:600;">Ver Detalles</a>
+                        </div>
+                    `);
+                    markersGroup.addLayer(marker);
+                    validCoords.push([p.latitude, p.longitude]);
+                }
+            });
+
+            if (validCoords.length > 0) map.fitBounds(validCoords, { padding: [30, 30] });
+        }
+
+        // Filtros Automáticos
+        document.querySelectorAll(".filters-container select, .filters-container input").forEach(el => {
+            el.addEventListener("change", loadProperties);
+        });
+
+        // Chatbot UX - WCAG Focus Trap
+        let previousActiveElement;
+        
+        function toggleChat(show) {
+            const drawer = document.getElementById("chat-drawer");
+            if (show) {
+                previousActiveElement = document.activeElement;
+                drawer.classList.add("open");
+                drawer.setAttribute("aria-hidden", "false");
+                document.getElementById("chat-input").focus();
+                document.addEventListener('keydown', handleFocusTrap);
+            } else {
+                drawer.classList.remove("open");
+                drawer.setAttribute("aria-hidden", "true");
+                document.removeEventListener('keydown', handleFocusTrap);
+                if(previousActiveElement) previousActiveElement.focus();
+            }
+        }
+
+        function handleFocusTrap(e) {
+            const drawer = document.getElementById("chat-drawer");
+            const focusable = drawer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusable.length === 0) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            
+            if (e.key === 'Tab') {
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault(); last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault(); first.focus();
+                }
+            } else if (e.key === 'Escape') {
+                toggleChat(false);
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById("chat-input");
+            const msg = input.value.trim();
+            if (!msg) return;
+            input.value = "";
+
+            const container = document.getElementById("chat-messages");
+            container.innerHTML += `<div class="msg user">${msg}</div>`;
+            container.scrollTop = container.scrollHeight;
+
+            const typingId = "typing-" + Date.now();
+            container.innerHTML += `<div id="${typingId}" class="msg ai skeleton" style="width:60px; height:32px;"></div>`;
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                document.getElementById(typingId).remove();
+                
+                // Formateador interactivo de IDs [N-XXX]
+                let cleanResponse = (data.response || "Lo siento, hubo un error.").replace(/\n/g, "<br>");
+                cleanResponse = cleanResponse.replace(/\[(N-\d{3})\]/g, (match, id) => {
+                    return `<br><a href="/property.html?id=${id}" style="display:inline-block; margin-top:8px; padding:6px 12px; background:var(--interactive-blue); color:white; border-radius:12px; font-size:12px; font-weight:600;">Ver Inmueble ${id}</a>`;
+                });
+                
+                container.innerHTML += `<div class="msg ai">${cleanResponse}</div>`;
+            } catch (err) {
+                document.getElementById(typingId).remove();
+                container.innerHTML += `<div class="msg ai">Fallo de conexión. Por favor reintenta.</div>`;
+            }
+            container.scrollTop = container.scrollHeight;
+        }
+
+        window.onload = loadProperties;
+    </script>
+</body>
+</html>
