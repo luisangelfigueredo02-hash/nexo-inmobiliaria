@@ -4,6 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>NEXO — Propiedades Exclusivas en Cuba</title>
+    <!-- Monitoreo: errores del cliente (Sentry lite) + Web Analytics (Cloudflare) -->
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": ""}' onerror="console.warn('CF analytics bloqueado')"></script>
+    <script>
+        // Cliente Sentry mínimo: captura errores no controlados del navegador
+        window.__SENTRY_DSN = "";
+        window.addEventListener("error", function (event) {
+            const dsn = window.__SENTRY_DSN;
+            if (!dsn) return;
+            const m = dsn.match(/^(https?):\/\/([^@]+)@([^/]+)\/(\d+)$/);
+            if (!m) return;
+            const payload = {
+                message: event.message,
+                level: "error",
+                platform: "javascript",
+                tags: { url: event.filename || location.href },
+                timestamp: Date.now() / 1000
+            };
+            fetch(`${m[1]}://${m[3]}/api/${m[4]}/store/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${m[2]}` },
+                body: JSON.stringify(payload)
+            }).catch(function () {});
+        }, true);
+    </script>
     <!-- CSS de Leaflet para el Mapa -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>

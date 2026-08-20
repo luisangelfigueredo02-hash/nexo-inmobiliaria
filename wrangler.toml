@@ -28,3 +28,6 @@ bucket_name = "nexo-media"
 
 [vars]
 WHATSAPP_PHONE = "+5350000000"
+# DSN de Sentry (opcional): configura con `wrangler secret put SENTRY_DSN`
+# o reemplaza el valor por un DSN real cuando lo tengas disponible
+SENTRY_DSN = ""

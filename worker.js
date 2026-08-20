@@ -1,6 +1,44 @@
 // worker.js - NEXO Master API, SEO & AI Engine
+
+// Cliente Sentry mínimo (sin dependencias) para capturar errores no controlados
+function reportError(env, ctx, error, requestUrl) {
+  if (!env.SENTRY_DSN) return;
+  const dsn = env.SENTRY_DSN;
+  const match = dsn.match(/^(https?):\/\/([^@]+)@([^/]+)\/(\d+)$/);
+  if (!match) return;
+  const [, protocol, key, host, projectId] = match;
+  const payload = {
+    message: error.message || String(error),
+    level: "error",
+    platform: "javascript",
+    server_name: "nexo-inmueble",
+    tags: { url: requestUrl },
+    extra: { stack: error.stack },
+    timestamp: (Date.now() / 1000),
+  };
+  ctx.waitUntil(
+    fetch(`${protocol}://${host}/api/${projectId}/store/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify(payload),
+    }).catch(() => {})
+  );
+}
+
 export default {
   async fetch(request, env, ctx) {
+    try {
+      return await this.route(request, env, ctx);
+    } catch (error) {
+      reportError(env, ctx, error, request.url);
+      return new Response("Internal Error", { status: 500 });
+    }
+  },
+
+  async route(request, env, ctx) {
     const url = new URL(request.url);
     const method = request.method;
 
@@ -100,16 +138,29 @@ export default {
       return new Response(htmlContent, { headers: { "Content-Type": "text/html" } });
     }
 
-    // --- SERVIR FOTOS DESDE R2 (MEDIA) ---
+    // --- SERVIR FOTOS DESDE R2 (MEDIA) con negociación de formato ---
     if (url.pathname.startsWith("/media/") && env.BUCKET_IMAGENES && (method === "GET" || method === "HEAD")) {
-      const key = decodeURIComponent(url.pathname.slice("/media/".length));
-      const object = method === "HEAD" ? await env.BUCKET_IMAGENES.head(key) : await env.BUCKET_IMAGENES.get(key);
+      let key = decodeURIComponent(url.pathname.slice("/media/".length));
+      const accept = request.headers.get("accept") || "";
+
+      // Negociación WebP/AVIF: el bucket guarda variantes *.webp junto al JPG original
+      let format = key.match(/\.(jpe?g|png)$/i) && accept.includes("image/webp") ? "webp" : null;
+      let object = null;
+      if (format) {
+        const webpKey = key.replace(/\.(jpe?g|png)$/i, "-w1200.webp");
+        object = method === "HEAD" ? await env.BUCKET_IMAGENES.head(webpKey) : await env.BUCKET_IMAGENES.get(webpKey);
+        if (!object) format = null; // fallback al original si no hay variante optimizada
+      }
+      if (!object) {
+        object = method === "HEAD" ? await env.BUCKET_IMAGENES.head(key) : await env.BUCKET_IMAGENES.get(key);
+      }
       if (!object) return new Response("Not Found", { status: 404, headers: corsHeaders });
-      
+
       const headers = new Headers(corsHeaders);
       object.writeHttpMetadata(headers);
       headers.set("etag", object.httpEtag);
       headers.set("Cache-Control", "public, max-age=31536000, immutable");
+      if (format) headers.set("Vary", "Accept");
       return new Response(method === "HEAD" ? null : object.body, { headers });
     }
 
