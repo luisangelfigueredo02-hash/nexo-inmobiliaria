@@ -617,3 +617,190 @@
         </div>
         <div class="mobile-cta-group">
             <a href="#" id="mobile-whatsapp-btn" target="_blank" class="cta-btn cta-btn-primary">
+                WhatsApp
+            </a>
+            <a href="#" id="mobile-email-btn" class="cta-btn cta-btn-secondary">
+                Consultar
+            </a>
+        </div>
+    </div>
+
+    <!-- Librerías de Leaflet para control y render de mapas -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Lógica de Consulta y Controladores -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Obtener el ID de la propiedad de los parámetros de la URL
+            const params = new URLSearchParams(window.location.search);
+            const propertyId = params.get('id');
+
+            if (!propertyId) {
+                window.location.href = '/';
+                return;
+            }
+
+            fetchPropertyData(propertyId);
+        });
+
+        // Consultar los datos de la propiedad
+        async function fetchPropertyData(id) {
+            try {
+                // Buscamos dinámicamente en el endpoint de la API
+                const response = await fetch(`/api/properties`);
+                if (!response.ok) throw new Error('Error de conexión con la API de NEXO.');
+
+                const properties = await response.json();
+                
+                // Buscar el objeto específico
+                const property = properties.find(p => p.id == id);
+                
+                if (!property) {
+                    alert('La propiedad solicitada no se encuentra disponible.');
+                    window.location.href = '/';
+                    return;
+                }
+
+                renderPropertyDetail(property);
+            } catch (error) {
+                console.error(error);
+                alert('Ocurrió un error al cargar la propiedad. Reintentando...');
+            }
+        }
+
+        // Renderizado e inicialización de elementos dinámicos
+        function renderPropertyDetail(property) {
+            // Formateador de moneda integrado
+            const formattedPrice = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                maximumFractionDigits: 0
+            }).format(property.price);
+
+            // Poblar contenido de textos e información estructural
+            document.getElementById('detail-title').textContent = property.title;
+            document.getElementById('detail-location').innerHTML = `
+                <svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:currentColor; flex-shrink:0;">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg> ${property.location || 'Ubicación no provista'}
+            `;
+            document.getElementById('detail-description').textContent = property.description || 'No hay descripción disponible para esta propiedad.';
+            
+            // Características bar
+            document.getElementById('detail-beds').innerHTML = `<strong>${property.bedrooms || 0}</strong> habs`;
+            document.getElementById('detail-baths').innerHTML = `<strong>${property.bathrooms || 0}</strong> baños`;
+            document.getElementById('detail-area').innerHTML = `<strong>${property.area || 0}</strong> m²`;
+
+            // Badges
+            document.getElementById('detail-type').textContent = property.type || 'Inmueble';
+            document.getElementById('detail-transaction').textContent = property.type_transaction || 'Venta';
+
+            // Precios
+            document.getElementById('detail-price-desktop').textContent = formattedPrice;
+            document.getElementById('detail-price-sidebar').textContent = formattedPrice;
+            document.getElementById('detail-price-mobile').textContent = formattedPrice;
+
+            // Renderizar Imágenes en la Galería Swipe
+            const galleryContainer = document.getElementById('gallery-container');
+            const imagesList = property.image_url ? property.image_url.split(',') : ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=80'];
+            
+            galleryContainer.innerHTML = '';
+            imagesList.forEach((imgUrl) => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                item.innerHTML = `<img src="${imgUrl.trim()}" alt="${property.title}" loading="eager">`;
+                galleryContainer.appendChild(item);
+            });
+
+            // Configurar contador de imágenes basado en scroll horizontal
+            const counterElement = document.getElementById('gallery-counter');
+            counterElement.textContent = `1 / ${imagesList.length}`;
+
+            galleryContainer.addEventListener('scroll', () => {
+                const index = Math.round(galleryContainer.scrollLeft / galleryContainer.clientWidth) + 1;
+                counterElement.textContent = `${index} / ${imagesList.length}`;
+            });
+
+            // Inicializar mapa de Leaflet
+            initializeMap(property);
+
+            // Configurar botones de favoritos en detalle
+            setupFavorites(property.id);
+
+            // Generar enlaces de contacto directo (WhatsApp y Email)
+            setupContactLinks(property);
+        }
+
+        // Inicializador de mapas sin atrapar el scroll móvil (WCAG / UX)
+        function initializeMap(property) {
+            // Coordenadas por defecto (o dinámicas si existen en tu tabla de D1)
+            const lat = parseFloat(property.latitude) || -12.046374; 
+            const lng = parseFloat(property.longitude) || -77.042793;
+
+            // Crear instancia de Leaflet
+            const map = L.map('property-map', {
+                scrollWheelZoom: false,  // Desactivar zoom de rueda para evitar bloquear gestos táctiles
+                touchZoom: true
+            }).setView([lat, lng], 15);
+
+            // Cargar mapa openstreetmap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            // Añadir pin personalizado sutil
+            const marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup(`<strong>${property.title}</strong><br>${property.location || ''}`).openPopup();
+        }
+
+        // Lógica interactiva de favoritos
+        function setupFavorites(id) {
+            const favBtn = document.getElementById('fav-detail-btn');
+            let favorites = JSON.parse(localStorage.getItem('nexo_favs')) || [];
+            
+            // Visualizar si ya es favorito
+            if (favorites.includes(id)) {
+                favBtn.style.color = 'var(--error)';
+            }
+
+            favBtn.addEventListener('click', () => {
+                favorites = JSON.parse(localStorage.getItem('nexo_favs')) || [];
+                const index = favorites.indexOf(id);
+
+                if (index === -1) {
+                    favorites.push(id);
+                    favBtn.style.color = 'var(--error)';
+                    // Animación de escala física al marcar
+                    favBtn.style.transform = 'scale(1.2)';
+                    setTimeout(() => favBtn.style.transform = 'scale(1)', 200);
+                } else {
+                    favorites.splice(index, 1);
+                    favBtn.style.color = 'var(--text-primary)';
+                }
+
+                localStorage.setItem('nexo_favs', JSON.stringify(favorites));
+            });
+        }
+
+        // Generar enlaces dinámicos con plantillas de mensajes persuasivas
+        function setupContactLinks(property) {
+            const agentPhone = "51999999999"; // Reemplazar con el teléfono del agente de NEXO
+            const agentEmail = "hola@nexoinmobiliaria.com";
+
+            const messageText = `Hola, estoy interesado en la propiedad "${property.title}" publicada en NEXO con el precio de ${property.price} USD. ¿Podrían brindarme más información al respecto? Muchas gracias.`;
+            const encodedMessage = encodeURIComponent(messageText);
+
+            const whatsappUrl = `https://wa.me/${agentPhone}?text=${encodedMessage}`;
+            const emailUrl = `mailto:${agentEmail}?subject=Consulta Propiedad: ${encodeURIComponent(property.title)}&body=${encodedMessage}`;
+
+            // Asignar enlaces de Desktop
+            document.getElementById('desktop-whatsapp-btn').href = whatsappUrl;
+            document.getElementById('desktop-email-btn').href = emailUrl;
+
+            // Asignar enlaces de Móvil
+            document.getElementById('mobile-whatsapp-btn').href = whatsappUrl;
+            document.getElementById('mobile-email-btn').href = emailUrl;
+        }
+    </script>
+</body>
+</html>
