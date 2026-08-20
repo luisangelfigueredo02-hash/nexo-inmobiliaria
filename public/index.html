@@ -1,324 +1,619 @@
-/// public/index.html
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>NEXO — Propiedades Premium en Cuba</title>
-    <link rel="stylesheet" href="/variables.css">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#fbfbfd">
+    <title>NEXO — Propiedades Exclusivas en Cuba</title>
+    <!-- CSS de Leaflet para el Mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        /* Estructura Base */
-        body { padding-bottom: calc(90px + var(--safe-bottom-mobile)); background: var(--bg-secondary); }
+        :root {
+            --bg-color: #f5f5f7;
+            --card-color: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --accent: #0071e3;
+            --border: rgba(0, 0, 0, 0.08);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
 
-        /* Cabecera Premium */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1c1c1e;
+                --card-color: #2c2c2e;
+                --text-primary: #f5f5f7;
+                --text-secondary: #98989d;
+                --accent: #0a84ff;
+                --border: rgba(255, 255, 255, 0.12);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            padding-bottom: calc(80px + var(--safe-bottom));
+        }
+
+        /* Shimmer premium para skeleton loaders */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-color) 25%, var(--card-color) 50%, var(--bg-color) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite ease-in-out;
+        }
+
+        /* Overlay de estados (offline/error) */
+        .state-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-color);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+        .state-overlay[hidden] { display: none; }
+        .state-overlay .icon { font-size: 48px; }
+        .state-overlay h2 { font-size: 20px; font-weight: 700; }
+        .state-overlay p { font-size: 15px; color: var(--text-secondary); max-width: 320px; }
+        .state-overlay .btn-retry {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 22px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Cabecera Premium Translúcida */
         header {
             position: sticky;
             top: 0;
             z-index: 100;
-            padding: 0 var(--space-4);
-            height: var(--header-height);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border-subtle);
         }
-        .logo { font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: -0.03em; display: flex; align-items: center; gap: 8px;}
-        .logo span { color: var(--interactive-blue); }
-        .admin-link { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--text-secondary); }
 
-        /* Filtros Scrollables Premium (WCAG > 44px) */
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        /* Panel de Filtros Moderno */
         .filters-container {
-            padding: var(--space-3) var(--space-4);
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border-default);
+            padding: 16px 24px;
+            background: var(--card-color);
+            border-bottom: 1px solid var(--border);
             display: flex;
-            gap: var(--space-2);
+            gap: 12px;
             overflow-x: auto;
             scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
         }
-        .filters-container::-webkit-scrollbar { display: none; }
-        .filter-select, .filter-input {
-            height: 44px; /* Touch target accesible */
-            padding: 0 var(--space-4);
-            border-radius: var(--radius-round);
-            border: 1px solid var(--border-default);
-            background: var(--bg-primary);
-            font-size: var(--text-sm);
-            font-weight: var(--weight-medium);
-            color: var(--text-primary);
-            white-space: nowrap;
-            transition: var(--transition-fast);
-            box-shadow: var(--shadow-sm);
-            appearance: none; 
-        }
-        .filter-select:focus, .filter-input:focus { border-color: var(--interactive-blue); box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15); }
 
-        /* Vistas y Controles */
-        .view-controls { display: flex; justify-content: flex-end; padding: var(--space-3) var(--space-4); gap: var(--space-2); max-width: var(--max-width-content); margin: 0 auto; }
-        .btn-view {
-            height: 36px; padding: 0 var(--space-4); border-radius: var(--radius-round);
-            font-size: var(--text-xs); font-weight: var(--weight-semibold);
-            background: var(--bg-primary); border: 1px solid var(--border-default);
-            transition: var(--transition-fast); color: var(--text-secondary);
+        .filters-container::-webkit-scrollbar {
+            display: none;
         }
-        .btn-view.active { background: var(--accent); color: var(--text-on-accent); border-color: var(--accent); }
+
+        select, input {
+            padding: 10px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg-color);
+            font-size: 14px;
+            outline: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent);
+            background: var(--card-color);
+        }
+
+        /* Contenedores de Visualización */
+        .view-toggle {
+            padding: 12px 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-toggle {
+            background: var(--card-color);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-toggle.active {
+            background: var(--text-primary);
+            color: white;
+            border-color: var(--text-primary);
+        }
 
         /* Grid de Inmuebles */
         .catalog {
-            padding: 0 var(--space-4);
-            max-width: var(--max-width-content);
-            margin: 0 auto;
+            padding: 0 24px;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: var(--space-5);
+            gap: 24px;
         }
 
         .property-card {
-            background: var(--bg-primary);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-subtle);
+            background: var(--card-color);
+            border-radius: 20px;
             overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: inherit;
             display: flex;
             flex-direction: column;
-            transition: var(--transition-normal);
-            box-shadow: var(--shadow-sm);
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .property-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .img-wrapper {
             position: relative;
-        }
-        .property-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-        
-        .card-img-wrapper {
-            position: relative; width: 100%; aspect-ratio: 4/3; overflow: hidden; background: var(--bg-tertiary);
-        }
-        .card-img-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s var(--ease-apple); }
-        .property-card:hover .card-img-wrapper img { transform: scale(1.03); }
-
-        /* Badges Flotantes Premium */
-        .badge-status {
-            position: absolute; top: 12px; left: 12px;
-            background: var(--bg-overlay); backdrop-filter: saturate(180%) blur(10px); -webkit-backdrop-filter: blur(10px);
-            padding: 6px 12px; border-radius: var(--radius-round);
-            font-size: 11px; font-weight: var(--weight-bold); letter-spacing: 0.05em; text-transform: uppercase;
-            box-shadow: var(--shadow-sm); z-index: 2; color: var(--text-primary);
-        }
-        .badge-verified {
-            position: absolute; bottom: 12px; right: 12px;
-            background: var(--success); color: white;
-            padding: 4px 10px; border-radius: var(--radius-round);
-            font-size: 10px; font-weight: var(--weight-bold);
-            display: flex; align-items: center; gap: 4px;
-            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3); z-index: 2;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #e5e5ea;
+            overflow: hidden;
         }
 
-        .card-content { padding: var(--space-4); display: flex; flex-direction: column; gap: 6px; }
-        .card-price { font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--text-primary); letter-spacing: -0.02em; }
-        .card-title { font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-location { font-size: var(--text-sm); color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
-        
-        .card-features {
-            display: flex; gap: var(--space-3); margin-top: var(--space-2);
-            padding-top: var(--space-3); border-top: 1px solid var(--border-subtle);
-            font-size: var(--text-xs); color: var(--text-secondary); font-weight: var(--weight-medium);
+        .img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
         }
-        .card-features span { display: flex; align-items: center; gap: 4px; }
 
-        /* Fab NEXO IA Premium */
-        .ai-fab {
-            position: fixed; bottom: calc(24px + var(--safe-bottom-mobile)); right: var(--space-4);
-            height: 56px; padding: 0 var(--space-4); border-radius: var(--radius-round);
-            background: var(--text-primary); color: var(--bg-primary);
-            box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 8px;
-            font-weight: var(--weight-semibold); font-size: var(--text-sm);
-            cursor: pointer; z-index: 90; transition: var(--transition-normal);
+        .badge-op {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .ai-fab:hover { transform: scale(1.05); background: var(--accent-hover); }
 
-        /* Chat Drawer Modal */
+        .card-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .price {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .loc {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .specs {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+            margin-top: 4px;
+        }
+
+        /* Mapa de Catálogo */
+        #map-view {
+            width: 100%;
+            height: 60vh;
+            border-bottom: 1px solid var(--border);
+            display: none;
+        }
+
+        /* Drawer Flotante de NEXO IA */
         .chat-drawer {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 85vh;
-            background: var(--bg-primary); border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-            box-shadow: 0 -20px 40px rgba(0,0,0,0.15); transform: translateY(100%);
-            transition: transform 0.5s var(--ease-spring); z-index: 1000; display: flex; flex-direction: column;
-            will-change: transform; visibility: hidden;
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            background: var(--card-color);
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 1000;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
         }
-        .chat-drawer.open { transform: translateY(0); visibility: visible; }
-        .chat-header { padding: var(--space-4); border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; font-weight: var(--weight-semibold); font-size: var(--text-md); }
-        .btn-close { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 18px; transition: var(--transition-fast); }
-        .btn-close:hover { background: var(--border-default); }
-        .chat-body { flex: 1; padding: var(--space-4); overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-3); }
-        .msg { max-width: 85%; padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); font-size: var(--text-sm); line-height: var(--line-height-normal); }
-        .msg.user { background: var(--interactive-blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg.ai { background: var(--bg-tertiary); color: var(--text-primary); align-self: flex-start; border-bottom-left-radius: 4px; }
-        .chat-input-wrapper { padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--safe-bottom-mobile)); border-top: 1px solid var(--border-subtle); display: flex; gap: var(--space-2); background: var(--bg-primary); }
-        .chat-input-wrapper input { flex: 1; height: 48px; padding: 0 var(--space-4); border-radius: var(--radius-round); background: var(--bg-tertiary); font-size: var(--text-base); }
-        .chat-input-wrapper button { width: 48px; height: 48px; border-radius: 50%; background: var(--text-primary); color: white; display: flex; align-items: center; justify-content: center; }
 
-        /* Contenedor del Mapa diferido */
-        #map-view { width: 100%; height: 65vh; border-radius: var(--radius-lg); display: none; margin: 0 auto; max-width: var(--max-width-content); box-shadow: var(--shadow-md); z-index: 10; }
-        
-        @media (max-width: 768px) {
-            .view-controls { padding: var(--space-3); }
-            #map-view { height: calc(100vh - 200px); border-radius: 0; }
+        .chat-drawer.open {
+            transform: translateY(0);
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            font-weight: 600;
+            font-size: 17px;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .msg.user {
+            background: var(--accent);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg.bot {
+            background: var(--bg-color);
+            color: var(--text-primary);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-property-link {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 6px 12px;
+            background: var(--accent);
+            color: white !important;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .chat-input-area {
+            padding: 16px 24px calc(16px + var(--safe-bottom));
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+        }
+
+        .btn-send {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Utilidad accesible: visible solo para lectores de pantalla */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Botón de Activación de IA */
+        .ai-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--text-primary);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 99;
         }
     </style>
 </head>
 <body>
 
-    <header class="glass-effect">
-        <a href="/" class="logo" aria-label="NEXO Inicio">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L2 12h3v8h14v-8h3L12 3zm0 13.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-            NE<span>X</span>O
-        </a>
-        <a href="/admin.html" class="admin-link">Gestión</a>
+    <header>
+        <a href="/" class="logo">NE<span>X</span>O</a>
+        <a href="/admin.html" style="font-size: 14px; color: var(--text-secondary); text-decoration: none;">Gestión</a>
     </header>
 
-    <div class="filters-container" role="search">
-        <select id="filter-type" class="filter-select" aria-label="Tipo de propiedad">
-            <option value="">Cualquier tipo</option>
+    <!-- Filtros de Inmuebles -->
+    <div class="filters-container" role="search" aria-label="Filtros de propiedades">
+        <label class="sr-only" for="filter-type">Tipo de inmueble</label>
+        <select id="filter-type" aria-label="Tipo de inmueble">
+            <option value="">Tipo</option>
             <option value="casa">Casa</option>
             <option value="apartamento">Apartamento</option>
-            <option value="penthouse">Penthouse</option>
             <option value="terreno">Terreno</option>
+            <option value="penthouse">Penthouse</option>
         </select>
-        <select id="filter-operation" class="filter-select" aria-label="Operación">
-            <option value="">Comprar o Alquilar</option>
-            <option value="venta">Comprar</option>
-            <option value="alquiler">Alquilar</option>
+        <label class="sr-only" for="filter-operation">Tipo de operación</label>
+        <select id="filter-operation" aria-label="Tipo de operación">
+            <option value="">Operación</option>
+            <option value="venta">Venta</option>
+            <option value="alquiler">Alquiler</option>
         </select>
-        <select id="filter-province" class="filter-select" aria-label="Ubicación">
-            <option value="">Toda Cuba</option>
+        <label class="sr-only" for="filter-province">Provincia</label>
+        <select id="filter-province" aria-label="Provincia">
+            <option value="">Provincia</option>
             <option value="La Habana">La Habana</option>
             <option value="Matanzas">Matanzas</option>
+            <option value="Cienfuegos">Cienfuegos</option>
         </select>
-        <input type="number" id="filter-price" class="filter-input" placeholder="Precio máx. (USD)" aria-label="Precio máximo">
+        <label class="sr-only" for="filter-price">Precio máximo en USD</label>
+        <input type="number" id="filter-price" placeholder="Precio Máximo (USD)" aria-label="Precio máximo en USD" inputmode="numeric">
     </div>
 
-    <div class="view-controls">
-        <button class="btn-view active" id="btn-grid" aria-label="Vista de cuadrícula">Catálogo</button>
-        <button class="btn-view" id="btn-map" aria-label="Vista de mapa">Ver en Mapa</button>
+    <div class="view-toggle" role="group" aria-label="Cambiar vista del catálogo">
+        <button class="btn-toggle active" id="btn-grid" aria-pressed="true">Cuadrícula</button>
+        <button class="btn-toggle" id="btn-map" aria-pressed="false">Mapa</button>
     </div>
 
-    <div id="map-view" aria-hidden="true"></div>
+    <!-- Mapa Interactivo -->
+    <div id="map-view"></div>
 
-    <main class="catalog" id="catalog" aria-live="polite">
-        <!-- Inyección Skeletons por defecto -->
+    <!-- Catálogo de Propiedades -->
+    <main class="catalog" id="catalog">
+        <!-- Inyección dinámica de skeletons -->
     </main>
 
-    <button class="ai-fab" onclick="toggleChat(true)" aria-label="Abrir asistente NEXO IA">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 4.9L19.3 7.6l-3.6 3.5.9 5.3-4.6-2.4-4.6 2.4.9-5.3-3.6-3.5 4.9-.7L12 2z"/></svg>
-        Preguntar a NEXO IA
-    </button>
-
-    <!-- Modal Drawer Chat con Focus Trap (WCAG) -->
-    <div class="chat-drawer" id="chat-drawer" role="dialog" aria-modal="true" aria-labelledby="chat-title">
-        <div class="chat-header">
-            <span id="chat-title">✨ Asistente NEXO IA</span>
-            <button class="btn-close" onclick="toggleChat(false)" aria-label="Cerrar chat">✕</button>
-        </div>
-        <div class="chat-body" id="chat-messages" aria-live="polite">
-            <div class="msg ai">Hola, soy el asistente inteligente de NEXO. Dime qué tipo de hogar buscas o tu presupuesto en Cuba, y buscaré opciones reales en segundos.</div>
-        </div>
-        <form class="chat-input-wrapper" onsubmit="event.preventDefault(); sendChatMessage();">
-            <input type="text" id="chat-input" placeholder="Ej: Apartamento en Vedado..." autocomplete="off">
-            <button type="submit" aria-label="Enviar mensaje">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
-            </button>
-        </form>
+    <!-- Botón Flotante para Lanzar Chatbot -->
+    <div class="ai-fab" id="ai-fab" role="button" tabindex="0" aria-expanded="false" aria-controls="chat-drawer" onclick="toggleChat(true)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleChat(true)}">
+        <span>✨</span> NEXO IA
     </div>
 
+    <!-- Overlay de estados red (offline / error crítico) -->
+    <div class="state-overlay" id="state-overlay" hidden role="alert" aria-live="assertive"></div>
+
+    <!-- Chat de NEXO IA -->
+    <div class="chat-drawer" id="chat-drawer" role="dialog" aria-label="Asistente NEXO IA" aria-hidden="true">
+        <div class="chat-header">
+            <div class="chat-title">✨ NEXO IA — Asistente Inteligente</div>
+            <button class="btn-close" onclick="toggleChat(false)">×</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="msg bot">¡Hola! Soy tu asistente de NEXO. ¿Buscas comprar o alquilar en alguna zona específica de Cuba? Cuéntame qué necesitas.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ej. Casa en Vedado con 3 habs..." onkeypress="handleChatKey(event)">
+            <button class="btn-send" onclick="sendChatMessage()">Enviar</button>
+        </div>
+    </div>
+
+    <!-- Scripts CDN Leaflet -->
     <script>
         let propertiesData = [];
+        let leafletPromise = null;
+
+        // Carga perezosa de Leaflet solo si el usuario abre el mapa (ahorra ~40KB en 3G)
+        function loadLeafletOnce() {
+            if (leafletPromise) return leafletPromise;
+            leafletPromise = new Promise((resolve, reject) => {
+                const script = document.createElement("script");
+                script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+            return leafletPromise;
+        }
+
+        window.addEventListener("offline", () => {
+            showOverlay("Sin conexión", "NEXO necesita internet. Revisa tu conexión y reintenta.");
+        });
+        window.addEventListener("online", () => {
+            hideOverlay();
+            loadProperties();
+        });
         let map = null;
         let markersGroup = null;
-
-        // Lazy load Leaflet solo si se solicita el mapa
-        function loadLeaflet() {
-            return new Promise((resolve) => {
-                if (window.L) return resolve();
-                const link = document.createElement('link');
-                link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-                document.head.appendChild(link);
-                const script = document.createElement('script');
-                script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-                script.onload = resolve;
-                document.body.appendChild(script);
-            });
-        }
 
         function showSkeletons() {
             const catalog = document.getElementById("catalog");
             catalog.innerHTML = Array(6).fill(0).map(() => `
-                <div class="property-card" style="pointer-events: none; border:none; box-shadow:none;">
-                    <div class="card-img-wrapper skeleton"></div>
-                    <div class="card-content">
-                        <div class="skeleton" style="height:24px; width:40%; border-radius:4px;"></div>
-                        <div class="skeleton" style="height:20px; width:80%; border-radius:4px;"></div>
-                        <div class="skeleton" style="height:14px; width:60%; border-radius:4px;"></div>
+                <div class="property-card" style="pointer-events: none;">
+                    <div class="img-wrapper skeleton"></div>
+                    <div class="card-info">
+                        <div class="skeleton" style="height: 24px; width: 40%; border-radius: 4px;"></div>
+                        <div class="skeleton" style="height: 18px; width: 80%; border-radius: 4px;"></div>
+                        <div class="skeleton" style="height: 14px; width: 60%; border-radius: 4px;"></div>
                     </div>
                 </div>
             `).join('');
         }
 
-        async function loadProperties() {
-            showSkeletons();
-            const params = new URLSearchParams();
-            ['type', 'operation', 'province'].forEach(id => {
-                const val = document.getElementById(`filter-${id}`).value;
-                if(val) params.append(id, val);
-            });
-            const price = document.getElementById('filter-price').value;
-            if(price) params.append('maxPrice', price);
+        function buildQuery() {
+            const type = document.getElementById("filter-type").value;
+            const op = document.getElementById("filter-operation").value;
+            const prov = document.getElementById("filter-province").value;
+            const price = document.getElementById("filter-price").value;
+            let query = `/api/properties?`;
+            if (type) query += `&type=${type}`;
+            if (op) query += `&operation=${op}`;
+            if (prov) query += `&province=${prov}`;
+            if (price) query += `&maxPrice=${price}`;
+            return query;
+        }
 
+        async function fetchWithTimeout(url, ms, options = {}) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), ms);
             try {
-                // Fetch apalancado por Stale-While-Revalidate en SW (Modo Isla)
-                const response = await fetch(`/api/properties?${params.toString()}`);
-                propertiesData = await response.json();
-                renderCatalog();
-                if (map && document.getElementById("map-view").style.display === "block") {
-                    syncMapMarkers();
-                }
+                const response = await fetch(url, { ...options, signal: controller.signal });
+                clearTimeout(timeoutId);
+                return response;
             } catch (err) {
-                document.getElementById("catalog").innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">Conexión limitada. Asegúrese de estar online para ver inventario nuevo.</p>`;
+                clearTimeout(timeoutId);
+                throw err;
+            }
+        }
+
+        function showOverlay(message, submessage, withRetry = true) {
+            const overlay = document.getElementById("state-overlay");
+            if (!overlay) return;
+            overlay.innerHTML = `
+                <div class="icon" aria-hidden="true">🌐</div>
+                <h2>${message}</h2>
+                <p>${submessage}</p>
+                ${withRetry ? '<button class="btn-retry" onclick="loadProperties()">Reintentar</button>' : ''}
+            `;
+            overlay.hidden = false;
+        }
+
+        function hideOverlay() {
+            const overlay = document.getElementById("state-overlay");
+            if (overlay) overlay.hidden = true;
+        }
+
+        async function loadProperties() {
+            if (!navigator.onLine) {
+                showOverlay("Sin conexión", "NEXO necesita internet. Revisa tu conexión y reintenta.");
+                return;
+            }
+            hideOverlay();
+            showSkeletons();
+
+            const query = buildQuery();
+            const retries = [10000, 15000, 25000]; // 3G-safe sequences
+
+            for (let attempt = 0; attempt < retries.length; attempt++) {
+                try {
+                    const response = await fetchWithTimeout(query, retries[attempt]);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    propertiesData = await response.json();
+                    renderCatalog();
+                    syncMapMarkers();
+                    return;
+                } catch (err) {
+                    if (attempt === retries.length - 1) {
+                        document.getElementById("catalog").innerHTML = `
+                            <div class="state-inline" style="grid-column:1/-1;text-align:center;padding:48px 24px;">
+                                <p style="color:var(--text-secondary);margin-bottom:12px;">No se pudo cargar el catálogo. Tu conexión parece lenta.</p>
+                                <button class="btn-retry" style="background:var(--accent);color:#fff;border:none;padding:12px 24px;border-radius:20px;font-weight:600;cursor:pointer;" onclick="loadProperties()">Reintentar</button>
+                            </div>
+                        `;
+                    }
+                }
             }
         }
 
         function renderCatalog() {
             const catalog = document.getElementById("catalog");
             if (propertiesData.length === 0) {
-                catalog.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 40px;">No hay propiedades que coincidan.</p>`;
+                catalog.innerHTML = `<p style="grid-column: 1/-1; padding: 48px; text-align: center; color: var(--text-secondary);">No hay inmuebles disponibles con estos filtros.</p>`;
                 return;
             }
 
             catalog.innerHTML = propertiesData.map(p => {
-                const mainImg = (p.images && p.images[0]) ? p.images[0] : 'data:image/svg+xml;charset=UTF-8,%3Csvg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="100%25" height="100%25" fill="%23f5f5f7"/%3E%3C/svg%3E';
-                // Regla de Trust (Fase 1): Una propiedad gana la insignia si tiene buena data.
-                const isVerified = (p.images && p.images.length >= 3 && p.description && p.description.length > 40) ? true : false;
-                
+                const mainImg = p.images[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80";
                 return `
                     <a href="/property.html?id=${p.id}" class="property-card">
-                        <div class="card-img-wrapper">
-                            <div class="badge-status">${p.operation}</div>
-                            ${isVerified ? `
-                                <div class="badge-verified" title="Inmueble Verificado">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                    NEXO
-                                </div>
-                            ` : ''}
-                            <img src="${mainImg}" loading="lazy" alt="${p.title}">
+                        <div class="img-wrapper">
+                            <span class="badge-op">${p.operation}</span>
+                            <img src="${mainImg}" alt="${p.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80'">
                         </div>
-                        <div class="card-content">
-                            <div class="card-price">$${parseFloat(p.price).toLocaleString()} USD</div>
-                            <h2 class="card-title">${p.title}</h2>
-                            <div class="card-location">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                                ${p.neighborhood}, ${p.city}
-                            </div>
-                            <div class="card-features">
-                                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg> ${p.bedrooms}</span>
-                                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M7 12v10M17 12v10"></path></svg> ${p.bathrooms}</span>
-                                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"></path></svg> ${p.area} m²</span>
+                        <div class="card-info">
+                            <div class="price">$${parseFloat(p.price).toLocaleString()} USD</div>
+                            <div class="title">${p.title}</div>
+                            <div class="loc">${p.neighborhood}, ${p.city}</div>
+                            <div class="specs">
+                                <span><span aria-hidden="true">🛏️</span> <span class="sr-only">Habitaciones: </span>${p.bedrooms}</span>
+                                <span><span aria-hidden="true">🛁</span> <span class="sr-only">Baños: </span>${p.bathrooms}</span>
+                                <span><span aria-hidden="true">📐</span> <span class="sr-only">Área: </span>${p.area} m²</span>
                             </div>
                         </div>
                     </a>
@@ -326,50 +621,30 @@
             }).join('');
         }
 
-        // Cambio de vistas (Catálogo / Mapa)
-        document.getElementById("btn-grid").addEventListener("click", () => {
-            document.getElementById("btn-grid").classList.add("active");
-            document.getElementById("btn-map").classList.remove("active");
-            document.getElementById("catalog").style.display = "grid";
-            document.getElementById("map-view").style.display = "none";
-        });
-
-        document.getElementById("btn-map").addEventListener("click", async () => {
-            document.getElementById("btn-map").classList.add("active");
-            document.getElementById("btn-grid").classList.remove("active");
-            document.getElementById("catalog").style.display = "none";
-            
-            const mapView = document.getElementById("map-view");
-            mapView.style.display = "block";
-            
-            // Carga diferida de recursos pesados
-            await loadLeaflet();
-            if (!map) {
-                map = L.map('map-view').setView([23.1136, -82.3666], 12);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; OpenStreetMap'
-                }).addTo(map);
-                markersGroup = L.layerGroup().addTo(map);
-            }
-            syncMapMarkers();
-            setTimeout(() => { map.invalidateSize(); }, 200);
-        });
+        function initMap() {
+            if (map) return;
+            map = L.map('map-view').setView([23.1136, -82.3666], 12);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            markersGroup = L.layerGroup().addTo(map);
+        }
 
         function syncMapMarkers() {
-            if (!map || !markersGroup) return;
+            if (!map) return;
             markersGroup.clearLayers();
             const validCoords = [];
 
             propertiesData.forEach(p => {
                 if (p.latitude && p.longitude) {
                     const marker = L.marker([p.latitude, p.longitude]);
-                    const mainImg = (p.images && p.images[0]) ? p.images[0] : "data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='10' height='10' fill='%23ccc'/%3E%3C/svg%3E";
+                    const mainImg = p.images[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80";
                     marker.bindPopup(`
-                        <div style="font-family:inherit; min-width:140px;">
+                        <div style="width: 150px; font-family:-apple-system, sans-serif;">
                             <img src="${mainImg}" style="width:100%; height:80px; object-fit:cover; border-radius:8px;">
-                            <strong style="display:block; margin-top:6px; font-size:14px;">$${parseFloat(p.price).toLocaleString()} USD</strong>
+                            <strong style="display:block; margin-top:6px;">$${parseFloat(p.price).toLocaleString()} USD</strong>
                             <span style="font-size:12px; color:#666;">${p.title}</span>
-                            <a href="/property.html?id=${p.id}" style="display:block; font-size:12px; color:var(--interactive-blue); margin-top:4px; font-weight:600;">Ver Detalles</a>
+                            <a href="/property.html?id=${p.id}" style="display:block; font-size:12px; color:var(--accent); margin-top:4px; text-decoration:none;">Ver Detalles</a>
                         </div>
                     `);
                     markersGroup.addLayer(marker);
@@ -377,85 +652,114 @@
                 }
             });
 
-            if (validCoords.length > 0) map.fitBounds(validCoords, { padding: [30, 30] });
+            if (validCoords.length > 0) {
+                map.fitBounds(validCoords, { padding: [30, 30] });
+            }
         }
 
-        // Filtros Automáticos
-        document.querySelectorAll(".filters-container select, .filters-container input").forEach(el => {
-            el.addEventListener("change", loadProperties);
+        // Controladores de Vista
+        document.getElementById("btn-grid").addEventListener("click", () => {
+            document.getElementById("btn-grid").classList.add("active");
+            document.getElementById("btn-grid").setAttribute("aria-pressed", "true");
+            document.getElementById("btn-map").classList.remove("active");
+            document.getElementById("btn-map").setAttribute("aria-pressed", "false");
+            document.getElementById("catalog").style.display = "grid";
+            document.getElementById("map-view").style.display = "none";
         });
 
-        // Chatbot UX - WCAG Focus Trap
-        let previousActiveElement;
-        
+        document.getElementById("btn-map").addEventListener("click", () => {
+            document.getElementById("btn-map").classList.add("active");
+            document.getElementById("btn-map").setAttribute("aria-pressed", "true");
+            document.getElementById("btn-grid").classList.remove("active");
+            document.getElementById("btn-grid").setAttribute("aria-pressed", "false");
+            document.getElementById("catalog").style.display = "none";
+            document.getElementById("map-view").style.display = "block";
+            loadLeafletOnce().then(() => {
+                initMap();
+                syncMapMarkers();
+                map.invalidateSize();
+            });
+        });
+
+        // Eventos de Filtro — debounce de 400ms para reducir requests en 3G
+        let filterDebounceTimer = null;
+        document.querySelectorAll(".filters-container select, .filters-container input").forEach(el => {
+            el.addEventListener("change", () => {
+                clearTimeout(filterDebounceTimer);
+                filterDebounceTimer = setTimeout(loadProperties, 400);
+            });
+            if (el.tagName === "INPUT") {
+                el.addEventListener("input", () => {
+                    clearTimeout(filterDebounceTimer);
+                    filterDebounceTimer = setTimeout(loadProperties, 600);
+                });
+            }
+        });
+
+        // Control del Cajón de Chat
         function toggleChat(show) {
             const drawer = document.getElementById("chat-drawer");
-            if (show) {
-                previousActiveElement = document.activeElement;
-                drawer.classList.add("open");
-                drawer.setAttribute("aria-hidden", "false");
-                document.getElementById("chat-input").focus();
-                document.addEventListener('keydown', handleFocusTrap);
-            } else {
-                drawer.classList.remove("open");
-                drawer.setAttribute("aria-hidden", "true");
-                document.removeEventListener('keydown', handleFocusTrap);
-                if(previousActiveElement) previousActiveElement.focus();
-            }
+            drawer.classList.toggle("open", show);
+            document.getElementById("ai-fab").setAttribute("aria-expanded", String(show));
+            drawer.setAttribute("aria-hidden", String(!show));
+            if (show) document.getElementById("chat-input").focus();
         }
 
-        function handleFocusTrap(e) {
-            const drawer = document.getElementById("chat-drawer");
-            const focusable = drawer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-            if (focusable.length === 0) return;
-            const first = focusable[0];
-            const last = focusable[focusable.length - 1];
-            
-            if (e.key === 'Tab') {
-                if (e.shiftKey && document.activeElement === first) {
-                    e.preventDefault(); last.focus();
-                } else if (!e.shiftKey && document.activeElement === last) {
-                    e.preventDefault(); first.focus();
-                }
-            } else if (e.key === 'Escape') {
-                toggleChat(false);
-            }
+        function handleChatKey(e) {
+            if (e.key === "Enter") sendChatMessage();
         }
 
         async function sendChatMessage() {
             const input = document.getElementById("chat-input");
-            const msg = input.value.trim();
-            if (!msg) return;
+            const messageText = input.value.trim();
+            if (!messageText) return;
+
             input.value = "";
+            const messagesContainer = document.getElementById("chat-messages");
 
-            const container = document.getElementById("chat-messages");
-            container.innerHTML += `<div class="msg user">${msg}</div>`;
-            container.scrollTop = container.scrollHeight;
+            // Añadir mensaje del usuario
+            const userMsg = document.createElement("div");
+            userMsg.className = "msg user";
+            userMsg.textContent = messageText;
+            messagesContainer.appendChild(userMsg);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-            const typingId = "typing-" + Date.now();
-            container.innerHTML += `<div id="${typingId}" class="msg ai skeleton" style="width:60px; height:32px;"></div>`;
-            container.scrollTop = container.scrollHeight;
+            // Añadir indicador de escritura
+            const typingMsg = document.createElement("div");
+            typingMsg.className = "msg bot skeleton";
+            typingMsg.style.width = "60px";
+            typingMsg.style.height = "32px";
+            messagesContainer.appendChild(typingMsg);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
             try {
-                const res = await fetch("/api/chat", {
-                    method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: msg })
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: messageText })
                 });
-                const data = await res.json();
-                document.getElementById(typingId).remove();
+                const data = await response.json();
+                messagesContainer.removeChild(typingMsg);
+
+                const botMsg = document.createElement("div");
+                botMsg.className = "msg bot";
                 
-                // Formateador interactivo de IDs [N-XXX]
-                let cleanResponse = (data.response || "Lo siento, hubo un error.").replace(/\n/g, "<br>");
-                cleanResponse = cleanResponse.replace(/\[(N-\d{3})\]/g, (match, id) => {
-                    return `<br><a href="/property.html?id=${id}" style="display:inline-block; margin-top:8px; padding:6px 12px; background:var(--interactive-blue); color:white; border-radius:12px; font-size:12px; font-weight:600;">Ver Inmueble ${id}</a>`;
+                // Expresión regular para capturar e interactuar con códigos de propiedades estructurados [N-XXX]
+                let formattedResponse = data.response.replace(/\\n/g, "<br>");
+                formattedResponse = formattedResponse.replace(/\[(N-\d{3})\]/g, (match, id) => {
+                    return `<br><a href="/property.html?id=${id}" class="chat-property-link">Explorar Propiedad ${id} ↗</a>`;
                 });
-                
-                container.innerHTML += `<div class="msg ai">${cleanResponse}</div>`;
+
+                botMsg.innerHTML = formattedResponse;
+                messagesContainer.appendChild(botMsg);
             } catch (err) {
-                document.getElementById(typingId).remove();
-                container.innerHTML += `<div class="msg ai">Fallo de conexión. Por favor reintenta.</div>`;
+                messagesContainer.removeChild(typingMsg);
+                const botMsg = document.createElement("div");
+                botMsg.className = "msg bot";
+                botMsg.textContent = "Lo siento, tuve un problema al conectarme con el servicio. ¿Podrías volver a intentarlo?";
+                messagesContainer.appendChild(botMsg);
             }
-            container.scrollTop = container.scrollHeight;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
         window.onload = loadProperties;

@@ -1,0 +1,89 @@
+name: NEXO CI/CD
+
+# 1. Activación: cada push a main (integración y despliegue continuos)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Variables reutilizables en todos los jobs
+env:
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+jobs:
+  # ---------------------------------------------------------
+  # Job 1: Auditoría de Calidad (código, rendimiento, AGENTS.md)
+  # ---------------------------------------------------------
+  quality-audit:
+    name: Auditoría de calidad — AGENTS.md
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Validación de sintaxis según scripts del repo
+      - name: Auditoría de sintaxis (Worker + assets)
+        run: |
+          npm run check
+          echo "✔ Sintaxis del Worker verificada"
+
+      # Auditoría de rendimiento: peso de assets estáticos (Mobile-First / 3G)
+      - name: Auditoría de rendimiento (peso de assets)
+        run: |
+          ASSETS_SIZE=$(du -sb public | cut -f1)
+          LIMIT=$((800 * 1024)) # 800 KB máximo para first-load en 3G
+          echo "public/: $ASSETS_SIZE bytes (límite: $LIMIT)"
+          if [ "$ASSETS_SIZE" -gt "$LIMIT" ]; then
+            echo "::error::Los assets públicos exceden el presupuesto de rendimiento (AGENTS.md)"
+            exit 1
+          fi
+
+      # Auditoría arquitectónica básica derivada de AGENTS.md:
+      # - skeleton loaders presentes en la página principal
+      # - manejo offline/errores (navigator.onLine / retry)
+      # - accesibilidad mínima (aria-label / roles)
+      - name: Auditoría de normas AGENTS.md (UX/3G/accesibilidad)
+        run: |
+          grep -q "skeleton" public/index.html || { echo "::error::Faltan skeleton loaders en index.html"; exit 1; }
+          grep -q "navigator.onLine" public/index.html || { echo "::error::Falta detección offline en index.html"; exit 1; }
+          grep -q "aria-label" public/index.html || { echo "::error::Faltan atributos aria en index.html"; exit 1; }
+          echo "✔ Normas Tier 1 verificadas"
+
+  # ---------------------------------------------------------
+  # Job 2: Despliegue Continuo a Cloudflare (solo si la auditoría pasa)
+  # ---------------------------------------------------------
+  deploy:
+    name: Despliegue a Cloudflare
+    needs: quality-audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Despliegue del Worker + assets estáticos al edge
+      - name: Desplegar a Cloudflare Workers
+        run: npx wrangler deploy
+
+      - name: Confirmar despliegue
+        run: |
+          echo "✔ Desplegado: nexo-platform"
+          echo "Versión publicada en el edge de Cloudflare"
