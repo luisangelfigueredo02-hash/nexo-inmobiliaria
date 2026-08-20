@@ -3,570 +3,516 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>NEXO Inmobiliaria — Descubre tu próximo espacio</title>
-    
-    <!-- Enlace al sistema de diseño global -->
-    <link rel="stylesheet" href="/variables.css">
-    
-    <!-- Estilos específicos de la página de inicio (Premium & Mobile-First) -->
+    <title>NEXO — Propiedades Exclusivas en Cuba</title>
+    <!-- CSS del mapa Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        /* Estructura general de la cabecera flotante */
+        :root {
+            --bg-color: #f5f5f7;
+            --card-color: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --accent: #0071e3;
+            --border: rgba(0, 0, 0, 0.08);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            padding-bottom: calc(80px + var(--safe-bottom));
+        }
+
+        /* Cabecera Premium Translúcida */
         header {
-            position: fixed;
+            position: sticky;
             top: 0;
-            left: 0;
-            width: 100%;
-            height: var(--header-height);
             z-index: 100;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            padding: 0 var(--space-5);
-            transition: var(--transition-normal);
+            align-items: center;
         }
 
         .logo {
-            font-size: var(--text-lg);
-            font-weight: var(--weight-bold);
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
             color: var(--text-primary);
-            letter-spacing: -0.03em;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        /* Panel de Filtros Moderno */
+        .filters-container {
+            padding: 16px 24px;
+            background: var(--card-color);
+            border-bottom: 1px solid var(--border);
             display: flex;
-            align-items: center;
-            gap: var(--space-2);
+            gap: 12px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
         }
 
-        .logo svg {
-            width: 24px;
-            height: 24px;
-            fill: var(--text-primary);
+        .filters-container::-webkit-scrollbar {
+            display: none;
         }
 
-        /* Menú de navegación principal */
-        nav {
-            display: flex;
-            align-items: center;
-            gap: var(--space-5);
-        }
-
-        nav a {
-            font-size: var(--text-sm);
-            font-weight: var(--weight-medium);
-            color: var(--text-secondary);
-            padding: var(--space-2) var(--space-3);
-            border-radius: var(--radius-sm);
-        }
-
-        nav a:hover, nav a.active {
-            color: var(--text-primary);
-            background-color: var(--bg-secondary);
-        }
-
-        /* Hero Section minimalista */
-        .hero {
-            padding: calc(var(--header-height) + var(--space-7)) var(--space-5) var(--space-6);
-            background-color: var(--bg-secondary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            gap: var(--space-4);
-        }
-
-        .hero h1 {
-            font-size: clamp(var(--text-xl), 5vw, var(--text-display));
-            font-weight: var(--weight-bold);
-            color: var(--text-primary);
-            line-height: var(--line-height-tight);
-            letter-spacing: -0.04em;
-            max-width: 800px;
-        }
-
-        .hero p {
-            font-size: var(--text-base);
-            color: var(--text-secondary);
-            max-width: 500px;
-            line-height: var(--line-height-normal);
-        }
-
-        /* Buscador integrado de alta precisión (Stripe-like) */
-        .search-container {
-            width: 100%;
-            max-width: 840px;
-            background-color: var(--bg-primary);
-            padding: var(--space-3);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-subtle);
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) auto;
-            gap: var(--space-3);
-            align-items: center;
-        }
-
-        .search-group {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 0 var(--space-3);
-            border-right: 1px solid var(--border-subtle);
-        }
-
-        .search-group:last-of-type {
-            border-right: none;
-        }
-
-        .search-group label {
-            font-size: var(--text-xs);
-            font-weight: var(--weight-semibold);
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: var(--space-1);
-        }
-
-        .search-group select, .search-group input {
-            width: 100%;
-            border: none;
-            background: none;
-            font-size: var(--text-sm);
-            font-weight: var(--weight-medium);
-            color: var(--text-primary);
+        select, input {
+            padding: 10px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg-color);
+            font-size: 14px;
             outline: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent);
+            background: var(--card-color);
+        }
+
+        /* Contenedores de Visualización */
+        .view-toggle {
+            padding: 12px 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-toggle {
+            background: var(--card-color);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
         }
 
-        .search-btn {
-            background-color: var(--accent);
-            color: var(--text-on-accent);
-            padding: var(--space-3) var(--space-5);
-            border-radius: var(--radius-md);
-            font-size: var(--text-sm);
-            font-weight: var(--weight-semibold);
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            transition: var(--transition-fast);
+        .btn-toggle.active {
+            background: var(--text-primary);
+            color: white;
+            border-color: var(--text-primary);
         }
 
-        .search-btn:hover {
-            background-color: var(--accent-hover);
-        }
-
-        /* Sección del Catálogo */
+        /* Grid de Inmuebles */
         .catalog {
-            max-width: var(--max-width-content);
-            margin: 0 auto;
-            padding: var(--space-6) var(--space-5) var(--space-8);
-        }
-
-        .catalog-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: var(--space-5);
-        }
-
-        .catalog-title h2 {
-            font-size: var(--text-xl);
-            font-weight: var(--weight-bold);
-            letter-spacing: -0.03em;
-        }
-
-        .catalog-title p {
-            font-size: var(--text-sm);
-            color: var(--text-secondary);
-        }
-
-        /* Cuadrícula de Propiedades */
-        .properties-grid {
+            padding: 0 24px;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: var(--space-5);
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
         }
 
-        /* Lanzador Flotante de NEXO IA */
-        .ai-launcher {
-            position: fixed;
-            bottom: var(--space-5);
-            right: var(--space-5);
-            background-color: var(--accent);
-            color: var(--text-on-accent);
-            padding: var(--space-3) var(--space-4);
-            border-radius: var(--radius-round);
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            font-size: var(--text-sm);
-            font-weight: var(--weight-semibold);
-            z-index: 90;
-            transition: var(--transition-normal);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .ai-launcher:hover {
-            transform: scale(1.05) translateY(-2px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
-
-        .ai-launcher svg {
-            width: 20px;
-            height: 20px;
-            fill: var(--text-on-accent);
-            animation: pulse-ai 2s infinite ease-in-out;
-        }
-
-        @keyframes pulse-ai {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.15); opacity: 0.8; }
-        }
-
-        /* Estado Vacío / Sin Resultados (Empty State Premium) */
-        .empty-state {
-            grid-column: 1 / -1;
+        .property-card {
+            background: var(--card-color);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: inherit;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: var(--space-8) var(--space-5);
-            text-align: center;
-            background-color: var(--bg-tertiary);
-            border-radius: var(--radius-xl);
-            border: 1px dashed var(--border-default);
-            gap: var(--space-4);
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        .empty-state svg {
-            width: 64px;
-            height: 64px;
-            fill: var(--text-tertiary);
+        .property-card:hover {
+            transform: translateY(-4px);
         }
 
-        .empty-state h3 {
-            font-size: var(--text-lg);
-            font-weight: var(--weight-bold);
+        .img-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #e5e5ea;
+            overflow: hidden;
+        }
+
+        .img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .badge-op {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .card-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .price {
+            font-size: 22px;
+            font-weight: 700;
             color: var(--text-primary);
         }
 
-        .empty-state p {
-            font-size: var(--text-sm);
+        .title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .loc {
+            font-size: 13px;
             color: var(--text-secondary);
-            max-width: 320px;
         }
 
-        .empty-state button {
-            background-color: var(--accent);
-            color: var(--text-on-accent);
-            padding: var(--space-2) var(--space-4);
-            border-radius: var(--radius-md);
-            font-size: var(--text-sm);
-            font-weight: var(--weight-semibold);
-            transition: var(--transition-fast);
+        .specs {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+            margin-top: 4px;
         }
 
-        .empty-state button:hover {
-            background-color: var(--accent-hover);
+        /* Mapa de Catálogo */
+        #map-view {
+            width: 100%;
+            height: 60vh;
+            border-bottom: 1px solid var(--border);
+            display: none;
         }
 
-        /* Adaptabilidad Móvil (Responsive CSS) */
-        @media (max-width: 768px) {
-            header {
-                padding: 0 var(--space-4);
-            }
-            
-            nav {
-                display: none; /* Simplificación para menú móvil que se implementará */
-            }
+        /* Elementos Skeleton */
+        .skeleton {
+            animation: pulse 1.5s infinite ease-in-out;
+            background: #e5e5ea;
+        }
 
-            .search-container {
-                grid-template-columns: 1fr;
-                gap: var(--space-2);
-                border-radius: var(--radius-lg);
-            }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
 
-            .search-group {
-                border-right: none;
-                border-bottom: 1px solid var(--border-subtle);
-                padding: var(--space-2) 0;
-            }
+        /* Drawer Flotante de NEXO IA */
+        .chat-drawer {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            background: var(--card-color);
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 1000;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-            .search-group:last-of-type {
-                border-bottom: none;
-            }
+        .chat-drawer.open {
+            transform: translateY(0);
+        }
 
-            .search-btn {
-                width: 100%;
-                justify-content: center;
-                margin-top: var(--space-2);
-            }
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-            .catalog-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: var(--space-2);
-            }
+        .chat-title {
+            font-weight: 600;
+            font-size: 17px;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .msg.user {
+            background: var(--accent);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg.bot {
+            background: var(--bg-color);
+            color: var(--text-primary);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-input-area {
+            padding: 16px 24px calc(16px + var(--safe-bottom));
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+        }
+
+        .btn-send {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Botón de Activación de IA */
+        .ai-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--text-primary);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 99;
         }
     </style>
 </head>
 <body>
 
-    <!-- Cabecera de Navegación Premium con efecto glass -->
-    <header class="glass-effect">
-        <a href="/" class="logo">
-            <!-- Icono Isotipo Minimalista -->
-            <svg viewBox="0 0 24 24">
-                <path d="M12 3L2 12h3v8h14v-8h3L12 3zm2 15h-4v-4h4v4z"/>
-            </svg>
-            NEXO
-        </a>
-        <nav>
-            <a href="/" class="active">Propiedades</a>
-            <a href="/mapa/index.html">Mapa</a>
-            <a href="/comparar/index.html">Comparar</a>
-            <a href="/ia/index.html">Chat IA</a>
-            <a href="/admin.html" style="border: 1px solid var(--border-default);">Admin</a>
-        </nav>
+    <header>
+        <a href="/" class="logo">NE<span>X</span>O</a>
+        <a href="/admin.html" style="font-size: 14px; color: var(--text-secondary); text-decoration: none;">Acceso</a>
     </header>
 
-    <!-- Hero y Sección del Buscador -->
-    <section class="hero">
-        <h1>Encuentra tu próximo espacio de vida.</h1>
-        <p>Propiedades exclusivas combinadas con inteligencia artificial para una búsqueda precisa y sin esfuerzo.</p>
-        
-        <!-- Formulario de Búsqueda -->
-        <form id="search-form" class="search-container" onsubmit="event.preventDefault(); executeSearch();">
-            <div class="search-group">
-                <label for="location-select">Ubicación</label>
-                <input type="text" id="location-select" placeholder="Ciudad, zona o barrio" autocomplete="off">
-            </div>
-            <div class="search-group">
-                <label for="type-select">Tipo</label>
-                <select id="type-select">
-                    <option value="">Todos los tipos</option>
-                    <option value="casa">Casa</option>
-                    <option value="departamento">Departamento</option>
-                    <option value="terreno">Terreno</option>
-                </select>
-            </div>
-            <div class="search-group">
-                <label for="price-select">Precio Máximo</label>
-                <select id="price-select">
-                    <option value="">Cualquier precio</option>
-                    <option value="50000">$50,000 USD</option>
-                    <option value="100000">$100,000 USD</option>
-                    <option value="200000">$200,000 USD</option>
-                    <option value="500000">$500,000 USD</option>
-                </select>
-            </div>
-            <button type="submit" class="search-btn">
-                <svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:currentColor;">
-                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                </svg>
-                Buscar
-            </button>
-        </form>
-    </section>
+    <!-- Filtros de Inmuebles -->
+    <div class="filters-container">
+        <select id="filter-type">
+            <option value="">Tipo</option>
+            <option value="casa">Casa</option>
+            <option value="apartamento">Apartamento</option>
+            <option value="terreno">Terreno</option>
+            <option value="penthouse">Penthouse</option>
+        </select>
+        <select id="filter-operation">
+            <option value="">Operación</option>
+            <option value="venta">Venta</option>
+            <option value="alquiler">Alquiler</option>
+        </select>
+        <select id="filter-province">
+            <option value="">Provincia</option>
+            <option value="La Habana">La Habana</option>
+            <option value="Matanzas">Matanzas</option>
+            <option value="Cienfuegos">Cienfuegos</option>
+        </select>
+        <input type="number" id="filter-price" placeholder="Precio Máximo (USD)">
+    </div>
 
-    <!-- Contenido del Catálogo de Propiedades -->
-    <main class="catalog">
-        <div class="catalog-header">
-            <div class="catalog-title">
-                <h2>Explorar Propiedades</h2>
-                <p id="properties-count">Cargando catálogo...</p>
-            </div>
-        </div>
+    <div class="view-toggle">
+        <button class="btn-toggle active" id="btn-grid">Cuadrícula</button>
+        <button class="btn-toggle" id="btn-map">Mapa</button>
+    </div>
 
-        <!-- Rejilla donde se inyectan las propiedades dinámicamente -->
-        <div id="properties-grid" class="properties-grid">
-            <!-- Skeletons iniciales por defecto para evitar CLS -->
-            <div class="property-card shimmer-effect" style="height: 380px;"></div>
-            <div class="property-card shimmer-effect" style="height: 380px;"></div>
-            <div class="property-card shimmer-effect" style="height: 380px;"></div>
-        </div>
+    <!-- Mapa Interactivo -->
+    <div id="map-view"></div>
+
+    <!-- Catálogo de Propiedades -->
+    <main class="catalog" id="catalog">
+        <!-- El cargador skeleton se inyectará dinámicamente -->
     </main>
 
-    <!-- Lanzador de Inteligencia Artificial Flotante (NEXO IA) -->
-    <a href="/ia/index.html" class="ai-launcher" aria-label="Preguntar a NEXO IA">
-        <svg viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12c0 1.94.55 3.75 1.5 5.29L2 22l4.81-1.42C8.25 21.45 10.06 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/>
-        </svg>
-        NEXO IA
-    </a>
+    <!-- Botón Flotante para Lanzar Chatbot -->
+    <div class="ai-fab" onclick="toggleChat(true)">
+        <span>✨</span> NEXO IA
+    </div>
 
-    <!-- Lógica de Negocio y Renderizado con JS Puro (Vanilla Engine) -->
+    <!-- Chat de NEXO IA -->
+    <div class="chat-drawer" id="chat-drawer">
+        <div class="chat-header">
+            <div class="chat-title">✨ NEXO IA — Asistente Inteligente</div>
+            <button class="btn-close" onclick="toggleChat(false)">×</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="msg bot">¡Hola! Soy tu asistente de NEXO. ¿Buscas comprar o alquilar en alguna zona específica de Cuba? Cuéntame qué necesitas.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ej. Casa en Vedado con 3 habs..." onkeypress="handleChatKey(event)">
+            <button class="btn-send" onclick="sendChatMessage()">Enviar</button>
+        </div>
+    </div>
+
+    <!-- Scripts CDN Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Configuración unificada
-        const API_ENDPOINT = '/api/properties';
+        let propertiesData = [];
+        let map = null;
+        let markersGroup = null;
 
-        // Al iniciar la página, se cargan las propiedades
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProperties();
-        });
+        // Renderizador Skeleton
+        function showSkeletons() {
+            const catalog = document.getElementById("catalog");
+            catalog.innerHTML = Array(6).fill(0).map(() => `
+                <div class="property-card" style="pointer-events: none;">
+                    <div class="img-wrapper skeleton"></div>
+                    <div class="card-info">
+                        <div class="skeleton" style="height: 24px; width: 40%; border-radius: 4px;"></div>
+                        <div class="skeleton" style="height: 18px; width: 80%; border-radius: 4px;"></div>
+                        <div class="skeleton" style="height: 14px; width: 60%; border-radius: 4px;"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-        // Función para consultar las propiedades al backend (Cloudflare D1)
-        async function loadProperties(queryParams = '') {
-            const grid = document.getElementById('properties-grid');
-            const counter = document.getElementById('properties-count');
+        // Carga de Datos desde la API
+        async function loadProperties() {
+            showSkeletons();
+            const type = document.getElementById("filter-type").value;
+            const op = document.getElementById("filter-operation").value;
+            const prov = document.getElementById("filter-province").value;
+            const price = document.getElementById("filter-price").value;
 
-            // Renderizar 3 skeletons limpios antes del fetch
-            grid.innerHTML = `
-                <div class="property-card shimmer-effect" style="height: 380px; border-radius: var(--radius-lg);"></div>
-                <div class="property-card shimmer-effect" style="height: 380px; border-radius: var(--radius-lg);"></div>
-                <div class="property-card shimmer-effect" style="height: 380px; border-radius: var(--radius-lg);"></div>
-            `;
+            let query = `/api/properties?`;
+            if (type) query += `&type=${type}`;
+            if (op) query += `&operation=${op}`;
+            if (prov) query += `&province=${prov}`;
+            if (price) query += `&maxPrice=${price}`;
 
             try {
-                const response = await fetch(`${API_ENDPOINT}${queryParams}`);
-                if (!response.ok) throw new Error('Error al conectar con la API de NEXO.');
-                
-                const properties = await response.json();
-                renderProperties(properties, grid, counter);
-            } catch (error) {
-                console.error(error);
-                renderErrorState(grid, counter);
+                const response = await fetch(query);
+                propertiesData = await response.json();
+                renderCatalog();
+                syncMapMarkers();
+            } catch (err) {
+                document.getElementById("catalog").innerHTML = `<p style="padding: 24px; text-align: center; color: var(--text-secondary);">Error al conectar con NEXO.</p>`;
             }
         }
 
-        // Función para renderizar dinámicamente las propiedades en base a variables.css
-        function renderProperties(properties, container, counterElement) {
-            container.innerHTML = '';
-
-            if (!properties || properties.length === 0) {
-                counterElement.textContent = '0 propiedades disponibles';
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M19 9.3V4h-3v2.6L12 3 2 12h3v8h5v-6h4v6h5v-8h3L19 9.3zM10 10c0-1.1.9-2 2-2s2 .9 2 2h-4z"/>
-                        </svg>
-                        <h3>No encontramos coincidencias</h3>
-                        <p>Prueba ajustando tus parámetros de búsqueda o limpiando los filtros actuales.</p>
-                        <button onclick="clearFilters()">Ver todas las propiedades</button>
-                    </div>
-                `;
+        // Renderizado del catálogo
+        function renderCatalog() {
+            const catalog = document.getElementById("catalog");
+            if (propertiesData.length === 0) {
+                catalog.innerHTML = `<p style="grid-column: 1/-1; padding: 48px; text-align: center; color: var(--text-secondary);">No hay inmuebles disponibles con estos filtros.</p>`;
                 return;
             }
 
-            counterElement.textContent = `${properties.length} propiedades encontradas`;
-
-            properties.forEach(property => {
-                const card = document.createElement('article');
-                card.className = 'property-card';
-                
-                // Formateador de moneda integrado
-                const formattedPrice = new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                    maximumFractionDigits: 0
-                }).format(property.price);
-
-                // Determinar badge dinámico (venta/alquiler)
-                const transactionType = property.type_transaction || 'Venta';
-
-                // Renderizado semántico de la tarjeta de propiedades
-                card.innerHTML = `
-                    <div class="image-container">
-                        <span class="badge">${transactionType}</span>
-                        <button class="fav-button" aria-label="Añadir a favoritos" onclick="event.preventDefault(); toggleFavorite(${property.id});">
-                            <svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor;">
-                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                            </svg>
-                        </button>
-                        <img src="${property.image_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=600&q=80'}" alt="${property.title}" loading="lazy">
-                    </div>
-                    <div class="details-container">
-                        <div class="price">${formattedPrice}</div>
-                        <h3 class="title">${property.title}</h3>
-                        <div class="location">
-                            <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:currentColor; flex-shrink:0;">
-                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                            </svg>
-                            ${property.location || 'Ubicación no especificada'}
+            catalog.innerHTML = propertiesData.map(p => {
+                const mainImg = p.images[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80";
+                return `
+                    <a href="/property.html?id=${p.id}" class="property-card">
+                        <div class="img-wrapper">
+                            <span class="badge-op">${p.operation}</span>
+                            <img src="${mainImg}" alt="${p.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80'">
                         </div>
-                        <div class="features-grid">
-                            <div class="feature-item" title="Habitaciones">
-                                <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:currentColor;">
-                                    <path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/>
-                                </svg>
-                                <span>${property.bedrooms || 0}</span> hab
-                            </div>
-                            <div class="feature-item" title="Baños">
-                                <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:currentColor;">
-                                    <path d="M21 11H3V9c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v2zm-2 2v3h-2v-3h-2v3h-2v-3H9v3H7v-3H5v3H3v-5h18v5h-2z"/>
-                                </svg>
-                                <span>${property.bathrooms || 0}</span> bañ
-                            </div>
-                            <div class="feature-item" title="Superficie">
-                                <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:currentColor;">
-                                    <path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm3 3h6v6H9V9z"/>
-                                </svg>
-                                <span>${property.area || 0}</span> m²
+                        <div class="card-info">
+                            <div class="price">$${parseFloat(p.price).toLocaleString()} USD</div>
+                            <div class="title">${p.title}</div>
+                            <div class="loc">${p.neighborhood}, ${p.city}</div>
+                            <div class="specs">
+                                <span>🛏️ ${p.bedrooms}</span>
+                                <span>🛁 ${p.bathrooms}</span>
+                                <span>📐 ${p.area} m²</span>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 `;
+            }).join('');
+        }
 
-                // Hacer que toda la tarjeta sea clickeable hacia la ficha detallada
-                card.style.cursor = 'pointer';
-                card.addEventListener('click', (e) => {
-                    if (e.target.closest('.fav-button')) return;
-                    window.location.href = `/property.html?id=${property.id}`;
-                });
+        // Inicialización y Sincronización del Mapa
+        function initMap() {
+            if (map) return;
+            map = L.map('map-view').setView([23.1136, -82.3666], 12);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            markersGroup = L.layerGroup().addTo(map);
+        }
 
-                container.appendChild(card);
+        function syncMapMarkers() {
+            if (!map) return;
+            markersGroup.clearLayers();
+            const validCoords = [];
+
+            propertiesData.forEach(p => {
+                if (p.latitude && p.longitude) {
+                    const marker = L.marker([p.latitude, p.longitude]);
+                    const mainImg = p.images[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80";
+                    marker.bindPopup(`
+                        <div style="width: 150px; font-family:-apple-system, sans-serif;">
+                            <img src="${mainImg}" style="width:100%; height:80px; object-fit:cover; border-radius:8px;">
+                            <strong style="display:block; margin-top:6px;">$${parseFloat(p.price).toLocaleString()} USD</strong>
+                            <span style="font-size:12px; color:#666;">${p.title}</span>
+                            <a href="/property.html?id=${p.id}" style="display:block; font-size:12px; color:var(--accent); margin-top:4px; text-decoration:none;">Ver Detalles</a>
+                        </div>
+                    `);
+                    markersGroup.addLayer(marker);
+                    validCoords.push([p.latitude, p.longitude]);
+                }
             });
-        }
 
-        // Manejar el flujo de búsqueda y filtros
-        function executeSearch() {
-            const location = document.getElementById('location-select').value.trim();
-            const type = document.getElementById('type-select').value;
-            const price = document.getElementById('price-select').value;
-
-            let params = new URLSearchParams();
-            if (location) params.append('location', location);
-            if (type) params.append('type', type);
-            if (price) params.append('maxPrice', price);
-
-            const queryString = params.toString() ? `?${params.toString()}` : '';
-            loadProperties(queryString);
-        }
-
-        // Limpiar filtros restableciendo el catálogo
-        function clearFilters() {
-            document.getElementById('search-form').reset();
-            loadProperties();
-        }
-
-        // Renderizado ante fallos de conexión API
-        function renderErrorState(container, counterElement) {
-            counterElement.textContent = 'Error de conexión';
-            container.innerHTML = `
-                <div class="empty-state" style="border-color: var(--error);">
-                    <svg viewBox="0 0 24 24" style="fill: var(--error);">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                    </svg>
-                    <h3>Problema al conectar con NEXO</h3>
-                    <p>No se pudo establecer conexión con el catálogo de propiedades. Por favor, reintenta en unos instantes.</p>
-                    <button onclick="loadProperties()">Reintentar carga</button>
-                </div>
-            `;
-        }
-
-        // Guardado dinámico de favoritos (Local Storage con feedback interactivo)
-        function toggleFavorite(id) {
-            let favorites = JSON.parse(localStorage.getItem('nexo_favs')) || [];
-            const index = favorites.indexOf(id);
-
-            if (index === -1) {
-                favorites.push(id);
-                console.log(`Propiedad ${id} guardada en favoritos locales.`);
-            } else {
-                favorites.splice(index, 1);
-                console.log(`Propiedad ${id} removida de favoritos.`);
+            if (validCoords.length > 0) {
+                map.fitBounds(validCoords, { padding: [30, 30] });
             }
-
-            localStorage.setItem('nexo_favs', JSON.stringify(favorites));
         }
-    </script>
-</body>
-</html>
+
+        // Interfaz de Visualización
+        document.getElementById("btn-grid").addEventListener("click", ()
