@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>NEXO — Propiedades Exclusivas en Cuba</title>
-    <!-- CSS del mapa Leaflet -->
+    <!-- CSS de Leaflet para el Mapa -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
@@ -84,6 +84,7 @@
             color: var(--text-primary);
             cursor: pointer;
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
         select:focus, input:focus {
@@ -107,6 +108,7 @@
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
+            transition: all 0.2s;
         }
 
         .btn-toggle.active {
@@ -165,6 +167,7 @@
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .card-info {
@@ -297,6 +300,18 @@
             border-bottom-left-radius: 4px;
         }
 
+        .chat-property-link {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 6px 12px;
+            background: var(--accent);
+            color: white !important;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
         .chat-input-area {
             padding: 16px 24px calc(16px + var(--safe-bottom));
             border-top: 1px solid var(--border);
@@ -341,7 +356,7 @@
 
     <header>
         <a href="/" class="logo">NE<span>X</span>O</a>
-        <a href="/admin.html" style="font-size: 14px; color: var(--text-secondary); text-decoration: none;">Acceso</a>
+        <a href="/admin.html" style="font-size: 14px; color: var(--text-secondary); text-decoration: none;">Gestión</a>
     </header>
 
     <!-- Filtros de Inmuebles -->
@@ -377,7 +392,7 @@
 
     <!-- Catálogo de Propiedades -->
     <main class="catalog" id="catalog">
-        <!-- El cargador skeleton se inyectará dinámicamente -->
+        <!-- Inyección dinámica de skeletons -->
     </main>
 
     <!-- Botón Flotante para Lanzar Chatbot -->
@@ -407,7 +422,6 @@
         let map = null;
         let markersGroup = null;
 
-        // Renderizador Skeleton
         function showSkeletons() {
             const catalog = document.getElementById("catalog");
             catalog.innerHTML = Array(6).fill(0).map(() => `
@@ -422,7 +436,6 @@
             `).join('');
         }
 
-        // Carga de Datos desde la API
         async function loadProperties() {
             showSkeletons();
             const type = document.getElementById("filter-type").value;
@@ -446,7 +459,6 @@
             }
         }
 
-        // Renderizado del catálogo
         function renderCatalog() {
             const catalog = document.getElementById("catalog");
             if (propertiesData.length === 0) {
@@ -477,7 +489,6 @@
             }).join('');
         }
 
-        // Inicialización y Sincronización del Mapa
         function initMap() {
             if (map) return;
             map = L.map('map-view').setView([23.1136, -82.3666], 12);
@@ -514,5 +525,91 @@
             }
         }
 
-        // Interfaz de Visualización
-        document.getElementById("btn-grid").addEventListener("click", ()
+        // Controladores de Vista
+        document.getElementById("btn-grid").addEventListener("click", () => {
+            document.getElementById("btn-grid").classList.add("active");
+            document.getElementById("btn-map").classList.remove("active");
+            document.getElementById("catalog").style.display = "grid";
+            document.getElementById("map-view").style.display = "none";
+        });
+
+        document.getElementById("btn-map").addEventListener("click", () => {
+            document.getElementById("btn-map").classList.add("active");
+            document.getElementById("btn-grid").classList.remove("active");
+            document.getElementById("catalog").style.display = "none";
+            document.getElementById("map-view").style.display = "block";
+            initMap();
+            setTimeout(() => { map.invalidateSize(); }, 200);
+        });
+
+        // Eventos de Filtro
+        document.querySelectorAll(".filters-container select, .filters-container input").forEach(el => {
+            el.addEventListener("change", loadProperties);
+        });
+
+        // Control del Cajón de Chat
+        function toggleChat(show) {
+            document.getElementById("chat-drawer").classList.toggle("open", show);
+        }
+
+        function handleChatKey(e) {
+            if (e.key === "Enter") sendChatMessage();
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById("chat-input");
+            const messageText = input.value.trim();
+            if (!messageText) return;
+
+            input.value = "";
+            const messagesContainer = document.getElementById("chat-messages");
+
+            // Añadir mensaje del usuario
+            const userMsg = document.createElement("div");
+            userMsg.className = "msg user";
+            userMsg.textContent = messageText;
+            messagesContainer.appendChild(userMsg);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Añadir indicador de escritura
+            const typingMsg = document.createElement("div");
+            typingMsg.className = "msg bot skeleton";
+            typingMsg.style.width = "60px";
+            typingMsg.style.height = "32px";
+            messagesContainer.appendChild(typingMsg);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            try {
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: messageText })
+                });
+                const data = await response.json();
+                messagesContainer.removeChild(typingMsg);
+
+                const botMsg = document.createElement("div");
+                botMsg.className = "msg bot";
+                
+                // Expresión regular para capturar e interactuar con códigos de propiedades estructurados [N-XXX]
+                let formattedResponse = data.response.replace(/\\n/g, "<br>");
+                formattedResponse = formattedResponse.replace(/\[(N-\d{3})\]/g, (match, id) => {
+                    return `<br><a href="/property.html?id=${id}" class="chat-property-link">Explorar Propiedad ${id} ↗</a>`;
+                });
+
+                botMsg.innerHTML = formattedResponse;
+                messagesContainer.appendChild(botMsg);
+            } catch (err) {
+                messagesContainer.removeChild(typingMsg);
+                const botMsg = document.createElement("div");
+                botMsg.className = "msg bot";
+                botMsg.textContent = "Lo siento, tuve un problema al conectarme con el servicio. ¿Podrías volver a intentarlo?";
+                messagesContainer.appendChild(botMsg);
+            }
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        window.onload = loadProperties;
+    </script>
+</body>
+</html>
