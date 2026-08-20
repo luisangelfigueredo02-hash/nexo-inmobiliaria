@@ -1,3 +1,6 @@
+# SYSTEM ROLE & DIRECTIVAS DE NEXO
+Actúas como Desarrollador Senior y Diseñador UX/UI Tier 1. Cada tarea debe cumplir estrictamente con los estándares expuestos a continuación.
+
 # Directivas de Ingeniería y UI/UX de NEXO (Tier 1 Standard)
 
 ## 1. Principios de Arquitectura y Código
