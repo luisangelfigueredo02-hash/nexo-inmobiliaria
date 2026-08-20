@@ -1,3271 +1,372 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
-<meta charset="utf-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1, viewport-fit=cover"
->
-
-<title>
-  NEXO IA · Asistente inmobiliario
-</title>
-
-
-<link rel="stylesheet" href="/variables.css">
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
-<script>
-if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("/sw.js").catch(()=>{});
-  });
-}
-</script>
-
-<meta
-  name="description"
-  content="NEXO IA — el cerebro inmobiliario de NEXO. Busca, compara y recibe recomendaciones del inventario real."
->
-
-<style>
-
-:root{
-
-  --bg:#fbfbfd;
-  --panel:#ffffff;
-  --ink:#1d1d1f;
-  --muted:#86868b;
-  --line:rgba(0,0,0,.08);
-  --brand:#0071e3;
-  --brand-soft:rgba(0,113,227,.09);
-  --spring:cubic-bezier(.16,1,.3,1);
-  --spring-back:cubic-bezier(.34,1.56,.64,1);
-
-}
-
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
-
-html{
-  scroll-behavior:smooth;
-}
-
-html,
-body{
-  height:100%;
-}
-
-body{
-
-  background:var(--bg);
-  color:var(--ink);
-
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Text",
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-
-  -webkit-font-smoothing:antialiased;
-  -webkit-tap-highlight-color:transparent;
-
-}
-
-@keyframes messageIn{
-  from{
-    opacity:0;
-    transform:translateY(7px);
-  }
-  to{
-    opacity:1;
-    transform:none;
-  }
-}
-
-.message,
-.property-results{
-  animation:messageIn .22s ease;
-}
-
-:focus-visible{
-  outline:2px solid var(--ink);
-  outline-offset:2px;
-  border-radius:6px;
-}
-
-
-/* LAYOUT
-------------------------------------------------- */
-
-.app{
-
-  display:flex;
-  flex-direction:column;
-
-  height:100%;
-  max-width:760px;
-
-  margin:0 auto;
-
-  padding-top:env(safe-area-inset-top);
-  padding-bottom:env(safe-area-inset-bottom);
-
-}
-
-
-/* HEADER
-------------------------------------------------- */
-
-.chat-header{
-
-  display:flex;
-  align-items:center;
-  gap:10px;
-
-  padding:12px 14px;
-
-  border-bottom:1px solid var(--line);
-
-  background:var(--panel);
-
-}
-
-.brand{
-
-  text-decoration:none;
-
-  font-size:15px;
-  font-weight:850;
-  letter-spacing:0.5px;
-
-  color:var(--ink);
-
-}
-
-.chat-header-title{
-
-  flex:1;
-
-  font-size:11px;
-  font-weight:750;
-
-  color:var(--muted);
-
-}
-
-#clearButton{
-
-  padding:6px 11px;
-
-  border:1px solid var(--line);
-  border-radius:999px;
-
-  background:#fff;
-
-  font-size:10px;
-  font-weight:750;
-
-  color:var(--muted);
-
-  cursor:pointer;
-
-}
-
-#clearButton:hover{
-  color:var(--ink);
-}
-
-
-/* MESSAGES
-------------------------------------------------- */
-
-#messages{
-
-  flex:1;
-
-  overflow-y:auto;
-
-  padding:18px 14px;
-
-}
-
-.message{
-
-  display:flex;
-  gap:8px;
-
-  margin-bottom:14px;
-
-  max-width:88%;
-
-}
-
-.message.user{
-
-  flex-direction:row-reverse;
-
-  margin-left:auto;
-
-}
-
-.message.assistant{
-  margin-right:auto;
-}
-
-.message-avatar{
-
-  flex:0 0 26px;
-
-  width:26px;
-  height:26px;
-
-  display:grid;
-  place-items:center;
-
-  border-radius:8px;
-
-  background:var(--brand);
-
-  color:#fff;
-
-  font-size:11px;
-  font-weight:850;
-
-}
-
-.bubble{
-  animation:nexo-card-in .45s var(--spring) both;
-
-
-  padding:11px 14px;
-
-  border-radius:15px;
-
-  background:var(--panel);
-
-  font-size:13.5px;
-  line-height:1.45;
-
-  white-space:pre-wrap;
-  word-break:break-word;
-
-}
-
-.message.user .bubble{
-
-  background:var(--brand);
-  color:#fff;
-
-}
-
-
-/* TYPING
-------------------------------------------------- */
-
-#typing{
-
-  display:none;
-
-  padding:0 16px 10px;
-
-  font-size:11px;
-  font-weight:700;
-
-  color:var(--muted);
-
-}
-
-#typing.show{
-  display:block;
-}
-
-
-/* SUGERENCIAS
-------------------------------------------------- */
-
-#suggestions{
-
-  display:flex;
-  gap:8px;
-
-  padding:0 12px 10px;
-
-  overflow-x:auto;
-
-  scrollbar-width:none;
-
-  -webkit-overflow-scrolling:
-    touch;
-
-}
-
-#suggestions::-webkit-scrollbar{
-  display:none;
-}
-
-#suggestions:empty{
-  padding:0;
-}
-
-.suggestion{
-
-  flex:0 0 auto;
-
-  padding:9px 14px;
-
-  border:1px solid var(--line);
-  border-radius:999px;
-
-  background:var(--panel);
-  color:var(--muted);
-
-  font-family:inherit;
-  font-size:11px;
-  font-weight:700;
-
-  cursor:pointer;
-
-  transition:
-    transform .18s ease,
-    color .18s ease,
-    border-color .18s ease;
-
-}
-
-.suggestion:hover{
-  color:var(--ink);
-  border-color:var(--ink);
-  transform:translateY(-1px);
-}
-
-.suggestion:active{
-  transform:scale(.97);
-}
-
-
-/* COMPOSER
-------------------------------------------------- */
-
-.composer{
-
-  padding:10px 12px;
-
-  border-top:1px solid var(--line);
-
-  background:var(--panel);
-
-}
-
-.composer-inner{
-
-  display:flex;
-  align-items:stretch;
-  gap:7px;
-
-}
-
-#messageInput{
-
-  flex:1;
-
-  min-height:44px;
-  max-height:140px;
-
-  padding:12px 14px;
-
-  border:1px solid var(--line);
-  border-radius:14px;
-
-  font:inherit;
-  font-size:13.5px;
-
-  resize:none;
-  outline:none;
-
-}
-
-#messageInput:focus{
-  border-color:var(--ink);
-}
-
-#sendButton{
-
-  flex:0 0 auto;
-
-  padding:0 18px;
-
-  border:none;
-  border-radius:13px;
-
-  background:var(--ink);
-  color:#fff;
-
-  font-size:12px;
-  font-weight:800;
-
-  cursor:pointer;
-
-}
-
-#sendButton:disabled{
-  opacity:0.45;
-  cursor:default;
-}
-
-
-/* INTENT CHIP
-------------------------------------------------- */
-
-.property-results{
-
-  margin:0 0 14px 34px;
-
-}
-
-.property-results-title{
-  margin-bottom:7px;
-}
-
-.intent-chip{
-  transition:transform .35s var(--spring),background .3s var(--spring);
-
-
-  display:inline-block;
-
-  padding:4px 10px;
-
-  border-radius:999px;
-
-  background:var(--ink);
-  color:#fff;
-
-  font-size:9.5px;
-  font-weight:800;
-  letter-spacing:0.2px;
-
-}
-
-.intent-chip.recommend{
-  background:var(--brand);
-}
-
-.intent-chip.compare{
-  background:#7a4c0a;
-}
-
-.property-results-list{
-
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-
-}
-
-.property-result{
-
-  display:flex;
-  gap:10px;
-  align-items:center;
-
-  padding:8px;
-
-  border:1px solid var(--line);
-  border-radius:13px;
-
-  background:var(--panel);
-
-  text-decoration:none;
-  color:inherit;
-
-  transition:border-color .15s ease;
-
-}
-
-.property-result:hover{
-  border-color:var(--ink);
-}
-
-.property-result-image{
-
-  flex:0 0 52px;
-
-  width:52px;
-  height:52px;
-
-  overflow:hidden;
-
-  border-radius:9px;
-
-  background:var(--bg);
-
-}
-
-.property-result-image img{
-
-  width:100%;
-  height:100%;
-
-  object-fit:cover;
-  display:block;
-
-}
-
-.property-result-info{
-  min-width:0;
-}
-
-.property-result-title{
-
-  font-size:12.5px;
-  font-weight:750;
-
-  overflow:hidden;
-
-  white-space:nowrap;
-  text-overflow:ellipsis;
-
-}
-
-.property-result-location{
-
-  font-size:10.5px;
-
-  color:var(--muted);
-
-}
-
-.property-result-price{
-
-  font-size:11.5px;
-  font-weight:800;
-
-}
-
-.property-result-specs{
-
-  font-size:10px;
-
-  color:var(--muted);
-
-}
-
-
-/* =========================================================
-   NEXO MOTION SYSTEM — fisica spring unificada
-========================================================= */
-
-@keyframes nexo-card-in{
-  from{
-    opacity:0;
-    transform:translateY(18px) scale(.99);
-  }
-  to{
-    opacity:1;
-    transform:none;
-  }
-}
-
-button:active,
-a[class*="btn"]:active{
-  transform:scale(.96);
-}
-
-@media(prefers-reduced-motion:reduce){
-
-  *,
-  *::before,
-  *::after{
-
-    animation:none!important;
-    transition:none!important;
-
-    scroll-behavior:auto;
-
-  }
-
-}
-
-/* =========================================================
-   NEXO LIQUID GLASS — vidrio iOS 26: luz especular + saturacion
-========================================================= */
-
-.glass{
-
-  background:
-    linear-gradient(
-      175deg,
-      rgba(255,255,255,.78) 0%,
-      rgba(255,255,255,.42) 100%
-    );
-
-  border:0;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.85),
-    inset 0 -.5px 0 rgba(0,0,0,.028),
-    0 18px 42px rgba(13,18,30,.10);
-
-  backdrop-filter:
-    blur(44px) saturate(210%);
-  -webkit-backdrop-filter:
-    blur(44px) saturate(210%);
-
-}
-
-@media(prefers-reduced-motion:no-preference){
-
-  .glass-light{
-
-    position:relative;
-    overflow:hidden;
-
-  }
-
-  .glass-light::after{
-
-    content:"";
-
-    position:absolute;
-    inset:0;
-
-    background:
-      linear-gradient(
-        115deg,
-        transparent 25%,
-        rgba(255,255,255,.35) 45%,
-        transparent 65%
-      );
-
-    transform:translateX(-110%);
-
-    transition:transform 1.4s var(--spring);
-
-    pointer-events:none;
-
-  }
-
-  .glass-light:hover::after{
-    transform:translateX(110%);
-  }
-
-}
-
-.glass-ink{
-  color:#111;
-  font-weight:700;
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>NEXO IA — Tu Asesor Inmobiliario Inteligente</title>
+    
+    <!-- Enlace al sistema de diseño global -->
+    <link rel="stylesheet" href="/variables.css">
+    
+    <!-- Estilos específicos del espacio conversacional (Premium & Clean) -->
+    <style>
+        /* Ajuste de cabecera fija */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--space-5);
+            transition: var(--transition-normal);
+        }
+
+        .logo {
+            font-size: var(--text-lg);
+            font-weight: var(--weight-bold);
+            color: var(--text-primary);
+            letter-spacing: -0.03em;
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-primary);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: var(--space-5);
+        }
+
+        nav a {
+            font-size: var(--text-sm);
+            font-weight: var(--weight-medium);
+            color: var(--text-secondary);
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-sm);
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--text-primary);
+            background-color: var(--bg-secondary);
+        }
+
+        /* Área de Trabajo Conversacional Centrada */
+        .chat-workspace {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: calc(var(--header-height) + var(--space-4)) var(--space-4) calc(100px + var(--safe-bottom-mobile));
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Pantalla de Introducción Minimalista (Siri/Linear Style) */
+        .ai-welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin: auto 0;
+            padding: var(--space-6) 0;
+            gap: var(--space-4);
+            animation: fadeInWelcome 0.8s var(--ease-apple);
+        }
+
+        @keyframes fadeInWelcome {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ai-welcome svg.sparkle {
+            width: 56px;
+            height: 56px;
+            fill: var(--text-primary);
+            animation: pulseSparkle 3s infinite ease-in-out;
+        }
+
+        @keyframes pulseSparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.08) rotate(15deg); opacity: 0.8; }
+        }
+
+        .ai-welcome h1 {
+            font-size: var(--text-xl);
+            font-weight: var(--weight-bold);
+            letter-spacing: -0.04em;
+            line-height: var(--line-height-tight);
+            color: var(--text-primary);
+        }
+
+        .ai-welcome p {
+            font-size: var(--text-base);
+            color: var(--text-secondary);
+            max-width: 440px;
+            line-height: var(--line-height-normal);
+        }
+
+        /* Píldoras de sugerencias rápidas (Glass-Effect) */
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-3);
+            width: 100%;
+            max-width: 600px;
+            margin-top: var(--space-4);
+        }
+
+        .suggestion-pill {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            padding: var(--space-3);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: var(--weight-medium);
+            color: var(--text-secondary);
+            text-align: left;
+            transition: var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .suggestion-pill:hover {
+            border-color: var(--border-default);
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        /* Registro de Conversación (Log) */
+        .chat-log {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-5);
+            width: 100%;
+        }
+
+        /* Burbujas de Chat */
+        .chat-bubble {
+            display: flex;
+            gap: var(--space-3);
+            width: 100%;
+            animation: slideInBubble 0.4s var(--ease-apple);
+        }
+
+        @keyframes slideInBubble {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-bubble.user {
+            justify-content: flex-end;
+        }
+
+        .bubble-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-round);
+            background-color: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .bubble-avatar svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--text-primary);
+        }
+
+        .bubble-text {
+            max-width: 80%;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-lg);
+            font-size: var(--text-base);
+            line-height: var(--line-height-normal);
+        }
+
+        /* Estilo de burbuja del Asistente (NEXO IA) */
+        .chat-bubble.ai .bubble-text {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border-top-left-radius: var(--radius-sm);
+        }
+
+        /* Estilo de burbuja del Usuario */
+        .chat-bubble.user .bubble-text {
+            background-color: var(--accent);
+            color: var(--text-on-accent);
+            border-top-right-radius: var(--radius-sm);
+        }
+
+        /* Sub-grilla para inyectar propiedades recomendadas dentro del chat */
+        .ai-recommendations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: var(--space-4);
+            width: 100%;
+            margin-top: var(--space-3);
+            padding-left: calc(36px + var(--space-3)); /* Alineado perfectamente con la burbuja de IA */
+        }
+
+        /* Indicador de Escritura Orgánico (Pulsing Dots) */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: var(--space-2) var(--space-1);
+        }
+
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background-color: var(--text-secondary);
+            border-radius: var(--radius-round);
+            display: inline-block;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Barra de Entrada de Mensajes Flotante (Apple Intelligence Style) */
+        .input-wrapper {
+            position: fixed;
+            bottom: var(--space-5);
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - var(--space-5));
+            max-width: 760px;
+            z-index: 90;
+        }
+
+        .input-bar {
+            background-color: var(--bg-overlay);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-round);
+            padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .input-bar input {
+            flex-grow: 1;
+            border: none;
+            background: none;
+            outline: none;
+            font-size: var(--text-base);
+            color: var(--text-primary);
+        }
+
+        .input-bar input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent);
+            color: var(--text-on-accent);
+            border-radius: var(--radius-round);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-fast);
+        }
+
+        .send-btn:hover {
+            background-color: var(--accent-hover);
+            transform: scale(1.05);
+        }
+
+        .send-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Adaptabilidad Responsiva */
+        @media (max-width: 768px) {
+            header {
+                padding: 0 var(--space-4);
+            }
+
+            nav {
+                display: none;
+            }
+
+            .chat-workspace {
+                padding-bottom: calc(110px + var(--safe-bottom-mobile));
+            }
+
+            .bubble-text {
+                max-width: 90%;
+                font-size: var(--text-sm);
+            }
+
+            .ai-recommendations {
+                grid-template-columns: 1fr;
+                padding-left: 0; /* Menos margen en móviles para ganar espacio */
+            }
+
+            .suggestions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-
 <body>
 
-<main class="app">
-
-  <header class="chat-header">
-
-    <a
-      href="/"
-      class="brand"
-    >
-      NEXO
-    </a>
-
-    <div class="chat-header-title">
-      NEXO IA · Asistente inmobiliario
-    </div>
-
-    <button
-      id="clearButton"
-      type="button"
-    >
-      Limpiar
-    </button>
-
-  </header>
-
-  <section
-    id="messages"
-    aria-live="polite"
-  ></section>
-
-  <div
-    id="typing"
-    role="status"
-  >
-    NEXO IA está escribiendo...
-  </div>
-
-  <div id="suggestions">
-
-    <button
-      class="suggestion"
-      data-message="¿Qué casas tienes en La Habana?"
-      type="button"
-    >
-      Casas en La Habana
-    </button>
-
-    <button
-      class="suggestion"
-      data-message="Quiero un apartamento económico"
-      type="button"
-    >
-      Apartamentos económicos
-    </button>
-
-    <button
-      class="suggestion"
-      data-message="¿Qué propiedades tienen placa libre?"
-      type="button"
-    >
-      Con placa libre
-    </button>
-
-    <button
-      class="suggestion"
-      data-message="¿Qué propiedades tienes disponibles?"
-      type="button"
-    >
-      Ver propiedades
-    </button>
-
-  </div>
-
-  <form
-    id="chatForm"
-    class="composer"
-  >
-
-    <div class="composer-inner">
-
-      <textarea
-        id="messageInput"
-        rows="1"
-        placeholder="Ej: casa de 3 cuartos en La Habana por $150k..."
-        aria-label="Escribe tu mensaje"
-        autocomplete="off"
-      ></textarea>
-
-      <button
-        id="sendButton"
-        type="submit"
-      >
-        Enviar
-      </button>
-
-    </div>
-
-  </form>
-
-</main>
-
-<script>
-
-"use strict";
-
-/* =========================================================
-   NEXO IA
-   MOTOR CLIENTE INTELIGENTE
-   =========================================================
-
-   Arquitectura:
-
-   UI
-    ↓
-   NEXO IA CLIENT
-    ↓
-   /api/ia
-    ↓
-   Worker
-    ↓
-   D1 + Workers AI
-
-   También consume:
-
-   /api/properties
-
-   Preparado para futuras capas:
-
-   - memoria persistente
-   - preferencias
-   - feedback
-   - recomendaciones
-   - mapa
-   - favoritos
-   - analítica
-   - acciones inteligentes
-
-========================================================= */
-
-
-/* =========================================================
-   CONFIGURACIÓN
-========================================================= */
-
-const NEXO_CONFIG = {
-
-  apiIA: "/api/ia",
-
-  apiProperties: "/api/properties",
-
-  storageKey:
-    "nexo_ia_session_v2",
-
-  preferencesKey:
-    "nexo_ia_preferences_v1",
-
-  maxHistory:
-    20,
-
-  maxMessageLength:
-    1000,
-
-  requestTimeout:
-    30000,
-
-  propertyCacheTime:
-    120000
-
-};
-
-
-/* =========================================================
-   ESTADO GLOBAL
-========================================================= */
-
-const state = {
-
-  conversation: [],
-
-  properties: [],
-
-  propertiesLoaded: false,
-
-  propertiesLoading: false,
-
-  lastPropertyLoad: 0,
-
-  isThinking: false,
-
-  voiceEnabled:
-    "speechSynthesis" in window,
-
-  recognition: null,
-
-  listening: false,
-
-  sessionId:
-    createSessionId(),
-
-  preferences:
-    loadPreferences()
-
-};
-
-
-/* =========================================================
-   ELEMENTOS
-========================================================= */
-
-const chatForm =
-  document.getElementById("chatForm");
-
-const messageInput =
-  document.getElementById("messageInput");
-
-const sendButton =
-  document.getElementById("sendButton");
-
-const messages =
-  document.getElementById("messages");
-
-const typing =
-  document.getElementById("typing");
-
-const clearButton =
-  document.getElementById("clearButton");
-
-const suggestions =
-  document.getElementById("suggestions");
-
-
-/* =========================================================
-   SESSION ID
-========================================================= */
-
-function createSessionId(){
-
-  return (
-    "nexo-" +
-    Date.now().toString(36) +
-    "-" +
-    Math.random()
-      .toString(36)
-      .slice(2,10)
-  );
-
-}
-
-
-/* =========================================================
-   PREFERENCIAS
-========================================================= */
-
-function loadPreferences(){
-
-  try{
-
-    const saved =
-      localStorage.getItem(
-        NEXO_CONFIG.preferencesKey
-      );
-
-    if(!saved){
-
-      return {
-
-        preferredCity:"",
-        preferredType:"",
-        preferredBedrooms:null,
-        preferredBudget:null,
-
-        voiceOutput:false,
-
-        totalQuestions:0,
-
-        positiveFeedback:0,
-
-        negativeFeedback:0
-
-      };
-
-    }
-
-    return {
-
-      preferredCity:"",
-      preferredType:"",
-      preferredBedrooms:null,
-      preferredBudget:null,
-
-      voiceOutput:false,
-
-      totalQuestions:0,
-
-      positiveFeedback:0,
-
-      negativeFeedback:0,
-
-      ...JSON.parse(saved)
-
-    };
-
-  }catch(error){
-
-    console.warn(
-      "NEXO preferences:",
-      error
-    );
-
-    return {};
-
-  }
-
-}
-
-
-function savePreferences(){
-
-  try{
-
-    localStorage.setItem(
-
-      NEXO_CONFIG.preferencesKey,
-
-      JSON.stringify(
-        state.preferences
-      )
-
-    );
-
-  }catch(error){
-
-    console.warn(
-      "NEXO preferences save:",
-      error
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   SESIÓN
-========================================================= */
-
-function saveSession(){
-
-  try{
-
-    localStorage.setItem(
-
-      NEXO_CONFIG.storageKey,
-
-      JSON.stringify({
-
-        sessionId:
-          state.sessionId,
-
-        conversation:
-          state.conversation
-            .slice(
-              -NEXO_CONFIG.maxHistory
-            ),
-
-        timestamp:
-          Date.now()
-
-      })
-
-    );
-
-  }catch(error){
-
-    console.warn(
-      "NEXO session:",
-      error
-    );
-
-  }
-
-}
-
-
-function loadSession(){
-
-  try{
-
-    const saved =
-      localStorage.getItem(
-        NEXO_CONFIG.storageKey
-      );
-
-    if(!saved) return;
-
-    const data =
-      JSON.parse(saved);
-
-    if(
-      !data ||
-      !Array.isArray(
-        data.conversation
-      )
-    ){
-
-      return;
-
-    }
-
-    state.conversation =
-      data.conversation
-        .filter(item =>
-
-          item &&
-
-          (
-            item.role === "user" ||
-            item.role === "assistant"
-          ) &&
-
-          typeof item.content ===
-            "string"
-
-        )
-        .slice(
-          -NEXO_CONFIG.maxHistory
-        );
-
-  }catch(error){
-
-    console.warn(
-      "NEXO session load:",
-      error
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   LIMPIAR SESIÓN
-========================================================= */
-
-function clearSession(){
-
-  state.conversation = [];
-
-  state.preferences = {
-
-    preferredCity:"",
-    preferredType:"",
-    preferredBedrooms:null,
-    preferredBudget:null,
-
-    voiceOutput:false,
-
-    totalQuestions:0,
-
-    positiveFeedback:0,
-
-    negativeFeedback:0
-
-  };
-
-  try{
-
-    localStorage.removeItem(
-      NEXO_CONFIG.storageKey
-    );
-
-  }catch(error){}
-
-  savePreferences();
-
-}
-
-
-/* =========================================================
-   ESCAPAR HTML
-========================================================= */
-
-function escapeHTML(value){
-
-  return String(value ?? "")
-
-    .replace(/&/g,"&amp;")
-
-    .replace(/</g,"&lt;")
-
-    .replace(/>/g,"&gt;")
-
-    .replace(/"/g,"&quot;")
-
-    .replace(/'/g,"&#039;");
-
-}
-
-
-/* =========================================================
-   TEXTO
-========================================================= */
-
-function normalizeText(value){
-
-  return String(value ?? "")
-
-    .normalize("NFD")
-
-    .replace(
-      /[\u0300-\u036f]/g,
-      ""
-    )
-
-    .toLowerCase()
-
-    .trim();
-
-}
-
-
-/* =========================================================
-   MENSAJES
-========================================================= */
-
-function addMessage(
-  text,
-  type = "assistant"
-){
-
-  const message =
-    document.createElement("div");
-
-  message.className =
-    "message " + type;
-
-
-  if(type === "assistant"){
-
-    const avatar =
-      document.createElement("div");
-
-    avatar.className =
-      "message-avatar";
-
-    avatar.textContent =
-      "N";
-
-    message.appendChild(
-      avatar
-    );
-
-  }
-
-
-  const bubble =
-    document.createElement("div");
-
-  bubble.className =
-    "bubble";
-
-  bubble.textContent =
-    text;
-
-
-  message.appendChild(
-    bubble
-  );
-
-
-  messages.appendChild(
-    message
-  );
-
-
-  if(type === "assistant"){
-
-    addFeedbackControls(
-      message,
-      text
-    );
-
-  }
-
-
-  scrollMessages();
-
-}
-
-
-/* =========================================================
-   RESULTADOS ESTRUCTURADOS
-========================================================= */
-
-function renderPropertyResults(
-  properties,
-  intent
-){
-
-  if(
-    !Array.isArray(
-      properties
-    ) ||
-    !properties.length
-  ){
-
-    return;
-
-  }
-
-
-  const labels = {
-
-    search:"Resultados de búsqueda",
-    recommend:"Recomendaciones",
-    compare:"Comparación"
-
-  };
-
-
-  const container =
-    document.createElement(
-      "div"
-    );
-
-  container.className =
-    "property-results";
-
-
-  const photo =
-    property => {
-
-      try{
-
-        const parsed =
-          JSON.parse(
-            property?.photos || "[]"
-          );
-
-        return (
-          Array.isArray(
-            parsed
-          )
-            ? parsed[0] || ""
-            : ""
-        );
-
-      }catch(_){
-
-        return "";
-
-      }
-
-    };
-
-
-  container.innerHTML = `
-
-    <div class="property-results-title">
-      <span class="intent-chip ${
-        escapeHTML(
-          intent
-        )
-      }">
-        ${escapeHTML(
-          labels[intent] ||
-          "Resultados"
-        )}
-      </span>
-    </div>
-
-    <div class="property-results-list">
-
-      ${properties
-        .map(
-          property => {
-
-            const title =
-              property.title ||
-              property.property_type ||
-              "Propiedad";
-
-            const location =
-              [
-                property.neighborhood,
-                property.city,
-                property.province
-              ]
-                .filter(
-                  Boolean
-                )
-                .join(
-                  " · "
-                );
-
-            const price =
-              Number(
-                property.price
-              );
-
-            const image =
-              photo(
-                property
-              );
-
-            const specs =
-              [
-
-                property.bedrooms
-                  ? `${property.bedrooms} hab.`
-                  : "",
-
-                property.bathrooms
-                  ? `${property.bathrooms} baños`
-                  : "",
-
-                property.square_meters
-                  ? `${property.square_meters} m²`
-                  : ""
-
-              ]
-                .filter(
-                  Boolean
-                )
-                .join(
-                  " · "
-                );
-
-            return `
-
-              <a
-                class="property-result"
-                href="/propiedad/${
-                  encodeURIComponent(
-                    property.id
-                  )
-                }"
-              >
-
-                <div class="property-result-image">
-
-                  ${
-                    image
-                      ? `
-                        <img
-                          src="${
-                            escapeHTML(
-                              image
-                            )
-                          }"
-                          alt=""
-                          loading="lazy"
-                          onerror="this.style.display='none'"
-                        >
-                      `
-                      : ""
-                  }
-
-                </div>
-
-                <div class="property-result-info">
-
-                  <div class="property-result-title">
-                    ${escapeHTML(
-                      title
-                    )}
-                  </div>
-
-                  <div class="property-result-location">
-                    ${escapeHTML(
-                      location ||
-                      "Cuba"
-                    )}
-                  </div>
-
-                  <div class="property-result-price">
-
-                    ${
-                      Number.isFinite(
-                        price
-                      )
-                        ? "$" +
-                          price
-                            .toLocaleString(
-                              "en-US"
-                            )
-                        : "Precio a convenir"
-                    }
-
-                  </div>
-
-                  ${
-                    specs
-                      ? `
-                        <div class="property-result-specs">
-                          ${escapeHTML(
-                            specs
-                          )}
-                        </div>
-                      `
-                      : ""
-                  }
-
-                </div>
-
-              </a>
-
-            `;
-
-          }
-        )
-        .join("")
-      }
-
-    </div>
-
-  `;
-
-
-  messages.appendChild(
-    container
-  );
-
-
-  scrollMessages();
-
-}
-
-
-/* =========================================================
-   FEEDBACK
-========================================================= */
-
-function addFeedbackControls(
-  messageElement,
-  answer
-){
-
-  const controls =
-    document.createElement(
-      "div"
-    );
-
-  controls.style.cssText = `
-
-    display:flex;
-    gap:5px;
-    margin-left:36px;
-    margin-top:-12px;
-    margin-bottom:15px;
-
-  `;
-
-
-  const positive =
-    document.createElement(
-      "button"
-    );
-
-  positive.type =
-    "button";
-
-  positive.textContent =
-    "👍";
-
-  positive.title =
-    "Respuesta útil";
-
-  positive.style.cssText = `
-
-    background:transparent;
-    padding:5px;
-    opacity:.55;
-    font-size:12px;
-
-  `;
-
-
-  const negative =
-    document.createElement(
-      "button"
-    );
-
-  negative.type =
-    "button";
-
-  negative.textContent =
-    "👎";
-
-  negative.title =
-    "Respuesta no útil";
-
-  negative.style.cssText = `
-
-    background:transparent;
-    padding:5px;
-    opacity:.55;
-    font-size:12px;
-
-  `;
-
-
-  positive.addEventListener(
-    "click",
-    ()=>{
-
-      state.preferences
-        .positiveFeedback =
-          (
-            state.preferences
-              .positiveFeedback || 0
-          ) + 1;
-
-      savePreferences();
-
-      controls.innerHTML =
-        "<span style='font-size:9px;color:#888'>Gracias.</span>";
-
-      /*
-       * Preparado para enviar
-       * feedback al Worker/D1
-       * cuando creemos el endpoint
-       * de aprendizaje.
-       */
-
-    }
-  );
-
-
-  negative.addEventListener(
-    "click",
-    ()=>{
-
-      state.preferences
-        .negativeFeedback =
-          (
-            state.preferences
-              .negativeFeedback || 0
-          ) + 1;
-
-      savePreferences();
-
-      controls.innerHTML =
-        "<span style='font-size:9px;color:#888'>Gracias por ayudarnos a mejorar.</span>";
-
-    }
-  );
-
-
-  controls.appendChild(
-    positive
-  );
-
-  controls.appendChild(
-    negative
-  );
-
-
-  messageElement.after(
-    controls
-  );
-
-}
-
-
-/* =========================================================
-   SCROLL
-========================================================= */
-
-function scrollMessages(){
-
-  requestAnimationFrame(()=>{
-
-    messages.scrollTop =
-      messages.scrollHeight;
-
-  });
-
-}
-
-
-/* =========================================================
-   TYPING
-========================================================= */
-
-function setThinking(value){
-
-  state.isThinking =
-    Boolean(value);
-
-  typing.classList.toggle(
-    "show",
-    state.isThinking
-  );
-
-  sendButton.disabled =
-    state.isThinking;
-
-}
-
-
-/* =========================================================
-   INPUT
-========================================================= */
-
-function resizeInput(){
-
-  messageInput.style.height =
-    "auto";
-
-  messageInput.style.height =
-
-    Math.min(
-      messageInput.scrollHeight,
-      130
-    ) + "px";
-
-}
-
-
-messageInput.addEventListener(
-  "input",
-  resizeInput
-);
-
-
-/* =========================================================
-   CARGAR PROPIEDADES
-========================================================= */
-
-async function loadProperties(
-  force = false
-){
-
-  const now =
-    Date.now();
-
-
-  if(
-
-    !force &&
-
-    state.propertiesLoaded &&
-
-    now -
-      state.lastPropertyLoad <
-      NEXO_CONFIG.propertyCacheTime
-
-  ){
-
-    return state.properties;
-
-  }
-
-
-  if(
-    state.propertiesLoading
-  ){
-
-    return state.properties;
-
-  }
-
-
-  state.propertiesLoading =
-    true;
-
-
-  try{
-
-    const controller =
-      new AbortController();
-
-    const timeout =
-      setTimeout(
-        ()=>controller.abort(),
-        15000
-      );
-
-
-    const response =
-      await fetch(
-
-        NEXO_CONFIG.apiProperties,
-
-        {
-          method:"GET",
-
-          headers:{
-            "Accept":
-              "application/json"
-          },
-
-          signal:
-            controller.signal
-        }
-
-      );
-
-
-    clearTimeout(
-      timeout
-    );
-
-
-    if(!response.ok){
-
-      throw new Error(
-        "No se pudieron cargar las propiedades."
-      );
-
-    }
-
-
-    const data =
-      await response.json();
-
-
-    if(
-      !data ||
-      !data.success
-    ){
-
-      throw new Error(
-        data?.error ||
-        "Error al cargar propiedades."
-      );
-
-    }
-
-
-    state.properties =
-      Array.isArray(
-        data.properties
-      )
-        ? data.properties
-        : [];
-
-
-    state.propertiesLoaded =
-      true;
-
-    state.lastPropertyLoad =
-      Date.now();
-
-
-    return state.properties;
-
-  }catch(error){
-
-    console.warn(
-      "NEXO properties:",
-      error
-    );
-
-    return state.properties;
-
-  }finally{
-
-    state.propertiesLoading =
-      false;
-
-  }
-
-}
-
-
-/* =========================================================
-   DETECTAR PREFERENCIAS
-========================================================= */
-
-function learnFromMessage(
-  message
-){
-
-  const text =
-    normalizeText(
-      message
-    );
-
-
-  state.preferences.totalQuestions =
-    (
-      state.preferences
-        .totalQuestions || 0
-    ) + 1;
-
-
-  /*
-   * Ciudad
-   */
-
-  const cities = [
-
-    "la habana",
-    "habana",
-    "santiago de cuba",
-    "varadero",
-    "matanzas",
-    "camaguey",
-    "cienfuegos",
-    "holguin",
-    "trinidad",
-    "pinar del rio"
-
-  ];
-
-
-  for(
-    const city of cities
-  ){
-
-    if(
-      text.includes(city)
-    ){
-
-      state.preferences
-        .preferredCity =
-          city;
-
-      break;
-
-    }
-
-  }
-
-
-  /*
-   * Tipo
-   */
-
-  if(
-    text.includes("casa")
-  ){
-
-    state.preferences
-      .preferredType =
-        "casa";
-
-  }
-
-  else if(
-    text.includes("apartamento")
-  ){
-
-    state.preferences
-      .preferredType =
-        "apartamento";
-
-  }
-
-  else if(
-    text.includes("terreno")
-  ){
-
-    state.preferences
-      .preferredType =
-        "terreno";
-
-  }
-
-
-  /*
-   * Habitaciones
-   */
-
-  const bedroomMatch =
-    text.match(
-      /(\d+)\s*(?:habitaciones|habitacion|cuartos|cuarto)/i
-    );
-
-
-  if(
-    bedroomMatch
-  ){
-
-    state.preferences
-      .preferredBedrooms =
-        Number(
-          bedroomMatch[1]
-        );
-
-  }
-
-
-  /*
-   * Presupuesto
-   */
-
-  const budgetMatch =
-    text.match(
-
-      /(?:menos de|hasta|maximo|max|por debajo de|presupuesto de)\s*\$?\s*([\d.,]+)/i
-
-    );
-
-
-  if(
-    budgetMatch
-  ){
-
-    const value =
-      Number(
-
-        budgetMatch[1]
-          .replace(/,/g,"")
-          .replace(/\./g,"")
-
-      );
-
-
-    if(
-      Number.isFinite(value)
-    ){
-
-      state.preferences
-        .preferredBudget =
-          value;
-
-    }
-
-  }
-
-
-  savePreferences();
-
-}
-
-
-/* =========================================================
-   CONTEXTO LOCAL
-========================================================= */
-
-function buildClientContext(){
-
-  const p =
-    state.preferences || {};
-
-
-  return {
-
-    city:
-      p.preferredCity || null,
-
-    property_type:
-      p.preferredType || null,
-
-    bedrooms:
-      p.preferredBedrooms || null,
-
-    budget:
-      p.preferredBudget || null,
-
-    questions:
-      p.totalQuestions || 0
-
-  };
-
-}
-
-
-/* =========================================================
-   PETICIÓN CON TIMEOUT
-========================================================= */
-
-async function fetchWithTimeout(
-  url,
-  options = {},
-  timeout =
-    NEXO_CONFIG.requestTimeout
-){
-
-  const controller =
-    new AbortController();
-
-
-  const timer =
-    setTimeout(
-      ()=>controller.abort(),
-      timeout
-    );
-
-
-  try{
-
-    return await fetch(
-
-      url,
-
-      {
-        ...options,
-
-        signal:
-          controller.signal
-      }
-
-    );
-
-  }finally{
-
-    clearTimeout(
-      timer
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   NEXO IA REAL
-========================================================= */
-
-async function askNexoAI(
-  message
-){
-
-  /*
-   * Actualizamos conocimiento local
-   */
-
-  learnFromMessage(
-    message
-  );
-
-
-  /*
-   * Refrescamos propiedades
-   */
-
-  await loadProperties();
-
-
-  /*
-   * Contexto enriquecido
-   */
-
-  const clientContext =
-    buildClientContext();
-
-
-  /*
-   * Historial limitado
-   */
-
-  const history =
-    state.conversation
-      .slice(
-        -NEXO_CONFIG.maxHistory
-      )
-      .map(item=>({
-
-        role:
-          item.role,
-
-        content:
-          String(
-            item.content || ""
-          ).slice(
-            0,
-            4000
-          )
-
-      }));
-
-
-  /*
-   * Petición al Worker
-   */
-
-  const response =
-    await fetchWithTimeout(
-
-      NEXO_CONFIG.apiIA,
-
-      {
-
-        method:"POST",
-
-        headers:{
-
-          "Content-Type":
-            "application/json",
-
-          "Accept":
-            "application/json",
-
-          "X-NEXO-CLIENT":
-            "nexo-ia-v2",
-
-          "X-NEXO-SESSION":
-            state.sessionId
-
-        },
-
-        body:JSON.stringify({
-
-          message,
-
-          conversation:
-            history,
-
-          context:
-            clientContext,
-
-          /*
-           * Datos adicionales.
-           *
-           * El Worker actual puede ignorarlos.
-           * Los utilizaremos en la siguiente
-           * evolución del backend.
-           */
-
-          capabilities:{
-
-            propertySearch:true,
-
-            recommendations:true,
-
-            comparisons:true,
-
-            preferences:true,
-
-            map:true,
-
-            voice:true,
-
-            feedback:true
-
-          }
-
-        })
-
-      }
-
-    );
-
-
-  let data;
-
-
-  try{
-
-    data =
-      await response.json();
-
-  }catch(error){
-
-    throw new Error(
-      "NEXO recibió una respuesta inválida del servidor."
-    );
-
-  }
-
-
-  if(
-    !response.ok ||
-    !data ||
-    !data.success
-  ){
-
-    throw new Error(
-
-      data?.error ||
-
-      "NEXO IA no pudo procesar tu solicitud."
-
-    );
-
-  }
-
-
-  if(
-    typeof data.answer !==
-      "string"
-  ){
-
-    throw new Error(
-      "NEXO IA no devolvió una respuesta válida."
-    );
-
-  }
-
-
-  return {
-
-    answer:
-      data.answer.trim(),
-
-    intent:
-      typeof data.intent ===
-        "string"
-        ? data.intent
-        : "search",
-
-    properties:
-      Array.isArray(
-        data.properties
-      )
-        ? data.properties
-        : []
-
-  };
-
-}
-
-
-/* =========================================================
-   ENVIAR MENSAJE
-========================================================= */
-
-async function sendMessage(){
-
-  if(
-    state.isThinking
-  ){
-
-    return;
-
-  }
-
-
-  const message =
-    messageInput.value.trim();
-
-
-  if(!message){
-
-    return;
-
-  }
-
-
-  if(
-    message.length >
-    NEXO_CONFIG.maxMessageLength
-  ){
-
-    addMessage(
-
-      "El mensaje es demasiado largo. " +
-      "Intenta resumir lo que estás buscando.",
-
-      "assistant"
-
-    );
-
-    return;
-
-  }
-
-
-  /*
-   * Mostrar usuario
-   */
-
-  addMessage(
-    message,
-    "user"
-  );
-
-
-  /*
-   * Guardar conversación
-   */
-
-  state.conversation.push({
-
-    role:"user",
-
-    content:message
-
-  });
-
-
-  /*
-   * Limitar historial
-   */
-
-  state.conversation =
-    state.conversation
-      .slice(
-        -NEXO_CONFIG.maxHistory
-      );
-
-
-  saveSession();
-
-
-  /*
-   * Limpiar
-   */
-
-  messageInput.value =
-    "";
-
-  resizeInput();
-
-
-  setThinking(
-    true
-  );
-
-
-  try{
-
-    const result =
-      await askNexoAI(
-        message
-      );
-
-
-    const answer =
-      result.answer;
-
-
-    /*
-     * Mostrar respuesta
-     */
-
-    addMessage(
-
-      answer,
-
-      "assistant"
-
-    );
-
-
-    /*
-     * Resultados estructurados del inventario
-     */
-
-    renderPropertyResults(
-      result.properties,
-      result.intent
-    );
-
-
-    /*
-     * Guardar respuesta
-     */
-
-    state.conversation.push({
-
-      role:"assistant",
-
-      content:answer
-
-    });
-
-
-    state.conversation =
-      state.conversation
-        .slice(
-          -NEXO_CONFIG.maxHistory
-        );
-
-
-    saveSession();
-
-
-    /*
-     * Lectura opcional
-     */
-
-    if(
-      state.preferences
-        .voiceOutput
-    ){
-
-      speak(
-        answer
-      );
-
-    }
-
-  }catch(error){
-
-    console.error(
-      "NEXO IA:",
-      error
-    );
-
-
-    addMessage(
-
-      error?.message ||
-
-      "No pude conectar con NEXO IA. " +
-      "Inténtalo nuevamente.",
-
-      "assistant"
-
-    );
-
-  }finally{
-
-    setThinking(
-      false
-    );
-
-    messageInput.focus();
-
-  }
-
-}
-
-
-/* =========================================================
-   ENTER
-========================================================= */
-
-messageInput.addEventListener(
-
-  "keydown",
-
-  event=>{
-
-    if(
-
-      event.key === "Enter" &&
-
-      !event.shiftKey
-
-    ){
-
-      event.preventDefault();
-
-      sendMessage();
-
-    }
-
-  }
-
-);
-
-
-/* =========================================================
-   FORM
-========================================================= */
-
-chatForm.addEventListener(
-
-  "submit",
-
-  event=>{
-
-    event.preventDefault();
-
-    sendMessage();
-
-  }
-
-);
-
-
-/* =========================================================
-   SUGERENCIAS
-========================================================= */
-
-document
-  .querySelectorAll(
-    ".suggestion"
-  )
-  .forEach(button=>{
-
-    button.addEventListener(
-
-      "click",
-
-      ()=>{
-
-        const text =
-          button.dataset.message ||
-          "";
-
-        messageInput.value =
-          text;
-
-        resizeInput();
-
-        messageInput.focus();
-
-      }
-
-    );
-
-  });
-
-
-/* =========================================================
-   VOZ — RECONOCIMIENTO
-========================================================= */
-
-function initVoiceRecognition(){
-
-  const Recognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
-
-
-  if(!Recognition){
-
-    return;
-
-  }
-
-
-  state.recognition =
-    new Recognition();
-
-
-  state.recognition.lang =
-    "es-ES";
-
-
-  state.recognition.continuous =
-    false;
-
-
-  state.recognition.interimResults =
-    false;
-
-
-  state.recognition.maxAlternatives =
-    1;
-
-
-  state.recognition.onstart =
-    ()=>{
-
-      state.listening =
-        true;
-
-      messageInput.placeholder =
-        "Escuchando...";
-
-    };
-
-
-  state.recognition.onresult =
-    event=>{
-
-      const transcript =
-        event
-          .results?.[0]?.[0]?.transcript
-          || "";
-
-      if(transcript){
-
-        messageInput.value =
-          transcript;
-
-        resizeInput();
-
-      }
-
-    };
-
-
-  state.recognition.onerror =
-    error=>{
-
-      console.warn(
-        "NEXO voice:",
-        error
-      );
-
-    };
-
-
-  state.recognition.onend =
-    ()=>{
-
-      state.listening =
-        false;
-
-      messageInput.placeholder =
-        "¿Qué propiedad estás buscando?";
-
-    };
-
-}
-
-
-/* =========================================================
-   VOZ — ACTIVAR
-========================================================= */
-
-function startVoice(){
-
-  if(
-    !state.recognition
-  ){
-
-    return false;
-
-  }
-
-
-  if(
-    state.listening
-  ){
-
-    state.recognition.stop();
-
-    return true;
-
-  }
-
-
-  try{
-
-    state.recognition.start();
-
-    return true;
-
-  }catch(error){
-
-    console.warn(
-      "NEXO voice start:",
-      error
-    );
-
-    return false;
-
-  }
-
-}
-
-
-/* =========================================================
-   VOZ — SÍNTESIS
-========================================================= */
-
-function speak(text){
-
-  if(
-    !state.voiceEnabled
-  ){
-
-    return;
-
-  }
-
-
-  if(
-    !window.speechSynthesis
-  ){
-
-    return;
-
-  }
-
-
-  window.speechSynthesis.cancel();
-
-
-  const clean =
-    String(text)
-      .replace(
-        /\n+/g,
-        ". "
-      );
-
-
-  const utterance =
-    new SpeechSynthesisUtterance(
-      clean
-    );
-
-
-  utterance.lang =
-    "es-ES";
-
-
-  utterance.rate =
-    0.95;
-
-
-  utterance.pitch =
-    1;
-
-
-  window.speechSynthesis.speak(
-    utterance
-  );
-
-}
-
-
-/* =========================================================
-   BOTÓN DE VOZ
-========================================================= */
-
-function createVoiceButton(){
-
-  if(
-    !state.recognition
-  ){
-
-    return;
-
-  }
-
-
-  const composer =
-    document.querySelector(
-      ".composer-inner"
-    );
-
-
-  if(!composer){
-
-    return;
-
-  }
-
-
-  const button =
-    document.createElement(
-      "button"
-    );
-
-
-  button.type =
-    "button";
-
-  button.title =
-    "Hablar con NEXO IA";
-
-  button.setAttribute(
-    "aria-label",
-    "Hablar"
-  );
-
-
-  button.textContent =
-    "🎙️";
-
-
-  button.style.cssText = `
-
-    width:38px;
-    height:38px;
-    flex:0 0 38px;
-    border-radius:13px;
-    background:#e4e4e7;
-    color:#222;
-    font-size:15px;
-
-  `;
-
-
-  button.addEventListener(
-
-    "click",
-
-    ()=>{
-
-      startVoice();
-
-      if(
-        state.listening
-      ){
-
-        button.textContent =
-          "🔴";
-
-      }else{
-
-        button.textContent =
-          "🎙️";
-
-      }
-
-    }
-
-  );
-
-
-  composer.insertBefore(
-    button,
-    sendButton
-  );
-
-}
-
-
-/* =========================================================
-   BOTÓN DE LECTURA
-========================================================= */
-
-function createVoiceOutputButton(){
-
-  if(
-    !state.voiceEnabled
-  ){
-
-    return;
-
-  }
-
-
-  const header =
-    document.querySelector(
-      ".chat-header"
-    );
-
-
-  if(!header){
-
-    return;
-
-  }
-
-
-  const button =
-    document.createElement(
-      "button"
-    );
-
-
-  button.type =
-    "button";
-
-
-  button.textContent =
-    "🔊";
-
-
-  button.title =
-    "Activar lectura de respuestas";
-
-
-  button.style.cssText = `
-
-    padding:7px 9px;
-    border-radius:10px;
-    background:#f0f0f2;
-    color:#666;
-    font-size:11px;
-
-  `;
-
-
-  button.addEventListener(
-
-    "click",
-
-    ()=>{
-
-      state.preferences
-        .voiceOutput =
-
-        !state.preferences
-          .voiceOutput;
-
-
-      savePreferences();
-
-
-      button.textContent =
-
-        state.preferences
-          .voiceOutput
-
-          ? "🔊"
-
-          : "🔇";
-
-    }
-
-  );
-
-
-  const clear =
-    document.getElementById(
-      "clearButton"
-    );
-
-
-  if(clear){
-
-    clear.parentNode.insertBefore(
-      button,
-      clear
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   LIMPIAR CHAT
-========================================================= */
-
-clearButton.addEventListener(
-
-  "click",
-
-  ()=>{
-
-    if(
-      state.isThinking
-    ){
-
-      return;
-
-    }
-
-
-    clearSession();
-
-
-    messages.innerHTML =
-      "";
-
-
-    addMessage(
-
-      "Hola. Soy NEXO IA.\n\n" +
-
-      "He limpiado nuestra conversación. " +
-
-      "Cuéntame nuevamente qué propiedad estás buscando.",
-
-      "assistant"
-
-    );
-
-
-    messageInput.value =
-      "";
-
-
-    resizeInput();
-
-    messageInput.focus();
-
-  }
-
-);
-
-
-/* =========================================================
-   ESTADO DE CONEXIÓN
-========================================================= */
-
-async function checkConnection(){
-
-  try{
-
-    const response =
-      await fetch(
-
-        NEXO_CONFIG.apiProperties,
-
-        {
-
-          method:"GET",
-
-          headers:{
-            "Accept":
-              "application/json"
-          }
-
-        }
-
-      );
-
-
-    return response.ok;
-
-  }catch(error){
-
-    return false;
-
-  }
-
-}
-
-
-/* =========================================================
-   PRECALENTAMIENTO
-========================================================= */
-
-async function warmUp(){
-
-  try{
-
-    await loadProperties();
-
-  }catch(error){
-
-    console.warn(
-      "NEXO warmup:",
-      error
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   RESTAURAR CHAT
-========================================================= */
-
-function restoreChat(){
-
-  if(
-    !state.conversation.length
-  ){
-
-    return;
-
-  }
-
-
-  /*
-   * Quitamos el mensaje
-   * inicial de HTML.
-   */
-
-  messages.innerHTML =
-    "";
-
-
-  for(
-    const item
-    of state.conversation
-  ){
-
-    addMessage(
-
-      item.content,
-
-      item.role === "user"
-        ? "user"
-        : "assistant"
-
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   ATAJO DE TECLADO
-========================================================= */
-
-document.addEventListener(
-
-  "keydown",
-
-  event=>{
-
-    /*
-     * Cmd/Ctrl + K
-     *
-     * enfoca el chat
-     */
-
-    if(
-
-      (event.metaKey ||
-       event.ctrlKey) &&
-
-      event.key.toLowerCase()
-        === "k"
-
-    ){
-
-      event.preventDefault();
-
-      messageInput.focus();
-
-    }
-
-  }
-
-);
-
-
-/* =========================================================
-   ONLINE / OFFLINE
-========================================================= */
-
-window.addEventListener(
-
-  "offline",
-
-  ()=>{
-
-    addMessage(
-
-      "Parece que has perdido la conexión a Internet. " +
-      "Cuando vuelva la conexión podrás continuar.",
-
-      "assistant"
-
-    );
-
-  }
-
-);
-
-
-window.addEventListener(
-
-  "online",
-
-  ()=>{
-
-    addMessage(
-
-      "Conexión restaurada. NEXO IA está disponible nuevamente.",
-
-      "assistant"
-
-    );
-
-    loadProperties(true);
-
-  }
-
-);
-
-
-/* =========================================================
-   INICIALIZACIÓN
-========================================================= */
-
-loadSession();
-
-initVoiceRecognition();
-
-restoreChat();
-
-/*
- * Primera visita: saludo de bienvenida
- * si no hay conversación guardada.
- */
-
-if(
-  !state.conversation.length
-){
-
-  addMessage(
-
-    "Hola. Soy NEXO IA.\n\n" +
-
-    "Cuéntame qué estás buscando — " +
-    "zona, tipo de propiedad, presupuesto — " +
-    "y te muestro las mejores opciones del inventario.",
-
-    "assistant"
-
-  );
-
-}
-
-createVoiceButton();
-
-createVoiceOutputButton();
-
-resizeInput();
-
-warmUp();
-
-
-/* =========================================================
-   FOCUS
-========================================================= */
-
-setTimeout(
-
-  ()=>{
-
-    try{
-
-      messageInput.focus();
-
-    }catch(error){}
-
-  },
-
-  300
-
-);
-
-</script>
-
-</body>
-
-</html>
+    <!-- Cabecera de Navegación Premium con efecto glass -->
+    <header class="glass-effect">
+        <a href="/" class="logo">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 3L2 12h3v8h14v-8h3L12 3zm2 15h-4v-4h4v4z"/>
+            </svg>
+            NEXO
+        </a>
+        <nav>
+            <a href="/">Propiedades</a>
+            <a href="/mapa/index.html">Mapa</a>
+            <a href="/comparar/index.html">Comparar</a>
+            <a href="/ia/index.html" class="active">Chat IA</a>
+            <a href="/admin.html" style="border: 1px solid var(--border-default);">Admin</a>
+        </nav>
+    </header>
+
+    <!-- Contenedor del Espacio de Conversación -->
+    <main class="chat-workspace">
+
+        <!-- Pantalla de Bienvenida Inicial -->
+        <div class="ai-welcome" id="welcome-screen">
+            <svg class="sparkle" viewBox="0 0 24 24">
+                <path d="M12 2l2.4 4.9L19.3 7.6l-3.6 3.5.9 5.3-4.6-2.4-4.6 2.4.9-5.3-3.6-3.5 4.9-.7L12 2zm0 4.5l-1.3 2.7-3 .4 2.2 2.1-.5 3 2.6-1.4 2.6 1.4-.5-3 2.2-2.1-3-.4-1.3-2.7z"/>
+            </svg>
+            <h1>Hola, soy tu asesor de NEXO IA</h1>
+            <p>Dime qué tipo de hogar estás buscando, tu presupuesto o tus preferencias de vida, y encontraré las mejores opciones estructuradas en segundos.</p>
+            
+            <div class="suggestions-grid">
+                <button class="suggestion-pill" onclick="sendSuggestedQuery('Departamentos modernos con terraza')">
+                    "Departamentos modernos con terraza"
+                </button>
+                <button class="suggestion-pill" onclick="sendSuggestedQuery('Casas f
