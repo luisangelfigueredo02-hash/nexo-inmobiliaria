@@ -1,1597 +1,619 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
-<meta charset="utf-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1, viewport-fit=cover"
->
-
-<title>
-  NEXO · Detalle de propiedad
-</title>
-
-<script src="/config.js"></script>
-
-
-<link rel="stylesheet" href="/variables.css">
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
-<script>
-if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("/sw.js").catch(()=>{});
-  });
-}
-</script>
-
-<meta
-  name="description"
-  content="Detalle de propiedad en NEXO. Fotos, precio, características y contacto."
->
-
-<style>
-
-:root{
-
-  --bg:#fbfbfd;
-  --panel:#fff;
-  --ink:#1d1d1f;
-  --muted:#86868b;
-  --line:rgba(0,0,0,.08);
-
-  --brand:#0071e3;
-  --brand-soft:rgba(0,113,227,.09);
-  --spring:cubic-bezier(.16,1,.3,1);
-  --spring-back:cubic-bezier(.34,1.56,.64,1);
-
-}
-
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
-
-html{
-  scroll-behavior:smooth;
-}
-
-body{
-
-  background:var(--bg);
-  color:var(--ink);
-
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Text",
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-
-  -webkit-font-smoothing:antialiased;
-  -webkit-tap-highlight-color:transparent;
-
-  padding-bottom:env(safe-area-inset-bottom);
-
-}
-
-
-/* HEADER
-------------------------------------------------- */
-
-header{
-
-  position:sticky;
-  top:0;
-  z-index:100;
-
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-
-  padding:12px 16px;
-
-  padding-top:calc(12px + env(safe-area-inset-top));
-
-  border-bottom:1px solid var(--line);
-
-  background:rgba(255,255,255,.86);
-
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-
-}
-
-header strong{
-
-  font-size:15px;
-  font-weight:850;
-  letter-spacing:0.5px;
-
-}
-
-header nav{
-
-  display:flex;
-  gap:6px;
-
-}
-
-header a{
-
-  padding:7px 12px;
-
-  border-radius:999px;
-
-  font-size:10.5px;
-  font-weight:750;
-
-  text-decoration:none;
-  color:var(--muted);
-
-}
-
-header a:hover{
-  color:var(--ink);
-
-  background:var(--bg);
-
-}
-
-
-/* LAYOUT
-------------------------------------------------- */
-
-.container{
-
-  max-width:860px;
-
-  margin:0 auto;
-
-  padding:16px 14px;
-
-}
-
-
-/* CARD
-------------------------------------------------- */
-
-.card{
-  animation:nexo-card-in .7s var(--spring) both;
-
-
-  overflow:hidden;
-
-  border:1px solid var(--line);
-  border-radius:22px;
-
-  background:var(--panel);
-
-  box-shadow:
-    0 12px 40px rgba(0,0,0,.06);
-
-}
-
-
-/* GALLERY
-------------------------------------------------- */
-
-.gallery{
-
-  display:grid;
-  grid-template-columns:2fr 1fr 1fr;
-  gap:6px;
-
-  padding:6px;
-
-  background:var(--bg);
-
-}
-
-.gallery picture{
-
-  display:block;
-
-  width:100%;
-
-  overflow:hidden;
-
-  border-radius:16px;
-
-  cursor:pointer;
-
-}
-
-.gallery img{
-
-  width:100%;
-  height:100%;
-
-  display:block;
-
-  object-fit:cover;
-
-}
-
-.gallery picture:first-child{
-
-  grid-row:span 2;
-
-  height:100%;
-  min-height:260px;
-
-}
-
-.gallery picture:not(:first-child){
-
-  height:128px;
-
-}
-
-.gallery picture:hover img{
-  filter:brightness(.94);
-}
-
-@media (max-width:640px){
-
-  .gallery{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .gallery picture:first-child{
-
-    grid-column:1 / -1;
-
-    min-height:220px;
-
-  }
-
-  .gallery picture:not(:first-child){
-    height:150px;
-  }
-
-}
-
-
-/* BODY
-------------------------------------------------- */
-
-.content{
-  padding:18px;
-}
-
-@media (min-width:640px){
-  .content{
-    padding:26px;
-  }
-}
-
-.header-info{
-
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:14px;
-
-  flex-wrap:wrap;
-
-  margin-bottom:15px;
-
-}
-
-.title{
-
-  font-size:22px;
-  font-weight:850;
-  letter-spacing:-0.02em;
-
-}
-
-.address{
-
-  margin-top:4px;
-
-  color:var(--muted);
-
-  font-size:12px;
-
-}
-
-.price{
-
-  font-size:24px;
-  font-weight:900;
-  letter-spacing:-0.03em;
-
-  white-space:nowrap;
-
-}
-
-.features{
-
-  display:grid;
-  grid-template-columns:repeat(
-    auto-fit,
-    minmax(105px,1fr)
-  );
-  gap:8px;
-
-  margin:15px 0 18px;
-
-}
-
-.feature-item{
-
-  padding:11px 12px;
-
-  border:1px solid var(--line);
-  border-radius:13px;
-
-  background:var(--bg);
-
-}
-
-.feature-item span:first-child{
-
-  display:block;
-
-  font-size:9.5px;
-  font-weight:750;
-
-  color:var(--muted);
-
-  margin-bottom:2px;
-
-}
-
-.feature-item span:last-child{
-
-  font-size:12px;
-  font-weight:800;
-
-}
-
-.description{
-
-  color:#3d3d40;
-
-  font-size:13.5px;
-  line-height:1.65;
-
-  white-space:pre-line;
-
-}
-
-.description h3{
-
-  margin-bottom:8px;
-
-  font-size:12px;
-  font-weight:800;
-
-}
-
-.private-info{
-
-  margin-top:16px;
-
-  padding:13px 14px;
-
-  border:1px solid var(--line);
-  border-radius:13px;
-
-  background:var(--brand-soft);
-
-}
-
-.private-info h3{
-
-  margin-bottom:5px;
-
-  color:var(--brand);
-
-  font-size:11px;
-  font-weight:800;
-
-}
-
-.private-info p{
-  font-size:11.5px;
-}
-
-
-/* STATES
-------------------------------------------------- */
-
-.loading,
-.error{
-
-  padding:70px 20px;
-
-  text-align:center;
-
-  color:var(--muted);
-
-  font-size:13px;
-
-}
-
-.btn-back{
-
-  display:inline-block;
-
-  margin-bottom:12px;
-
-  color:var(--muted);
-
-  font-size:11px;
-  font-weight:700;
-
-  text-decoration:none;
-
-}
-
-.btn-back:hover{
-  color:var(--ink);
-}
-
-:focus-visible{
-  outline:2px solid var(--ink);
-  outline-offset:2px;
-  border-radius:6px;
-}
-
-.btn-contact{
-
-  display:block;
-
-  margin:18px 0 0;
-
-  padding:14px;
-
-  border-radius:14px;
-
-  background:var(--ink);
-  color:#fff;
-
-  font-size:13px;
-  font-weight:700;
-
-  text-align:center;
-  text-decoration:none;
-
-  transition:
-    transform .18s ease,
-    opacity .18s ease;
-
-}
-
-.btn-contact:hover{
-  opacity:.88;
-  transform:translateY(-1px);
-}
-
-.btn-whatsapp{
-
-  display:block;
-
-  margin:10px 0 0;
-
-  padding:13px;
-
-  border:1px solid rgba(0,0,0,.14);
-  border-radius:14px;
-
-  background:#fff;
-  color:#111;
-
-  font-size:13px;
-  font-weight:700;
-
-  text-align:center;
-  text-decoration:none;
-
-  transition:
-    transform .18s ease,
-    background .18s ease,
-    color .18s ease;
-
-}
-
-.btn-whatsapp:hover{
-
-  background:#25d366;
-  color:#fff;
-
-  transform:translateY(-1px);
-
-}
-
-.btn-whatsapp svg{
-  width:15px;
-  height:15px;
-
-  vertical-align:-2px;
-}
-
-/* ===== Similares ===== */
-
-.similar-section{
-  margin:22px 0 6px;
-}
-
-.similar-section h3{
-  margin:0 0 10px;
-
-  font-size:11px;
-  font-weight:800;
-
-  letter-spacing:.06em;
-  text-transform:uppercase;
-
-  color:var(--muted);
-}
-
-.similar-grid{
-
-  display:grid;
-  grid-template-columns:
-    repeat(2,1fr);
-  gap:10px;
-
-}
-
-.similar-card{
-
-  overflow:hidden;
-
-  border:1px solid var(--line);
-  border-radius:14px;
-
-  background:#fff;
-
-  text-decoration:none;
-  color:var(--text);
-
-}
-
-.similar-card img{
-  width:100%;
-  aspect-ratio:1.6;
-
-  object-fit:cover;
-
-  display:block;
-}
-
-.similar-empty{
-
-  aspect-ratio:1.6;
-
-  display:grid;
-  place-items:center;
-
-  background:#e9ebed;
-  color:#999;
-
-  font-size:10px;
-}
-
-.similar-price{
-
-  padding:8px 10px;
-
-  font-size:11px;
-  font-weight:800;
-}
-
-@media (max-width:640px){
-
-  .similar-grid{
-    grid-template-columns:1fr;
-  }
-
-}
-
-/* ===== CTA sticky (mobile) ===== */
-
-@media (max-width:640px){
-
-  .btn-contact,
-  .btn-whatsapp{
-    display:block;
-  }
-
-  .sticky-cta{
-
-    position:sticky;
-    bottom:0;
-    z-index:60;
-
-    margin:14px -12px -12px;
-    padding:
-      10px 12px
-      calc(10px + var(--safe-bottom));
-
-    background:rgba(251,251,253,.92);
-
-    backdrop-filter:blur(18px);
-
-    border-top:1px solid var(--line);
-
-  }
-
-}
-
-/* ===== Galería swipe en mobile ===== */
-
-@media (max-width:640px){
-
-  .gallery{
-
-    display:flex;
-    grid-template-columns:none;
-
-    overflow-x:auto;
-
-    scroll-snap-type:x mandatory;
-    -webkit-overflow-scrolling:touch;
-
-  }
-
-  .gallery picture{
-
-    flex:0 0 82%;
-
-    scroll-snap-align:start;
-
-  }
-
-}
-
-
-/* =========================================================
-   NEXO MOTION SYSTEM — fisica spring unificada
-========================================================= */
-
-@keyframes nexo-card-in{
-  from{
-    opacity:0;
-    transform:translateY(18px) scale(.99);
-  }
-  to{
-    opacity:1;
-    transform:none;
-  }
-}
-
-button:active,
-a[class*="btn"]:active{
-  transform:scale(.96);
-}
-
-@media(prefers-reduced-motion:reduce){
-
-  *,
-  *::before,
-  *::after{
-
-    animation:none!important;
-    transition:none!important;
-
-    scroll-behavior:auto;
-
-  }
-
-}
-
-/* =========================================================
-   NEXO LIQUID GLASS — vidrio iOS 26: luz especular + saturacion
-========================================================= */
-
-.glass{
-
-  background:
-    linear-gradient(
-      175deg,
-      rgba(255,255,255,.78) 0%,
-      rgba(255,255,255,.42) 100%
-    );
-
-  border:0;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.85),
-    inset 0 -.5px 0 rgba(0,0,0,.028),
-    0 18px 42px rgba(13,18,30,.10);
-
-  backdrop-filter:
-    blur(44px) saturate(210%);
-  -webkit-backdrop-filter:
-    blur(44px) saturate(210%);
-
-}
-
-@media(prefers-reduced-motion:no-preference){
-
-  .glass-light{
-
-    position:relative;
-    overflow:hidden;
-
-  }
-
-  .glass-light::after{
-
-    content:"";
-
-    position:absolute;
-    inset:0;
-
-    background:
-      linear-gradient(
-        115deg,
-        transparent 25%,
-        rgba(255,255,255,.35) 45%,
-        transparent 65%
-      );
-
-    transform:translateX(-110%);
-
-    transition:transform 1.4s var(--spring);
-
-    pointer-events:none;
-
-  }
-
-  .glass-light:hover::after{
-    transform:translateX(110%);
-  }
-
-}
-
-.glass-ink{
-  color:#111;
-  font-weight:700;
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Detalle de Propiedad — NEXO</title>
+    
+    <!-- Enlace al sistema de diseño global -->
+    <link rel="stylesheet" href="/variables.css">
+    
+    <!-- Estilos de Leaflet para el mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <!-- Estilos específicos de la ficha de detalle (Premium Design) -->
+    <style>
+        /* Ajuste de cabecera en el detalle */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--space-5);
+            transition: var(--transition-normal);
+        }
+
+        .logo {
+            font-size: var(--text-lg);
+            font-weight: var(--weight-bold);
+            color: var(--text-primary);
+            letter-spacing: -0.03em;
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-primary);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: var(--space-5);
+        }
+
+        nav a {
+            font-size: var(--text-sm);
+            font-weight: var(--weight-medium);
+            color: var(--text-secondary);
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-sm);
+        }
+
+        nav a:hover {
+            color: var(--text-primary);
+            background-color: var(--bg-secondary);
+        }
+
+        /* Estructura asimétrica Split-Screen Desktop */
+        .property-container {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: var(--space-6);
+            max-width: var(--max-width-content);
+            margin: 0 auto;
+            padding: calc(var(--header-height) + var(--space-5)) var(--space-5) var(--space-8);
+        }
+
+        /* Columna de Contenido Principal (Izquierda) */
+        .content-main {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-5);
+        }
+
+        /* Galería e Imagen de Cabecera */
+        .gallery-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Carrusel horizontal nativo optimizado con CSS Scroll Snap (Swipe de Apple) */
+        .gallery-scroll {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            height: 100%;
+        }
+
+        .gallery-scroll::-webkit-scrollbar {
+            display: none; /* Ocultar barra de scroll para estética premium */
+        }
+
+        .gallery-item {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 100%;
+            scroll-snap-align: start;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Controles e indicadores flotantes de la galería */
+        .gallery-actions {
+            position: absolute;
+            top: var(--space-4);
+            left: var(--space-4);
+            right: var(--space-4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .back-btn, .action-circle-btn {
+            width: 44px;
+            height: 44px;
+            background-color: var(--bg-overlay);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--radius-round);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            color: var(--text-primary);
+            transition: var(--transition-fast);
+        }
+
+        .back-btn:hover, .action-circle-btn:hover {
+            transform: scale(1.05);
+            background-color: var(--bg-primary);
+        }
+
+        .gallery-indicator {
+            position: absolute;
+            bottom: var(--space-4);
+            right: var(--space-4);
+            background-color: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #ffffff;
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-round);
+            font-size: var(--text-xs);
+            font-weight: var(--weight-semibold);
+            z-index: 10;
+        }
+
+        /* Ficha Informativa (Título, Precio y Badges) */
+        .property-meta {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .badge-row {
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        .badge-item {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            font-weight: var(--weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-item.accent-badge {
+            background-color: var(--accent);
+            color: var(--text-on-accent);
+        }
+
+        .title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--space-4);
+        }
+
+        .title-row h1 {
+            font-size: var(--text-xl);
+            font-weight: var(--weight-bold);
+            letter-spacing: -0.03em;
+            line-height: var(--line-height-tight);
+        }
+
+        .price-display {
+            font-size: var(--text-xxl);
+            font-weight: var(--weight-bold);
+            color: var(--text-primary);
+            letter-spacing: -0.04em;
+        }
+
+        .location-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+
+        /* Rejilla de Características Destacadas */
+        .features-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-4);
+            padding: var(--space-4) 0;
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .feature-box {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+
+        .feature-box svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-secondary);
+        }
+
+        .feature-box strong {
+            color: var(--text-primary);
+            font-size: var(--text-base);
+        }
+
+        /* Sección de Descripción */
+        .description-section h2, .map-section h2 {
+            font-size: var(--text-md);
+            font-weight: var(--weight-bold);
+            letter-spacing: -0.02em;
+            margin-bottom: var(--space-3);
+        }
+
+        .description-text {
+            font-size: var(--text-base);
+            color: var(--text-secondary);
+            line-height: var(--line-height-relaxed);
+        }
+
+        /* Sección del Mapa (Leaflet) */
+        .map-section {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .map-container {
+            width: 100%;
+            height: 350px;
+            border-radius: var(--radius-xl);
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        /* Columna de Conversión / Sidebar (Derecha - Sticky) */
+        .sidebar-column {
+            position: relative;
+        }
+
+        .sticky-card {
+            position: sticky;
+            top: calc(var(--header-height) + var(--space-4));
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .sidebar-price {
+            font-size: var(--text-xxl);
+            font-weight: var(--weight-bold);
+            letter-spacing: -0.04em;
+        }
+
+        /* Información del Agente de Contacto */
+        .agent-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) 0;
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .agent-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-round);
+            background-color: var(--bg-secondary);
+            overflow: hidden;
+        }
+
+        .agent-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .agent-meta h3 {
+            font-size: var(--text-sm);
+            font-weight: var(--weight-semibold);
+        }
+
+        .agent-meta p {
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+        }
+
+        /* Botones de Acción de Conversión */
+        .cta-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: var(--weight-semibold);
+            transition: var(--transition-fast);
+            width: 100%;
+        }
+
+        .cta-btn-primary {
+            background-color: #25d366; /* Verde Oficial de WhatsApp */
+            color: white;
+        }
+
+        .cta-btn-primary:hover {
+            background-color: #20ba5a;
+            transform: translateY(-1px);
+        }
+
+        .cta-btn-secondary {
+            background-color: var(--accent);
+            color: var(--text-on-accent);
+        }
+
+        .cta-btn-secondary:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Barra de contacto móvil flotante (Hidden on Desktop) */
+        .bottom-cta-bar {
+            display: none;
+        }
+
+        /* Adaptabilidad y Estilos Móviles */
+        @media (max-width: 768px) {
+            header {
+                padding: 0 var(--space-4);
+                background-color: transparent; /* Cabecera transparente sobre la galería móvil */
+                border-bottom: none;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .property-container {
+                grid-template-columns: 1fr;
+                padding: 0 0 var(--space-8);
+                gap: var(--space-4);
+            }
+
+            .gallery-wrapper {
+                border-radius: 0; /* Imagen inmersiva completa en móvil */
+                aspect-ratio: 4 / 3;
+            }
+
+            .content-main {
+                padding: var(--space-4);
+                gap: var(--space-4);
+            }
+
+            .sidebar-column {
+                display: none; /* Se descarta la barra lateral de desktop */
+            }
+
+            .title-row {
+                flex-direction: column-reverse;
+                gap: var(--space-1);
+            }
+
+            .title-row h1 {
+                font-size: var(--text-lg);
+            }
+
+            .price-display {
+                display: none; /* El precio se transfiere a la barra fija inferior */
+            }
+
+            /* Barra de Conversión Móvil Fija */
+            .bottom-cta-bar {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 72px;
+                background-color: var(--bg-overlay);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border-top: 1px solid var(--border-subtle);
+                padding: 0 var(--space-4) var(--safe-bottom-mobile);
+                align-items: center;
+                justify-content: space-between;
+                z-index: 100;
+                box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+            }
+
+            .mobile-price {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .mobile-price span {
+                font-size: var(--text-xs);
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                font-weight: var(--weight-semibold);
+            }
+
+            .mobile-price strong {
+                font-size: var(--text-md);
+                font-weight: var(--weight-bold);
+                letter-spacing: -0.02em;
+            }
+
+            .mobile-cta-group {
+                display: flex;
+                gap: var(--space-2);
+                width: 60%;
+            }
+
+            .mobile-cta-group .cta-btn {
+                padding: var(--space-2) var(--space-3);
+                font-size: var(--text-xs);
+            }
+        }
+    </style>
 </head>
-
 <body>
 
-<header>
-
-  <strong>
-    NEXO
-  </strong>
-
-  <nav>
-
-    <a
-      id="compareLink"
-      href="/comparar/"
-    >
-      ⚖ Comparar
-    </a>
-
-    <a href="/">
-      ← Catálogo
-    </a>
-
-  </nav>
-
-</header>
-
-<main>
-  <div
-    class="container"
-    id="app"
-  >
-    <div class="loading">
-      Cargando detalles de la propiedad...
-    </div>
-  </div>
-</main>
-
-<script>
-
-"use strict";
-
-function escapeHTML(
-  value
-){
-
-  return String(value ?? "")
-
-    .replace(/&/g,"&amp;")
-
-    .replace(/</g,"&lt;")
-
-    .replace(/>/g,"&gt;")
-
-    .replace(/"/g,"&quot;")
-
-    .replace(/'/g,"&#039;");
-
-}
-
-function safeURL(
-  value
-){
-
-  if(!value){
-    return "";
-  }
-
-  try{
-
-    const parsed =
-      new URL(
-        value,
-        window.location.origin
-      );
-
-    if(
-      ["http:","https:"]
-        .includes(
-          parsed.protocol
-        )
-    ){
-
-      return parsed.href;
-
-    }
-
-  }catch(_){
-    return "";
-  }
-
-  return "";
-
-}
-
-
-/*
- * Proxy de imágenes y componente
- * <picture> responsivo (srcset).
- */
-
-function imageURL(
-  photo,
-  width,
-  format = "auto"
-){
-
-  if(!photo){
-
-    return "";
-
-  }
-
-  /*
-   * Medios propios (R2 nexo-media): la ruta
-   * usa variantes pregeneradas -w{width}.webp;
-   * externos (unsplash) pasan por el proxy.
-   */
-
-  if(
-    typeof photo === "string" &&
-    photo.includes(
-      "/media/"
-    )
-  ){
-
-    const variants =
-      [400, 800, 1200];
-
-    const snapped =
-      variants.find(
-        v => width <= v
-      ) || 1200;
-
-    return photo.replace(
-      /\.(jpg|jpeg|png)$/i,
-      `-w${snapped}.webp`
-    );
-
-  }
-
-  const params =
-    new URLSearchParams({
-      url:photo,
-      width:String(width),
-      format
-    });
-
-  return `/api/images?${params}`;
-
-}
-
-
-function pictureHTML(
-  photo,
-  alt,
-  {
-    sizes = "100vw",
-    widths = [600,1200,1800],
-    eager = false
-  } = {}
-){
-
-  const srcsetFor =
-    format =>
-      widths
-        .map(
-          w =>
-            `${escapeHTML(imageURL(photo,w,format))} ${w}w`
-        )
-        .join(", ");
-
-  const fallback =
-    widths[Math.min(1,widths.length-1)];
-
-
-  return `
-    <picture>
-      <source
-        type="image/webp"
-        srcset="${srcsetFor("webp")}"
-        sizes="${escapeHTML(sizes)}"
-      >
-      <img
-        src="${escapeHTML(imageURL(photo,fallback))}"
-        srcset="${srcsetFor("auto")}"
-        sizes="${escapeHTML(sizes)}"
-        alt="${escapeHTML(alt)}"
-        ${eager ? "" : 'loading="lazy"'}
-      >
-    </picture>
-  `;
-
-}
-
-function formatPrice(
-  value
-){
-
-  const number =
-    Number(value);
-
-  if(
-    !Number.isFinite(number) ||
-    number <= 0
-  ){
-
-    return "Precio a convenir";
-
-  }
-
-  return new Intl.NumberFormat(
-    "en-US",
-    {
-      style:"currency",
-      currency:"USD",
-      maximumFractionDigits:0
-    }
-  ).format(number);
-
-}
-
-
-const urlParams =
-  new URLSearchParams(
-    window.location.search
-  );
-
-/*
- * Admite tanto /propiedad/<id>
- * (con OG inyectado desde el Worker)
- * como /property.html?id=<id>.
- */
-
-const pathMatch =
-  window.location.pathname.match(
-    /\/propiedad\/(\d+)/
-  );
-
-const propertyId =
-  (pathMatch && pathMatch[1]) ||
-  urlParams.get("id");
-
-const appContainer =
-  document.getElementById(
-    "app"
-  );
-
-if(propertyId){
-  document
-    .getElementById(
-      "compareLink"
-    )
-    .href =
-      `/comparar/?ids=${encodeURIComponent(propertyId)}`;
-}
-
-
-async function fetchPropertyDetails(){
-
-  if(!propertyId){
-
-    appContainer.innerHTML = `
-      <div class="error">
-        No se especificó ningún ID de propiedad.
-      </div>
-    `;
-
-    return;
-
-  }
-
-  try{
-
-    const response =
-      await fetch(
-        `/api/properties/${encodeURIComponent(propertyId)}`
-      );
-
-    if(!response.ok){
-      throw new Error(
-        `Error en la solicitud (${response.status})`
-      );
-    }
-
-    const data =
-      await response.json();
-
-    window.__nexoSimilar =
-      data?.similar ||
-      [];
-
-    renderProperty(
-      data.property ||
-      data
-    );
-
-  }catch(error){
-
-    appContainer.innerHTML = `
-      <div class="error">
-        No se pudo cargar la información
-        de esta propiedad.
-      </div>
-    `;
-
-  }
-
-}
-
-
-/* =========================================================
-   RENDER
-========================================================= */
-
-/*
- * Enlace de conversión a WhatsApp con
- * título y URL canónica (/propiedad/<id>)
- * predefinidos en el mensaje.
- */
-
-/*
- * Analytics privado: solo el tipo
- * del evento, sin PII.
- */
-
-function track(
-  kind,
-  propertyId = null
-){
-
-  try{
-
-    fetch(
-      "/api/metrics/track",
-      {
-        method:"POST",
-        headers:{
-          "Content-Type":
-            "application/json"
-        },
-        body:
-          JSON.stringify(
-            propertyId
-              ? {
-                  kind,
-                  property_id:
-                    propertyId
-                }
-              : { kind }
-          ),
-        keepalive:true
-      }
-    ).catch(
-      () => {}
-    );
-
-  }catch(_){
-    /* best-effort */
-  }
-
-}
-
-
-/*
- * Contacto por WhatsApp con el número
- * público NEXO (config.js) y código
- * público del listado cuando exista.
- */
-
-function whatsappLink(
-  prop
-){
-
-  const number =
-    window.NEXO_CONTACT?.whatsapp ||
-    "";
-
-  if(!number){
-
-    return "#";
-
-  }
-
-  const code =
-    prop.public_code
-      ? `la propiedad ${prop.public_code}`
-      : `esta propiedad (#${prop.id})`;
-
-
-  const message =
-    `Hola, me interesa ${code}.`;
-
-
-  return `https://wa.me/${number}` +
-    `?text=${encodeURIComponent(message)}`;
-
-}
-
-
-function whatsappURL(
-  prop
-){
-
-  const title =
-    prop.title ||
-    prop.property_type ||
-    "esta propiedad";
-
-
-  const pageURL =
-    `${window.location.origin}/propiedad/${
-      encodeURIComponent(prop.id)
-    }`;
-
-
-  const message =
-    `Hola NEXO, me interesa "${title}". ` +
-    `¿Me pueden dar más información?\n${pageURL}`;
-
-
-  return `https://wa.me/?text=${
-    encodeURIComponent(message)
-  }`;
-
-}
-
-
-function similarHTML(
-  list
-){
-
-  if(
-    !Array.isArray(list) ||
-    !list.length
-  ){
-
-    return "";
-
-  }
-
-
-  return `
-    <div class="similar-section">
-      <h3>Propiedades similares</h3>
-      <div class="similar-grid">
-        ${list
-          .map(
-            property => {
-
-              let parsedPhotos = [];
-
-              try{
-
-                parsedPhotos =
-                  typeof property.photos ===
-                    "string"
-                    ? JSON.parse(
-                        property.photos
-                      )
-                    : property.photos || [];
-
-              }catch(_){
-                parsedPhotos = [];
-              }
-
-              const photo =
-                (parsedPhotos || [])[0];
-
-              return `
-                <a
-                  class="similar-card"
-                  href="/propiedad/${
-                    encodeURIComponent(
-                      property.id
-                    )
-                  }"
-                >
-                  ${
-                    photo
-                      ? `<img
-                           src="${escapeHTML(
-                             imageURL(
-                               photo,
-                               400
-                             )
-                           )}"
-                           alt=""
-                           loading="lazy"
-                         >`
-                      : `<div class="similar-empty">
-                           NEXO
-                         </div>`
-                  }
-                  <div class="similar-price">
-                    ${escapeHTML(
-                      formatPrice(
-                        property.price
-                      )
-                    )}
-                  </div>
+    <!-- Cabecera Traslúcida con efectos de vidrio -->
+    <header class="glass-effect">
+        <a href="/" class="logo">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 3L2 12h3v8h14v-8h3L12 3zm2 15h-4v-4h4v4z"/>
+            </svg>
+            NEXO
+        </a>
+        <nav>
+            <a href="/">Propiedades</a>
+            <a href="/mapa/index.html">Mapa</a>
+            <a href="/comparar/index.html">Comparar</a>
+            <a href="/ia/index.html">Chat IA</a>
+            <a href="/admin.html" style="border: 1px solid var(--border-default);">Admin</a>
+        </nav>
+    </header>
+
+    <!-- Contenedor Principal Split-Screen -->
+    <main class="property-container">
+        
+        <!-- Columna de Información Detallada (Izquierda) -->
+        <section class="content-main">
+            
+            <!-- Galería de Fotos Swipe Mobile / Scroll Desktop -->
+            <div class="gallery-wrapper">
+                <div class="gallery-actions">
+                    <button class="back-btn" onclick="window.history.back();" aria-label="Regresar">
+                        <svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor;">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                    </button>
+                    <button class="action-circle-btn" id="fav-detail-btn" aria-label="Añadir a favoritos">
+                        <svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor;">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="gallery-indicator" id="gallery-counter">1 / 1</div>
+                
+                <!-- Contenedor de deslizamiento -->
+                <div class="gallery-scroll" id="gallery-container">
+                    <div class="gallery-item shimmer-effect"></div>
+                </div>
+            </div>
+
+            <!-- Cabecera de Datos (Título, Precio y badges) -->
+            <div class="property-meta">
+                <div class="badge-row">
+                    <span class="badge-item accent-badge" id="detail-transaction">Venta</span>
+                    <span class="badge-item" id="detail-type">Propiedad</span>
+                </div>
+                <div class="title-row">
+                    <h1 id="detail-title">Cargando detalles de propiedad...</h1>
+                    <div class="price-display" id="detail-price-desktop">$0 USD</div>
+                </div>
+                <div class="location-row" id="detail-location">
+                    <svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:currentColor; flex-shrink:0;">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    Dirección de la propiedad
+                </div>
+            </div>
+
+            <!-- Rejilla de Características Físicas -->
+            <div class="features-bar">
+                <div class="feature-box">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/>
+                    </svg>
+                    <span id="detail-beds"><strong>0</strong> habs</span>
+                </div>
+                <div class="feature-box">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 11H3V9c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v2zm-2 2v3h-2v-3h-2v3h-2v-3H9v3H7v-3H5v3H3v-5h18v5h-2z"/>
+                    </svg>
+                    <span id="detail-baths"><strong>0</strong> baños</span>
+                </div>
+                <div class="feature-box">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm3 3h6v6H9V9z"/>
+                    </svg>
+                    <span id="detail-area"><strong>0</strong> m²</span>
+                </div>
+            </div>
+
+            <!-- Sección de Descripción -->
+            <div class="description-section">
+                <h2>Acerca de esta propiedad</h2>
+                <p class="description-text" id="detail-description">Cargando descripción detallada del catálogo inmobiliario de NEXO...</p>
+            </div>
+
+            <!-- Sección del Mapa -->
+            <div class="map-section">
+                <h2>Ubicación geográfica</h2>
+                <div class="map-container" id="property-map"></div>
+            </div>
+
+        </section>
+
+        <!-- Columna de Conversión / Sidebar (Derecha - Sticky en Desktop) -->
+        <aside class="sidebar-column">
+            <div class="sticky-card">
+                <div class="sidebar-price" id="detail-price-sidebar">$0 USD</div>
+                
+                <!-- Agente -->
+                <div class="agent-info">
+                    <div class="agent-avatar">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80" alt="Asesor Inmobiliario NEXO" id="agent-photo">
+                    </div>
+                    <div class="agent-meta">
+                        <h3 id="agent-name">Asesor de Ventas NEXO</h3>
+                        <p>Especialista Inmobiliario</p>
+                    </div>
+                </div>
+
+                <!-- CTAs -->
+                <a href="#" id="desktop-whatsapp-btn" target="_blank" class="cta-btn cta-btn-primary">
+                    <svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:currentColor;">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.965C16.59 1.977 14.113.953 12.007.953c-5.439 0-9.865 4.37-9.87 9.8-.002 1.767.478 3.493 1.39 5.031l-.26 1.411 1.48-.387zm11.39-7.653c-.307-.154-1.817-.897-2.098-1-.282-.103-.487-.154-.69.154-.204.308-.788 1-.967 1.206-.179.205-.359.231-.666.077-.307-.154-1.298-.479-2.472-1.527-.913-.815-1.53-1.822-1.71-2.129-.18-.308-.019-.475.135-.629.138-.138.307-.359.46-.538.154-.179.206-.308.308-.513.102-.205.051-.385-.026-.538-.077-.154-.692-1.667-.948-2.282-.25-.6-.523-.518-.718-.528-.186-.01-.4-.01-.615-.01-.215 0-.564.08-.86.41-.295.33-1.128 1.102-1.128 2.688 0 1.587 1.154 3.12 1.308 3.325.154.205 2.27 3.466 5.5 4.86.768.331 1.368.529 1.835.678.771.245 1.472.21 2.028.127.619-.092 1.817-.743 2.072-1.461.256-.718.256-1.333.179-1.461-.076-.128-.281-.205-.589-.359z"/>
+                    </svg>
+                    Contactar vía WhatsApp
                 </a>
-              `;
+                <a href="#" id="desktop-email-btn" class="cta-btn cta-btn-secondary">
+                    Preguntar por esta propiedad
+                </a>
+            </div>
+        </aside>
 
-            }
-          )
-          .join("")
-        }
-      </div>
-    </div>
-  `;
+    </main>
 
-}
-
-
-function renderProperty(
-  prop
-){
-
-  let photosMarkup = "";
-  let photos = [];
-
-  try{
-
-    photos =
-      typeof prop.photos === "string"
-        ? JSON.parse(prop.photos)
-        : (prop.photos || []);
-
-  }catch(_){
-    photos = [];
-  }
-
-  if(
-    Array.isArray(photos)
-  ){
-
-    const validPhotos =
-      photos
-        .map(safeURL)
-        .filter(Boolean)
-        .slice(0,12);
-
-    if(validPhotos.length){
-
-      photosMarkup = `
-        <div class="gallery">
-          ${validPhotos
-            .map(
-              (url,index) =>
-                pictureHTML(
-                  url,
-                  prop.title ||
-                    "Propiedad",
-                  {
-                    sizes:
-                      index === 0
-                        ? "(max-width:640px) 100vw, 66vw"
-                        : "(max-width:640px) 50vw, 17vw",
-                    widths:
-                      index === 0
-                        ? [800,1400,2000]
-                        : [400,800,1200],
-                    eager:index === 0
-                  }
-                )
-            )
-            .join("")
-          }
+    <!-- Barra de Conversión Móvil Flotante Fija (Fitted to Apple UI) -->
+    <div class="bottom-cta-bar">
+        <div class="mobile-price">
+            <span>Precio Total</span>
+            <strong id="detail-price-mobile">$0 USD</strong>
         </div>
-      `;
-
-    }
-
-  }
-
-
-  /* Datos privados (solo con sesión admin) */
-
-  let privateSection = "";
-
-  if(
-    prop.owner_name ||
-    prop.owner_phone ||
-    prop.notes
-  ){
-
-    privateSection = `
-      <div class="private-info">
-        <h3>Información Privada de Administración</h3>
-        <p>
-          <strong>Propietario:</strong>
-          ${escapeHTML(
-            prop.owner_name || "N/D"
-          )}
-        </p>
-        <p>
-          <strong>Teléfono:</strong>
-          ${escapeHTML(
-            prop.owner_phone || "N/D"
-          )}
-        </p>
-        <p>
-          <strong>Email:</strong>
-          ${escapeHTML(
-            prop.contact_email || "N/D"
-          )}
-        </p>
-        ${
-          prop.notes
-            ? `<p>
-                 <strong>Notas:</strong>
-                 ${escapeHTML(prop.notes)}
-               </p>`
-            : ""
-        }
-      </div>
-    `;
-
-  }
-
-
-  const nexoPrice = Number(prop.price);
-  const nexoM2 = Number(prop.square_meters);
-
-  const nexoPriceM2 =
-    nexoPrice > 0 && nexoM2 > 0
-      ? Math.round(nexoPrice / nexoM2)
-      : null;
-
-  const nexoR = 0.08/12;
-  const nexoN = 120;
-  const nexoF =
-    nexoPrice > 0
-      ? nexoR / (1-Math.pow(1+nexoR, -nexoN))
-      : null;
-
-  const nexoMonthly =
-    nexoPrice > 0
-      ? Math.round(nexoPrice * nexoF)
-      : null;
-
-  const extraFeatures = `
-    ${nexoPriceM2 != null
-      ? `<div class="feature-item">
-           <span>Precio/m²</span>
-           <span>
-             $${nexoPriceM2.toLocaleString()}
-           </span>
-         </div>`
-      : ""
-    }
-    ${nexoMonthly != null
-      ? `<div class="feature-item">
-           <span>Hipoteca est.</span>
-           <span>
-             ≈ $${nexoMonthly.toLocaleString()}/mes
-             (10y · 8%)
-           </span>
-         </div>`
-      : ""
-    }
-    ${Number(prop.verified) === 1
-      ? `<div class="feature-item">
-           <span>Sello</span>
-           <span>✓ Verificado</span>
-         </div>`
-      : ""
-    }
-    ${[
-      ["placa_libre", "⚡ Placa libre"],
-      ["gas_calle", "🔥 Gas de la calle"],
-      ["agua_247", "💧 Agua 24/7"],
-      ["pago_exterior", "🌍 Pago exterior"]
-    ].filter(([key]) => Number(prop[key]) === 1)
-     .map(([key, label]) =>
-       `<div class="feature-item">
-          <span>Contexto Cuba</span>
-          <span>${label}</span>
-        </div>`)
-     .join("")}
-  `;
-
-  appContainer.innerHTML = `
-    <a
-      href="/"
-      class="btn-back"
-    >
-      ← Volver a la búsqueda
-    </a>
-
-    <div class="card">
-
-      ${photosMarkup}
-
-      <div class="content">
-
-        <div class="header-info">
-
-          <div>
-
-            <h1 class="title">
-              ${escapeHTML(
-                prop.title ||
-                "Propiedad"
-              )}
-            </h1>
-
-            <p class="address">
-              📍 ${escapeHTML(
-                prop.address ||
-                prop.neighborhood ||
-                prop.city ||
-                "Ubicación a consultar"
-              )}
-            </p>
-
-          </div>
-
-          <div class="price">
-            ${escapeHTML(
-              formatPrice(
-                prop.price
-              )
-            )}
-          </div>
-
-        </div>
-
-        <div class="features">
-
-          <div class="feature-item">
-            <span>Habitaciones</span>
-            <span>
-              ${escapeHTML(
-                prop.bedrooms || "—"
-              )}
-            </span>
-          </div>
-
-          <div class="feature-item">
-            <span>Baños</span>
-            <span>
-              ${escapeHTML(
-                prop.bathrooms || "—"
-              )}
-            </span>
-          </div>
-
-          <div class="feature-item">
-            <span>Área</span>
-            <span>
-              ${escapeHTML(
-                prop.square_meters
-                  ? prop.square_meters +
-                    " m²"
-                  : "—"
-              )}
-            </span>
-          </div>
-
-          <div class="feature-item">
-            <span>Tipo</span>
-            <span>
-              ${escapeHTML(
-                prop.property_type ||
-                "—"
-              )}
-            </span>
-          </div>
-
-          ${extraFeatures}
-
-        </div>
-
-        <div class="description">
-
-          <h3>Descripción</h3>
-
-          ${escapeHTML(
-            prop.description ||
-            "Sin descripción disponible."
-          )}
-
-        </div>
-
-        ${similarHTML(
-          window.__nexoSimilar
-        )}
-
-        ${privateSection}
-
-        <div class="sticky-cta">
-<a
-          class="btn-contact"
-          href="${whatsappLink(prop)}"
-            target="_blank"
-            rel="noopener noreferrer"
-            onclick="track('whatsapp_click',prop.id)"
-        >
-          Contactar por WhatsApp
-        </a>
-
-        <a
-          class="btn-whatsapp"
-          href="${whatsappURL(prop)}"
-          target="_blank"
-          rel="noopener noreferrer"
-          onclick="track('whatsapp_click')"
-        >
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.25-1.5A9.9 9.9 0 1 0 12.04 2Zm0 1.8a8.1 8.1 0 1 1-4.1 15.08l-.3-.18-3.03.87.85-2.95-.2-.3a8.1 8.1 0 0 1 6.78-12.52Zm-3.1 4.03c-.17 0-.45.06-.68.31-.23.25-.9.87-.9 2.13 0 1.25.92 2.47 1.04 2.64.12.17 1.78 2.85 4.4 3.88 2.17.85 2.61.68 3.08.64.47-.04 1.52-.62 1.73-1.22.21-.6.21-1.11.15-1.22-.06-.1-.23-.17-.49-.29-.25-.13-1.51-.75-1.75-.83-.23-.09-.4-.13-.57.12-.17.25-.65.83-.8 1-.15.17-.29.19-.54.06a6.6 6.6 0 0 1-1.96-1.2 7.4 7.4 0 0 1-1.35-1.68c-.14-.25-.02-.38.11-.5.11-.12.25-.3.37-.44.12-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.57-1.36-.78-1.86-.2-.46-.41-.4-.57-.41l-.58-.01Z"/></svg>
-          Compartir por WhatsApp
-        </a>
-
-
-</div>
-
-</div>
-
-    </div>
-  `;
-
-}
-
-
-fetchPropertyDetails();
-
-</script>
-
-</body>
-
-</html>
+        <div class="mobile-cta-group">
+            <a href="#" id="mobile-whatsapp-btn" target="_blank" class="cta-btn cta-btn-primary">
