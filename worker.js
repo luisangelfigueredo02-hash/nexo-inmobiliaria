@@ -1,4 +1,3 @@
-/// worker.js
 // worker.js - NEXO Master API, SEO & AI Engine
 export default {
   async fetch(request, env, ctx) {
@@ -8,7 +7,7 @@ export default {
     // Configuración global de WhatsApp
     const WHATSAPP_PHONE = env.WHATSAPP_PHONE || "+5350000000";
 
-    // CORS y Seguridad de Headers
+    // Cabeceras de seguridad y CORS
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -19,13 +18,15 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
+    // Helper de autenticación administrativa
     const isAdmin = (req) => {
       const authHeader = req.headers.get("Authorization");
       if (!authHeader) return false;
       const token = authHeader.replace("Bearer ", "");
-      return token === env.ADMIN_TOKEN;
+      return token === env.ADMIN_TOKEN || token === env.ADMIN_PASSWORD;
     };
 
+    // Normalizador de imágenes para prevenir inconsistencias de formato
     const normalizeImages = (imagesStr) => {
       if (!imagesStr) return [];
       try {
@@ -39,7 +40,14 @@ export default {
       }
     };
 
-    // --- ENTRADA DE SEO INTERCEPTOR ---
+    // --- HEALTH CHECK ---
+    if (url.pathname === "/api/health" && method === "GET") {
+      return new Response(JSON.stringify({ ok: true, timestamp: new Date().toISOString() }), {
+        headers: { "Content-Type": "application/json", ...corsHeaders }
+      });
+    }
+
+    // --- SEO INTERCEPTOR PARA DETALLES DE PROPIEDAD ---
     if (url.pathname === "/property.html" && method === "GET") {
       const id = url.searchParams.get("id");
       const assetUrl = new URL(request.url);
@@ -57,14 +65,16 @@ export default {
             const mainImage = images[0] || "https://nexo.estate/placeholder.jpg";
             
             const seoTags = `
-              <title>${property.title} | NEXO Premium</title>
-              <meta name="description" content="${property.description ? property.description.substring(0, 155) : 'Propiedad exclusiva en NEXO'}.">
+              <title>${property.title} | NEXO</title>
+              <meta name="description" content="${property.description ? property.description.substring(0, 155) : 'Propiedad en Cuba'}.">
               <meta property="og:title" content="${property.title} - NEXO">
               <meta property="og:description" content="${property.description ? property.description.substring(0, 155) : ''}">
               <meta property="og:image" content="${mainImage}">
               <meta property="og:type" content="website">
               <meta name="twitter:card" content="summary_large_image">
               <meta name="twitter:title" content="${property.title}">
+              <meta name="twitter:description" content="${property.description ? property.description.substring(0, 155) : ''}">
+              <meta name="twitter:image" content="${mainImage}">
               <script type="application/ld+json">
               {
                 "@context": "https://schema.org",
@@ -83,12 +93,14 @@ export default {
             `;
             htmlContent = htmlContent.replace("<!-- SEO_TAGS -->", seoTags);
           }
-        } catch (err) { console.error("Error en SEO dinámico:", err); }
+        } catch (err) {
+          console.error("Error en SEO dinámico:", err);
+        }
       }
       return new Response(htmlContent, { headers: { "Content-Type": "text/html" } });
     }
 
-    // --- ENDPOINTS MEDIA Y CONFIG ---
+    // --- SERVIR FOTOS DESDE R2 (MEDIA) ---
     if (url.pathname.startsWith("/media/") && env.BUCKET_IMAGENES && (method === "GET" || method === "HEAD")) {
       const key = decodeURIComponent(url.pathname.slice("/media/".length));
       const object = method === "HEAD" ? await env.BUCKET_IMAGENES.head(key) : await env.BUCKET_IMAGENES.get(key);
@@ -101,17 +113,21 @@ export default {
       return new Response(method === "HEAD" ? null : object.body, { headers });
     }
 
+    // --- CONFIGURACIÓN PÚBLICA ---
     if (url.pathname === "/api/config" && method === "GET") {
-      return new Response(JSON.stringify({ whatsapp_phone: WHATSAPP_PHONE }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
+      return new Response(JSON.stringify({ whatsapp_phone: WHATSAPP_PHONE }), {
+        headers: { "Content-Type": "application/json", ...corsHeaders }
+      });
     }
 
-    // --- ENDPOINTS PÚBLICOS ---
+    // --- CATÁLOGO PÚBLICO DE PROPIEDADES ---
     if (url.pathname === "/api/properties" && method === "GET") {
       try {
         const type = url.searchParams.get("type");
         const operation = url.searchParams.get("operation");
         const maxPrice = url.searchParams.get("maxPrice");
         const province = url.searchParams.get("province");
+        const bedrooms = url.searchParams.get("bedrooms");
 
         let query = "SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images, latitude, longitude, created_at FROM properties WHERE status = 'published'";
         const params = [];
@@ -120,18 +136,28 @@ export default {
         if (operation) { query += " AND operation = ?"; params.push(operation); }
         if (maxPrice) { query += " AND price <= ?"; params.push(parseFloat(maxPrice)); }
         if (province) { query += " AND province = ?"; params.push(province); }
+        if (bedrooms) { query += " AND bedrooms >= ?"; params.push(parseInt(bedrooms)); }
 
         query += " ORDER BY created_at DESC";
         const { results } = await env.DB.prepare(query).bind(...params).all();
 
-        const formatted = results.map(row => ({ ...row, images: normalizeImages(row.images) }));
-        return new Response(JSON.stringify(formatted), { headers: { "Content-Type": "application/json", ...corsHeaders } });
+        const formatted = results.map(row => ({
+          ...row,
+          images: normalizeImages(row.images)
+        }));
+
+        return new Response(JSON.stringify(formatted), {
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
       } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
       }
     }
 
-    // P1: Propiedades Similares Inteligentes (Misma ciudad o provincia ±30% Precio)
+    // --- PROPIEDADES SIMILARES PÚBLICAS (±30% PRECIO) ---
     const similarMatch = url.pathname.match(/^\/api\/properties\/([^\/]+)\/similar$/);
     if (similarMatch && method === "GET") {
       const id = similarMatch[1];
@@ -158,11 +184,14 @@ export default {
         const formatted = results.map(r => ({ ...r, images: normalizeImages(r.images) }));
         return new Response(JSON.stringify(formatted), { headers: { "Content-Type": "application/json", ...corsHeaders } });
       } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
       }
     }
 
-    // Detalle Propiedad Púbica (Filtro Privacidad Cuidado)
+    // --- DETALLE PÚBLICO DE PROPIEDAD ---
     const detailMatch = url.pathname.match(/^\/api\/properties\/([^\/]+)$/);
     if (detailMatch && method === "GET") {
       const id = detailMatch[1];
@@ -171,61 +200,292 @@ export default {
           "SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images, latitude, longitude FROM properties WHERE id = ? AND status = 'published'"
         ).bind(id).first();
 
-        if (!row) return new Response(JSON.stringify({ error: "No encontrada" }), { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } });
+        if (!row) {
+          return new Response(JSON.stringify({ error: "Propiedad no encontrada o inactiva" }), {
+            status: 404,
+            headers: { "Content-Type": "application/json", ...corsHeaders }
+          });
+        }
+
         const formatted = { ...row, images: normalizeImages(row.images) };
-        return new Response(JSON.stringify(formatted), { headers: { "Content-Type": "application/json", ...corsHeaders } });
+        return new Response(JSON.stringify(formatted), {
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
       } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
       }
     }
 
-    // --- ADMIN ENDPOINTS (Mantenidos sin alteraciones funcionales para no romper) ---
+    // =========================================================================
+    // RUTAS ADMINISTRATIVAS PROTEGIDAS (RESTAURADAS AL 100%)
+    // =========================================================================
+
+    // 1. Verificar Login
     if (url.pathname === "/api/admin/verify" && method === "POST") {
-      if (isAdmin(request)) return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
-      return new Response(JSON.stringify({ error: "Denegado" }), { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } });
+      if (isAdmin(request)) {
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      }
+      return new Response(JSON.stringify({ error: "Credenciales inválidas" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders }
+      });
     }
 
+    // 2. Listado Completo Admin (Incluye datos privados)
     if (url.pathname === "/api/admin/properties" && method === "GET") {
-      if (!isAdmin(request)) return new Response(JSON.stringify({ error: "Denegado" }), { status: 401, headers: corsHeaders });
-      const { results } = await env.DB.prepare("SELECT * FROM properties ORDER BY created_at DESC").all();
-      return new Response(JSON.stringify(results.map(row => ({ ...row, images: normalizeImages(row.images) }))), { headers: { "Content-Type": "application/json", ...corsHeaders } });
+      if (!isAdmin(request)) {
+        return new Response(JSON.stringify({ error: "No autorizado" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      }
+      try {
+        const { results } = await env.DB.prepare("SELECT * FROM properties ORDER BY created_at DESC").all();
+        const formatted = results.map(row => ({
+          ...row,
+          images: normalizeImages(row.images)
+        }));
+        return new Response(JSON.stringify(formatted), {
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      }
     }
 
-    // --- NEXO IA CHATBOT (RAG Fallback Preservado) ---
+    // 3. Crear Propiedad (Admin) + Vectorize Sync
+    if (url.pathname === "/api/admin/properties" && method === "POST") {
+      if (!isAdmin(request)) {
+        return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers: corsHeaders });
+      }
+      try {
+        const data = await request.json();
+
+        // Autogenerar ID secuencial premium N-001, N-002...
+        const lastRow = await env.DB.prepare("SELECT id FROM properties ORDER BY created_at DESC LIMIT 1").first();
+        let nextNum = 1;
+        if (lastRow && lastRow.id && lastRow.id.startsWith("N-")) {
+          const lastNum = parseInt(lastRow.id.replace("N-", ""), 10);
+          if (!isNaN(lastNum)) nextNum = lastNum + 1;
+        }
+        const generatedId = `N-${String(nextNum).padStart(3, "0")}`;
+        const imagesStr = JSON.stringify(data.images || []);
+
+        await env.DB.prepare(`
+          INSERT INTO properties (id, title, type, operation, price, province, city, neighborhood, address, bedrooms, bathrooms, area, description, images, latitude, longitude, status, owner_name, owner_phone, internal_notes)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          generatedId, data.title, data.type, data.operation, parseFloat(data.price),
+          data.province, data.city, data.neighborhood, data.address || "",
+          parseInt(data.bedrooms || 0), parseInt(data.bathrooms || 0), parseFloat(data.area || 0),
+          data.description || "", imagesStr, parseFloat(data.latitude || 0), parseFloat(data.longitude || 0),
+          data.status || "published", data.owner_name || "", data.owner_phone || "", data.internal_notes || ""
+        ).run();
+
+        // Sincronizar con Vectorize si el binding existe
+        if (env.AI && env.VECTORIZE && (data.status || "published") === "published") {
+          try {
+            const indexText = `${data.title}. Tipo: ${data.type} en ${data.neighborhood}, ${data.city}. ${data.bedrooms} habs, ${data.bathrooms} baños. ${data.description}`;
+            const embeddingResponse = await env.AI.run("@cf/baai/bge-small-en-v1.5", { text: [indexText] });
+            const vector = embeddingResponse.data[0];
+
+            await env.VECTORIZE.upsert([{
+              id: generatedId,
+              values: vector,
+              metadata: { title: data.title, price: data.price, location: data.neighborhood }
+            }]);
+          } catch (vErr) {
+            console.error("Vectorize sync failed on creation:", vErr);
+          }
+        }
+
+        return new Response(JSON.stringify({ success: true, id: generatedId }), {
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      }
+    }
+
+    // 4. Editar Propiedad (Admin) + Vectorize Sync
+    if (url.pathname.startsWith("/api/admin/properties/") && method === "PUT") {
+      if (!isAdmin(request)) {
+        return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers: corsHeaders });
+      }
+      const id = url.pathname.split("/").pop();
+      try {
+        const data = await request.json();
+        const imagesStr = JSON.stringify(data.images || []);
+
+        await env.DB.prepare(`
+          UPDATE properties SET 
+            title = ?, type = ?, operation = ?, price = ?, province = ?, city = ?, neighborhood = ?, address = ?, 
+            bedrooms = ?, bathrooms = ?, area = ?, description = ?, images = ?, latitude = ?, longitude = ?, 
+            status = ?, owner_name = ?, owner_phone = ?, internal_notes = ?
+          WHERE id = ?
+        `).bind(
+          data.title, data.type, data.operation, parseFloat(data.price), data.province, data.city, data.neighborhood,
+          data.address || "", parseInt(data.bedrooms || 0), parseInt(data.bathrooms || 0), parseFloat(data.area || 0),
+          data.description || "", imagesStr, parseFloat(data.latitude || 0), parseFloat(data.longitude || 0),
+          data.status, data.owner_name || "", data.owner_phone || "", data.internal_notes || "", id
+        ).run();
+
+        // Actualizar o remover del índice vectorial según el estado
+        if (env.AI && env.VECTORIZE) {
+          try {
+            if (data.status === "published") {
+              const indexText = `${data.title}. Tipo: ${data.type} en ${data.neighborhood}, ${data.city}. ${data.bedrooms} habs, ${data.bathrooms} baños. ${data.description}`;
+              const embeddingResponse = await env.AI.run("@cf/baai/bge-small-en-v1.5", { text: [indexText] });
+              const vector = embeddingResponse.data[0];
+
+              await env.VECTORIZE.upsert([{
+                id: id,
+                values: vector,
+                metadata: { title: data.title, price: data.price, location: data.neighborhood }
+              }]);
+            } else {
+              await env.VECTORIZE.deleteByIds([id]);
+            }
+          } catch (vErr) {
+            console.error("Vectorize sync failed on update:", vErr);
+          }
+        }
+
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      }
+    }
+
+    // 5. Eliminar Propiedad (Admin)
+    if (url.pathname.startsWith("/api/admin/properties/") && method === "DELETE") {
+      if (!isAdmin(request)) {
+        return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers: corsHeaders });
+      }
+      const id = url.pathname.split("/").pop();
+      try {
+        await env.DB.prepare("DELETE FROM properties WHERE id = ?").bind(id).run();
+
+        if (env.VECTORIZE) {
+          try {
+            await env.VECTORIZE.deleteByIds([id]);
+          } catch (vErr) {
+            console.error("No se pudo eliminar de Vectorize:", vErr);
+          }
+        }
+
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      }
+    }
+
+    // =========================================================================
+    // NEXO IA CHATBOT CON VECTORIZE & LLM
+    // =========================================================================
     if (url.pathname === "/api/chat" && method === "POST") {
       try {
         const { message } = await request.json();
-        if (!message) return new Response(JSON.stringify({ error: "Requerido" }), { status: 400, headers: corsHeaders });
+        if (!message) {
+          return new Response(JSON.stringify({ error: "Mensaje requerido" }), { status: 400, headers: corsHeaders });
+        }
 
         let matchedProperties = [];
+
+        // Búsqueda semántica híbrida con Vectorize
         if (env.AI && env.VECTORIZE) {
           try {
-            const queryVec = await env.AI.run("@cf/baai/bge-small-en-v1.5", { text: [message] });
-            const vecResults = await env.VECTORIZE.query(queryVec.data[0], { topK: 4 });
+            const queryEmbeddingResponse = await env.AI.run("@cf/baai/bge-small-en-v1.5", { text: [message] });
+            const queryVector = queryEmbeddingResponse.data[0];
+
+            const vecResults = await env.VECTORIZE.query(queryVector, { topK: 4 });
             if (vecResults.matches && vecResults.matches.length > 0) {
-              const matchedIds = vecResults.matches.map(m => m.id);
-              const { results } = await env.DB.prepare(`SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE id IN (${matchedIds.map(()=>"?").join(",")}) AND status = 'published'`).bind(...matchedIds).all();
-              matchedProperties = results.map(row => ({ ...row, images: normalizeImages(row.images) }));
+              const matchedIds = vecResults.matches.map(match => match.id);
+              const placeholders = matchedIds.map(() => "?").join(",");
+              
+              const { results } = await env.DB.prepare(
+                `SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE id IN (${placeholders}) AND status = 'published'`
+              ).bind(...matchedIds).all();
+              
+              matchedProperties = results.map(row => ({
+                ...row,
+                images: normalizeImages(row.images)
+              }));
             }
-          } catch (e) { /* fallback if vectorize fails */ }
+          } catch (aiErr) {
+            console.error("Falla en contexto vectorial, usando fallback de texto:", aiErr);
+          }
         }
 
+        // Fallback de texto si Vectorize no devolvió resultados
         if (matchedProperties.length === 0) {
-          const { results } = await env.DB.prepare("SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE status = 'published' LIMIT 3").all();
-          matchedProperties = results.map(row => ({ ...row, images: normalizeImages(row.images) }));
+          const { results } = await env.DB.prepare(
+            "SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE status = 'published' LIMIT 3"
+          ).all();
+          matchedProperties = results.map(row => ({
+            ...row,
+            images: normalizeImages(row.images)
+          }));
         }
 
-        const contextString = matchedProperties.map(p => `[${p.id}] ${p.title} - ${p.type} en ${p.neighborhood}, ${p.city}. $${p.price} USD. Habs: ${p.bedrooms}, Baños: ${p.bathrooms}.`).join("\n");
-        const sysPrompt = `Eres NEXO IA, asesor inmobiliario premium en Cuba. Tono educado, claro y minimalista. Responde usando SÓLO las propiedades en tu contexto. Cita el ID como [N-XXX] para vincular. Contexto: \n${contextString}`;
+        // Contexto estructurado para el LLM
+        const contextString = matchedProperties.map(p => 
+          `ID: ${p.id}\nTítulo: ${p.title}\nTipo: ${p.type}\nOperación: ${p.operation}\nPrecio: ${p.price} USD\nUbicación: ${p.neighborhood}, ${p.city}, ${p.province}\nHabitaciones: ${p.bedrooms}, Baños: ${p.bathrooms}, Área: ${p.area} m²\nDescripción: ${p.description}\n---`
+        ).join("\n");
 
-        const aiResponse = await env.AI.run("@cf/meta/llama-3-8b-instruct", { messages: [{ role: "system", content: sysPrompt }, { role: "user", content: message }] });
-        return new Response(JSON.stringify({ response: aiResponse.response, properties: matchedProperties }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
+        const systemPrompt = `Eres NEXO IA, el asesor virtual premium y sofisticado de NEXO en Cuba. Tu tono es profesional, minimalista y educado.
+        Recomienda exclusivamente propiedades del siguiente contexto real. Jamás inventes propiedades, ubicaciones o precios.
+        Siempre que menciones o recomiendes un inmueble, cita explícitamente su ID entre corchetes, por ejemplo [${matchedProperties[0]?.id || 'N-001'}].
+        
+        Propiedades disponibles reales:
+        ${contextString}`;
+
+        const aiResponse = await env.AI.run("@cf/meta/llama-3-8b-instruct", {
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: message }
+          ]
+        });
+
+        return new Response(JSON.stringify({
+          response: aiResponse.response,
+          properties: matchedProperties
+        }), {
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
       } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
       }
     }
 
-    if (env.ASSETS) return env.ASSETS.fetch(request);
+    // Servir estáticos de Cloudflare Assets
+    if (env.ASSETS) {
+      return env.ASSETS.fetch(request);
+    }
     return new Response("Not Found", { status: 404 });
   }
 };
