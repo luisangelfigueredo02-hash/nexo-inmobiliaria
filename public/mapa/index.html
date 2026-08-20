@@ -1,4119 +1,537 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-
-<meta name="theme-color" content="#f5f5f7">
-<meta name="description" content="NEXO — explora propiedades en Cuba sobre el mapa.">
-
-<title>NEXO · Explorar mapa</title>
-
-
-<link rel="stylesheet" href="/variables.css">
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
-<script>
-if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("/sw.js").catch(()=>{});
-  });
-}
-</script>
-
-<style>
-:root{
-  --bg:#fbfbfd;
-  --surface:rgba(255,255,255,.84);
-  --surface-solid:#fff;
-  --text:#1d1d1f;
-  --muted:#86868b;
-  --line:rgba(0,0,0,.075);
-  --black:#111113;
-  --green:#34c759;
-  --radius:24px;
-  --shadow:
-    0 18px 60px rgba(0,0,0,.13);
-  --safe-top:env(safe-area-inset-top,0px);
-  --safe-bottom:env(safe-area-inset-bottom,0px);
-  --spring:cubic-bezier(.16,1,.3,1);
-  --spring-back:cubic-bezier(.34,1.56,.64,1);
-}
-
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
-
-html,
-body{
-  width:100%;
-  height:100%;
-  margin:0;
-  overflow:hidden;
-}
-
-body{
-  color:var(--text);
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Display",
-    "SF Pro Text",
-    Inter,
-    system-ui,
-    sans-serif;
-  -webkit-font-smoothing:antialiased;
-  text-rendering:optimizeLegibility;
-}
-
-button,
-input{
-  font:inherit;
-}
-
-button{
-  border:0;
-  cursor:pointer;
-}
-
-a{
-  color:inherit;
-  text-decoration:none;
-}
-
-#map{
-  position:fixed;
-  inset:0;
-  z-index:1;
-  background:#e9ebed;
-}
-
-.maplibregl-map{
-  font-family:inherit;
-}
-
-.maplibregl-ctrl-attrib{
-  font-size:8px;
-  background:rgba(255,255,255,.7)!important;
-  backdrop-filter:blur(10px);
-}
-
-:focus-visible{
-  outline:2px solid var(--text);
-  outline-offset:2px;
-}
-
-/* =====================================================
-   MAPA
-===================================================== */
-
-.maplibregl-canvas{
-  filter:
-    saturate(.82)
-    contrast(.98)
-    brightness(1.02);
-}
-
-/* =====================================================
-   NAVEGACIÓN SUPERIOR
-===================================================== */
-
-.topbar{
-  position:fixed;
-  z-index:2000;
-
-  top:calc(12px + var(--safe-top));
-  left:12px;
-  right:12px;
-
-  display:flex;
-  align-items:center;
-  gap:8px;
-
-  pointer-events:none;
-}
-
-.glass{
-  background:var(--surface);
-  border:1px solid rgba(255,255,255,.9);
-  box-shadow:var(--shadow);
-
-  backdrop-filter:blur(26px) saturate(1.35);
-  -webkit-backdrop-filter:blur(26px) saturate(1.35);
-}
-
-.brand{
-  width:52px;
-  height:52px;
-  flex:0 0 52px;
-
-  display:grid;
-  place-items:center;
-
-  border-radius:17px;
-
-  color:#111;
-  font-size:20px;
-  font-weight:850;
-  letter-spacing:-.085em;
-
-  pointer-events:auto;
-
-  transition:
-    transform .2s ease;
-}
-
-.brand:active{
-  transform:scale(.94);
-}
-
-.search{
-  min-width:0;
-  flex:1;
-
-  height:52px;
-
-  display:flex;
-  align-items:center;
-
-  padding:5px;
-
-  border-radius:17px;
-
-  pointer-events:auto;
-}
-
-.search-icon{
-  width:38px;
-  height:42px;
-  flex:0 0 38px;
-
-  display:grid;
-  place-items:center;
-
-  color:#777;
-  font-size:21px;
-}
-
-.search input{
-  width:100%;
-  min-width:0;
-  height:42px;
-
-  border:0;
-  outline:0;
-
-  background:transparent;
-
-  color:#111;
-  font-size:13px;
-}
-
-.search input::placeholder{
-  color:#8a8a8e;
-}
-
-.search-submit{
-  height:42px;
-
-  padding:0 14px;
-
-  border-radius:13px;
-
-  background:#111113;
-  color:#fff;
-
-  font-size:11px;
-  font-weight:750;
-
-  transition:
-    transform .2s ease,
-    opacity .2s ease;
-}
-
-.search-submit:active{
-  transform:scale(.95);
-}
-
-/* =====================================================
-   CONTROLES DEL MAPA
-===================================================== */
-
-.map-controls{
-  position:fixed;
-  z-index:2000;
-
-  top:calc(76px + var(--safe-top));
-  right:12px;
-
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-}
-
-.map-control{
-  width:44px;
-  height:44px;
-
-  display:grid;
-  place-items:center;
-
-  border-radius:14px;
-
-  color:#111;
-  font-size:17px;
-
-  transition:
-    transform .2s ease,
-    background .2s ease;
-}
-
-.map-control:active{
-  transform:scale(.91);
-}
-
-.map-control span{
-  display:block;
-  line-height:1;
-}
-
-.location-dot{
-  width:13px;
-  height:13px;
-
-  border:3px solid #111;
-  border-radius:50%;
-
-  background:#fff;
-}
-
-/* =====================================================
-   CONTADOR SUPERIOR
-===================================================== */
-
-.status-pill{
-  position:fixed;
-  z-index:1800;
-
-  left:50%;
-  top:calc(77px + var(--safe-top));
-
-  transform:translateX(-50%);
-
-  padding:8px 12px;
-
-  border-radius:999px;
-
-  color:#555;
-
-  font-size:10px;
-  font-weight:750;
-
-  white-space:nowrap;
-
-  pointer-events:none;
-
-  opacity:0;
-
-  transition:
-    opacity .25s ease;
-}
-
-.status-pill.visible{
-  opacity:1;
-}
-
-/* =====================================================
-   PANEL PRINCIPAL
-===================================================== */
-
-.panel{
-  position:fixed;
-  z-index:2000;
-
-  left:12px;
-  bottom:max(12px,var(--safe-bottom));
-
-  width:min(405px,calc(100% - 24px));
-  max-height:
-    min(
-      590px,
-      calc(100vh - 150px)
-    );
-
-  display:flex;
-  flex-direction:column;
-
-  overflow:hidden;
-
-  border-radius:27px;
-
-  pointer-events:auto;
-}
-
-.panel-head{
-  padding:17px 17px 13px;
-
-  border-bottom:1px solid var(--line);
-}
-
-.panel-title-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-}
-
-.panel-title{
-  font-size:16px;
-  font-weight:800;
-  letter-spacing:-.035em;
-}
-
-.panel-count{
-  color:#777;
-  font-size:10px;
-  font-weight:700;
-  white-space:nowrap;
-}
-
-.drag-indicator{
-  display:none;
-  width:34px;
-  height:4px;
-
-  margin:0 auto 13px;
-
-  border-radius:999px;
-
-  background:rgba(0,0,0,.15);
-}
-
-/* =====================================================
-   FILTROS
-===================================================== */
-
-.filters{
-  display:flex;
-  gap:6px;
-
-  margin-top:12px;
-
-  overflow-x:auto;
-
-  scrollbar-width:none;
-}
-
-.filters::-webkit-scrollbar{
-  display:none;
-}
-
-.filter{
-  transition:transform .35s var(--spring),background .3s var(--spring),color .3s var(--spring);
-
-  flex:none;
-
-  padding:8px 12px;
-
-  border:1px solid var(--line);
-  border-radius:999px;
-
-  background:#fff;
-  color:#656569;
-
-  font-size:10px;
-  font-weight:750;
-
-  transition:
-    transform .18s ease,
-    background .2s ease,
-    color .2s ease;
-}
-
-.filter:active{
-  transform:scale(.95);
-}
-
-.filter.active{
-  background:#111113;
-  border-color:#111113;
-  color:#fff;
-}
-
-.filters-secondary{
-  display:flex;
-  gap:6px;
-
-  margin-top:6px;
-}
-
-.select-filter{
-  position:relative;
-
-  display:flex;
-  align-items:center;
-  gap:6px;
-  flex:none;
-
-  padding:0 4px 0 12px;
-
-  border:1px solid var(--line);
-  border-radius:999px;
-
-  background:#fff;
-}
-
-.select-filter span{
-  font-size:9px;
-  font-weight:750;
-  color:#656569;
-  white-space:nowrap;
-}
-
-.select-filter select{
-  appearance:none;
-
-  padding:8px 22px 8px 0;
-
-  border:none;
-  border-radius:999px;
-
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M1 1l3 3 3-3' fill='none' stroke='%23656569' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E")
-    no-repeat right center/8px;
-
-  color:#111113;
-
-  font-size:10px;
-  font-weight:750;
-
-  cursor:pointer;
-}
-
-.select-filter:focus-within{
-  border-color:#111113;
-}
-
-/* =====================================================
-   LISTA
-===================================================== */
-
-.list{
-  min-height:0;
-  flex:1;
-
-  overflow-y:auto;
-
-  padding:7px;
-
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;
-
-  scrollbar-width:thin;
-}
-
-.property-card{
-  width:100%;
-
-  display:flex;
-  gap:11px;
-
-  padding:9px;
-
-  margin:0;
-
-  border-radius:17px;
-
-  background:transparent;
-
-  text-align:left;
-
-  transition:
-    background .2s ease,
-    transform .2s ease;
-}
-
-.property-card:hover{
-  background:rgba(0,0,0,.035);
-}
-
-.property-card:active{
-  transform:scale(.985);
-  background:rgba(0,0,0,.06);
-}
-
-.property-card.selected{
-  background:#eeeeef;
-}
-
-.card-image{
-  position:relative;
-
-  width:86px;
-  height:75px;
-  flex:0 0 86px;
-
-  overflow:hidden;
-
-  border-radius:13px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #e7e7e9,
-      #d8d8da
-    );
-}
-
-.card-image img{
-  width:100%;
-  height:100%;
-
-  object-fit:cover;
-
-  transition:
-    transform .45s ease;
-}
-
-.property-card:hover .card-image img{
-  transform:scale(1.04);
-}
-
-.card-image-label{
-  position:absolute;
-  left:6px;
-  bottom:6px;
-
-  padding:4px 6px;
-
-  border-radius:999px;
-
-  background:rgba(255,255,255,.82);
-
-  backdrop-filter:blur(10px);
-
-  color:#222;
-
-  font-size:8px;
-  font-weight:800;
-}
-
-.card-info{
-  min-width:0;
-  flex:1;
-
-  padding:1px 0;
-}
-
-.card-title{
-  overflow:hidden;
-
-  color:#111;
-
-  font-size:13px;
-  font-weight:800;
-
-  line-height:1.25;
-
-  white-space:nowrap;
-  text-overflow:ellipsis;
-}
-
-.card-price{
-  margin-top:4px;
-
-  color:#111;
-
-  font-size:13px;
-  font-weight:800;
-  letter-spacing:-.02em;
-}
-
-.card-location{
-  overflow:hidden;
-
-  margin-top:4px;
-
-  color:#777;
-
-  font-size:9.5px;
-  line-height:1.3;
-
-  white-space:nowrap;
-  text-overflow:ellipsis;
-}
-
-.card-meta{
-  display:flex;
-  gap:8px;
-
-  margin-top:5px;
-
-  color:#777;
-
-  font-size:9px;
-}
-
-.card-meta span{
-  white-space:nowrap;
-}
-
-.state{
-  padding:32px 16px;
-
-  color:#777;
-
-  text-align:center;
-
-  font-size:11px;
-  line-height:1.55;
-}
-
-.state strong{
-  display:block;
-
-  margin-bottom:5px;
-
-  color:#222;
-
-  font-size:12px;
-}
-
-/* =====================================================
-   LOADING
-===================================================== */
-
-.loading{
-  position:fixed;
-  z-index:5000;
-
-  left:50%;
-  top:50%;
-
-  transform:
-    translate(-50%,-50%)
-    scale(.96);
-
-  padding:13px 17px;
-
-  border-radius:16px;
-
-  background:rgba(255,255,255,.92);
-
-  box-shadow:var(--shadow);
-
-  backdrop-filter:blur(22px);
-
-  font-size:11px;
-  font-weight:750;
-
-  opacity:0;
-  pointer-events:none;
-
-  transition:
-    opacity .25s ease,
-    transform .25s ease;
-}
-
-.loading.show{
-  opacity:1;
-
-  transform:
-    translate(-50%,-50%)
-    scale(1);
-}
-
-/* =====================================================
-   TOAST
-===================================================== */
-
-.toast{
-  position:fixed;
-  z-index:6000;
-
-  left:50%;
-  bottom:
-    calc(
-      22px +
-      var(--safe-bottom)
-    );
-
-  transform:
-    translate(-50%,18px);
-
-  max-width:
-    calc(100% - 40px);
-
-  padding:11px 15px;
-
-  border-radius:999px;
-
-  background:#111113;
-  color:#fff;
-
-  font-size:10px;
-  font-weight:750;
-
-  text-align:center;
-
-  opacity:0;
-  pointer-events:none;
-
-  box-shadow:
-    0 15px 40px rgba(0,0,0,.2);
-
-  transition:
-    opacity .25s ease,
-    transform .25s ease;
-}
-
-.toast.show{
-  opacity:1;
-
-  transform:
-    translate(-50%,0);
-}
-
-/* =====================================================
-   POPUP DEL MAPA
-===================================================== */
-
-.maplibregl-popup-content{
-  padding:0;
-
-  overflow:hidden;
-
-  width:245px;
-
-  border-radius:18px;
-
-  background:#fff;
-
-  box-shadow:
-    0 18px 50px rgba(0,0,0,.18);
-}
-
-.maplibregl-popup-close-button{
-  z-index:5;
-
-  top:7px;
-  right:7px;
-
-  position:absolute;
-
-  width:30px;
-  height:30px;
-
-  border-radius:50%;
-
-  background:rgba(255,255,255,.86);
-
-  color:#111;
-
-  font-size:20px;
-  line-height:28px;
-
-  text-align:center;
-}
-
-/* popup del motor alternativo */
-.leaflet-popup-content-wrapper{
-  padding:0;
-
-  overflow:hidden;
-
-  border-radius:18px;
-
-  background:#fff;
-
-  box-shadow:
-    0 18px 50px rgba(0,0,0,.18);
-}
-
-.leaflet-popup-content{
-  width:245px!important;
-
-  margin:0!important;
-}
-
-.leaflet-popup-tip{
-  background:#fff;
-}
-
-.leaflet-popup-close-button{
-  z-index:5;
-
-  top:7px!important;
-  right:7px!important;
-
-  width:30px!important;
-  height:30px!important;
-
-  border-radius:50%;
-
-  background:rgba(255,255,255,.86)!important;
-
-  color:#111!important;
-
-  font-size:20px!important;
-  line-height:28px!important;
-
-  text-align:center;
-}
-
-.popup{
-  overflow:hidden;
-}
-
-.popup-image{
-  width:100%;
-  height:135px;
-
-  object-fit:cover;
-
-  background:#e6e6e7;
-}
-
-.popup-body{
-  padding:13px;
-}
-
-.popup-type{
-  color:#777;
-
-  font-size:9px;
-  font-weight:750;
-
-  text-transform:uppercase;
-  letter-spacing:.07em;
-}
-
-.popup-title{
-  margin-top:4px;
-
-  color:#111;
-
-  font-size:15px;
-  font-weight:800;
-
-  line-height:1.15;
-  letter-spacing:-.03em;
-}
-
-.popup-price{
-  margin-top:6px;
-
-  color:#111;
-
-  font-size:15px;
-  font-weight:850;
-}
-
-.popup-location{
-  margin-top:5px;
-
-  color:#777;
-
-  font-size:10px;
-  line-height:1.35;
-}
-
-.popup-meta{
-  display:flex;
-  gap:9px;
-
-  margin-top:9px;
-
-  color:#666;
-
-  font-size:9px;
-}
-
-.popup-link{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  width:100%;
-
-  margin-top:11px;
-  padding:10px;
-
-  border-radius:12px;
-
-  background:#111113;
-  color:#fff;
-
-  font-size:10px;
-  font-weight:750;
-}
-
-/* =====================================================
-   MARKER PERSONALIZADO
-===================================================== */
-
-/* píldora de precio flotante (estilo Apple/Airbnb) */
-.nexo-marker{
-
-  padding:7px 11px;
-
-  border:0;
-  border-radius:999px;
-
-  background:#fff;
-  color:#111;
-
-  box-shadow:
-    0 2px 8px rgba(0,0,0,.10),
-    0 10px 28px rgba(0,0,0,.12);
-
-  font-size:11px;
-  font-weight:800;
-  letter-spacing:-.01em;
-
-  white-space:nowrap;
-
-  cursor:pointer;
-
-  transition:
-    transform .2s ease,
-    box-shadow .2s ease,
-    background .2s ease,
-    color .2s ease;
-}
-
-.nexo-marker.active{
-
-  transform:scale(1.15);
-
-  background:#111113;
-  color:#fff;
-
-  box-shadow:
-    0 4px 12px rgba(0,0,0,.18),
-    0 14px 36px rgba(0,0,0,.22);
-}
-
-/* punto de ubicación del usuario */
-.nexo-user-dot{
-  width:16px;
-  height:16px;
-
-  border-radius:50%;
-
-  background:#fff;
-
-  border:3px solid #111;
-
-  box-shadow:
-    0 2px 10px rgba(0,0,0,.25);
-}
-
-/* centrado de marcadores en el motor alternativo */
-.leaflet-marker-icon .nexo-marker,
-.leaflet-marker-icon .nexo-user-dot{
-  transform:
-    translate(-50%,-50%);
-}
-
-.leaflet-marker-icon .nexo-marker.active{
-  transform:
-    translate(-50%,-50%) scale(1.15);
-}
-
-.leaflet-container{
-  font-family:inherit;
-}
-
-.leaflet-control-attribution{
-  font-size:8px;
-  background:rgba(255,255,255,.7)!important;
-  backdrop-filter:blur(10px);
-}
-
-/* =====================================================
-   RESPONSIVE
-===================================================== */
-
-@media(max-width:650px){
-
-  .topbar{
-    top:
-      calc(
-        9px +
-        var(--safe-top)
-      );
-  }
-
-  .brand{
-    width:48px;
-    height:48px;
-    flex-basis:48px;
-
-    border-radius:15px;
-
-    font-size:18px;
-  }
-
-  .search{
-    height:48px;
-    border-radius:15px;
-  }
-
-  .search-icon{
-    width:34px;
-    flex-basis:34px;
-  }
-
-  .search-submit{
-    height:38px;
-    padding:0 11px;
-  }
-
-  .map-controls{
-    top:
-      calc(
-        67px +
-        var(--safe-top)
-      );
-  }
-
-  .status-pill{
-    top:
-      calc(
-        67px +
-        var(--safe-top)
-      );
-  }
-
-  .panel{
-    left:8px;
-    right:8px;
-    bottom:
-      max(
-        8px,
-        var(--safe-bottom)
-      );
-
-    width:auto;
-
-    max-height:
-      min(
-        48vh,
-        510px
-      );
-
-    border-radius:25px;
-  }
-
-  .drag-indicator{
-    display:block;
-  }
-
-  .panel-head{
-    padding-top:10px;
-  }
-
-  .list{
-    padding-bottom:8px;
-  }
-
-  .property-card{
-    padding:8px;
-  }
-
-  .card-image{
-    width:78px;
-    height:68px;
-    flex-basis:78px;
-  }
-
-  .toast{
-    bottom:
-      calc(
-        16px +
-        var(--safe-bottom)
-      );
-  }
-}
-
-@media(max-width:390px){
-
-  .search-submit{
-    font-size:0;
-
-    width:38px;
-    padding:0;
-  }
-
-  .search-submit::after{
-    content:"→";
-
-    font-size:15px;
-  }
-
-  .panel{
-    max-height:45vh;
-  }
-}
-
-@media(min-width:900px){
-
-  .panel{
-    left:18px;
-    bottom:20px;
-  }
-
-  .topbar{
-    left:18px;
-    right:18px;
-  }
-
-  .map-controls{
-    right:18px;
-  }
-}
-
-/* =====================================================
-   REDUCE MOTION
-===================================================== */
-
-@media(prefers-reduced-motion:reduce){
-
-  *,
-  *::before,
-  *::after{
-    scroll-behavior:auto!important;
-    animation:none!important;
-    transition:none!important;
-  }
-}
-
-/* =========================================================
-   NEXO MOTION SYSTEM — fisica spring unificada
-========================================================= */
-
-@keyframes nexo-card-in{
-  from{
-    opacity:0;
-    transform:translateY(18px) scale(.99);
-  }
-  to{
-    opacity:1;
-    transform:none;
-  }
-}
-
-button:active,
-a[class*="btn"]:active{
-  transform:scale(.96);
-}
-
-@media(prefers-reduced-motion:reduce){
-
-  *,
-  *::before,
-  *::after{
-
-    animation:none!important;
-    transition:none!important;
-
-    scroll-behavior:auto;
-
-  }
-
-}
-
-/* =========================================================
-   NEXO LIQUID GLASS — vidrio iOS 26: luz especular + saturacion
-========================================================= */
-
-.glass{
-
-  background:
-    linear-gradient(
-      175deg,
-      rgba(255,255,255,.78) 0%,
-      rgba(255,255,255,.42) 100%
-    );
-
-  border:0;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.85),
-    inset 0 -.5px 0 rgba(0,0,0,.028),
-    0 18px 42px rgba(13,18,30,.10);
-
-  backdrop-filter:
-    blur(44px) saturate(210%);
-  -webkit-backdrop-filter:
-    blur(44px) saturate(210%);
-
-}
-
-@media(prefers-reduced-motion:no-preference){
-
-  .glass-light{
-
-    position:relative;
-    overflow:hidden;
-
-  }
-
-  .glass-light::after{
-
-    content:"";
-
-    position:absolute;
-    inset:0;
-
-    background:
-      linear-gradient(
-        115deg,
-        transparent 25%,
-        rgba(255,255,255,.35) 45%,
-        transparent 65%
-      );
-
-    transform:translateX(-110%);
-
-    transition:transform 1.4s var(--spring);
-
-    pointer-events:none;
-
-  }
-
-  .glass-light:hover::after{
-    transform:translateX(110%);
-  }
-
-}
-
-.glass-ink{
-  color:#111;
-  font-weight:700;
-}
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Mapa Interactivo de Propiedades — NEXO</title>
+    
+    <!-- Enlace al sistema de diseño global -->
+    <link rel="stylesheet" href="/variables.css">
+    
+    <!-- Estilos de Leaflet para el mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <!-- Estilos específicos de la experiencia de mapa dividido -->
+    <style>
+        /* Ajuste de cabecera fija */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            z-index: 1000; /* Por encima del mapa de Leaflet */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--space-5);
+            transition: var(--transition-normal);
+        }
+
+        .logo {
+            font-size: var(--text-lg);
+            font-weight: var(--weight-bold);
+            color: var(--text-primary);
+            letter-spacing: -0.03em;
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-primary);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: var(--space-5);
+        }
+
+        nav a {
+            font-size: var(--text-sm);
+            font-weight: var(--weight-medium);
+            color: var(--text-secondary);
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-sm);
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--text-primary);
+            background-color: var(--bg-secondary);
+        }
+
+        /* Contenedor de Pantalla Dividida */
+        .map-split-view {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            height: 100vh;
+            padding-top: var(--header-height);
+            overflow: hidden;
+            width: 100%;
+        }
+
+        /* Contenedor del Mapa (Izquierda) */
+        .map-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+
+        #fullscreen-map {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-secondary);
+        }
+
+        /* Panel de Tarjetas Lateral (Derecha) */
+        .sidebar-list {
+            height: 100%;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            border-left: 1px solid var(--border-subtle);
+            padding: var(--space-5);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .sidebar-header {
+            margin-bottom: var(--space-2);
+        }
+
+        .sidebar-header h1 {
+            font-size: var(--text-lg);
+            font-weight: var(--weight-bold);
+            letter-spacing: -0.03em;
+        }
+
+        .sidebar-header p {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+
+        /* Contenedor de tarjetas scrollables */
+        .list-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-4);
+        }
+
+        /* Marcadores de Precio Personalizados (Estilo Airbnb) */
+        .price-marker {
+            background-color: var(--bg-primary);
+            border: 1.5px solid var(--border-default);
+            border-radius: var(--radius-round);
+            padding: var(--space-1) var(--space-2);
+            font-family: var(--font-sans);
+            font-size: var(--text-xs);
+            font-weight: var(--weight-bold);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+            white-space: nowrap;
+            transition: var(--transition-fast);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Estado Hover del Marcador */
+        .price-marker:hover, .price-marker.active-marker {
+            background-color: var(--accent);
+            color: var(--text-on-accent);
+            border-color: var(--accent);
+            transform: scale(1.08);
+            box-shadow: var(--shadow-md);
+            z-index: 999 !important;
+        }
+
+        /* Tarjeta flotante móvil de previsualización (Hidden on Desktop) */
+        .mobile-preview-container {
+            display: none;
+        }
+
+        /* Adaptabilidad Móvil */
+        @media (max-width: 992px) {
+            header {
+                padding: 0 var(--space-4);
+            }
+
+            nav {
+                display: none;
+            }
+
+            .map-split-view {
+                grid-template-columns: 1fr; /* El mapa ocupa todo */
+            }
+
+            .sidebar-list {
+                display: none; /* Se descarta la lista lateral en móviles */
+            }
+
+            /* Contenedor de previsualización flotante para Móviles */
+            .mobile-preview-container {
+                display: block;
+                position: absolute;
+                bottom: calc(var(--space-4) + var(--safe-bottom-mobile));
+                left: var(--space-4);
+                right: var(--space-4);
+                z-index: 100;
+                pointer-events: none; /* No bloquea clics en el mapa por detrás */
+                transform: translateY(150%);
+                transition: var(--transition-normal);
+            }
+
+            .mobile-preview-container.visible {
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+
+            .mobile-preview-container .property-card {
+                pointer-events: auto;
+                flex-direction: row; /* Layout horizontal para mejor espacio en móvil */
+                background-color: var(--bg-primary);
+                box-shadow: var(--shadow-lg);
+                max-width: 480px;
+                margin: 0 auto;
+                height: 120px;
+            }
+
+            .mobile-preview-container .image-container {
+                width: 120px;
+                height: 100%;
+                aspect-ratio: 1 / 1;
+                flex-shrink: 0;
+            }
+
+            .mobile-preview-container .details-container {
+                padding: var(--space-3);
+                gap: 2px;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+            .mobile-preview-container .features-grid {
+                margin-top: var(--space-1);
+                padding-top: var(--space-1);
+                gap: var(--space-2);
+            }
+
+            /* Botón móvil para cerrar previsualización */
+            .close-preview-btn {
+                position: absolute;
+                top: -12px;
+                right: -12px;
+                width: 32px;
+                height: 32px;
+                background-color: var(--accent);
+                color: var(--text-on-accent);
+                border-radius: var(--radius-round);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: var(--shadow-md);
+                z-index: 105;
+                pointer-events: auto;
+            }
+        }
+    </style>
 </head>
-
 <body>
 
-<div id="map"></div>
-
-
-<!-- ===================================================
-     BARRA SUPERIOR
-==================================================== -->
-
-<div class="topbar">
-
-  <a
-    href="/"
-    class="brand glass"
-    aria-label="Volver a NEXO"
-  >
-    NEXO
-  </a>
-
-  <form
-    id="mapSearch"
-    class="search glass"
-  >
-
-    <div class="search-icon">
-      ⌕
-    </div>
-
-    <input
-      id="searchInput"
-      type="search"
-      autocomplete="off"
-      enterkeyhint="search"
-      placeholder="Ciudad, zona o propiedad..."
-      aria-label="Buscar propiedades"
-    >
-
-    <button
-      class="search-submit"
-      type="submit"
-    >
-      Buscar
-    </button>
-
-  </form>
-
-</div>
-
-
-<!-- ===================================================
-     CONTROLES
-==================================================== -->
-
-<div class="map-controls">
-
-  <button
-    id="locateButton"
-    class="map-control glass"
-    type="button"
-    aria-label="Mi ubicación"
-    title="Mi ubicación"
-  >
-    <span class="location-dot"></span>
-  </button>
-
-  <button
-    id="resetButton"
-    class="map-control glass"
-    type="button"
-    aria-label="Ver Cuba"
-    title="Ver Cuba"
-  >
-    <span>⌂</span>
-  </button>
-
-</div>
-
-
-<div
-  id="statusPill"
-  class="status-pill glass"
->
-  Cuba
-</div>
-
-
-<!-- ===================================================
-     PANEL DE PROPIEDADES
-==================================================== -->
-
-<section class="panel glass">
-
-  <div class="panel-head">
-
-    <div class="drag-indicator"></div>
-
-    <div class="panel-title-row">
-
-      <div class="panel-title">
-        Explora propiedades
-      </div>
-
-      <div
-        id="count"
-        class="panel-count"
-      >
-        Cargando...
-      </div>
-
-    </div>
-
-
-    <div class="filters">
-
-      <button
-        class="filter active"
-        data-filter="all"
-        type="button"
-      >
-        Todas
-      </button>
-
-      <button
-        class="filter"
-        data-filter="Casa"
-        type="button"
-      >
-        Casas
-      </button>
-
-      <button
-        class="filter"
-        data-filter="Apartamento"
-        type="button"
-      >
-        Apartamentos
-      </button>
-
-      <button
-        class="filter"
-        data-filter="Villa"
-        type="button"
-      >
-        Villas
-      </button>
-
-      <button
-        class="filter"
-        data-filter="Terreno"
-        type="button"
-      >
-        Terrenos
-      </button>
-
-    </div>
-
-
-    <div class="filters-secondary">
-
-      <label class="select-filter">
-
-        <span>
-          Presupuesto
-        </span>
-
-        <select
-          id="budgetFilter"
-          aria-label="Presupuesto máximo"
-        >
-
-          <option value="0">
-            Cualquiera
-          </option>
-
-          <option value="25000">
-            ≤ $25k
-          </option>
-
-          <option value="50000">
-            ≤ $50k
-          </option>
-
-          <option value="100000">
-            ≤ $100k
-          </option>
-
-          <option value="150000">
-            ≤ $150k
-          </option>
-
-          <option value="250000">
-            ≤ $250k
-          </option>
-
-          <option value="500000">
-            ≤ $500k
-          </option>
-
-        </select>
-
-      </label>
-
-
-      <label class="select-filter">
-
-        <span>
-          Habitaciones
-        </span>
-
-        <select
-          id="bedroomsFilter"
-          aria-label="Habitaciones mínimas"
-        >
-
-          <option value="0">
-            Cualquiera
-          </option>
-
-          <option value="1">
-            1+
-          </option>
-
-          <option value="2">
-            2+
-          </option>
-
-          <option value="3">
-            3+
-          </option>
-
-          <option value="4">
-            4+
-          </option>
-
-        </select>
-
-      </label>
-
-    </div>
-
-  </div>
-
-
-  <div
-    id="propertyList"
-    class="list"
-  >
-
-    <div class="state">
-      Cargando propiedades...
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- ===================================================
-     LOADING
-==================================================== -->
-
-<div
-  id="loading"
-  class="loading"
->
-  Actualizando mapa...
-</div>
-
-
-<!-- ===================================================
-     TOAST
-==================================================== -->
-
-<div
-  id="toast"
-  class="toast"
-></div>
-
-
-<script>
-"use strict";
-
-/*
-=========================================================
-NEXO MAP
-Versión actualizada de experiencia de mapa.
-
-Compatible con:
-GET /api/properties?status=available&limit=500
-=========================================================
-*/
-
-
-const state = {
-
-  map:null,
-
-  properties:[],
-
-  filtered:[],
-
-  markers:[],
-
-  markerById:new Map(),
-
-  activeMarker:null,
-
-  userMarker:null,
-
-  filter:"all",
-
-  search:"",
-
-  budget:0,
-
-  bedrooms:0
-
-};
-
-
-const CUBA = {
-
-  lat:21.5218,
-
-  lng:-77.7812,
-
-  zoom:6,
-
-  bounds:[
-    [19.5,-86.5],
-    [24.0,-73.0]
-  ]
-
-};
-
-
-const $ =
-  selector =>
-    document.querySelector(
-      selector
-    );
-
-
-document.addEventListener(
-  "DOMContentLoaded",
-  init
-);
-
-
-async function init(){
-
-  createMap();
-
-  bindControls();
-
-  await loadProperties();
-
-}
-
-
-/* =====================================================
-   MAPA — MapLibre GL + OpenFreeMap
-   Vectorial gratuito, sin API key.
-===================================================== */
-
-const MAP_STYLE =
-  "https://tiles.openfreemap.org/styles/positron";
-
-const MAP_TILES_FALLBACK =
-  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png";
-
-const MAP_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>';
-
-let mapEnginePromise = null;
-
-function webglAvailable(){
-
-  try{
-
-    const canvas =
-      document.createElement(
-        "canvas"
-      );
-
-    return Boolean(
-      canvas.getContext("webgl2") ||
-      canvas.getContext("webgl")
-    );
-
-  }catch(e){
-
-    return false;
-
-  }
-
-}
-
-function loadScript(
-  src
-){
-
-  return new Promise((resolve,reject) => {
-
-    const script =
-      document.createElement(
-        "script"
-      );
-
-    script.src = src;
-    script.onload = resolve;
-    script.onerror = reject;
-
-    document.head.appendChild(
-      script
-    );
-
-  });
-
-}
-
-function loadCSS(
-  href
-){
-
-  const link =
-    document.createElement(
-      "link"
-    );
-
-  link.rel = "stylesheet";
-  link.href = href;
-
-  document.head.appendChild(
-    link
-  );
-
-}
-
-/*
- * Motor del mapa: MapLibre GL (vectorial)
- * cuando hay WebGL, Leaflet + CartoDB
- * Positron Retina como alternativa.
- * Ambos 100% gratuitos, sin API key.
- */
-
-function loadMapEngine(){
-
-  if(!mapEnginePromise){
-
-    mapEnginePromise =
-      (async () => {
-
-        if(webglAvailable()){
-
-          loadCSS(
-            "https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css"
-          );
-
-          await loadScript(
-            "https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"
-          );
-
-          return "maplibre";
-
-        }
-
-        loadCSS(
-          "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        );
-
-        await loadScript(
-          "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        );
-
-        return "leaflet";
-
-      })();
-
-  }
-
-  return mapEnginePromise;
-
-}
-
-
-async function createMap(){
-
-  let engine;
-
-  try{
-
-    engine =
-      await loadMapEngine();
-
-  }catch(error){
-
-    console.warn(
-      "NEXO MAP: no se pudo cargar el motor del mapa.",
-      error
-    );
-
-    toast(
-      "No pudimos cargar el mapa. Revisa tu conexión."
-    );
-
-    return;
-
-  }
-
-
-  if(engine === "maplibre"){
-
-    state.map =
-      new maplibregl.Map({
-
-        container:"map",
-
-        style:MAP_STYLE,
-
-        center:[
-          CUBA.lng,
-          CUBA.lat
-        ],
-
-        zoom:CUBA.zoom,
-
-        minZoom:5,
-
-        maxZoom:18,
-
-        maxBounds:[
-          [-86.5,19.5],
-          [-73.0,24.0]
-        ],
-
-        attributionControl:{
-          compact:true
-        }
-
-      });
-
-  }else{
-
-    state.map =
-      L.map(
-        "map",
-        {
-          zoomControl:false,
-
-          minZoom:5,
-
-          maxZoom:18,
-
-          maxBounds:[
-            [19.5,-86.5],
-            [24.0,-73.0]
-          ],
-
-          maxBoundsViscosity:.65,
-
-          attributionControl:true
-        }
-      );
-
-
-    L.tileLayer(
-      MAP_TILES_FALLBACK,
-      {
-        subdomains:"abcd",
-
-        maxZoom:20,
-
-        attribution:MAP_ATTRIBUTION
-      }
-    ).addTo(
-      state.map
-    );
-
-
-    state.map.setView(
-      [
-        CUBA.lat,
-        CUBA.lng
-      ],
-      CUBA.zoom
-    );
-
-  }
-
-
-  state.mapEngine = engine;
-
-
-  state.map.on(
-    "zoomend moveend",
-    updateMapStatus
-  );
-
-
-  applyFilter();
-
-}
-
-
-/* navegación del mapa unificada por motor */
-function mapFlyTo(
-  point,
-  zoom,
-  duration
-){
-
-  if(!state.map){
-
-    return;
-
-  }
-
-  if(
-    state.mapEngine ===
-    "maplibre"
-  ){
-
-    state.map.flyTo({
-      center:point,
-      zoom,
-      duration
-    });
-
-  }else{
-
-    state.map.flyTo(
-      [point[1],point[0]],
-      zoom,
-      {
-        duration:duration/1000
-      }
-    );
-
-  }
-
-}
-
-
-function mapFitBounds(
-  points,
-  padding,
-  maxZoom
-){
-
-  if(!state.map){
-
-    return;
-
-  }
-
-  if(
-    state.mapEngine ===
-    "maplibre"
-  ){
-
-    state.map.fitBounds(
-      points.reduce(
-        (acc,point) =>
-          acc.extend(point),
-        new maplibregl.LngLatBounds(
-          points[0],
-          points[0]
-        )
-      ),
-      {
-        padding,
-        maxZoom
-      }
-    );
-
-  }else{
-
-    state.map.fitBounds(
-      points.map(
-        ([lng,lat]) =>
-          [lat,lng]
-      ),
-      {
-        padding:[
-          padding,
-          padding
-        ],
-        maxZoom
-      }
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   CONTROLES
-===================================================== */
-
-function bindControls(){
-
-  document
-    .querySelectorAll(
-      ".filter"
-    )
-    .forEach(
-      button => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            document
-              .querySelectorAll(
-                ".filter"
-              )
-              .forEach(
-                item =>
-                  item.classList.remove(
-                    "active"
-                  )
-              );
-
-            button.classList.add(
-              "active"
-            );
-
-            state.filter =
-              button.dataset.filter ||
-              "all";
-
-            applyFilter();
-
-          }
-        );
-
-      }
-    );
-
-
-  $("#budgetFilter")
-    .addEventListener(
-      "change",
-      event => {
-
-        state.budget =
-          Math.max(
-            0,
-            Number(
-              event.target.value
-            ) || 0
-          );
-
-        applyFilter();
-
-      }
-    );
-
-
-  $("#bedroomsFilter")
-    .addEventListener(
-      "change",
-      event => {
-
-        state.bedrooms =
-          Math.max(
-            0,
-            Number(
-              event.target.value
-            ) || 0
-          );
-
-        applyFilter();
-
-      }
-    );
-
-
-  $("#mapSearch")
-    .addEventListener(
-      "submit",
-      event => {
-
-        event.preventDefault();
-
-        performSearch(
-          $("#searchInput").value
-        );
-
-      }
-    );
-
-
-  $("#resetButton")
-    .addEventListener(
-      "click",
-      resetMap
-    );
-
-
-  $("#locateButton")
-    .addEventListener(
-      "click",
-      locateUser
-    );
-
-}
-
-
-/* =====================================================
-   API
-===================================================== */
-
-async function loadProperties(){
-
-  showLoading(true);
-
-  try{
-
-    const response =
-      await fetch(
-        "/api/properties?status=available&limit=500",
-        {
-          method:"GET",
-
-          headers:{
-            "Accept":
-              "application/json"
-          },
-
-          cache:"no-store"
-        }
-      );
-
-
-    if(!response.ok){
-
-      throw new Error(
-        `HTTP ${response.status}`
-      );
-
-    }
-
-
-    const data =
-      await response.json();
-
-
-    state.properties =
-      Array.isArray(
-        data?.properties
-      )
-        ? data.properties
-        : Array.isArray(data)
-          ? data
-          : [];
-
-
-    applyFilter();
-
-
-  }catch(error){
-
-    console.error(
-      "NEXO MAP LOAD:",
-      error
-    );
-
-
-    $("#propertyList").innerHTML = `
-
-      <div class="state">
-
-        <strong>
-          No pudimos cargar las propiedades.
-        </strong>
-
-        Comprueba tu conexión e inténtalo
-        nuevamente.
-
-      </div>
-
-    `;
-
-
-    $("#count").textContent =
-      "Sin datos";
-
-
-    toast(
-      "No se pudo cargar el inventario."
-    );
-
-
-  }finally{
-
-    showLoading(false);
-
-  }
-
-}
-
-
-/* =====================================================
-   FILTROS + BÚSQUEDA
-===================================================== */
-
-function applyFilter(){
-
-  let list =
-    [...state.properties];
-
-
-  if(
-    state.filter !== "all"
-  ){
-
-    const target =
-      normalize(
-        state.filter
-      );
-
-
-    list =
-      list.filter(
-        property =>
-          normalize(
-            property.property_type ||
-            property.type ||
-            ""
-          ) === target
-      );
-
-  }
-
-
-  if(
-    state.search
-  ){
-
-    const query =
-      normalize(
-        state.search
-      );
-
-
-    list =
-      list.filter(
-        property =>
-          searchableText(
-            property
-          ).includes(
-            query
-          )
-      );
-
-  }
-
-
-  if(
-    state.budget > 0
-  ){
-
-
-    list =
-      list.filter(
-        property => {
-
-          const price =
-            Number(
-              property.price
-            );
-
-          return (
-            Number.isFinite(
-              price
-            ) &&
-            price <=
-              state.budget
-          );
-
-        }
-      );
-
-  }
-
-
-  if(
-    state.bedrooms > 0
-  ){
-
-
-    list =
-      list.filter(
-        property => {
-
-          const bedrooms =
-            Number(
-              property.bedrooms
-            );
-
-          return (
-            Number.isFinite(
-              bedrooms
-            ) &&
-            bedrooms >=
-              state.bedrooms
-          );
-
-        }
-      );
-
-  }
-
-
-  state.filtered =
-    list;
-
-
-  renderMarkers(
-    list
-  );
-
-
-  renderList(
-    list
-  );
-
-
-  updateMapStatus();
-
-}
-
-
-function performSearch(
-  value
-){
-
-  state.search =
-    String(
-      value || ""
-    ).trim();
-
-
-  if(
-    !state.search
-  ){
-
-    applyFilter();
-
-    return;
-
-  }
-
-
-  applyFilter();
-
-
-  const points =
-    state.filtered
-      .filter(
-        hasCoordinates
-      )
-      .map(
-        property => [
-          Number(
-            property.longitude
-          ),
-          Number(
-            property.latitude
-          )
-        ]
-      );
-
-
-  if(
-    points.length === 1
-  ){
-
-    mapFlyTo(
-      points[0],
-      15,
-      650
-    );
-
-
-  }else if(
-    points.length > 1
-  ){
-
-    mapFitBounds(
-      points,
-      80,
-      14
-    );
-
-
-  }else if(
-    state.filtered.length
-  ){
-
-    toast(
-      "Encontramos propiedades, pero todavía no tienen ubicación en el mapa."
-    );
-
-  }else{
-
-    toast(
-      "No encontramos propiedades con esa búsqueda."
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   MARCADORES
-===================================================== */
-
-/*
- * Separa marcadores con coordenadas
- * idénticas en espiral determinista
- * (ángulo áureo).
- */
-
-function spreadMarkers(
-  located
-){
-
-  const groups =
-    new Map();
-
-  located.forEach(
-    property => {
-
-      const key =
-        `${Number(property.latitude).toFixed(5)},` +
-        `${Number(property.longitude).toFixed(5)}`;
-
-      if(!groups.has(key)){
-
-        groups.set(key, []);
-
-      }
-
-      groups
-        .get(key)
-        .push(property);
-
-    }
-  );
-
-
-  const spread =
-    new Map();
-
-  groups.forEach(
-    list => {
-
-      const ordered =
-        [...list].sort(
-          (a,b) =>
-            String(a.id)
-              .localeCompare(
-                String(b.id)
-              )
-        );
-
-      ordered.forEach(
-        (property, index) => {
-
-          const baseLat =
-            Number(property.latitude);
-
-          const baseLng =
-            Number(property.longitude);
-
-          if(index === 0){
-
-            spread.set(
-              String(property.id),
-              [baseLng, baseLat]
-            );
-
-            return;
-
-          }
-
-          const angle =
-            (index - 1) * 2.4;
-
-          const ring =
-            Math.ceil(index / 6);
-
-          const radius =
-            0.0009 * ring;
-
-          spread.set(
-            String(property.id),
-            [
-              baseLng +
-                Math.cos(angle) * radius,
-              baseLat +
-                Math.sin(angle) * radius
-            ]
-          );
-
-        }
-      );
-
-    }
-  );
-
-
-  return spread;
-
-}
-
-
-function renderMarkers(
-  properties
-){
-
-  if(!state.map){
-
-    return;
-
-  }
-
-
-  state.markers.forEach(
-    marker =>
-      marker.remove()
-  );
-
-
-  state.markers = [];
-
-  state.markerById.clear();
-
-  state.activeMarker = null;
-
-
-  const located =
-    properties.filter(
-      hasCoordinates
-    );
-
-
-  const spread =
-    spreadMarkers(
-      located
-    );
-
-
-  located.forEach(
-    property => {
-
-      const display =
-        spread.get(
-          String(
-            property.id
-          )
-        ) || [
-          Number(
-            property.longitude
-          ),
-          Number(
-            property.latitude
-          )
-        ];
-
-
-      const lat =
-        display[1];
-
-
-      const lng =
-        display[0];
-
-
-      const id =
-        String(
-          property.id
-        );
-
-
-      const element =
-        createMarkerElement(
-          property
-        );
-
-
-      const handle = {
-        element
-      };
-
-
-      if(
-        state.mapEngine ===
-        "maplibre"
-      ){
-
-        const marker =
-          new maplibregl.Marker({
-            element
-          });
-
-
-        marker
-          .setLngLat([
-            lng,
-            lat
-          ])
-          .addTo(
-            state.map
-          );
-
-
-        marker.setPopup(
-          new maplibregl.Popup({
-
-            maxWidth:"280px",
-
-            closeButton:true,
-
-            offset:14
-
-          })
-          .setHTML(
-            popupHTML(
-              property
-            )
-          )
-        );
-
-
-        handle.openPopup =
-          () => {
-
-            const popup =
-              marker.getPopup();
-
-
-            if(
-              popup &&
-              !popup.isOpen()
-            ){
-
-              marker.togglePopup();
-
-            }
-
-          };
-
-
-        handle.marker =
-          marker;
-
-      }else{
-
-        const marker =
-          L.marker(
-            [lat,lng],
-            {
-              icon:
-                L.divIcon({
-                  className:"",
-                  html:element,
-                  iconSize:null
-                })
-            }
-          )
-          .addTo(
-            state.map
-          );
-
-
-        marker.bindPopup(
-          popupHTML(
-            property
-          ),
-          {
-            maxWidth:280,
-            minWidth:245,
-            closeButton:true
-          }
-        );
-
-
-        handle.openPopup =
-          () =>
-            marker.openPopup();
-
-
-        handle.marker =
-          marker;
-
-      }
-
-
-      element.addEventListener(
-        "click",
-        () => {
-
-          activateMarker(
-            handle,
-            property.id
-          );
-
-          highlightCard(
-            property.id
-          );
-
-        }
-      );
-
-
-      state.markers.push(
-        handle.marker
-      );
-
-
-      state.markerById.set(
-        id,
-        handle
-      );
-
-    }
-  );
-
-}
-
-
-/* =====================================================
-   PÍLDORA DE PRECIO
-===================================================== */
-
-function createMarkerElement(
-  property
-){
-
-  const element =
-    document.createElement(
-      "button"
-    );
-
-
-  element.type = "button";
-
-  element.className =
-    "nexo-marker";
-
-  element.textContent =
-    formatPrice(
-      property.price
-    );
-
-
-  element.setAttribute(
-    "aria-label",
-    property.title ||
-      property.property_type ||
-      "Propiedad"
-  );
-
-
-  return element;
-
-}
-
-
-function activateMarker(
-  handle,
-  id
-){
-
-  if(
-    state.activeMarker
-  ){
-
-    state.activeMarker
-      .element
-      .classList.remove(
-        "active"
-      );
-
-  }
-
-
-  handle
-    .element
-    .classList.add(
-      "active"
-    );
-
-
-  state.activeMarker =
-    handle;
-
-}
-
-
-/* =====================================================
-   LISTA
-===================================================== */
-
-function renderList(
-  properties
-){
-
-  const list =
-    $("#propertyList");
-
-
-  $("#count").textContent =
-    `${properties.length} ${
-      properties.length === 1
-        ? "propiedad"
-        : "propiedades"
-    }`;
-
-
-  if(
-    !properties.length
-  ){
-
-    list.innerHTML = `
-
-      <div class="state">
-
-        <strong>
-          No encontramos propiedades.
-        </strong>
-
-        Prueba otra búsqueda
-        o cambia el filtro.
-
-      </div>
-
-    `;
-
-    return;
-
-  }
-
-
-  list.innerHTML =
-    properties
-      .map(
-        property =>
-          cardHTML(
-            property
-          )
-      )
-      .join("");
-
-
-  list
-    .querySelectorAll(
-      "[data-property-id]"
-    )
-    .forEach(
-      card => {
-
-        card.addEventListener(
-          "click",
-          () => {
-
-            focusProperty(
-              card.dataset.propertyId
-            );
-
-          }
-        );
-
-      }
-    );
-
-}
-
-
-/* =====================================================
-   TARJETA
-===================================================== */
-
-function cardHTML(
-  property
-){
-
-  const image =
-    getImage(
-      property
-    );
-
-
-  const title =
-    property.title ||
-    property.property_type ||
-    "Propiedad";
-
-
-  const location =
-    [
-      property.neighborhood,
-      property.city,
-      property.province
-    ]
-      .filter(Boolean)
-      .join(" · ");
-
-
-  const type =
-    property.property_type ||
-    "Propiedad";
-
-
-  const bedrooms =
-    property.bedrooms;
-
-
-  const bathrooms =
-    property.bathrooms;
-
-
-  const meters =
-    property.square_meters;
-
-
-  return `
-
-    <button
-      class="property-card"
-      type="button"
-      data-property-id="${
-        escapeAttr(
-          property.id
-        )
-      }"
-    >
-
-      <div class="card-image">
-
-        ${
-          image
-
-            ? `
-
-              <img
-                src="${safeURL(image)}"
-                alt="${escapeAttr(title)}"
-                loading="lazy"
-                decoding="async"
-                onerror="
-                  this.style.display='none'
-                "
-              >
-
-              <div class="card-image-label">
-                ${escapeHTML(type)}
-              </div>
-
-            `
-
-            : `
-
-              <div
-                style="
-                  width:100%;
-                  height:100%;
-                  display:grid;
-                  place-items:center;
-                  color:#999;
-                  font-size:10px;
-                  font-weight:800;
-                  letter-spacing:-.04em;
-                "
-              >
-                NEXO
-              </div>
-
-            `
-        }
-
-      </div>
-
-
-      <div class="card-info">
-
-        <div class="card-title">
-          ${escapeHTML(title)}
-        </div>
-
-
-        <div class="card-price">
-          ${formatPrice(property.price)}
-        </div>
-
-
-        <div class="card-location">
-          ${escapeHTML(
-            location ||
-            "Cuba"
-          )}
-        </div>
-
-
-        <div class="card-meta">
-
-          ${
-            bedrooms !== null &&
-            bedrooms !== undefined &&
-            bedrooms !== ""
-
-              ? `
-                <span>
-                  ${escapeHTML(
-                    bedrooms
-                  )} hab.
-                </span>
-              `
-
-              : ""
-          }
-
-
-          ${
-            bathrooms !== null &&
-            bathrooms !== undefined &&
-            bathrooms !== ""
-
-              ? `
-                <span>
-                  ${escapeHTML(
-                    bathrooms
-                  )} baños
-                </span>
-              `
-
-              : ""
-          }
-
-
-          ${
-            meters !== null &&
-            meters !== undefined &&
-            meters !== ""
-
-              ? `
-                <span>
-                  ${escapeHTML(
-                    meters
-                  )} m²
-                </span>
-              `
-
-              : ""
-          }
-
-        </div>
-
-      </div>
-
-    </button>
-
-  `;
-
-}
-
-
-/* =====================================================
-   POPUP
-===================================================== */
-
-function popupHTML(
-  property
-){
-
-  const image =
-    getImage(
-      property
-    );
-
-
-  const title =
-    property.title ||
-    property.property_type ||
-    "Propiedad";
-
-
-  const location =
-    [
-      property.neighborhood,
-      property.city,
-      property.province
-    ]
-      .filter(Boolean)
-      .join(" · ");
-
-
-  return `
-
-    <div class="popup">
-
-      ${
-        image
-
-          ? `
-
-            <img
-              class="popup-image"
-              src="${safeURL(imageURL(image,400))}"
-              alt="${escapeAttr(title)}"
-              onerror="
-                this.style.display='none'
-              "
-            >
-
-          `
-
-          : ""
-
-      }
-
-
-      <div class="popup-body">
-
-        <div class="popup-type">
-          ${escapeHTML(
-            property.property_type ||
-            "Propiedad"
-          )}
-        </div>
-
-
-        <div class="popup-title">
-          ${escapeHTML(title)}
-        </div>
-
-
-        <div class="popup-price">
-          ${formatPrice(property.price)}
-        </div>
-
-
-        <div class="popup-location">
-          ${escapeHTML(
-            location ||
-            "Cuba"
-          )}
-        </div>
-
-
-        <div class="popup-meta">
-
-          ${
-            property.bedrooms !== null &&
-            property.bedrooms !== undefined &&
-            property.bedrooms !== ""
-
-              ? `
-                <span>
-                  ${escapeHTML(
-                    property.bedrooms
-                  )} hab.
-                </span>
-              `
-
-              : ""
-          }
-
-
-          ${
-            property.bathrooms !== null &&
-            property.bathrooms !== undefined &&
-            property.bathrooms !== ""
-
-              ? `
-                <span>
-                  ${escapeHTML(
-                    property.bathrooms
-                  )} baños
-                </span>
-              `
-
-              : ""
-          }
-
-
-          ${
-            property.square_meters !== null &&
-            property.square_meters !== undefined &&
-            property.square_meters !== ""
-
-              ? `
-                <span>
-                  ${escapeHTML(
-                    property.square_meters
-                  )} m²
-                </span>
-              `
-
-              : ""
-          }
-
-        </div>
-
-
-        <a
-          class="popup-link"
-          href="/propiedad/${
-            encodeURIComponent(
-              property.id || ""
-            )
-          }"
-        >
-          Ver propiedad →
+    <!-- Cabecera de Navegación Glass Premium -->
+    <header class="glass-effect">
+        <a href="/" class="logo">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 3L2 12h3v8h14v-8h3L12 3zm2 15h-4v-4h4v4z"/>
+            </svg>
+            NEXO
         </a>
-
-      </div>
-
-    </div>
-
-  `;
-
-}
-
-
-/* =====================================================
-   FOCUS
-===================================================== */
-
-function focusProperty(
-  id
-){
-
-  const property =
-    state.properties.find(
-      item =>
-        String(item.id) ===
-        String(id)
-    );
-
-
-  if(!property){
-
-    return;
-
-  }
-
-
-  highlightCard(
-    property.id
-  );
-
-
-  if(
-    !hasCoordinates(
-      property
-    )
-  ){
-
-    toast(
-      "Esta propiedad todavía no tiene ubicación en el mapa."
-    );
-
-    return;
-
-  }
-
-
-  const point = [
-
-    Number(
-      property.longitude
-    ),
-
-    Number(
-      property.latitude
-    )
-
-  ];
-
-
-  const handle =
-    state.markerById.get(
-      String(
-        property.id
-      )
-    );
-
-
-  if(handle){
-
-    activateMarker(
-      handle,
-      property.id
-    );
-
-  }
-
-
-  mapFlyTo(
-    point,
-    15,
-    700
-  );
-
-
-  if(handle){
-
-    setTimeout(
-      () =>
-        handle.openPopup(),
-      450
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   HIGHLIGHT TARJETA
-===================================================== */
-
-function highlightCard(
-  id
-){
-
-  document
-    .querySelectorAll(
-      ".property-card"
-    )
-    .forEach(
-      card =>
-        card.classList.remove(
-          "selected"
-        )
-    );
-
-
-  const card =
-    document.querySelector(
-      `[data-property-id="${CSS.escape(
-        String(id)
-      )}"]`
-    );
-
-
-  if(!card){
-
-    return;
-
-  }
-
-
-  card.classList.add(
-    "selected"
-  );
-
-
-  card.scrollIntoView({
-    behavior:"smooth",
-    block:"nearest"
-  });
-
-
-  setTimeout(
-    () => {
-
-      card.classList.remove(
-        "selected"
-      );
-
-    },
-    1800
-  );
-
-}
-
-
-/* =====================================================
-   UBICACIÓN DEL USUARIO
-===================================================== */
-
-function locateUser(){
-
-  if(
-    !navigator.geolocation
-  ){
-
-    toast(
-      "Tu dispositivo no permite obtener la ubicación."
-    );
-
-    return;
-
-  }
-
-
-  showLoading(true);
-
-
-  navigator.geolocation.getCurrentPosition(
-
-    position => {
-
-      showLoading(false);
-
-
-      const lat =
-        position.coords.latitude;
-
-
-      const lng =
-        position.coords.longitude;
-
-
-      if(!state.map){
-
-        return;
-
-      }
-
-
-      if(
-        state.userMarker
-      ){
-
-        state.userMarker.remove();
-
-      }
-
-
-      const dot =
-        document.createElement(
-          "div"
-        );
-
-
-      dot.className =
-        "nexo-user-dot";
-
-
-      if(
-        state.mapEngine ===
-        "maplibre"
-      ){
-
-        const marker =
-          new maplibregl.Marker({
-            element:dot
-          });
-
-
-        marker
-          .setLngLat([
-            lng,
-            lat
-          ])
-          .addTo(
-            state.map
-          );
-
-
-        marker.setPopup(
-          new maplibregl.Popup({
-            closeButton:false,
-            offset:10
-          })
-          .setText(
-            "Tu ubicación"
-          )
-        );
-
-
-        state.userMarker =
-          marker;
-
-      }else{
-
-        const marker =
-          L.marker(
-            [lat,lng],
-            {
-              icon:
-                L.divIcon({
-                  className:"",
-                  html:dot,
-                  iconSize:null
-                })
+        <nav>
+            <a href="/">Propiedades</a>
+            <a href="/mapa/index.html" class="active">Mapa</a>
+            <a href="/comparar/index.html">Comparar</a>
+            <a href="/ia/index.html">Chat IA</a>
+            <a href="/admin.html" style="border: 1px solid var(--border-default);">Admin</a>
+        </nav>
+    </header>
+
+    <!-- Contenedor Principal de la Experiencia Dividida -->
+    <main class="map-split-view">
+        
+        <!-- Área del mapa (Izquierda) -->
+        <section class="map-wrapper">
+            <div id="fullscreen-map"></div>
+            
+            <!-- Previsualización flotante móvil -->
+            <div class="mobile-preview-container" id="mobile-preview">
+                <button class="close-preview-btn" onclick="closeMobilePreview()" aria-label="Cerrar previsualización">
+                    <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor;">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+                <div id="mobile-card-slot"></div>
+            </div>
+        </section>
+
+        <!-- Panel Lateral del Catálogo de Propiedades (Derecha - Desktop) -->
+        <aside class="sidebar-list">
+            <div class="sidebar-header">
+                <h1>Propiedades en el mapa</h1>
+                <p id="visible-properties-count">Consultando catálogo...</p>
+            </div>
+            <div class="list-grid" id="properties-sidebar-grid">
+                <!-- Skeletons iniciales de carga -->
+                <div class="property-card shimmer-effect" style="height: 320px;"></div>
+                <div class="property-card shimmer-effect" style="height: 320px;"></div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- Librerías JS de Leaflet para el motor geográfico -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Lógica de Enlace y Controladores -->
+    <script>
+        let map;
+        let globalProperties = [];
+        let markersGroup = [];
+        const API_ENDPOINT = '/api/properties';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeMap();
+            loadMapData();
+        });
+
+        // 1. Inicializar el mapa bloqueando captura de scroll hasta hacer foco explícito
+        function initializeMap() {
+            map = L.map('fullscreen-map', {
+                scrollWheelZoom: false, // Evita atrapar el scroll de ratón en desktop
+                touchZoom: true
+            }).setView([-12.046374, -77.042793], 13); // Coordenadas de inicio genéricas
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            // Escuchar el movimiento del mapa para filtrar elementos en el listado
+            map.on('moveend', filterSidebarProperties);
+        }
+
+        // 2. Cargar los datos de la base de datos de NEXO (D1)
+        async function loadMapData() {
+            try {
+                const response = await fetch(API_ENDPOINT);
+                if (!response.ok) throw new Error('Error al conectar con el catálogo.');
+
+                globalProperties = await response.json();
+                
+                // Centrar dinámicamente el mapa en el promedio de propiedades si existen
+                if (globalProperties.length > 0) {
+                    const lats = globalProperties.map(p => parseFloat(p.latitude) || -12.046374);
+                    const lngs = globalProperties.map(p => parseFloat(p.longitude) || -77.042793);
+                    const avgLat = lats.reduce((a,b)=>a+b, 0) / lats.length;
+                    const avgLng = lngs.reduce((a,b)=>a+b, 0) / lngs.length;
+                    map.setView([avgLat, avgLng], 14);
+                }
+
+                plotMarkers();
+                filterSidebarProperties();
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('visible-properties-count').textContent = 'Error al cargar';
             }
-          )
-          .addTo(
-            state.map
-          );
-
-
-        marker.bindPopup(
-          "Tu ubicación"
-        );
-
-
-        state.userMarker =
-          marker;
-
-      }
-
-
-      mapFlyTo(
-        [
-          lng,
-          lat
-        ],
-        13,
-        800
-      );
-
-
-      toast(
-        "Mostrando tu ubicación."
-      );
-
-    },
-
-
-    error => {
-
-      showLoading(false);
-
-
-      console.warn(
-        "NEXO GEOLOCATION:",
-        error
-      );
-
-
-      let message =
-        "No pudimos obtener tu ubicación.";
-
-
-      if(
-        error &&
-        error.code === 1
-      ){
-
-        message =
-          "Permite el acceso a tu ubicación para usar esta función.";
-
-      }
-
-
-      toast(
-        message
-      );
-
-    },
-
-
-    {
-      enableHighAccuracy:true,
-
-      timeout:10000,
-
-      maximumAge:60000
-    }
-
-  );
-
-}
-
-
-/* =====================================================
-   RESET
-===================================================== */
-
-function resetMap(){
-
-  $("#searchInput").value =
-    "";
-
-
-  state.search =
-    "";
-
-
-  state.filter =
-    "all";
-
-
-  document
-    .querySelectorAll(
-      ".filter"
-    )
-    .forEach(
-      button =>
-        button.classList.remove(
-          "active"
-        )
-    );
-
-
-  document
-    .querySelector(
-      '[data-filter="all"]'
-    )
-    ?.classList.add(
-      "active"
-    );
-
-
-  mapFlyTo(
-    [
-      CUBA.lng,
-      CUBA.lat
-    ],
-    CUBA.zoom,
-    700
-  );
-
-
-  applyFilter();
-
-
-  toast(
-    "Mapa de Cuba."
-  );
-
-}
-
-
-/* =====================================================
-   ESTADO DEL MAPA
-===================================================== */
-
-function updateMapStatus(){
-
-  if(!state.map){
-
-    return;
-
-  }
-
-
-  const zoom =
-    state.map.getZoom();
-
-
-  const pill =
-    $("#statusPill");
-
-
-  if(
-    zoom <= 7
-  ){
-
-    pill.textContent =
-      "Cuba";
-
-  }else if(
-    zoom <= 10
-  ){
-
-    pill.textContent =
-      "Explorando zona";
-
-  }else{
-
-    pill.textContent =
-      "Vista detallada";
-
-  }
-
-
-  pill.classList.add(
-    "visible"
-  );
-
-
-  clearTimeout(
-    pill._timer
-  );
-
-
-  pill._timer =
-    setTimeout(
-      () => {
-
-        pill.classList.remove(
-          "visible"
-        );
-
-      },
-      1600
-    );
-
-}
-
-
-/* =====================================================
-   UTILIDADES
-===================================================== */
-
-function hasCoordinates(
-  property
-){
-
-  const lat =
-    Number(
-      property?.latitude
-    );
-
-
-  const lng =
-    Number(
-      property?.longitude
-    );
-
-
-  return (
-
-    Number.isFinite(lat) &&
-
-    Number.isFinite(lng) &&
-
-    lat >= 18 &&
-
-    lat <= 25 &&
-
-    lng >= -87 &&
-
-    lng <= -73
-
-  );
-
-}
-
-
-function searchableText(
-  property
-){
-
-  return normalize(
-
-    [
-
-      property.title,
-
-      property.property_type,
-
-      property.type,
-
-      property.city,
-
-      property.province,
-
-      property.neighborhood,
-
-      property.address,
-
-      property.description,
-
-      property.bedrooms,
-
-      property.bathrooms,
-
-      property.square_meters,
-
-      property.price
-
-    ]
-      .filter(
-        value =>
-          value !== null &&
-          value !== undefined
-      )
-      .join(" ")
-
-  );
-
-}
-
-
-function imageURL(
-  photo,
-  width,
-  format = "auto"
-){
-
-  if(!photo){
-
-    return "";
-
-  }
-
-  /*
-   * Medios propios (R2 nexo-media): la ruta
-   * usa variantes pregeneradas -w{width}.webp;
-   * externos (unsplash) pasan por el proxy.
-   */
-
-  if(
-    typeof photo === "string" &&
-    photo.includes(
-      "/media/"
-    )
-  ){
-
-    const variants =
-      [400, 800, 1200];
-
-    const snapped =
-      variants.find(
-        v => width <= v
-      ) || 1200;
-
-    return photo.replace(
-      /\.(jpg|jpeg|png)$/i,
-      `-w${snapped}.webp`
-    );
-
-  }
-
-  const params =
-    new URLSearchParams({
-      url:photo,
-      width:String(width),
-      format
-    });
-
-  return `/api/images?${params}`;
-
-}
-
-
-function getImage(
-  property
-){
-
-  if(
-    property?.image ||
-    property?.photo
-  ){
-
-    return (
-      property.image ||
-      property.photo
-    );
-
-  }
-
-
-  if(
-    Array.isArray(
-      property?.photos
-    )
-  ){
-
-    return (
-      property.photos[0] ||
-      ""
-    );
-
-  }
-
-
-  if(
-    typeof property?.photos ===
-    "string"
-  ){
-
-    const raw =
-      property.photos.trim();
-
-
-    if(!raw){
-
-      return "";
-
-    }
-
-
-    try{
-
-      const parsed =
-        JSON.parse(
-          raw
-        );
-
-
-      if(
-        Array.isArray(
-          parsed
-        )
-      ){
-
-        return (
-          parsed[0] ||
-          ""
-        );
-
-      }
-
-    }catch(_){}
-
-
-    return (
-      raw
-        .split(
-          /[\n,|]+/
-        )[0]
-        ?.trim() ||
-      ""
-    );
-
-  }
-
-
-  return "";
-
-}
-
-
-function formatPrice(
-  value
-){
-
-  if(
-    value === null ||
-    value === undefined ||
-    value === ""
-  ){
-
-    return "Precio no disponible";
-
-  }
-
-
-  const number =
-    Number(
-      String(value)
-        .replace(
-          /[^\d.-]/g,
-          ""
-        )
-    );
-
-
-  if(
-    !Number.isFinite(
-      number
-    )
-  ){
-
-    return "Precio no disponible";
-
-  }
-
-
-  return "$" +
-    number.toLocaleString(
-      "en-US",
-      {
-        maximumFractionDigits:0
-      }
-    );
-
-}
-
-
-function normalize(
-  value
-){
-
-  return String(
-    value ?? ""
-  )
-    .normalize(
-      "NFD"
-    )
-    .replace(
-      /[\u0300-\u036f]/g,
-      ""
-    )
-    .toLowerCase()
-    .trim();
-
-}
-
-
-function escapeHTML(
-  value
-){
-
-  return String(
-    value ?? ""
-  )
-    .replace(
-      /[&<>"']/g,
-      char =>
-        ({
-          "&":"&amp;",
-          "<":"&lt;",
-          ">":"&gt;",
-          '"':"&quot;",
-          "'":"&#039;"
-        }[char])
-    );
-
-}
-
-
-function escapeAttr(
-  value
-){
-
-  return escapeHTML(
-    value
-  );
-
-}
-
-
-function safeURL(
-  value
-){
-
-  try{
-
-    const url =
-      new URL(
-        value,
-        location.origin
-      );
-
-
-    if(
-      url.protocol !== "http:" &&
-      url.protocol !== "https:"
-    ){
-
-      return "";
-
-    }
-
-
-    return url.href;
-
-  }catch(_){
-
-    return "";
-
-  }
-
-}
-
-
-/* =====================================================
-   UI
-===================================================== */
-
-function showLoading(
-  visible
-){
-
-  $("#loading")
-    .classList.toggle(
-      "show",
-      Boolean(
-        visible
-      )
-    );
-
-}
-
-
-function toast(
-  message
-){
-
-  const element =
-    $("#toast");
-
-
-  element.textContent =
-    message;
-
-
-  element.classList.add(
-    "show"
-  );
-
-
-  clearTimeout(
-    element._timer
-  );
-
-
-  element._timer =
-    setTimeout(
-      () => {
-
-        element.classList.remove(
-          "show"
-        );
-
-      },
-      2500
-    );
-
-}
-</script>
-
+        }
+
+        // 3. Dibujar los marcadores de precio de estilo Airbnb
+        function plotMarkers() {
+            // Limpiar marcadores viejos
+            markersGroup.forEach(m => map.removeLayer(m));
+            markersGroup = [];
+
+            globalProperties.forEach(property => {
+                const lat = parseFloat(property.latitude);
+                const lng = parseFloat(property.longitude);
+                if (!lat || !lng) return;
+
+                // Formatear precio compacto (ej: $150k en vez de $150,000 USD)
+                const compactPrice = formatCompactPrice(property.price);
+
+                // Crear un icono HTML personalizado (L.divIcon)
+                const priceIcon = L.divIcon({
+                    className: 'custom-leaflet-icon',
+                    html: `<div class="price-marker" id="marker-${property.id}">${compactPrice}</div>`,
+                    iconSize: [60, 30],
+                    iconAnchor: [30, 15]
+                });
+
+                const marker = L.marker([lat, lng], { icon: priceIcon }).addTo(map);
+                
+                // Al hacer clic, gestionar comportamiento responsivo
+                marker.on('click', () => {
+                    handleMarkerClick(property);
+                });
+
+                // Registrar para manipulación posterior
+                marker.propertyId = property.id;
+                markersGroup.push(marker);
+            });
+        }
+
+        // 4. Formateador compacto de precios (Tier 1 Standard)
+        function formatCompactPrice(price) {
+            if (price >= 1000000) {
+                return `$${(price / 1000000).toFixed(1)}M`;
+            }
+            if (price >= 1000) {
+                return `$${Math.round(price / 1000)}k`;
+            }
+            return `$${price}`;
+        }
+
+        // 5. Filtrar las tarjetas del sidebar mostrando solo las visibles en pantalla
+        function filterSidebarProperties() {
+            const bounds = map.getBounds();
+            const sidebarGrid = document.getElementById('properties-sidebar-grid');
+            const countLabel = document.getElementById('visible-properties-count');
+
+            // Filtrar propiedades dentro del cuadrante actual
+            const visibleProperties = globalProperties.filter(property => {
+                const lat = parseFloat(property.latitude);
+                const lng = parseFloat(property.longitude);
+                if (!lat || !lng) return false;
+                return bounds.contains([lat, lng]);
+            });
+
+            // Actualizar contador
+            countLabel.textContent = `${visibleProperties.length} propiedades visibles`;
+
+            // Renderizar listado de la barra lateral
+            renderSidebarList(visibleProperties, sidebarGrid);
+        }
+
+        // 6. Pintar listado lateral interactivo
+        function renderSidebarList(properties, container) {
+            container.innerHTML = '';
+
+            if (properties.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; padding: var(--space-5) 0; text-align: center; color: var(--text-secondary); font-size: var(--text-sm);">
+                        Mueve el mapa o reduce el zoom para encontrar propiedades en esta área.
+                    </div>
+                `;
+                return;
+            }
+
+            properties.forEach(property => {
+                const card = document.createElement('article');
+                card.className = 'property-card';
+                
+                const formattedPrice = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    maximumFractionDigits: 0
+                }).format(property.price);
+
+                card.innerHTML = `
+                    <div class="image-container" style="aspect-ratio: 16/10;">
+                        <span class="badge" style="font-size: 10px; padding: 2px 6px;">${property.type_transaction || 'Venta'}</span>
+                        <img src="${property.image_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=600&q=80'}" alt="${property.title}" loading="lazy">
+                    </div>
+                    <div class="details-container" style="padding: var(--space-3); gap: 4px;">
+                        <div class="price" style="font-size: var(--text-md);">${formattedPrice}</div>
+                        <h4 class="title" style="font-size: var(--text-sm);">${property.title}</h4>
+                        <div class="location" style="font-size: var(--text-xs);">${property.location || 'Ubicación'}</div>
+                    </div>
+                `;
+
+                // Interacción bidireccional (Hover de tarjeta activa pin)
+                card.addEventListener('mouseenter', () => highlightMarker(property.id, true));
+                card.addEventListener('mouseleave', () => highlightMarker(property.id, false));
+
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', () => {
+                    window.location.href = `/property.html?id=${property.id}`;
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        // Sincronización del hover: Resalta el pin del mapa
+        function highlightMarker(id, isActive) {
+            const element = document.getElementById(`marker-${id}`);
+            if (!element) return;
+            if (isActive) {
+                element.classList.add('active-marker');
+            } else {
+                element.classList.remove('active-marker');
+            }
+        }
+
+        // 7. Gestionar clics en marcadores del mapa (Con previsualización móvil)
+        function handleMarkerClick(property) {
+            // Desactivar marcas anteriores
+            document.querySelectorAll('.price-marker').forEach(el => el.classList.remove('active-marker'));
+            
+            // Activar marca cliqueada
+            highlightMarker(property.id, true);
+
+            const isMobile = window.innerWidth <= 992;
+            if (isMobile) {
+                // Inyectar previsualización móvil flotante estilo Airbnb
+                const mobileSlot = document.getElementById('mobile-card-slot');
+                const formattedPrice = new Intl.NumberFormat('en-US', {
+                    style: 'currency', currency: 'USD', maximumFractionDigits: 0
+                }).format(property.price);
+
+                mobileSlot.innerHTML = `
+                    <article class="property-card" onclick="window.location.href='/property.html?id=${property.id}'">
+                        <div class="image-container">
+                            <img src="${property.image_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=600&q=80'}" alt="${property.title}">
+                        </div>
+                        <div class="details-container">
+                            <div class="price">${formattedPrice}</div>
+                            <h4 class="title">${property.title}</h4>
+                            <div class="features-grid">
+                                <div class="feature-item">
+                                    <span>${property.bedrooms || 0}</span> habs
+                                </div>
+                                <div class="feature-item">
+                                    <span>${property.area || 0}</span> m²
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                `;
+
+                const previewContainer = document.getElementById('mobile-preview');
+                previewContainer.classList.add('visible');
+            } else {
+                // En Desktop: Hacer scroll suave en el sidebar hasta encontrar la tarjeta
+                const cards = document.querySelectorAll('#properties-sidebar-grid .property-card');
+                cards.forEach(card => {
+                    if (card.innerHTML.includes(property.title)) {
+                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        card.style.borderColor = 'var(--accent)';
+                        setTimeout(() => card.style.borderColor = 'var(--border-subtle)', 2000);
+                    }
+                });
+            }
+        }
+
+        // Cerrar previsualización móvil
+        function closeMobilePreview() {
+            const previewContainer = document.getElementById('mobile-preview');
+            previewContainer.classList.remove('visible');
+            document.querySelectorAll('.price-marker').forEach(el => el.classList.remove('active-marker'));
+        }
+    </script>
 </body>
 </html>
