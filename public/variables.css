@@ -1,54 +1,355 @@
-/* =========================================================
-   NEXO · Design Tokens
-   Fuente única de verdad del tema visual.
-   Cada página puede sobrescribir estas
-   variables en su propio bloque :root.
-========================================================= */
+/* ==========================================================================
+   NEXO INMOBILIARIA — SISTEMA DE DISEÑO PREMIUM (TIER 1 GLOBAL)
+   Inspirado en las pautas de diseño de Apple, Stripe y Linear.
+   ========================================================================== */
 
-:root{
+:root {
+    /* --- PALETA DE COLORES SEMÁNTICA (Premium Minimalist) --- */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f7;       /* Gris Apple para fondos de contraste */
+    --bg-tertiary: #f9f9fb;        /* Gris sutil para tarjetas o inputs */
+    --bg-overlay: rgba(255, 255, 255, 0.85); /* Para efectos traslúcidos */
+    
+    --text-primary: #1d1d1f;      /* Negro orgánico profundo de Apple */
+    --text-secondary: #6e6e73;    /* Gris medio para descripciones */
+    --text-tertiary: #86868b;     /* Gris claro para metadatos y labels */
+    --text-on-accent: #ffffff;    /* Texto sobre botones primarios */
+    
+    --accent: #000000;            /* El lujo actual utiliza negro puro como acento */
+    --accent-hover: #1d1d1f;
+    --accent-light: #f5f5f7;
+    
+    --interactive-blue: #0066cc;  /* Azul característico de Apple para links y focos */
+    --interactive-blue-hover: #004499;
 
-  /* Paleta */
-  --bg:#fbfbfd;
-  --surface:#fff;
-  --surface-soft:#f2f2f4;
-  --text:#1d1d1f;
-  --muted:#86868b;
-  --line:rgba(0,0,0,.08);
-  --accent:#0071e3;
-  --accent-ink:#fff;
-  --ink:#111113;
-  --success:#34c759;
-  --danger:#ff3b30;
+    --border-subtle: rgba(0, 0, 0, 0.06);  /* Bordes imperceptibles de 1px */
+    --border-default: rgba(0, 0, 0, 0.12); /* Separadores estándar */
+    --border-focus: #0066cc;               /* Foco de accesibilidad */
 
-  /* Tipografía */
-  --font-sans:
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Display",
-    "SF Pro Text",
-    Inter,
-    system-ui,
-    sans-serif;
+    --success: #34c759;           /* Verde semáforo Apple */
+    --error: #ff3b30;             /* Rojo semáforo Apple */
+    
+    /* --- SISTEMA DE TIPOGRAFÍA FLUIDA --- */
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    
+    /* Escala tipográfica matemática en base a rem */
+    --text-xs: 0.75rem;     /* 12px */
+    --text-sm: 0.875rem;    /* 14px */
+    --text-base: 1rem;      /* 16px */
+    --text-md: 1.125rem;    /* 18px */
+    --text-lg: 1.25rem;     /* 20px */
+    --text-xl: 1.5rem;      /* 24px */
+    --text-xxl: 2rem;       /* 32px */
+    --text-display: 2.5rem; /* 40px */
 
-  /* Radios */
-  --radius-sm:12px;
-  --radius-md:18px;
-  --radius-lg:24px;
-  --radius-xl:28px;
-  --radius-pill:999px;
+    --weight-normal: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
 
-  /* Sombras */
-  --shadow-sm:0 4px 24px rgba(0,0,0,.05);
-  --shadow-md:0 8px 30px rgba(0,0,0,.08);
-  --shadow-lg:0 22px 48px rgba(0,0,0,.10);
-  --shadow-float:0 18px 60px rgba(0,0,0,.13);
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.65;
 
-  /* Movimiento */
-  --spring:cubic-bezier(.16,1,.3,1);
-  --spring-back:cubic-bezier(.34,1.56,.64,1);
+    /* --- REJILLA DE ESPACIADO ESTRICTO (Múltiplos de 4px/8px) --- */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
 
-  /* Áreas seguras iOS */
-  --safe-top:env(safe-area-inset-top,0px);
-  --safe-bottom:env(safe-area-inset-bottom,0px);
+    /* --- RADIOS DE CURVATURA SUAVE (Apple Squircle Scale) --- */
+    --radius-sm: 8px;      /* Elementos pequeños: badges, inputs compactos */
+    --radius-md: 12px;     /* Elementos medianos: botones, inputs */
+    --radius-lg: 16px;     /* Elementos estructurales: tarjetas, menús */
+    --radius-xl: 24px;     /* Elementos grandes: modales, contenedores principales */
+    --radius-round: 9999px;/* Píldoras y botones circulares */
 
+    /* --- MATRIZ DE ELEVACIÓN TRIDIMENSIONAL (Sombras de luz física) --- */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.02);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+    --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.03);
+    --shadow-focus: 0 0 0 4px rgba(0, 102, 204, 0.15);
+
+    /* --- FÍSICAS DE MOVIMIENTO (Curvas de transición tipo resorte) --- */
+    --ease-apple: cubic-bezier(0.16, 1, 0.3, 1); /* Curva de desaceleración suave */
+    --transition-fast: all 0.2s var(--ease-apple);
+    --transition-normal: all 0.4s var(--ease-apple);
+    --transition-slow: all 0.6s var(--ease-apple);
+
+    /* --- CONSTANTES DE DISEÑO --- */
+    --max-width-content: 1200px;
+    --header-height: 72px;
+    --safe-bottom-mobile: max(16px, env(safe-area-inset-bottom));
+}
+
+/* ==========================================================================
+   REINICIO CSS GLOBAL (Alineación con Estándares Web Premium)
+   ========================================================================== */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    -moz-tab-size: 4;
+    tab-size: 4;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+body {
+    min-height: 100vh;
+    line-height: var(--line-height-normal);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+/* Enfoque táctil interactivo en dispositivos móviles */
+a, button, input, select, textarea {
+    font-family: inherit;
+    color: inherit;
+    -webkit-tap-highlight-color: transparent;
+}
+
+a {
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    vertical-align: middle;
+    font-style: italic;
+    background-repeat: no-repeat;
+    background-size: cover;
+    shape-margin: 1rem;
+}
+
+button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
+
+/* Estilo unificado de foco para accesibilidad (WCAG) */
+:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+    box-shadow: var(--shadow-focus);
+}
+
+/* Personalización elegante del scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--text-tertiary);
+    border-radius: var(--radius-round);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* ==========================================================================
+   CLASES COMPARTIDAS Y COMPONENTES VISUALES COMUNES
+   ========================================================================== */
+
+/* Efecto de desenfoque de fondo premium (Backdrop Blur) */
+.glass-effect {
+    background-color: var(--bg-overlay);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Efecto shimmer para estados de carga (Skeleton Loader) */
+.shimmer-effect {
+    background: linear-gradient(
+        90deg,
+        var(--bg-secondary) 25%,
+        var(--bg-tertiary) 50%,
+        var(--bg-secondary) 75%
+    );
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite var(--ease-apple);
+}
+
+@keyframes loading-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* ==========================================================================
+   ESTRUCTURA DE DISEÑO PREMIUM DE LA TARJETA DE PROPIEDAD (.property-card)
+   Diseño cohesivo, inmersivo y responsivo.
+   ========================================================================== */
+
+.property-card {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-normal);
+}
+
+/* Hover de alta precisión (Stripe-like) */
+.property-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-default);
+}
+
+/* Contenedor de la fotografía con proporción fija */
+.property-card .image-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background-color: var(--bg-secondary);
+}
+
+.property-card .image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s var(--ease-apple);
+}
+
+/* Zoom ultra-suave en la imagen al hacer hover */
+.property-card:hover .image-container img {
+    transform: scale(1.04);
+}
+
+/* Badges flotantes de categoría o estado sobre la fotografía */
+.property-card .badge {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: var(--shadow-sm);
+    z-index: 1;
+}
+
+/* Botón de favoritos (Corazón) integrado en la tarjeta con área de toque óptima */
+.property-card .fav-button {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-overlay);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: var(--radius-round);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+    z-index: 2;
+    transition: var(--transition-fast);
+}
+
+.property-card .fav-button:hover {
+    transform: scale(1.1);
+    color: var(--error);
+    background-color: var(--bg-primary);
+}
+
+/* Contenedor de información de la tarjeta */
+.property-card .details-container {
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: var(--space-2);
+}
+
+/* Precio en tamaño destacado */
+.property-card .price {
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
+    line-height: var(--line-height-tight);
+}
+
+/* Título de la propiedad */
+.property-card .title {
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Ubicación con icono o formato sutil */
+.property-card .location {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Grid o flexbox de características de la propiedad (habitaciones, baños, metros) */
+.property-card .features-grid {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.property-card .feature-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.property-card .feature-item span {
+    font-weight: var(--weight-medium);
+    color: var(--text-primary);
 }
