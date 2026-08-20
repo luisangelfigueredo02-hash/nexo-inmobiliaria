@@ -1,166 +1,25 @@
--- ============================================================
--- NEXO Inmueble — Esquema de base de datos (Cloudflare D1)
--- ============================================================
---
--- Aplicar con:
---   wrangler d1 execute nexo-db --remote --file=schema.sql
---
--- Es idempotente (IF NOT EXISTS): seguro de ejecutar sobre la
--- base de datos en producción sin tocar los datos existentes.
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS properties (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  property_type TEXT    NOT NULL,
-  title         TEXT    NOT NULL,
-  province      TEXT,
-  city          TEXT    NOT NULL,
-  neighborhood  TEXT,
-  address       TEXT    NOT NULL,
-  latitude      REAL,
-  longitude     REAL,
-  bedrooms      INTEGER,
-  bathrooms     INTEGER,
-  square_meters REAL,
-  price         REAL    NOT NULL CHECK (price >= 0),
-  description   TEXT,
-  photos        TEXT    NOT NULL DEFAULT '[]',
-  owner_name    TEXT,
-  owner_phone   TEXT,
-  contact_email TEXT,
-  notes         TEXT,
-  status        TEXT    NOT NULL DEFAULT 'available'
-                CHECK (status IN ('available', 'reserved', 'sold')),
-  -- Sello de verificación interno (badge público).
-  verified      INTEGER NOT NULL DEFAULT 0,
-  placa_libre   INTEGER NOT NULL DEFAULT 0,
-  gas_calle     INTEGER NOT NULL DEFAULT 0,
-  agua_247      INTEGER NOT NULL DEFAULT 0,
-  pago_exterior INTEGER NOT NULL DEFAULT 0,
-  -- ID del vector en Cloudflare Vectorize (nexo-index)
-  -- para búsqueda semántica (NEXO IA 2.0).
-  embedding_id  TEXT,
-  -- Código público de listado (N-001...).
-  public_code   TEXT    UNIQUE,
-  -- Datos privados de administración: precio
-  -- acordado con el propietario y comisión.
-  -- NUNCA se exponen en la API pública.
-  agreed_price  REAL,
-  commission    REAL,
-  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+-- schema.sql - NEXO Unificado
+DROP TABLE IF EXISTS properties;
+CREATE TABLE properties (
+    id TEXT PRIMARY KEY, -- Formato estructurado: N-001, N-002, etc.
+    title TEXT NOT NULL,
+    type TEXT NOT NULL, -- 'casa', 'apartamento', 'terreno', 'penthouse'
+    operation TEXT NOT NULL, -- 'venta', 'alquiler'
+    price REAL NOT NULL,
+    province TEXT NOT NULL,
+    city TEXT NOT NULL,
+    neighborhood TEXT NOT NULL,
+    address TEXT, -- Dirección exacta (Privado)
+    bedrooms INTEGER DEFAULT 0,
+    bathrooms INTEGER DEFAULT 0,
+    area REAL, -- Metros cuadrados
+    description TEXT,
+    images TEXT, -- Formato JSON: ["url1", "url2", "url3"]
+    latitude REAL,
+    longitude REAL,
+    status TEXT NOT NULL DEFAULT 'published', -- 'published', 'draft'
+    owner_name TEXT, -- Datos privados
+    owner_phone TEXT, -- Datos privados
+    internal_notes TEXT, -- Datos privados
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
-
--- Bases ya existentes: aplicar una sola vez con
---   wrangler d1 execute nexo-db --remote --command=
--- "ALTER TABLE properties ADD COLUMN public_code TEXT;
---  ALTER TABLE properties ADD COLUMN agreed_price REAL;
---  ALTER TABLE properties ADD COLUMN commission REAL;"
--- (ignora el error "duplicate column name" si ya existe).
-
--- Bases ya existentes: aplicar una sola vez con
---   wrangler d1 execute nexo-db --remote \
---     --command="ALTER TABLE properties ADD COLUMN embedding_id TEXT"
--- (ignora el error "duplicate column name" si ya existe).
-
--- Listado público: propiedades disponibles ordenadas por fecha.
-CREATE INDEX IF NOT EXISTS idx_properties_status_created
-  ON properties (status, created_at DESC);
-
--- Mapa: búsquedas por zona geográfica.
-CREATE INDEX IF NOT EXISTS idx_properties_geo
-  ON properties (latitude, longitude);
-
--- Filtros habituales: ciudad y tipo de propiedad.
-CREATE INDEX IF NOT EXISTS idx_properties_city
-  ON properties (city);
-
-CREATE INDEX IF NOT EXISTS idx_properties_type
-  ON properties (property_type);
-
--- Escalabilidad provincial: búsquedas/geo por provincia.
-CREATE INDEX IF NOT EXISTS idx_properties_province
-  ON properties (province);
-
--- Comparación lado a lado: resolución por IDs ya cubierta por
--- la PRIMARY KEY. Orden futura por precio.
-CREATE INDEX IF NOT EXISTS idx_properties_price
-  ON properties (price);
-
--- ============================================================
--- PREPARACIÓN FUTURA (vacías hasta su activación)
--- Favoritos y cuentas de usuario.
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS users (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  email         TEXT    NOT NULL UNIQUE,
-  password_hash TEXT    NOT NULL,
-  name          TEXT,
-  role          TEXT    NOT NULL DEFAULT 'user'
-                CHECK (role IN ('user', 'admin')),
-  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS favorites (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id       INTEGER NOT NULL
-                REFERENCES users (id) ON DELETE CASCADE,
-  property_id   INTEGER NOT NULL
-                REFERENCES properties (id) ON DELETE CASCADE,
-  created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
-  UNIQUE (user_id, property_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_favorites_user
-  ON favorites (user_id);
-
-CREATE INDEX IF NOT EXISTS idx_favorites_property
-  ON favorites (property_id);
-
--- ============================================================
--- V2 — Favoritos de usuario (tabla canónica)
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS user_favorites (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id       INTEGER NOT NULL
-                REFERENCES users (id) ON DELETE CASCADE,
-  property_id   INTEGER NOT NULL
-                REFERENCES properties (id) ON DELETE CASCADE,
-  created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
-  UNIQUE (user_id, property_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_user_favorites_user
-  ON user_favorites (user_id);
-
-CREATE INDEX IF NOT EXISTS idx_user_favorites_property
-  ON user_favorites (property_id);
-
--- ============================================================
--- V2 — Analytics privado (contadores agregados por día,
--- sin PII, sin cookies)
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS analytics_counters (
-  kind          TEXT    NOT NULL,
-  day           TEXT    NOT NULL,
-  count         INTEGER NOT NULL DEFAULT 0,
-  UNIQUE (kind, day)
-);
-
-CREATE INDEX IF NOT EXISTS idx_analytics_day
-  ON analytics_counters (day);
-
--- Eventos individuales (opción: analytics con property_id,
--- sin PII ni cookies). Los totales agregados siguen en
--- analytics_counters.
-CREATE TABLE IF NOT EXISTS analytics_events (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  kind        TEXT    NOT NULL,
-  property_id INTEGER,
-  created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE INDEX IF NOT EXISTS idx_analytics_events_kind
-  ON analytics_events (kind);
