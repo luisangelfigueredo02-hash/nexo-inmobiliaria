@@ -1,340 +1,852 @@
-/// public/property.html
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <!-- SEO_TAGS -->
-    <title>NEXO — Propiedad Exclusiva</title>
+    <title>NEXO — Propiedad</title>
     <link rel="stylesheet" href="/variables.css">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#faf9f7">
     <style>
-        body { padding-bottom: calc(100px + var(--safe-bottom-mobile)); background: var(--bg-primary); }
+        /* ================================================================
+           PROPERTY EXPERIENCE — estilos específicos de la página
+           Tokens y componentes base: variables.css
+           ================================================================ */
 
-        /* Navbar Flotante Glass */
-        .nav-header {
-            position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
-            background: rgba(255, 255, 255, 0.85); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: blur(20px);
-            z-index: 500; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 var(--space-4); border-bottom: 1px solid var(--border-subtle);
+        body { padding-bottom: calc(88px + var(--safe-bottom)); }
+
+        /* ---------- Navegación ---------- */
+        .prop-nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: calc(var(--space-3) + var(--safe-top)) var(--space-4) var(--space-3);
+            pointer-events: none;
         }
-        .btn-back { display: flex; align-items: center; gap: 4px; color: var(--interactive-blue); font-weight: var(--weight-medium); font-size: var(--text-base); }
-        .nav-id { font-weight: var(--weight-semibold); color: var(--color-ink); font-size: var(--text-sm); }
+        .prop-nav > * { pointer-events: auto; }
 
-        /* Galería Horizontal Snap (PWA Touch Optimized) */
-        .gallery-wrapper {
-            position: relative; width: 100%; height: 50vh; max-height: 500px;
-            margin-top: var(--header-height); background: var(--bg-tertiary); overflow: hidden;
+        .nav-circle {
+            width: var(--touch-target);
+            height: var(--touch-target);
+            border-radius: var(--radius-full);
+            background: var(--color-overlay);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-ink);
+            cursor: pointer;
+            transition: transform var(--duration-fast) var(--ease-spring);
+            box-shadow: var(--shadow-1);
         }
-        .gallery-track {
-            display: flex; width: 100%; height: 100%; overflow-x: auto;
-            scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+        .nav-circle:active { transform: scale(0.92); }
+
+        .prop-nav .actions { display: flex; gap: var(--space-2); }
+
+        /* ---------- Hero: fotografía dominante ---------- */
+        .hero {
+            position: relative;
+            height: 68dvh;
+            min-height: 380px;
+            max-height: 640px;
+            background: var(--color-image-placeholder);
+            overflow: hidden;
         }
-        .gallery-track::-webkit-scrollbar { display: none; }
-        .gallery-slide { min-width: 100%; height: 100%; scroll-snap-align: start; }
-        .gallery-slide img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .gallery-counter {
-            position: absolute; bottom: 16px; right: 16px;
-            background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(10px); color: white;
-            padding: 4px 12px; border-radius: var(--radius-round);
-            font-size: 12px; font-weight: var(--weight-semibold); letter-spacing: 0.05em;
+
+        .hero-track {
+            display: flex;
+            height: 100%;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+        }
+        .hero-track::-webkit-scrollbar { display: none; }
+
+        .hero-slide {
+            min-width: 100%;
+            height: 100%;
+            scroll-snap-align: start;
+        }
+        .hero-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        /* Layout Centralizado */
-        .content { max-width: 800px; margin: 0 auto; padding: var(--space-5) var(--space-4); display: flex; flex-direction: column; gap: var(--space-6); }
-
-        /* Cabecera Info */
-        .info-header { display: flex; flex-direction: column; gap: var(--space-3); }
-        .tags-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-        .tag { background: var(--bg-tertiary); padding: 4px 12px; border-radius: var(--radius-sm); font-size: 11px; font-weight: var(--weight-bold); text-transform: uppercase; color: var(--color-ink-muted); letter-spacing: 0.05em;}
-        .tag.premium { background: rgba(0, 113, 227, 0.1); color: var(--interactive-blue); }
-        
-        .prop-title { font-size: var(--text-xxl); font-weight: var(--weight-bold); line-height: var(--line-height-tight); letter-spacing: -0.03em; }
-        .prop-price { font-size: 32px; font-weight: 800; color: var(--color-ink); margin-top: -4px; }
-        .prop-loc { font-size: var(--text-base); color: var(--color-ink-muted); display: flex; align-items: center; gap: 6px; }
-
-        /* Grid Specs Físicas */
-        .specs-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3);
-            border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-default);
-            padding: var(--space-4) 0;
+        /* Degradado inferior para legibilidad de la identidad */
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(12, 14, 17, 0.55) 0%, rgba(12, 14, 17, 0.12) 34%, transparent 55%);
+            pointer-events: none;
         }
-        .spec-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .spec-val { font-weight: var(--weight-bold); font-size: var(--text-lg); color: var(--color-ink); }
-        .spec-lbl { font-size: 11px; color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 
-        /* Secciones Bloque */
-        .section-block { display: flex; flex-direction: column; gap: var(--space-3); }
-        .section-title { font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: -0.02em; }
-        .desc-text { font-size: var(--text-base); line-height: var(--line-height-relaxed); color: var(--color-ink-secondary); white-space: pre-line; }
-
-        /* Módulo Ruta Segura (Acordeón P1) */
-        .ruta-segura { background: var(--bg-tertiary); border-radius: var(--radius-lg); padding: 0 var(--space-4); border: 1px solid var(--border-default); }
-        .accordion-item { border-bottom: 1px solid var(--border-default); }
-        .accordion-item:last-child { border-bottom: none; }
-        .accordion-btn { width: 100%; text-align: left; padding: var(--space-4) 0; font-weight: var(--weight-semibold); font-size: var(--text-sm); display: flex; justify-content: space-between; align-items: center; color: var(--color-ink); cursor: pointer; }
-        .accordion-btn span { transition: transform 0.3s var(--ease-spring); font-size: 18px; }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s var(--ease-spring); }
-        .accordion-content p { padding-bottom: var(--space-4); font-size: var(--text-sm); color: var(--color-ink-muted); line-height: 1.5; }
-        .accordion-item.active .accordion-content { max-height: 300px; }
-        .accordion-item.active .accordion-btn span { transform: rotate(45deg); color: var(--interactive-blue); }
-
-        /* Mapa Privacidad (Lazy Loaded) */
-        #map-container { width: 100%; height: 250px; border-radius: var(--radius-lg); background: var(--bg-tertiary); margin-top: 8px; position: relative; z-index: 1; overflow: hidden; box-shadow: var(--shadow-sm); }
-
-        /* Grid Similares Reales */
-        .similar-grid { display: flex; gap: var(--space-4); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: var(--space-2); margin-top: var(--space-2); -webkit-overflow-scrolling: touch; }
-        .similar-grid::-webkit-scrollbar { display: none; }
-        .similar-card { min-width: 240px; display: flex; flex-direction: column; text-decoration: none; border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-primary); border: 1px solid var(--border-subtle); transition: var(--transition-fast); box-shadow: var(--shadow-sm); scroll-snap-align: start; }
-        .similar-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; background: var(--bg-tertiary); }
-        .similar-info { padding: var(--space-3); display: flex; flex-direction: column; gap: 4px; }
-        .similar-price { font-weight: var(--weight-bold); font-size: var(--text-base); color: var(--color-ink); }
-        .similar-title { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-ink); }
-
-        /* Barra Inferior Fija (Safe Area iOS) */
-        .bottom-bar {
-            position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
-            background: rgba(255, 255, 255, 0.9); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--border-default); padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--safe-bottom-mobile));
-            display: flex; justify-content: space-between; align-items: center;
+        .hero-counter {
+            position: absolute;
+            bottom: calc(var(--space-4) + 120px);
+            right: var(--space-4);
+            background: rgba(12, 14, 17, 0.55);
+            color: #fff;
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: var(--text-caption);
+            font-weight: var(--weight-semibold);
+            backdrop-filter: blur(8px);
+            font-variant-numeric: tabular-nums;
+            pointer-events: none;
         }
-        .price-col { display: flex; flex-direction: column; }
-        .price-col span { font-size: 11px; color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: var(--weight-medium); }
-        .price-col strong { font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--color-ink); }
-        
-        .btn-contact {
-            background: var(--success); color: white; border-radius: var(--radius-round); padding: 0 var(--space-5);
-            height: 48px; font-weight: var(--weight-semibold); font-size: var(--text-base); display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 4px 16px rgba(52, 199, 89, 0.3); transition: var(--transition-normal);
+
+        .hero-expand {
+            position: absolute;
+            bottom: calc(var(--space-4) + 120px);
+            left: var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            background: rgba(12, 14, 17, 0.55);
+            color: #fff;
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: var(--text-caption);
+            font-weight: var(--weight-medium);
+            backdrop-filter: blur(8px);
+            cursor: pointer;
         }
-        .btn-contact:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(52, 199, 89, 0.4); }
+
+        /* ---------- Identidad sobre la imagen ---------- */
+        .hero-identity {
+            position: absolute;
+            left: 0; right: 0;
+            bottom: 0;
+            padding: var(--space-5) var(--space-4);
+            color: #fff;
+            pointer-events: none;
+        }
+
+        .identity-tags {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+        .identity-tags span {
+            background: rgba(255,255,255,0.16);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.24);
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-xs);
+            font-size: var(--text-caption);
+            font-weight: var(--weight-semibold);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-label);
+        }
+        .identity-tags .tag-accent {
+            background: var(--color-accent);
+            border-color: transparent;
+        }
+
+        .hero-identity h1 {
+            font-size: var(--text-display);
+            font-weight: var(--weight-bold);
+            letter-spacing: var(--tracking-tight);
+            line-height: var(--leading-tight);
+            margin-bottom: var(--space-2);
+            max-width: 640px;
+        }
+
+        .hero-identity .loc {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--text-body);
+            opacity: 0.92;
+        }
+
+        /* ---------- Contenido ---------- */
+        .content {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: var(--space-5) var(--space-4) var(--space-8);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+        }
+
+        /* Key facts — editoriales, no administrativos */
+        .key-facts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-3);
+        }
+        .key-fact {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-4) var(--space-3);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+        .key-fact .val {
+            font-size: var(--text-subhead);
+            font-weight: var(--weight-bold);
+            font-variant-numeric: tabular-nums;
+        }
+        .key-fact .lbl {
+            font-size: var(--text-caption);
+            color: var(--color-ink-muted);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-label);
+        }
+
+        .section-title {
+            font-size: var(--text-heading);
+            font-weight: var(--weight-bold);
+            letter-spacing: var(--tracking-tight);
+            margin-bottom: var(--space-3);
+        }
+
+        .desc-text {
+            font-size: var(--text-body);
+            line-height: var(--leading-relaxed);
+            color: var(--color-ink-secondary);
+            white-space: pre-line;
+        }
+        .desc-text.collapsed {
+            display: -webkit-box;
+            -webkit-line-clamp: 5;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .desc-toggle {
+            margin-top: var(--space-2);
+            color: var(--color-link);
+            font-size: var(--text-label);
+            font-weight: var(--weight-semibold);
+            min-height: 36px;
+        }
+
+        /* Guía legal (accordion) */
+        .accordion-item {
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-2);
+            background: var(--color-surface);
+            overflow: hidden;
+        }
+        .accordion-btn {
+            width: 100%;
+            text-align: left;
+            padding: var(--space-4);
+            font-size: var(--text-body);
+            font-weight: var(--weight-semibold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: var(--touch-target);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height var(--duration-normal) var(--ease-out-expo);
+        }
+        .accordion-item.active .accordion-content { max-height: 400px; }
+        .accordion-content p {
+            padding: 0 var(--space-4) var(--space-4);
+            font-size: var(--text-label);
+            line-height: var(--leading-relaxed);
+            color: var(--color-ink-secondary);
+        }
+
+        /* Mapa contextual */
+        #map-container {
+            height: 260px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+        }
+
+        /* Similares */
+        .similar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: var(--space-3);
+        }
+
+        /* ---------- Visor fullscreen (dialog accesible) ---------- */
+        .viewer {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .viewer.open { display: flex; }
+
+        .viewer img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .viewer .viewer-btn {
+            position: absolute;
+            width: var(--touch-target);
+            height: var(--touch-target);
+            border-radius: var(--radius-full);
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            transition: background var(--duration-fast);
+        }
+        .viewer .viewer-btn:hover { background: rgba(255,255,255,0.24); }
+        .viewer-close { top: calc(var(--space-4) + var(--safe-top)); right: var(--space-4); }
+        .viewer-prev { left: var(--space-4); top: 50%; transform: translateY(-50%); }
+        .viewer-next { right: var(--space-4); top: 50%; transform: translateY(-50%); }
+        .viewer-count {
+            position: absolute;
+            bottom: calc(var(--space-4) + var(--safe-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: var(--text-label);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ---------- CTA persistente (móvil) ---------- */
+        .cta-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 500;
+            background: var(--color-overlay);
+            backdrop-filter: blur(18px) saturate(1.4);
+            -webkit-backdrop-filter: blur(18px) saturate(1.4);
+            border-top: 1px solid var(--color-border);
+            padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--safe-bottom));
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        .cta-price { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+        .cta-price .lbl { font-size: var(--text-caption); color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: var(--tracking-label); }
+        .cta-price .val { font-size: var(--text-subhead); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .cta-fav {
+            width: var(--touch-target);
+            height: var(--touch-target);
+            border-radius: var(--radius-full);
+            border: 1px solid var(--color-border-strong);
+            background: var(--color-surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--color-ink);
+            transition: transform var(--duration-fast) var(--ease-spring);
+        }
+        .cta-fav:active { transform: scale(0.9); }
+        .cta-fav[aria-pressed="true"] svg { fill: var(--color-accent); stroke: var(--color-accent); }
+
+        .cta-contact {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            background: var(--color-success);
+            color: #fff;
+            padding: 0 var(--space-5);
+            min-height: var(--touch-target);
+            border-radius: var(--radius-full);
+            font-weight: var(--weight-semibold);
+            font-size: var(--text-body);
+            flex-shrink: 0;
+            transition: transform var(--duration-fast) var(--ease-spring),
+                        background var(--duration-fast);
+        }
+        .cta-contact:active { transform: scale(0.97); }
+
+        /* ---------- Desktop: composición editorial ---------- */
+        @media (min-width: 1024px) {
+            .hero {
+                max-width: var(--max-content);
+                margin: var(--space-5) auto 0;
+                height: 560px;
+                border-radius: var(--radius-lg);
+            }
+            .content { max-width: var(--max-content); display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-8); align-items: start; }
+            .content > * { grid-column: 1; }
+            .cta-bar {
+                position: static;
+                grid-column: 2;
+                grid-row: 1 / span 3;
+                flex-direction: column;
+                align-items: stretch;
+                border: 1px solid var(--color-border);
+                border-radius: var(--radius-md);
+                padding: var(--space-5);
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+                background: var(--color-surface);
+                position: sticky;
+                top: var(--space-5);
+                gap: var(--space-4);
+                box-shadow: var(--shadow-2);
+            }
+            .cta-contact { justify-content: center; }
+            body { padding-bottom: 0; }
+        }
     </style>
 </head>
 <body>
 
-    <header class="nav-header">
-        <button class="btn-back" onclick="window.history.back()" aria-label="Volver">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-            Propiedades
+    <!-- Navegación flotante -->
+    <nav class="prop-nav" aria-label="Navegación de propiedad">
+        <button class="nav-circle" onclick="window.history.back()" aria-label="Volver al listado">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <span class="nav-id" id="nav-id">...</span>
-        <div style="width: 40px;"></div> <!-- Spacer -->
-    </header>
+        <div class="actions">
+            <button class="nav-circle" id="btn-share" aria-label="Compartir propiedad">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+            </button>
+            <button class="nav-circle" id="btn-fav" aria-label="Guardar en favoritos" aria-pressed="false">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </button>
+        </div>
+    </nav>
 
-    <div class="gallery-wrapper">
-        <div class="gallery-track" id="gallery-track"></div>
-        <div class="gallery-counter" id="gallery-counter">1 / 1</div>
-    </div>
+    <!-- HERO: fotografía dominante -->
+    <section class="hero" aria-label="Galería de fotografías">
+        <div class="hero-track" id="hero-track" tabindex="0" role="region" aria-label="Carrusel de imágenes de la propiedad"></div>
+        <div class="hero-overlay" aria-hidden="true"></div>
+        <button class="hero-expand" id="hero-expand">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            <span id="hero-expand-label">Ver fotos</span>
+        </button>
+        <div class="hero-counter" id="hero-counter" aria-hidden="true"></div>
+        <div class="hero-identity">
+            <div class="identity-tags">
+                <span class="tag-accent" id="tag-op"></span>
+                <span id="tag-type"></span>
+            </div>
+            <h1 id="prop-title">…</h1>
+            <div class="loc">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span id="prop-loc"></span>
+            </div>
+        </div>
+    </section>
 
-    <main class="content">
-        <section class="info-header">
-            <div class="tags-row">
-                <span class="tag" id="tag-op">...</span>
-                <span class="tag premium" id="tag-type">...</span>
-            </div>
-            <div>
-                <h1 class="prop-title" id="prop-title">Cargando...</h1>
-                <div class="prop-price" id="prop-price">...</div>
-            </div>
-            <div class="prop-loc">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <span id="prop-loc-text">...</span>
-            </div>
+    <!-- Contenido -->
+    <main class="content" id="content">
 
-            <div class="specs-grid">
-                <div class="spec-item">
-                    <span class="spec-val" id="spec-beds">0</span>
-                    <span class="spec-lbl">Habitaciones</span>
-                </div>
-                <div class="spec-item">
-                    <span class="spec-val" id="spec-baths">0</span>
-                    <span class="spec-lbl">Baños</span>
-                </div>
-                <div class="spec-item">
-                    <span class="spec-val" id="spec-area">0</span>
-                    <span class="spec-lbl">Área m²</span>
-                </div>
-            </div>
+        <section aria-labelledby="facts-title">
+            <h2 class="sr-only" id="facts-title">Datos principales</h2>
+            <div class="key-facts" id="key-facts"></div>
         </section>
 
-        <section class="section-block">
+        <section>
             <h2 class="section-title">Sobre esta propiedad</h2>
-            <p class="desc-text" id="prop-description">...</p>
+            <p class="desc-text" id="prop-description"></p>
+            <button class="desc-toggle" id="desc-toggle" hidden>Ver descripción completa</button>
         </section>
 
-        <!-- P1: RUTA SEGURA (Guía Legal Cubana) -->
-        <section class="section-block">
-            <h2 class="section-title">Guía de Compra Segura</h2>
-            <p style="font-size: var(--text-sm); color: var(--color-ink-muted); line-height: 1.5; margin-top: -8px;">Conoce los pasos legales para adquirir esta propiedad sin contratiempos.</p>
+        <section>
+            <h2 class="section-title">Guía de compra segura</h2>
             <div class="ruta-segura">
-                <div class="accordion-item" onclick="toggleAccordion(this)">
-                    <button class="accordion-btn">1. Título y Gravámenes <span>+</span></button>
+                <div class="accordion-item">
+                    <button class="accordion-btn" aria-expanded="false">1. Título y Gravámenes <span aria-hidden="true">+</span></button>
                     <div class="accordion-content">
-                        <p>Exija siempre el título de propiedad original y actualizado. El notario verificará en el Registro de la Propiedad que la vivienda no tenga gravámenes (hipotecas, usufructos) ni deudas pendientes con el banco.</p>
+                        <p>Exija siempre el título de propiedad original y actualizado. El notario verificará en el Registro de la Propiedad que la vivienda no tenga gravámenes ni deudas pendientes.</p>
                     </div>
                 </div>
-                <div class="accordion-item" onclick="toggleAccordion(this)">
-                    <button class="accordion-btn">2. Cheque de Gerencia <span>+</span></button>
+                <div class="accordion-item">
+                    <button class="accordion-btn" aria-expanded="false">2. Cheque de Gerencia <span aria-hidden="true">+</span></button>
                     <div class="accordion-content">
-                        <p>El pago oficial estipulado en la escritura debe realizarse mediante cheque de gerencia emitido por un banco cubano. Recuerde que el cheque tiene vigencia de 60 días desde su emisión.</p>
+                        <p>El pago oficial debe realizarse mediante cheque de gerencia emitido por un banco cubano. Vigencia: 60 días desde su emisión.</p>
                     </div>
                 </div>
-                <div class="accordion-item" onclick="toggleAccordion(this)">
-                    <button class="accordion-btn">3. Impuesto del 4% <span>+</span></button>
+                <div class="accordion-item">
+                    <button class="accordion-btn" aria-expanded="false">3. Impuesto del 4% <span aria-hidden="true">+</span></button>
                     <div class="accordion-content">
-                        <p>El comprador está obligado a pagar un impuesto sobre Transmisión de Bienes y Herencias del 4% sobre el precio de venta (o valor referencial, el que sea mayor) ante la ONAT, en un plazo de 30 días.</p>
+                        <p>El comprador paga un impuesto sobre Transmisión de Bienes del 4% sobre el precio de venta ante la ONAT, en un plazo de 30 días.</p>
                     </div>
                 </div>
-                <div class="accordion-item" onclick="toggleAccordion(this)">
-                    <button class="accordion-btn">4. Poder desde el exterior <span>+</span></button>
+                <div class="accordion-item">
+                    <button class="accordion-btn" aria-expanded="false">4. Poder desde el exterior <span aria-hidden="true">+</span></button>
                     <div class="accordion-content">
-                        <p>Si usted no está en Cuba, necesitará emitir un Poder Especial ante el consulado cubano a nombre de un apoderado en la isla. El documento debe especificar claramente las facultades para comprar, pagar e inscribir.</p>
+                        <p>Si usted no está en Cuba, necesitará un Poder Especial ante el consulado cubano para que un apoderado pueda comprar, pagar e inscribir en su nombre.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Mapa Lazy Loaded -->
-        <section class="section-block" id="map-section">
+        <section id="map-section" hidden>
             <h2 class="section-title">Ubicación aproximada</h2>
-            <p style="font-size: var(--text-sm); color: var(--color-ink-muted); line-height: 1.5; margin-top: -8px;">Por razones de privacidad, se muestra un radio de cobertura en la zona.</p>
+            <p class="desc-text" style="margin-bottom: var(--space-3);">Por privacidad, se muestra un radio de cobertura en la zona, no la dirección exacta.</p>
             <div id="map-container"></div>
         </section>
 
-        <!-- Similares -->
-        <section class="section-block" id="similar-section" style="display: none;">
-            <h2 class="section-title">Propiedades similares</h2>
+        <section id="similar-section" hidden>
+            <h2 class="section-title">También puede interesarte</h2>
             <div class="similar-grid" id="similar-grid"></div>
         </section>
 
     </main>
 
-    <div class="bottom-bar">
-        <div class="price-col">
-            <span>Precio Total</span>
-            <strong id="bar-price">...</strong>
+    <!-- CTA persistente -->
+    <div class="cta-bar">
+        <div class="cta-price">
+            <span class="lbl">Precio</span>
+            <span class="val" id="cta-price">…</span>
         </div>
-        <a href="#" class="btn-contact" id="btn-whatsapp" target="_blank" rel="noopener noreferrer">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+        <button class="cta-fav" id="cta-fav" aria-label="Guardar en favoritos" aria-pressed="false">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        </button>
+        <a href="#" class="cta-contact" id="cta-whatsapp" target="_blank" rel="noopener noreferrer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
             Contactar
         </a>
     </div>
 
+    <!-- Visor fullscreen accesible -->
+    <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Visor de fotografías a pantalla completa">
+        <button class="viewer-btn viewer-close" id="viewer-close" aria-label="Cerrar visor">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <button class="viewer-btn viewer-prev" id="viewer-prev" aria-label="Foto anterior">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <img id="viewer-img" alt="Fotografía ampliada de la propiedad">
+        <button class="viewer-btn viewer-next" id="viewer-next" aria-label="Foto siguiente">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="viewer-count" id="viewer-count" aria-live="polite"></div>
+    </div>
+
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const propId = urlParams.get("id");
+        /* ================================================================
+           PROPERTY EXPERIENCE — lógica
+           ================================================================ */
 
-        function toggleAccordion(el) {
-            el.classList.toggle("active");
+        const FALLBACK_IMG = "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80";
+        const propId = new URLSearchParams(location.search).get("id");
+
+        let property = null;
+        let images = [];
+        let viewerIndex = 0;
+
+        /* ---------- Utilidades ---------- */
+        function responsiveSrcSet(url) {
+            const m = url && url.match(/^(\/media\/.+)\.(jpe?g|png)$/i);
+            if (!m) return "";
+            return `${m[1]}-w400.webp 400w, ${m[1]}-w800.webp 800w, ${m[1]}-w1200.webp 1200w`;
         }
 
-        function loadLeaflet() {
-            return new Promise((resolve) => {
-                if (window.L) return resolve();
-                const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY='; link.crossOrigin = '';
-                document.head.appendChild(link);
-                const script = document.createElement('script'); script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo='; script.crossOrigin = '';
-                script.onload = resolve; document.body.appendChild(script);
-            });
-        }
+        const fmtPrice = (n) => new Intl.NumberFormat("en-US", {
+            style: "currency", currency: "USD", maximumFractionDigits: 0
+        }).format(n);
 
-        async function initProperty() {
-            if (!propId) { document.body.innerHTML = `<p style="text-align:center; padding:100px;">ID Inválido.</p>`; return; }
-
+        /* ---------- Favoritos (mismo sistema que Discovery) ---------- */
+        function getFavs() {
             try {
-                // Fetch datos locales/cache offline
-                const configRes = await fetch("/api/config");
-                const configData = await configRes.json();
-                const whatsappNumber = configData.whatsapp_phone || "+5350000000";
+                const raw = localStorage.getItem("nexo_favs");
+                if (!raw) return [];
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch { return []; }
+        }
+        function saveFavs(favs) {
+            try { localStorage.setItem("nexo_favs", JSON.stringify(favs)); }
+            catch { /* storage bloqueado: favorito en memoria */ }
+        }
+        function isFav(id) { return getFavs().map(String).includes(String(id)); }
+        function toggleFav(id) {
+            const favs = getFavs();
+            const sid = String(id);
+            const i = favs.map(String).indexOf(sid);
+            if (i === -1) favs.push(sid); else favs.splice(i, 1);
+            saveFavs(favs);
+            syncFavUI(i === -1);
+        }
+        function syncFavUI(active) {
+            ["btn-fav", "cta-fav"].forEach(elId =>
+                document.getElementById(elId).setAttribute("aria-pressed", String(active)));
+        }
 
-                const response = await fetch(`/api/properties/${propId}`);
-                if (!response.ok) throw new Error();
-                const data = await response.json();
+        /* ---------- Error states ---------- */
+        function showErrorState(title, sub, actionText, action) {
+            document.body.innerHTML = `
+                <div class="nx-state" style="min-height:100dvh; justify-content:center; padding: var(--space-6);">
+                    <h2>${title}</h2>
+                    <p>${sub}</p>
+                    ${actionText ? `<button class="nx-btn nx-btn--primary" id="err-action">${actionText}</button>` : ""}
+                    <a href="/" class="nx-btn nx-btn--tertiary">Volver al descubrimiento</a>
+                </div>`;
+            if (actionText && action) document.getElementById("err-action").onclick = action;
+        }
 
-                // Hydration
-                document.getElementById("nav-id").textContent = data.id;
-                document.getElementById("tag-op").textContent = data.operation;
-                document.getElementById("tag-type").textContent = data.type;
-                document.getElementById("prop-title").textContent = data.title;
-                
-                const fPrice = `$${parseFloat(data.price).toLocaleString()} USD`;
-                document.getElementById("prop-price").textContent = fPrice;
-                document.getElementById("bar-price").textContent = fPrice;
-                
-                document.getElementById("prop-loc-text").textContent = `${data.neighborhood}, ${data.city}`;
-                document.getElementById("spec-beds").textContent = data.bedrooms || 0;
-                document.getElementById("spec-baths").textContent = data.bathrooms || 0;
-                document.getElementById("spec-area").textContent = data.area || 0;
-                document.getElementById("prop-description").textContent = data.description || 'Sin descripción detallada.';
-
-                // Galería con soporte PWA
-                const track = document.getElementById("gallery-track");
-                const images = (data.images && data.images.length > 0) ? data.images : ["data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='10' height='10' fill='%23f5f5f7'/%3E%3C/svg%3E"];
-                
-                track.innerHTML = images.map(img => `<div class="gallery-slide"><img src="${img}" alt="Fotografía del inmueble" loading="lazy"></div>`).join('');
-                const counter = document.getElementById("gallery-counter");
-                counter.textContent = `1 / ${images.length}`;
-                
-                track.addEventListener("scroll", () => {
-                    const page = Math.round(track.scrollLeft / track.clientWidth) + 1;
-                    counter.textContent = `${page} / ${images.length}`;
-                });
-
-                // Lazy Load Mapa de Privacidad (Ahorra ~2MB en Load Time)
-                if (data.latitude && data.longitude) {
-                    const mapSection = document.getElementById("map-section");
-                    const observer = new IntersectionObserver(async (entries) => {
-                        if (entries[0].isIntersecting) {
-                            observer.disconnect();
-                            await loadLeaflet();
-                            const map = L.map('map-container', { zoomControl: false, dragging: false, scrollWheelZoom: false }).setView([data.latitude, data.longitude], 15);
-                            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-                            L.circle([data.latitude, data.longitude], { color: '#c2410c', fillColor: '#c2410c', fillOpacity: 0.14, radius: 250 }).addTo(map);
-                        }
-                    }, { rootMargin: "200px" });
-                    observer.observe(mapSection);
-                } else {
-                    document.getElementById("map-section").style.display = "none";
+        /* ---------- Carga de datos ---------- */
+        async function loadProperty() {
+            if (!propId) {
+                showErrorState("Propiedad no especificada", "El enlace no contiene un identificador válido.");
+                return;
+            }
+            try {
+                const config = await fetch("/api/config").then(r => r.json()).catch(() => ({}));
+                const res = await fetch(`/api/properties/${encodeURIComponent(propId)}`);
+                if (res.status === 404) {
+                    showErrorState("Esta propiedad ya no está disponible", "Es posible que haya sido vendida o retirada de la publicación.");
+                    return;
                 }
+                if (!res.ok) throw new Error("HTTP " + res.status);
 
-                // Cargar Similares (P1)
-                try {
-                    const simRes = await fetch(`/api/properties/${propId}/similar`);
-                    if (simRes.ok) {
-                        const similarData = await simRes.json();
-                        if (similarData.length > 0) {
-                            document.getElementById("similar-grid").innerHTML = similarData.map(p => {
-                                const mainImg = (p.images && p.images[0]) ? p.images[0] : "";
-                                return `
-                                    <a href="/property.html?id=${p.id}" class="similar-card">
-                                        <img src="${mainImg}" class="similar-img" alt="${p.title}" loading="lazy">
-                                        <div class="similar-info">
-                                            <div class="similar-price">$${parseFloat(p.price).toLocaleString()} USD</div>
-                                            <div class="similar-title">${p.title}</div>
-                                            <div style="font-size:11px; color:var(--color-ink-muted);">${p.neighborhood}</div>
-                                        </div>
-                                    </a>
-                                `;
-                            }).join('');
-                            document.getElementById("similar-section").style.display = "block";
-                        }
-                    }
-                } catch (e) { console.error("Similares fallback offline."); }
-
-                // CTA WhatsApp
-                const textMsg = `Hola NEXO, me interesa la propiedad [${data.id}]: "${data.title}" en ${data.neighborhood}. Solicito más información. URL: ${window.location.href}`;
-                document.getElementById("btn-whatsapp").href = `https://wa.me/${whatsappNumber.replace("+", "")}?text=${encodeURIComponent(textMsg)}`;
-
-            } catch (err) {
-                document.body.innerHTML = `<p style="text-align:center; padding:100px;">Propiedad no disponible o sin conexión (Isla).</p>`;
+                property = await res.json();
+                render(property, config);
+            } catch (e) {
+                showErrorState("No pudimos cargar la propiedad", "Tu conexión parece inestable.",
+                    "Reintentar", () => location.reload());
             }
         }
 
-        window.onload = initProperty;
+        /* ---------- Render ---------- */
+        function render(p, config) {
+            // Identidad
+            document.getElementById("tag-op").textContent = p.operation || "";
+            document.getElementById("tag-type").textContent = p.type || "";
+            document.getElementById("prop-title").textContent = p.title;
+            document.getElementById("prop-loc").textContent = [p.neighborhood, p.city, p.province].filter(Boolean).join(", ");
+            document.title = `${p.title} | NEXO`;
+
+            // Imágenes reales únicamente
+            images = (p.images && p.images.length > 0) ? p.images : [FALLBACK_IMG];
+            renderHero();
+
+            // Key facts (solo datos que existen)
+            const facts = [
+                p.bedrooms != null ? { val: p.bedrooms, lbl: "Habitaciones" } : null,
+                p.bathrooms != null ? { val: p.bathrooms, lbl: "Baños" } : null,
+                p.area ? { val: p.area, lbl: "m² de área" } : null
+            ].filter(Boolean);
+            document.getElementById("key-facts").innerHTML = facts.map(f => `
+                <div class="key-fact"><span class="val">${f.val}</span><span class="lbl">${f.lbl}</span></div>
+            `).join("");
+
+            // Descripción con disclosure si es larga
+            const desc = p.description || "";
+            const descEl = document.getElementById("prop-description");
+            descEl.textContent = desc;
+            if (desc.length > 420) {
+                descEl.classList.add("collapsed");
+                const tgl = document.getElementById("desc-toggle");
+                tgl.hidden = false;
+                tgl.onclick = () => {
+                    const collapsed = descEl.classList.toggle("collapsed");
+                    tgl.textContent = collapsed ? "Ver descripción completa" : "Ver menos";
+                };
+            }
+
+            // Precio + CTA
+            document.getElementById("cta-price").textContent = `${fmtPrice(p.price)}`;
+            const phone = (config.whatsapp_phone || "+5350000000").replace("+", "");
+            const msg = `Hola NEXO, me interesa la propiedad [${p.id}]: "${p.title}" en ${p.neighborhood}. Solicito más información. URL: ${location.href}`;
+            document.getElementById("cta-whatsapp").href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+
+            // Favorito sincronizado
+            syncFavUI(isFav(p.id));
+            document.getElementById("btn-fav").onclick = () => toggleFav(p.id);
+            document.getElementById("cta-fav").onclick = () => toggleFav(p.id);
+
+            // Share (Web Share API + fallback copiar)
+            document.getElementById("btn-share").onclick = async () => {
+                const data = { title: p.title, text: `${p.title} — ${fmtPrice(p.price)} | NEXO`, url: location.href };
+                if (navigator.share) {
+                    try { await navigator.share(data); } catch {}
+                } else {
+                    try {
+                        await navigator.clipboard.writeText(location.href);
+                        const btn = document.getElementById("btn-share");
+                        btn.setAttribute("aria-label", "Enlace copiado");
+                        setTimeout(() => btn.setAttribute("aria-label", "Compartir propiedad"), 2000);
+                    } catch {}
+                }
+            };
+
+            // Mapa: solo si hay coordenadas reales
+            if (p.latitude && p.longitude) {
+                document.getElementById("map-section").hidden = false;
+                loadLeaflet().then(() => {
+                    const map = L.map("map-container", { zoomControl: false, dragging: false, scrollWheelZoom: false })
+                        .setView([p.latitude, p.longitude], 15);
+                    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "© OpenStreetMap" }).addTo(map);
+                    L.circle([p.latitude, p.longitude], {
+                        color: "#c2410c", fillColor: "#c2410c", fillOpacity: 0.14, radius: 250
+                    }).addTo(map);
+                });
+            }
+
+            // Similares (misma zona u operación, datos reales)
+            loadSimilar(p);
+        }
+
+        /* ---------- Galería hero (snap nativo + fullscreen) ---------- */
+        function renderHero() {
+            const track = document.getElementById("hero-track");
+            track.innerHTML = images.map((src, i) => `
+                <div class="hero-slide">
+                    <img src="${src}" srcset="${responsiveSrcSet(src)}" sizes="100vw"
+                         alt="Fotografía ${i + 1} de la propiedad"
+                         ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}
+                         decoding="async" onerror="this.src='${FALLBACK_IMG}'">
+                </div>`).join("");
+
+            const counter = document.getElementById("hero-counter");
+            counter.textContent = `1 / ${images.length}`;
+            document.getElementById("hero-expand-label").textContent = `Ver ${images.length} foto${images.length > 1 ? "s" : ""}`;
+
+            track.addEventListener("scroll", () => {
+                const idx = Math.round(track.scrollLeft / track.clientWidth) + 1;
+                counter.textContent = `${Math.min(idx, images.length)} / ${images.length}`;
+            }, { passive: true });
+
+            track.addEventListener("keydown", (e) => {
+                if (e.key === "ArrowRight") track.scrollBy({ left: track.clientWidth, behavior: "smooth" });
+                if (e.key === "ArrowLeft") track.scrollBy({ left: -track.clientWidth, behavior: "smooth" });
+            });
+
+            document.getElementById("hero-expand").onclick = () => openViewer(0);
+            track.addEventListener("click", (e) => {
+                if (e.target.tagName === "IMG") {
+                    openViewer(Math.round(track.scrollLeft / track.clientWidth));
+                }
+            });
+        }
+
+        /* ---------- Visor fullscreen (dialog accesible) ---------- */
+        function openViewer(index) {
+            viewerIndex = index;
+            const viewer = document.getElementById("viewer");
+            viewer.classList.add("open");
+            document.body.style.overflow = "hidden";
+            updateViewer();
+            document.getElementById("viewer-close").focus();
+        }
+        function closeViewer() {
+            document.getElementById("viewer").classList.remove("open");
+            document.body.style.overflow = "";
+        }
+        function updateViewer() {
+            const img = document.getElementById("viewer-img");
+            img.src = images[viewerIndex];
+            img.onerror = () => { img.src = FALLBACK_IMG; };
+            document.getElementById("viewer-count").textContent = `${viewerIndex + 1} / ${images.length}`;
+        }
+        function stepViewer(dir) {
+            viewerIndex = (viewerIndex + dir + images.length) % images.length;
+            updateViewer();
+        }
+
+        document.getElementById("viewer-close").onclick = closeViewer;
+        document.getElementById("viewer-prev").onclick = () => stepViewer(-1);
+        document.getElementById("viewer-next").onclick = () => stepViewer(1);
+        document.getElementById("viewer").addEventListener("click", (e) => {
+            if (e.target.id === "viewer") closeViewer();
+        });
+        document.addEventListener("keydown", (e) => {
+            if (!document.getElementById("viewer").classList.contains("open")) return;
+            if (e.key === "Escape") closeViewer();
+            if (e.key === "ArrowRight") stepViewer(1);
+            if (e.key === "ArrowLeft") stepViewer(-1);
+        });
+
+        // Swipe en el visor (móvil)
+        (function() {
+            let startX = null;
+            const viewer = document.getElementById("viewer");
+            viewer.addEventListener("touchstart", e => { startX = e.touches[0].clientX; }, { passive: true });
+            viewer.addEventListener("touchend", e => {
+                if (startX === null) return;
+                const dx = e.changedTouches[0].clientX - startX;
+                if (Math.abs(dx) > 48) stepViewer(dx < 0 ? 1 : -1);
+                startX = null;
+            }, { passive: true });
+        })();
+
+        /* ---------- Accordion (guía legal) ---------- */
+        document.querySelectorAll(".accordion-item").forEach(item => {
+            const btn = item.querySelector(".accordion-btn");
+            btn.addEventListener("click", () => {
+                const open = item.classList.toggle("active");
+                btn.setAttribute("aria-expanded", String(open));
+            });
+        });
+
+        /* ---------- Similares (datos reales) ---------- */
+        async function loadSimilar(p) {
+            try {
+                const params = new URLSearchParams();
+                if (p.operation) params.set("operation", p.operation);
+                const res = await fetch("/api/properties?" + params.toString());
+                if (!res.ok) return;
+                const all = await res.json();
+                const similar = all
+                    .filter(x => String(x.id) !== String(p.id))
+                    .sort((a, b) => (b.neighborhood === p.neighborhood) - (a.neighborhood === p.neighborhood))
+                    .slice(0, 3);
+                if (similar.length === 0) return;
+
+                document.getElementById("similar-section").hidden = false;
+                document.getElementById("similar-grid").innerHTML = similar.map(s => {
+                    const img = (s.images && s.images[0]) || FALLBACK_IMG;
+                    return `
+                    <a href="/property.html?id=${s.id}" class="nx-card">
+                        <div class="nx-card__media">
+                            <img src="${img}" srcset="${responsiveSrcSet(img)}" sizes="220px"
+                                 alt="${s.title}" loading="lazy" decoding="async" onerror="this.src='${FALLBACK_IMG}'">
+                        </div>
+                        <div class="nx-card__body">
+                            <div class="nx-card__price" style="font-size: var(--text-body);">${fmtPrice(s.price)}</div>
+                            <div class="nx-card__title">${s.title}</div>
+                            <div class="nx-card__location">${s.neighborhood}, ${s.city}</div>
+                        </div>
+                    </a>`;
+                }).join("");
+            } catch {}
+        }
+
+        /* ---------- Leaflet lazy ---------- */
+        function loadLeaflet() {
+            return new Promise((resolve) => {
+                if (window.L) return resolve();
+                const link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+                link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+                link.crossOrigin = "";
+                document.head.appendChild(link);
+                const script = document.createElement("script");
+                script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+                script.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
+                script.crossOrigin = "";
+                script.onload = resolve;
+                document.head.appendChild(script);
+            });
+        }
+
+        loadProperty();
     </script>
-<script>
+
+    <script>
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker.register("/sw.js").catch(() => {});
         }
