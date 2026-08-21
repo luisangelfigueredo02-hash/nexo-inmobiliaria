@@ -3,8 +3,10 @@
 Resuelve la inconsistencia detectada en 04.4 §0.3 entre `properties.id`,
 `listing_owners.listing_id` y `moderation_events.listing_id`.
 
-**Estado**: implementado en código + migration `0005` aplicada y validada en
-D1 local. **Producción NO migrada** — requiere aprobación explícita.
+**Estado**: implementado en código + migration `0005` **APLICADA EN PRODUCCIÓN**
+(04.4.3, 2026-08-21): tracker reconciliado (0001–0004 históricas), backup
+pre-apply `e638556c…` en /tmp, datos preservados (id=9, N-001, 0 pérdida),
+constraints UNIQUE/NOT NULL activas, secuencia value=1, 0 orphans/duplicates.
 
 ## 1. Modelo canónico
 

@@ -59,7 +59,7 @@ URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.de
 - Generación: tabla `listing_id_sequence` (batch UPDATE+INSERT); fallback MAX(public_code)+retry; jamás COUNT+1
 - Resolución dual por patrón en lectura: `listingLookup()` en worker.js (N-XXX → public_code, numérico → id legacy)
 - FKs: listing_owners → properties(id) ON DELETE CASCADE; moderation_events INTEGER sin FK (audit sobrevive borrado)
-- Migration 0005 validada local (clon prod); **producción NO migrada — requiere aprobación** (procedimiento en LISTING-IDENTITY.md §5)
+- Migration 0005 **APLICADA EN PRODUCCIÓN** (04.4.3): tracker d1_migrations reconciliado (0001-0005), public_code NOT NULL UNIQUE activo, 0 pérdida; backup pre-apply en /tmp/nexo-backup-0443-*.sql (md5 e638556c)
 - Producción real ≠ docs viejas: properties.id siempre fue INTEGER; public_code existía sin uso; admin POST estaba roto (TEXT→INT), ahora reparado
 - Tablas legacy vacías sin uso: favorites, user_favorites, users (cleanup futuro)
 - Docs: LISTING-IDENTITY.md + ADR-015
