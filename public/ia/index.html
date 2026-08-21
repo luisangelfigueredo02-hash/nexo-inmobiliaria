@@ -366,10 +366,10 @@
             <p>Dime qué tipo de hogar estás buscando, tu presupuesto o tus preferencias de vida, y encontraré las mejores opciones estructuradas en segundos.</p>
             
             <div class="suggestions-grid">
-                <button class="suggestion-pill" onclick="sendSuggestedQuery('Departamentos modernos con terraza')">
+                <button class="suggestion-pill" data-action="suggest" data-query="Departamentos modernos con terraza">
                     "Departamentos modernos con terraza"
                 </button>
-                <button class="suggestion-pill" onclick="sendSuggestedQuery('Casas familiares de menos de $200,000 USD')">
+                <button class="suggestion-pill" data-action="suggest" data-query="Casas familiares de menos de $200,000 USD">
                     "Casas de menos de $200k USD"
                 </button>
             </div>
@@ -382,7 +382,7 @@
 
     <!-- Barra de Entrada Flotante -->
     <footer class="input-wrapper">
-        <form class="input-bar" id="chat-form" onsubmit="event.preventDefault(); submitMessage();">
+        <form class="input-bar" id="chat-form">
             <input type="text" id="chat-input" placeholder="Pregunta a NEXO IA..." autocomplete="off">
             <button type="submit" class="send-btn" aria-label="Enviar mensaje">
                 <svg viewBox="0 0 24 24">
@@ -555,6 +555,16 @@
                 behavior: 'smooth'
             });
         }
+
+        // Delegación sin handlers inline (CSP)
+        document.getElementById("chat-form").addEventListener("submit", e => {
+            e.preventDefault();
+            submitMessage();
+        });
+        document.addEventListener("click", e => {
+            const pill = e.target.closest('[data-action="suggest"]');
+            if (pill) sendSuggestedQuery(pill.dataset.query);
+        });
     </script>
 <script>
         if ("serviceWorker" in navigator) {

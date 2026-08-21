@@ -421,7 +421,7 @@
             </svg>
             <h2>No tienes propiedades para comparar</h2>
             <p>Para comparar propiedades, primero navega por nuestro catálogo y añade algunas viviendas a tus favoritos pulsando en el icono del corazón.</p>
-            <button onclick="window.location.href='/'">Explorar catálogo</button>
+            <button data-href="/">Explorar catálogo</button>
         </div>
 
     </main>
@@ -436,7 +436,7 @@
 
         // Consultar los datos de las propiedades que coinciden con los favoritos locales
         async function loadComparisonData() {
-            const favorites = JSON.parse(localStorage.getItem('nexo_favs')) || [];
+            const favorites = (JSON.parse(localStorage.getItem('nexo_favs')) || []).map(String);
             const tableElement = document.getElementById('comparison-table');
             const emptyElement = document.getElementById('empty-favorites-view');
             const columnsHook = document.getElementById('properties-columns-hook');
@@ -455,7 +455,7 @@
                 const allProperties = await response.json();
                 
                 // Filtrar el catálogo para mostrar solo los favoritos locales
-                const comparedProperties = allProperties.filter(p => favorites.includes(p.id));
+                const comparedProperties = allProperties.filter(p => favorites.includes(String(p.id)));
 
                 if (comparedProperties.length === 0) {
                     tableElement.style.display = 'none';
@@ -493,7 +493,7 @@
                     <!-- Cabecera de la columna con minitarjeta -->
                     <div class="compare-cell header-cell">
                         <div class="mini-card">
-                            <button class="remove-column-btn" aria-label="Quitar de la comparación" onclick="removeFavoriteFromCompare(${property.id})">
+                            <button class="remove-column-btn" aria-label="Quitar de la comparación" data-action="remove-favorite" data-id="${property.id}">
                                 <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor;">
                                     <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                                 </svg>
@@ -541,7 +541,8 @@
         // Eliminar un elemento de la lista y reconstruir la vista
         function removeFavoriteFromCompare(id) {
             let favorites = JSON.parse(localStorage.getItem('nexo_favs')) || [];
-            const index = favorites.indexOf(id);
+            // IDs pueden venir numéricos (API) o string (localStorage/data-attr)
+            const index = favorites.map(String).indexOf(String(id));
 
             if (index !== -1) {
                 favorites.splice(index, 1);
@@ -558,6 +559,14 @@
                 }
             }
         }
+
+        // Delegación sin handlers inline (CSP)
+        document.addEventListener("click", e => {
+            const rm = e.target.closest('[data-action="remove-favorite"]');
+            if (rm) { removeFavoriteFromCompare(rm.dataset.id); return; }
+            const nav = e.target.closest("[data-href]");
+            if (nav) { window.location.href = nav.dataset.href; }
+        });
     </script>
 <script>
         if ("serviceWorker" in navigator) {

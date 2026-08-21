@@ -29,8 +29,17 @@ URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.de
 
 ### Comandos
 - Deploy: `npx wrangler deploy`
-- Tests: `npm test` (worker.test.mjs + worker-integrity.test.mjs, 41 tests)
+- Tests: `npm test` (5 suites, 73 tests)
 - Verificación: `curl .../api/health`
+- CSP: tras tocar cualquier `<script>` inline en public/, ejecutar `node scripts/generate-csp-hashes.mjs --write` (el test anti-drift falla si no se sincroniza)
+
+### Security headers (04.2.1)
+- Baseline en worker.js `withSecurityHeaders()` aplicada en `fetch()` a TODA respuesta (API, SEO, assets, media, 404/500)
+- CSP hash-based: script-src sin `unsafe-inline`; hashes sha256 generados desde public/ (9 hashes)
+- Excepción documentada: `style-src 'unsafe-inline'` (atributos style= extensos + Leaflet inyecta estilos)
+- Guard: `scripts/generate-csp-hashes.mjs` falla si aparece cualquier handler inline (on*=) en HTML
+- Handlers inline eliminados de las 6 páginas → delegación `data-action` + addEventListener
+- `public/config.js` es código muerto no referenciado (solo teléfono público; candidato a limpieza)
 
 ### Estado comprobado este pase
 - API pública: sin campos privados (owner_name/owner_phone/internal_notes/address verificados ausentes)

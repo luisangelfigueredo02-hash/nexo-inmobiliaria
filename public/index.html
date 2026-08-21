@@ -9,7 +9,6 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#faf9f7">
 
-    <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": ""}' onerror="console.warn('CF analytics bloqueado')"></script>
     <script>
         window.__SENTRY_DSN = "";
         window.addEventListener("error", function (event) {
@@ -463,19 +462,19 @@
 
     <div class="state-overlay" id="state-overlay" hidden role="alert" aria-live="assertive"></div>
 
-    <button type="button" class="ai-fab" id="ai-fab" aria-expanded="false" aria-controls="chat-drawer" onclick="toggleChat(true)">✨ NEXO IA</button>
+    <button type="button" class="ai-fab" id="ai-fab" aria-expanded="false" aria-controls="chat-drawer" data-action="open-chat">✨ NEXO IA</button>
 
     <div class="chat-drawer" id="chat-drawer" role="dialog" aria-label="Asistente NEXO IA" aria-hidden="true">
         <div class="chat-header">
             <div class="chat-title">✨ NEXO IA — Asistente Inteligente</div>
-            <button class="nx-btn nx-btn--tertiary" style="min-height:0; font-size:20px;" onclick="toggleChat(false)" aria-label="Cerrar chat">×</button>
+            <button class="nx-btn nx-btn--tertiary" style="min-height:0; font-size:20px;" data-action="close-chat" aria-label="Cerrar chat">×</button>
         </div>
         <div class="chat-messages" id="chat-messages">
             <div class="msg bot">¡Hola! Cuéntame qué buscas: zona, precio, habitaciones… y encuentro las opciones reales del inventario.</div>
         </div>
         <div class="chat-input-area">
-            <input type="text" class="nx-input" id="chat-input" placeholder="Ej. Casa en Vedado con 3 habs…" aria-label="Mensaje para NEXO IA" onkeypress="if(event.key==='Enter')sendChatMessage()">
-            <button class="nx-btn nx-btn--primary" onclick="sendChatMessage()">Enviar</button>
+            <input type="text" class="nx-input" id="chat-input" placeholder="Ej. Casa en Vedado con 3 habs…" aria-label="Mensaje para NEXO IA">
+            <button class="nx-btn nx-btn--primary" data-action="send-chat">Enviar</button>
         </div>
     </div>
 
@@ -588,12 +587,12 @@
                 empty: `<div class="nx-state" style="grid-column:1/-1;">
                     <h2>Sin resultados con estos filtros</h2>
                     <p>Prueba ampliando la zona, quitando algún filtro o ajustando el presupuesto máximo.</p>
-                    <button class="nx-btn nx-btn--secondary" onclick="clearFilters()">Limpiar filtros</button>
+                    <button class="nx-btn nx-btn--secondary" data-action="clear-filters">Limpiar filtros</button>
                 </div>`,
                 error: `<div class="nx-state" style="grid-column:1/-1;">
                     <h2>No pudimos cargar el inventario</h2>
                     <p>Tu conexión parece lenta o intermitente.</p>
-                    <button class="nx-btn nx-btn--primary" onclick="loadProperties()">Reintentar</button>
+                    <button class="nx-btn nx-btn--primary" data-action="reload-properties">Reintentar</button>
                 </div>`
             };
             inv.innerHTML = states[type] || "";
@@ -602,7 +601,7 @@
         function showOverlay(msg, sub) {
             const o = document.getElementById("state-overlay");
             o.innerHTML = `<div class="nx-state"><h2>${msg}</h2><p>${sub}</p>
-                <button class="nx-btn nx-btn--primary" onclick="loadProperties()">Reintentar</button></div>`;
+                <button class="nx-btn nx-btn--primary" data-action="reload-properties">Reintentar</button></div>`;
             o.hidden = false;
         }
         function hideOverlay() { const o = document.getElementById("state-overlay"); if (o) o.hidden = true; }
@@ -685,7 +684,7 @@
                     <div class="nx-card__media">
                         <span class="nx-card__badge">${p.operation}</span>
                         <img src="${img}" srcset="${responsiveSrcSet(img)}" sizes="(max-width: 600px) 100vw, 340px"
-                             alt="${p.title}" loading="lazy" decoding="async" onerror="this.src='${FALLBACK_IMG}'">
+                             alt="${p.title}" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_IMG}">
                     </div>
                     <div class="nx-card__body">
                         <div class="nx-card__price">${fmtPrice(p.price)}</div>
@@ -769,7 +768,7 @@
             selectMarker(p.id);
             const img = (p.images && p.images[0]) || FALLBACK_IMG;
             document.getElementById("sheet-content").innerHTML = `
-                <img src="${img}" alt="${p.title}" onerror="this.src='${FALLBACK_IMG}'">
+                <img src="${img}" alt="${p.title}" data-fallback-src="${FALLBACK_IMG}">
                 <div class="sheet-info">
                     <div class="price">${fmtPrice(p.price)}</div>
                     <div class="title">${p.title}</div>
@@ -932,6 +931,32 @@
             }
             loadProperties();
         })();
+
+        /* ---------- Delegación de eventos (CSP: sin handlers inline) ----------
+           Los templates usan atributos data-action / data-fallback-src;
+           aquí se resuelven. Ningún atributo on*= en el markup. */
+        document.addEventListener("click", e => {
+            const t = e.target.closest("[data-action]");
+            if (!t) return;
+            switch (t.dataset.action) {
+                case "open-chat": toggleChat(true); break;
+                case "close-chat": toggleChat(false); break;
+                case "send-chat": sendChatMessage(); break;
+                case "clear-filters": clearFilters(); break;
+                case "reload-properties": loadProperties(); break;
+            }
+        });
+        document.getElementById("chat-input").addEventListener("keydown", e => {
+            if (e.key === "Enter") sendChatMessage();
+        });
+        // Fallback de imágenes sin onerror inline (capture-phase funciona para resources)
+        document.addEventListener("error", e => {
+            const img = e.target;
+            if (img && img.tagName === "IMG" && img.dataset.fallbackSrc && !img.dataset.fallbackDone) {
+                img.dataset.fallbackDone = "1";
+                img.src = img.dataset.fallbackSrc;
+            }
+        }, true);
     </script>
 
     <script>

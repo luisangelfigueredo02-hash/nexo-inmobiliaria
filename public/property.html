@@ -412,7 +412,7 @@
 
     <!-- Navegación flotante -->
     <nav class="prop-nav" aria-label="Navegación de propiedad">
-        <button class="nav-circle" onclick="window.history.back()" aria-label="Volver al listado">
+        <button class="nav-circle" data-action="go-back" aria-label="Volver al listado">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div class="actions">
@@ -719,7 +719,7 @@
                     <img src="${esc(src)}" srcset="${responsiveSrcSet(src)}" sizes="100vw"
                          alt="Fotografía ${i + 1} de la propiedad"
                          ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}
-                         decoding="async" onerror="this.src='${FALLBACK_IMG}'">
+                         decoding="async" data-fallback-src="${FALLBACK_IMG}">
                 </div>`).join("");
 
             const counter = document.getElementById("hero-counter");
@@ -820,7 +820,7 @@
                     <a href="/property.html?id=${encodeURIComponent(s.id)}" class="nx-card">
                         <div class="nx-card__media">
                             <img src="${esc(img)}" srcset="${responsiveSrcSet(img)}" sizes="220px"
-                                 alt="${esc(s.title)}" loading="lazy" decoding="async" onerror="this.src='${FALLBACK_IMG}'">
+                                 alt="${esc(s.title)}" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_IMG}">
                         </div>
                         <div class="nx-card__body">
                             <div class="nx-card__price" style="font-size: var(--text-body);">${fmtPrice(s.price)}</div>
@@ -854,6 +854,17 @@
         loadProperty();
     </script>
 
+    <script>
+        // Delegación sin handlers inline (CSP)
+        document.querySelector('[data-action="go-back"]').addEventListener("click", () => window.history.back());
+        document.addEventListener("error", e => {
+            const img = e.target;
+            if (img && img.tagName === "IMG" && img.dataset.fallbackSrc && !img.dataset.fallbackDone) {
+                img.dataset.fallbackDone = "1";
+                img.src = img.dataset.fallbackSrc;
+            }
+        }, true);
+    </script>
     <script>
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker.register("/sw.js").catch(() => {});

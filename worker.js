@@ -100,13 +100,73 @@ function normalizeCoord(value) {
   return isNaN(n) ? null : n;
 }
 
+/* =========================================================
+   SECURITY HEADERS BASELINE (04.2.1)
+   - CSP hash-based: ningún script inline se ejecuta salvo los
+     sha256 listados abajo (generados desde los HTML de public/).
+     script-src NO lleva 'unsafe-inline'.
+   - style-src 'unsafe-inline' es una excepción documentada: las
+     páginas usan atributos style= extensivamente y Leaflet inyecta
+     estilos inline en el mapa. Los atributos style= no pueden
+     cubrirse por hash (CSP solo hashea elementos <style>).
+   - img-src https: porque las fichas admiten URLs de fotos externas
+     arbitrarias (panel admin) además de /media/* (R2) y el fallback.
+   - connect-src incluye *.ingest.sentry.io: el beacon Sentry del
+     frontend es opt-in vía window.__SENTRY_DSN (vacío = inerte).
+========================================================= */
+
+// === GENERATED CSP-SCRIPT-SRC:BEGIN (scripts/generate-csp-hashes.mjs, no editar a mano) ===
+const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-NrzaWnsjOu1ZAhFEpP1o+wYS0eRr5mU6WCMsAZockGk=' 'sha256-X1+NFVlpfDhIGbwE78nVUvjWPb5x6TU/1Hl6HpjSMe8=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-kQlCj9qMO2xDUQUAJV/jS73uuXUY3voXEsEEiHg6PH8=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-ow5J81bvIAcViT02n5kJQl35m+TaUiLeIEvxncpvPZk=' 'sha256-vxJ7leDBrqXJjUVrVQqgthikAZNpK4DVv0XvrnZAcC4=' 'sha256-yJu3FsIaHh1tSlyaCNuksaOURnf2j3dZJ60v+AfuWY0='";
+// === GENERATED CSP-SCRIPT-SRC:END ===
+
+const CSP_POLICY = [
+  "default-src 'self'",
+  `script-src ${CSP_SCRIPT_SRC}`,
+  "style-src 'self' 'unsafe-inline' https://unpkg.com",
+  "img-src 'self' data: https:",
+  "connect-src 'self' https://*.ingest.sentry.io",
+  "font-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "manifest-src 'self'",
+  "worker-src 'self'",
+  "upgrade-insecure-requests",
+].join("; ");
+
+const SECURITY_HEADERS = {
+  "Content-Security-Policy": CSP_POLICY,
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY", // redundante con frame-ancestors para UA legacy
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "geolocation=(), microphone=(), camera=(), payment=(), usb=(), browsing-topics=()",
+  "Cross-Origin-Opener-Policy": "same-origin",
+};
+
+// Aplica la baseline a toda respuesta del origen (API, SEO, assets, media).
+// CORP: /media/* es contenido público embebible (OG/SEO); el resto same-origin.
+function withSecurityHeaders(response, request) {
+  const headers = new Headers(response.headers);
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) headers.set(k, v);
+  const path = new URL(request.url).pathname;
+  headers.set("Cross-Origin-Resource-Policy", path.startsWith("/media/") ? "cross-origin" : "same-origin");
+  if (path.startsWith("/api/")) headers.set("Cache-Control", "no-store");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request, env, ctx) {
     try {
-      return await this.route(request, env, ctx);
+      return withSecurityHeaders(await this.route(request, env, ctx), request);
     } catch (error) {
       reportError(env, ctx, error, request.url);
-      return new Response("Internal Error", { status: 500 });
+      return withSecurityHeaders(new Response("Internal Error", { status: 500 }), request);
     }
   },
 
