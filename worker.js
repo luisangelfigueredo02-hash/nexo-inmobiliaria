@@ -183,8 +183,10 @@ export default {
         let query = "SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images, latitude, longitude, created_at FROM properties WHERE status = 'published'";
         const params = [];
 
-        if (type) { query += " AND type = ?"; params.push(type); }
-        if (operation) { query += " AND operation = ?"; params.push(operation); }
+        // Comparación case-insensitive: la BD mezcla valores capitalizados
+        // (p.ej. 'Apartamento') y el frontend envía minúsculas ('apartamento')
+        if (type) { query += " AND LOWER(type) = LOWER(?)"; params.push(type); }
+        if (operation) { query += " AND LOWER(operation) = LOWER(?)"; params.push(operation); }
         if (maxPrice) { query += " AND price <= ?"; params.push(parseFloat(maxPrice)); }
         if (province) { query += " AND province = ?"; params.push(province); }
         if (bedrooms) { query += " AND bedrooms >= ?"; params.push(parseInt(bedrooms)); }
