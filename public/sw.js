@@ -41,9 +41,12 @@ self.addEventListener("fetch", event => {
   const url = new URL(request.url);
 
   // 1. Nunca interceptar peticiones que no sean GET ni rutas administrativas
+  //    ni endpoints de sesión (04.3): la Cache API NO respeta no-store;
+  //    cachear /api/session/* sería un cache leak de estado autenticado.
   if (
     request.method !== "GET" || 
     url.pathname.startsWith("/api/admin/") || 
+    url.pathname.startsWith("/api/session/") ||
     url.pathname === "/admin.html"
   ) {
     return;

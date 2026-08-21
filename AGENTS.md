@@ -29,9 +29,20 @@ URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.de
 
 ### Comandos
 - Deploy: `npx wrangler deploy`
-- Tests: `npm test` (5 suites, 73 tests)
+- Tests: `npm test` (6 suites, 112 tests)
 - Verificación: `curl .../api/health`
 - CSP: tras tocar cualquier `<script>` inline en public/, ejecutar `node scripts/generate-csp-hashes.mjs --write` (el test anti-drift falla si no se sincroniza)
+- D1 local: `schema.sql` primero (crea `properties`), luego `npx wrangler d1 migrations apply nexo-db --local` (0002 hace ALTER sobre properties)
+
+### Session runtime (04.3)
+- `session-runtime.js`: cookie `__Host-session` (HttpOnly; Secure; SameSite=Lax; Path=/; sin Domain), token 256-bit base64url, D1 guarda solo SHA-256 hex (idx partial UNIQUE token_hash)
+- Absolute 30d; idle NO implementado (schema sin columna de actividad; `last_seen_at` solo auditoría, throttle 15min)
+- Concurrencia: máx 5 sesiones/cuenta; la 6ª revoca la más antigua (fail-open)
+- Endpoints: `GET /api/session/status`, `POST /api/session/logout` (CSRF: Origin allowlist, `null` rechazado, ausente aceptado; rate limited; no-store)
+- CORS credentials SOLO en /api/session/*; SW excluye /api/session/* (Cache API ignora no-store)
+- Sesión de usuario ≠ admin: /api/admin/* sigue Bearer ADMIN_TOKEN
+- createSession/rotateSession/revokeAllSessions listos para handoff de Authentication (contrato 04.2 §11)
+- Docs: SESSION-RUNTIME.md + ADR-013
 
 ### Security headers (04.2.1)
 - Baseline en worker.js `withSecurityHeaders()` aplicada en `fetch()` a TODA respuesta (API, SEO, assets, media, 404/500)

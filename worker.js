@@ -1,6 +1,7 @@
 // worker.js - NEXO Master API, SEO & AI Engine
 
 import { enforceRateLimit, rejectResponse, NO_CACHE_HEADERS, LIMIT_DEF } from "./rate-limit.js";
+import { getAuthenticatedSession, destroySession, isStateChangingAllowed } from "./session-runtime.js";
 
 // Cliente Sentry mínimo (sin dependencias) para capturar errores no controlados
 function reportError(env, ctx, error, requestUrl) {
@@ -152,7 +153,11 @@ function withSecurityHeaders(response, request) {
   for (const [k, v] of Object.entries(SECURITY_HEADERS)) headers.set(k, v);
   const path = new URL(request.url).pathname;
   headers.set("Cross-Origin-Resource-Policy", path.startsWith("/media/") ? "cross-origin" : "same-origin");
-  if (path.startsWith("/api/")) headers.set("Cache-Control", "no-store");
+  // no-store por defecto en API; respeta políticas más estrictas ya
+  // establecidas por el handler (p.ej. NO_CACHE_HEADERS de sesiones).
+  if (path.startsWith("/api/") && !headers.has("Cache-Control")) {
+    headers.set("Cache-Control", "no-store");
+  }
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
@@ -204,6 +209,9 @@ export default {
     })();
 
     const isAdminRoute = url.pathname.startsWith("/api/admin/");
+    // Credenciales (cookies) solo en la superficie de sesión (04.3): el resto
+    // de la API pública sigue sin cookies, minimizando exposición CSRF/CORS.
+    const isSessionRoute = url.pathname.startsWith("/api/session/");
 
     const corsHeaders = allowedOrigin && !isAdminRoute
       ? {
@@ -211,6 +219,8 @@ export default {
           "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type, Authorization",
           "Vary": "Origin",
+          // Nunca "*" con credenciales; solo el origen explícito de la allowlist.
+          ...(isSessionRoute ? { "Access-Control-Allow-Credentials": "true" } : {}),
         }
       : {};
 
@@ -266,6 +276,52 @@ export default {
         return [];
       }
     };
+
+    // --- SESSION RUNTIME (04.3) ---
+    // Superficie mínima: status + logout. NO auth endpoints (login/signup/
+    // passkey/magic-link/recovery/oauth) — Authentication es una fase futura.
+    if (url.pathname === "/api/session/status" && method === "GET") {
+      const rate = await enforceRateLimit(env, request);
+      if (rate.limited) return rejectResponse(rate.retryAfter, corsHeaders);
+
+      const session = await getAuthenticatedSession(request, env, ctx);
+      // Mínimo: booleano + identificador público (account id opaco, no email).
+      // Jamás token, hash, stamps ni campos internos. Respuesta uniforme
+      // ante sesión inexistente/revocada/expirada (anti-enumeración).
+      return new Response(JSON.stringify(
+        session.authenticated
+          ? { authenticated: true, accountId: session.accountId }
+          : { authenticated: false }
+      ), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...NO_CACHE_HEADERS, ...corsHeaders }
+      });
+    }
+
+    if (url.pathname === "/api/session/logout" && method === "POST") {
+      const rate = await enforceRateLimit(env, request);
+      if (rate.limited) return rejectResponse(rate.retryAfter, corsHeaders);
+
+      // CSRF: mutante con cookie → Origin debe estar en la allowlist
+      // (o ausente: same-origin + SameSite=Lax). "null" rechazado.
+      if (!isStateChangingAllowed(request, allowedOrigin)) {
+        return new Response(JSON.stringify({ error: "Origin no permitido" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json", ...NO_CACHE_HEADERS, ...corsHeaders }
+        });
+      }
+
+      const { cookie } = await destroySession(request, env);
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Set-Cookie": cookie,
+          ...NO_CACHE_HEADERS,
+          ...corsHeaders
+        }
+      });
+    }
 
     // --- HEALTH CHECK ---
     if (url.pathname === "/api/health" && method === "GET") {

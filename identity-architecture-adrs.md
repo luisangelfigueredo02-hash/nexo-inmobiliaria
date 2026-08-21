@@ -321,3 +321,54 @@ security headers (CSP/HSTS) aún ausentes → documentado como requisito previo
 a implementación en `authentication-architecture.md` §19. Tablas nuevas
 (`auth_tokens`, `webauthn_credentials`, `webauthn_challenges`) se crearán con
 migration propia en la fase de implementación, no en 04.2.
+
+---
+
+## ADR-013 — Session Runtime Materialization (04.3)
+
+**CONTEXT.** ADR-002 definió la estrategia de sesión (cookie opaca + D1,
+no JWT, idle 7d / absolute 30d, rotación, revocación). 04.3 materializa el
+runtime y debió resolver detalles que la estrategia dejó abiertos: formato
+del token/hash, prefijo de cookie, idle expiration con el schema FROZEN,
+alcance de CORS credentialed y comportamiento del service worker.
+
+**DECISION.**
+1. **Token**: 256 bits de `crypto.getRandomValues` en base64url (43 chars);
+   en D1 solo `SHA-256(token)` en hex canónico, lookup por el índice partial
+   UNIQUE `idx_sessions_token_hash`. Sin librerías externas.
+2. **Cookie**: `__Host-session`; `HttpOnly; Secure; SameSite=Lax; Path=/`;
+   sin `Domain`. `Lax` (no `Strict`) para no romper llegada top-level desde
+   magic links / enlaces compartidos (04.6).
+3. **Idle expiration NO implementada**: el schema FROZEN no tiene columna de
+   actividad (`last_seen_at` es auditoría rolling, throttled 15 min vía
+   `waitUntil`). Absolute 30d sí se enforcea. Implementar idle 7d requiere
+   migration nueva — diferido y documentado en SESSION-RUNTIME.md §4/§16.
+4. **Límite de concurrencia**: 5 sesiones activas por cuenta; al excederse se
+   revocan las más antiguas (`ORDER BY created_at DESC, rowid DESC`).
+   Fail-open ante error de conteo.
+5. **CORS credentialed**: `Access-Control-Allow-Credentials: true` solo en
+   `/api/session/*` y solo para orígenes de la allowlist; jamás `*`; el resto
+   de la API pública no anuncia credenciales.
+6. **Service worker**: `/api/session/*` excluido del fetch handler — la Cache
+   API no respeta `no-store`; sin exclusión habría cache leak de estado
+   autenticado.
+7. **security_stamp**: no se persiste en la sesión (preserva auditabilidad de
+   revocación individual). Validación opt-in por request vía
+   `X-Security-Stamp`; la invalidación global directa la cubre
+   `revokeAllSessions`.
+8. **Sin isolate cache** (ADR-002 lo permitía ≤35s): 1 lectura D1 por request
+   validado; diferido hasta que el volumen lo justifique.
+
+**ALTERNATIVES.**
+1. Añadir columna de actividad para idle 7d ahora — rechazado: el prompt 04.3
+   exige no inventar columnas; se documenta la limitación y su migration
+   futura.
+2. Enforced session→IP binding — rechazado: NAT cambiante en móviles cubanos
+   produciría logouts masivos falsos.
+3. Cachear sesiones en isolate (≤35s) — rechazado por ahora: complejidad y
+   ventana de revocación sin necesidad demostrada.
+
+**CONSEQUENCES.** Runtime completo y testeado (39 tests nuevos; 112 totales)
+sin tocar el schema FROZEN ni el admin Bearer. Authentication (futura) solo
+llama `createSession`/`rotateSession`. Deuda conocida y acotada: idle
+expiration y cleanup cron (estrategia documentada, sin implementar en 04.3).
