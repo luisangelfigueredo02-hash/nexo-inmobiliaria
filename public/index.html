@@ -32,7 +32,7 @@
         }, true);
     </script>
     <!-- CSS de Leaflet para el Mapa -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
 /* Tokens: variables.css (sistema de diseño NEXO) */
 
@@ -82,7 +82,7 @@
         .state-overlay p { font-size: 15px; color: var(--color-ink-muted); max-width: 320px; }
         .state-overlay .btn-retry {
             background: var(--color-accent);
-            color: #fff;
+            color: var(--color-ink-on-accent);
             border: none;
             padding: 12px 28px;
             border-radius: 22px;
@@ -205,7 +205,7 @@
             position: relative;
             width: 100%;
             aspect-ratio: 4/3;
-            background: #e5e5ea;
+            background: var(--color-image-placeholder);
             overflow: hidden;
         }
 
@@ -499,7 +499,7 @@
             if (leafletPromise) return leafletPromise;
             leafletPromise = new Promise((resolve, reject) => {
                 const script = document.createElement("script");
-                script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+                script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"; script.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="; script.crossOrigin = "";
                 script.onload = resolve;
                 script.onerror = reject;
                 document.head.appendChild(script);
@@ -598,7 +598,7 @@
                         document.getElementById("catalog").innerHTML = `
                             <div class="state-inline" style="grid-column:1/-1;text-align:center;padding:48px 24px;">
                                 <p style="color:var(--color-ink-muted);margin-bottom:12px;">No se pudo cargar el catálogo. Tu conexión parece lenta.</p>
-                                <button class="btn-retry" style="background:var(--color-accent);color:#fff;border:none;padding:12px 24px;border-radius:20px;font-weight:600;cursor:pointer;" onclick="loadProperties()">Reintentar</button>
+                                <button class="nx-btn nx-btn--primary" onclick="loadProperties()">Reintentar</button>
                             </div>
                         `;
                     }
@@ -658,7 +658,7 @@
                         <div style="width: 150px; font-family:-apple-system, sans-serif;">
                             <img src="${mainImg}" style="width:100%; height:80px; object-fit:cover; border-radius:8px;">
                             <strong style="display:block; margin-top:6px;">$${parseFloat(p.price).toLocaleString()} USD</strong>
-                            <span style="font-size:12px; color:#666;">${p.title}</span>
+                            <span style="font-size:12px; color:var(--color-ink-muted);">${p.title}</span>
                             <a href="/property.html?id=${p.id}" style="display:block; font-size:12px; color:var(--color-accent); margin-top:4px; text-decoration:none;">Ver Detalles</a>
                         </div>
                     `);

@@ -8,7 +8,7 @@
     <title>NEXO — Propiedad Exclusiva</title>
     <link rel="stylesheet" href="/variables.css">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#faf9f7">
     <style>
         body { padding-bottom: calc(100px + var(--safe-bottom-mobile)); background: var(--bg-primary); }
 
@@ -68,7 +68,7 @@
         /* Secciones Bloque */
         .section-block { display: flex; flex-direction: column; gap: var(--space-3); }
         .section-title { font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: -0.02em; }
-        .desc-text { font-size: var(--text-base); line-height: var(--line-height-relaxed); color: #3a3a3c; white-space: pre-line; }
+        .desc-text { font-size: var(--text-base); line-height: var(--line-height-relaxed); color: var(--color-ink-secondary); white-space: pre-line; }
 
         /* Módulo Ruta Segura (Acordeón P1) */
         .ruta-segura { background: var(--bg-tertiary); border-radius: var(--radius-lg); padding: 0 var(--space-4); border: 1px solid var(--border-default); }
@@ -233,9 +233,9 @@
         function loadLeaflet() {
             return new Promise((resolve) => {
                 if (window.L) return resolve();
-                const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY='; link.crossOrigin = '';
                 document.head.appendChild(link);
-                const script = document.createElement('script'); script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+                const script = document.createElement('script'); script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo='; script.crossOrigin = '';
                 script.onload = resolve; document.body.appendChild(script);
             });
         }
@@ -291,7 +291,7 @@
                             await loadLeaflet();
                             const map = L.map('map-container', { zoomControl: false, dragging: false, scrollWheelZoom: false }).setView([data.latitude, data.longitude], 15);
                             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-                            L.circle([data.latitude, data.longitude], { color: '#0071e3', fillColor: '#0071e3', fillOpacity: 0.15, radius: 250 }).addTo(map);
+                            L.circle([data.latitude, data.longitude], { color: '#c2410c', fillColor: '#c2410c', fillOpacity: 0.14, radius: 250 }).addTo(map);
                         }
                     }, { rootMargin: "200px" });
                     observer.observe(mapSection);
