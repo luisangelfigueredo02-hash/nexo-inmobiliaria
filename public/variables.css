@@ -1,57 +1,67 @@
-/// public/variables.css
 /* ==========================================================================
-   NEXO INMOBILIARIA — SISTEMA DE DISEÑO PREMIUM (TIER 1 GLOBAL)
-   Inspirado en las pautas de diseño de Apple, Stripe y Linear.
+   NEXO — DESIGN SYSTEM FOUNDATION v2
+   Tokens centralizados · Light/Dark diseñados (no invertidos) · Motion system
    ========================================================================== */
 
 :root {
-    /* --- PALETA DE COLORES SEMÁNTICA (Premium Minimalist) --- */
-    --bg-primary: #ffffff;
-    --bg-secondary: #fbfbfd;       /* Gris Apple para fondos de contraste ultraligeros */
-    --bg-tertiary: #f5f5f7;        /* Gris sutil para tarjetas o inputs */
-    --bg-overlay: rgba(255, 255, 255, 0.85); /* Para efectos traslúcidos */
-    
-    --text-primary: #1d1d1f;      /* Negro orgánico profundo de Apple */
-    --text-secondary: #86868b;    /* Gris medio para descripciones */
-    --text-tertiary: #a1a1a6;     /* Gris claro para metadatos y labels */
-    --text-on-accent: #ffffff;    /* Texto sobre botones primarios */
-    
-    --accent: #1d1d1f;            /* El lujo actual utiliza negro puro/grafito como acento */
-    --accent-hover: #000000;
-    --accent-light: #f5f5f7;
-    
-    --interactive-blue: #0071e3;  /* Azul característico de Apple para links y CTA secundarios */
-    --interactive-blue-hover: #0077ed;
+    /* ============ COLOR — LIGHT MODE (diseño propio NEXO) ============ */
+    /* Identidad: cálido-arquitectónico. Fondos de papel cálido, tinta profunda
+       con matiz azul-noche, acento terracota-tecnológico. Nada genérico. */
+    --color-bg: #faf9f7;               /* papel cálido, no gris frío */
+    --color-surface: #ffffff;          /* tarjeta elevada */
+    --color-surface-elevated: #ffffff;
+    --color-surface-sunken: #f2f0ec;   /* inputs, zonas empotradas */
+    --color-overlay: rgba(255, 255, 255, 0.82);
 
-    --border-subtle: rgba(0, 0, 0, 0.04);  /* Bordes imperceptibles */
-    --border-default: rgba(0, 0, 0, 0.08); /* Separadores estándar */
-    --border-focus: rgba(0, 113, 227, 0.5);/* Foco de accesibilidad */
+    --color-ink: #14181f;              /* tinta principal (azul-noche) */
+    --color-ink-secondary: #4a525e;    /* texto secundario */
+    --color-ink-muted: #8a919c;        /* metadatos, captions */
+    --color-ink-on-accent: #ffffff;
 
-    --success: #34c759;           /* Verde semáforo Apple */
-    --warning: #ff9f0a;           /* Naranja advertencia / Precio justo */
-    --error: #ff3b30;             /* Rojo semáforo Apple */
-    
-    /* --- SISTEMA DE TIPOGRAFÍA FLUIDA --- */
-    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    
-    --text-xs: 0.75rem;     /* 12px */
-    --text-sm: 0.875rem;    /* 14px */
-    --text-base: 1rem;      /* 16px */
-    --text-md: 1.125rem;    /* 18px */
-    --text-lg: 1.25rem;     /* 20px */
-    --text-xl: 1.5rem;      /* 24px */
-    --text-xxl: 2rem;       /* 32px */
+    --color-border: rgba(20, 24, 31, 0.09);
+    --color-border-strong: rgba(20, 24, 31, 0.16);
 
-    --weight-normal: 400;
+    --color-accent: #c2410c;           /* terracota NEXO — acción principal */
+    --color-accent-hover: #a83709;
+    --color-accent-subtle: rgba(194, 65, 12, 0.08);
+
+    --color-link: #1e4fd6;             /* azul de enlace, sobrio */
+    --color-success: #15803d;
+    --color-warning: #b45309;
+    --color-error: #b91c1c;
+    --color-info: #0369a1;
+
+    --color-badge: rgba(255, 255, 255, 0.92);
+    --color-image-placeholder: #e9e6e1;
+
+    /* ============ TIPOGRAFÍA ============ */
+    /* Sistema nativo: legible, cero descarga de fuentes (performance budget) */
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+                 Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-numeric: "SF Mono", ui-monospace, "Cascadia Mono", Menlo, monospace;
+
+    /* Escala fluida (clamp) — mobile-first, crece hasta desktop */
+    --text-caption: 0.75rem;                                   /* 12px */
+    --text-label:   0.8125rem;                                 /* 13px */
+    --text-body:    1rem;                                      /* 16px */
+    --text-subhead: 1.125rem;                                  /* 18px */
+    --text-heading: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);    /* 20–24px */
+    --text-display: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);    /* 24–36px */
+    --text-price:   clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);  /* precios */
+
+    --weight-regular: 400;
     --weight-medium: 500;
     --weight-semibold: 600;
     --weight-bold: 700;
 
-    --line-height-tight: 1.15;
-    --line-height-normal: 1.47059;
-    --line-height-relaxed: 1.6;
+    --leading-tight: 1.15;
+    --leading-snug: 1.3;
+    --leading-body: 1.55;
 
-    /* --- REJILLA DE ESPACIADO ESTRICTO --- */
+    --tracking-tight: -0.02em;
+    --tracking-label: 0.02em;
+
+    /* ============ ESPACIADO — escala base 4px ============ */
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
@@ -60,43 +70,86 @@
     --space-6: 32px;
     --space-7: 48px;
     --space-8: 64px;
+    --space-9: 96px;
 
-    /* --- RADIOS DE CURVATURA SUAVE (Apple Squircle) --- */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 18px;     /* Redondeo de tarjetas más amigable */
-    --radius-xl: 24px;
-    --radius-round: 9999px;
+    /* ============ RADIUS — escala consistente ============ */
+    --radius-xs: 6px;    /* badges, chips */
+    --radius-sm: 10px;   /* inputs, botones */
+    --radius-md: 14px;   /* tarjetas */
+    --radius-lg: 20px;   /* sheets, drawers */
+    --radius-xl: 28px;   /* modales grandes */
+    --radius-full: 9999px;
 
-    /* --- MATRIZ DE ELEVACIÓN TRIDIMENSIONAL (Sombras de luz física) --- */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.02);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
-    --shadow-focus: 0 0 0 4px var(--border-focus);
+    /* ============ ELEVACIÓN — sombras sutiles, luz física ============ */
+    --shadow-1: 0 1px 2px rgba(20, 24, 31, 0.05);
+    --shadow-2: 0 2px 8px rgba(20, 24, 31, 0.07), 0 1px 2px rgba(20, 24, 31, 0.04);
+    --shadow-3: 0 8px 24px rgba(20, 24, 31, 0.10), 0 2px 6px rgba(20, 24, 31, 0.05);
+    --shadow-focus: 0 0 0 3px var(--color-accent-subtle),
+                    0 0 0 1.5px var(--color-accent);
 
-    /* --- FÍSICAS DE MOVIMIENTO (Curvas de transición Apple Spring) --- */
-    /* Emulación de un resorte paramétrico para UI fluida */
-    --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1); 
-    --ease-apple: cubic-bezier(0.25, 1, 0.5, 1); 
-    
-    --transition-fast: all 0.2s var(--ease-apple);
-    --transition-normal: all 0.4s var(--ease-spring);
-    --transition-slow: all 0.6s var(--ease-apple);
+    /* ============ MOTION — sistema de curvas y duraciones ============ */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-out-soft: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-    /* --- CONSTANTES DE DISEÑO --- */
-    --max-width-content: 1200px;
+    --duration-instant: 100ms;
+    --duration-fast: 180ms;
+    --duration-normal: 300ms;
+    --duration-slow: 450ms;
+
+    /* ============ LAYOUT ============ */
     --header-height: 64px;
-    --safe-bottom-mobile: env(safe-area-inset-bottom, 16px);
+    --max-content: 1180px;
+    --touch-target: 44px;   /* mínimo accesible */
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-top: env(safe-area-inset-top, 0px);
+}
+
+/* ============ DARK MODE — diseñado, no invertido ============ */
+/* Superficies cálidas oscuras (azul-noche), acento terracota más luminoso,
+   sombras sustituidas por bordes luminosos sutiles. */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-bg: #101216;
+        --color-surface: #181b21;
+        --color-surface-elevated: #1f232b;
+        --color-surface-sunken: #0c0e11;
+        --color-overlay: rgba(16, 18, 22, 0.82);
+
+        --color-ink: #eef0f4;
+        --color-ink-secondary: #a8b0bc;
+        --color-ink-muted: #6b7380;
+
+        --color-border: rgba(238, 240, 244, 0.10);
+        --color-border-strong: rgba(238, 240, 244, 0.20);
+
+        --color-accent: #f0682e;             /* terracota elevada en oscuro */
+        --color-accent-hover: #ff7d42;
+        --color-accent-subtle: rgba(240, 104, 46, 0.14);
+
+        --color-link: #6d9bff;
+        --color-success: #34d17b;
+        --color-warning: #f5a63b;
+        --color-error: #f2574d;
+        --color-info: #3ea8e5;
+
+        --color-badge: rgba(24, 27, 33, 0.92);
+        --color-image-placeholder: #22262e;
+
+        --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+        --shadow-2: 0 2px 8px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+        --shadow-3: 0 8px 24px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
 }
 
 /* ==========================================================================
-   REINICIO CSS GLOBAL (Premium Standards)
+   RESET + BASE
    ========================================================================== */
+
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -104,69 +157,337 @@ html {
     font-size: 16px;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
 }
 
 body {
     min-height: 100vh;
-    line-height: var(--line-height-normal);
+    line-height: var(--leading-body);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
 }
 
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
-button, input, select, textarea {
+a, button, input, select, textarea {
     font-family: inherit;
-    border: none;
-    background: none;
-    outline: none;
+    color: inherit;
+    -webkit-tap-highlight-color: transparent;
 }
 
-/* Foco de accesibilidad WCAG */
+a { text-decoration: none; }
+button { background: none; border: none; cursor: pointer; }
+img { display: block; max-width: 100%; height: auto; }
+
+/* Foco accesible — nunca oculto (WCAG 2.2) */
 :focus-visible {
-    outline: 2px solid var(--interactive-blue);
-    outline-offset: 2px;
+    outline: none;
     box-shadow: var(--shadow-focus);
+    border-radius: var(--radius-xs);
 }
 
-/* Custom Scrollbar Premium */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* Reduced motion: neutraliza animaciones decorativas */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: var(--radius-round); }
-::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
-
-/* Efecto Desenfoque Global */
-.glass-effect {
-    background-color: var(--bg-overlay);
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
+::-webkit-scrollbar-thumb {
+    background: var(--color-ink-muted);
+    border-radius: var(--radius-full);
 }
 
-/* Efecto Skeleton Carga Lujosa */
-.skeleton {
-    background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--border-subtle) 50%, var(--bg-tertiary) 75%);
-    background-size: 200% 100%;
-    animation: skeleton-loading 1.5s infinite var(--ease-apple);
+/* ==========================================================================
+   UTILIDADES ACCESIBLES
+   ========================================================================== */
+
+.sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap; border: 0;
+}
+
+/* ==========================================================================
+   COMPONENTES BASE DEL SISTEMA
+   ========================================================================== */
+
+/* ---------- Navegación superior ---------- */
+.nx-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-4);
+    padding-top: var(--safe-top);
+    background: var(--color-overlay);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.nx-logo {
+    font-size: var(--text-heading);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-ink);
+    display: flex;
+    align-items: center;
+    min-height: var(--touch-target);
+}
+
+.nx-logo em {
+    font-style: normal;
+    color: var(--color-accent);
+}
+
+/* ---------- Botones ---------- */
+.nx-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--touch-target);
+    padding: var(--space-2) var(--space-5);
+    border-radius: var(--radius-full);
+    font-size: var(--text-body);
+    font-weight: var(--weight-semibold);
+    transition: transform var(--duration-fast) var(--ease-out-expo),
+                background-color var(--duration-fast) var(--ease-out-expo);
+}
+
+.nx-btn:active { transform: scale(0.97); }
+
+.nx-btn--primary {
+    background: var(--color-accent);
+    color: var(--color-ink-on-accent);
+}
+.nx-btn--primary:hover { background: var(--color-accent-hover); }
+
+.nx-btn--secondary {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    border: 1px solid var(--color-border-strong);
+}
+.nx-btn--secondary:hover { border-color: var(--color-ink); }
+
+.nx-btn--tertiary {
+    background: transparent;
+    color: var(--color-ink-secondary);
+}
+.nx-btn--tertiary:hover { color: var(--color-ink); }
+
+.nx-btn--destructive {
+    background: var(--color-error);
+    color: #fff;
+}
+
+/* ---------- Inputs ---------- */
+.nx-input, .nx-select {
+    min-height: var(--touch-target);
+    padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-sunken);
+    font-size: var(--text-body);
+    color: var(--color-ink);
+    outline: none;
+    transition: border-color var(--duration-fast) var(--ease-out-expo),
+                background-color var(--duration-fast) var(--ease-out-expo);
 }
 
-@keyframes skeleton-loading {
+.nx-input:focus, .nx-select:focus {
+    border-color: var(--color-accent);
+    background: var(--color-surface);
+}
+
+.nx-input::placeholder { color: var(--color-ink-muted); }
+
+/* ---------- Tarjeta de propiedad (única fuente del sistema) ---------- */
+.nx-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-1);
+    transition: transform var(--duration-normal) var(--ease-out-expo),
+                box-shadow var(--duration-normal) var(--ease-out-expo);
+}
+
+@media (hover: hover) {
+    .nx-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-2);
+    }
+}
+
+.nx-card__media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: var(--color-image-placeholder);
+    overflow: hidden;
+}
+
+.nx-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--duration-slow) var(--ease-out-expo);
+}
+
+@media (hover: hover) {
+    .nx-card:hover .nx-card__media img { transform: scale(1.03); }
+}
+
+.nx-card__badge {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    padding: var(--space-1) var(--space-3);
+    background: var(--color-badge);
+    color: var(--color-ink);
+    border-radius: var(--radius-xs);
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    backdrop-filter: blur(8px);
+}
+
+.nx-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    flex-grow: 1;
+}
+
+.nx-card__price {
+    font-size: var(--text-price);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-tight);
+    font-variant-numeric: tabular-nums;
+}
+
+.nx-card__title {
+    font-size: var(--text-body);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nx-card__location {
+    font-size: var(--text-label);
+    color: var(--color-ink-secondary);
+}
+
+.nx-card__specs {
+    display: flex;
+    gap: var(--space-4);
+    padding-top: var(--space-3);
+    margin-top: var(--space-1);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--text-label);
+    color: var(--color-ink-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Feedback: skeleton ---------- */
+.nx-skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--color-image-placeholder) 25%,
+        var(--color-surface) 50%,
+        var(--color-image-placeholder) 75%
+    );
+    background-size: 200% 100%;
+    animation: nx-shimmer 1.4s infinite var(--ease-out-soft);
+    border-radius: var(--radius-xs);
+}
+
+@keyframes nx-shimmer {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
 
-/* TAMAÑOS TÁCTILES ACCESIBLES MÍNIMOS (WCAG 2.2 - 44px) */
-.touch-target {
-    min-height: 44px;
-    min-width: 44px;
-    display: inline-flex;
+/* ---------- Feedback: estados ---------- */
+.nx-state {
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: var(--space-4);
+    padding: var(--space-8) var(--space-5);
+    text-align: center;
+    color: var(--color-ink-secondary);
+}
+
+.nx-state h2 {
+    font-size: var(--text-heading);
+    font-weight: var(--weight-bold);
+    color: var(--color-ink);
+}
+
+/* ==========================================================================
+   ALIAS DE COMPATIBILIDAD (transición desde variables legacy)
+   Estos nombres antiguos apuntan al nuevo sistema; se eliminarán en
+   una fase posterior una vez migradas todas las páginas.
+   ========================================================================== */
+:root {
+    --bg-primary: var(--color-surface);
+    --bg-secondary: var(--color-bg);
+    --bg-tertiary: var(--color-surface-sunken);
+    --bg-overlay: var(--color-overlay);
+    --text-primary: var(--color-ink);
+    --text-secondary: var(--color-ink-secondary);
+    --text-tertiary: var(--color-ink-muted);
+    --text-on-accent: var(--color-ink-on-accent);
+    --accent: var(--color-accent);
+    --accent-hover: var(--color-accent-hover);
+    --accent-light: var(--color-accent-subtle);
+    --interactive-blue: var(--color-link);
+    --interactive-blue-hover: var(--color-link);
+    --border-subtle: var(--color-border);
+    --border-default: var(--color-border-strong);
+    --border-focus: var(--color-accent);
+    --success: var(--color-success);
+    --error: var(--color-error);
+    --text-xs: var(--text-caption);
+    --text-sm: var(--text-label);
+    --text-base: var(--text-body);
+    --text-md: var(--text-subhead);
+    --text-lg: var(--text-heading);
+    --text-xl: var(--text-heading);
+    --text-xxl: var(--text-display);
+    --weight-normal: var(--weight-regular);
+    --line-height-tight: var(--leading-tight);
+    --line-height-normal: var(--leading-body);
+    --radius-sm: var(--radius-sm);
+    --radius-md: var(--radius-md);
+    --radius-lg: var(--radius-lg);
+    --radius-xl: var(--radius-xl);
+    --radius-round: var(--radius-full);
+    --shadow-sm: var(--shadow-1);
+    --shadow-md: var(--shadow-2);
+    --shadow-lg: var(--shadow-3);
+    --ease-apple: var(--ease-out-expo);
+    --transition-fast: all var(--duration-fast) var(--ease-out-expo);
+    --transition-normal: all var(--duration-normal) var(--ease-out-expo);
+    --transition-slow: all var(--duration-slow) var(--ease-out-expo);
+    --max-width-content: var(--max-content);
+    --safe-bottom-mobile: var(--safe-bottom);
 }

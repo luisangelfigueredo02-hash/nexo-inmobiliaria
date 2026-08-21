@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>NEXO — Propiedades Exclusivas en Cuba</title>
+    <link rel="stylesheet" href="/variables.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#faf9f7">
     <!-- Monitoreo: errores del cliente (Sentry lite) + Web Analytics (Cloudflare) -->
     <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": ""}' onerror="console.warn('CF analytics bloqueado')"></script>
     <script>
@@ -31,26 +34,7 @@
     <!-- CSS de Leaflet para el Mapa -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        :root {
-            --bg-color: #f5f5f7;
-            --card-color: #ffffff;
-            --text-primary: #1d1d1f;
-            --text-secondary: #86868b;
-            --accent: #0071e3;
-            --border: rgba(0, 0, 0, 0.08);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #1c1c1e;
-                --card-color: #2c2c2e;
-                --text-primary: #f5f5f7;
-                --text-secondary: #98989d;
-                --accent: #0a84ff;
-                --border: rgba(255, 255, 255, 0.12);
-            }
-        }
+/* Tokens: variables.css (sistema de diseño NEXO) */
 
         * {
             box-sizing: border-box;
@@ -61,8 +45,8 @@
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
+            background-color: var(--color-bg);
+            color: var(--color-ink);
             overflow-x: hidden;
             padding-bottom: calc(80px + var(--safe-bottom));
         }
@@ -73,7 +57,7 @@
             100% { background-position: 200% 0; }
         }
         .skeleton {
-            background: linear-gradient(90deg, var(--bg-color) 25%, var(--card-color) 50%, var(--bg-color) 75%);
+            background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-surface) 50%, var(--color-bg) 75%);
             background-size: 200% 100%;
             animation: shimmer 1.5s infinite ease-in-out;
         }
@@ -82,7 +66,7 @@
         .state-overlay {
             position: fixed;
             inset: 0;
-            background: var(--bg-color);
+            background: var(--color-bg);
             z-index: 2000;
             display: flex;
             flex-direction: column;
@@ -95,9 +79,9 @@
         .state-overlay[hidden] { display: none; }
         .state-overlay .icon { font-size: 48px; }
         .state-overlay h2 { font-size: 20px; font-weight: 700; }
-        .state-overlay p { font-size: 15px; color: var(--text-secondary); max-width: 320px; }
+        .state-overlay p { font-size: 15px; color: var(--color-ink-muted); max-width: 320px; }
         .state-overlay .btn-retry {
-            background: var(--accent);
+            background: var(--color-accent);
             color: #fff;
             border: none;
             padding: 12px 28px;
@@ -115,7 +99,7 @@
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--color-border);
             padding: 16px 24px;
             display: flex;
             justify-content: space-between;
@@ -126,19 +110,19 @@
             font-size: 20px;
             font-weight: 700;
             letter-spacing: -0.5px;
-            color: var(--text-primary);
+            color: var(--color-ink);
             text-decoration: none;
         }
 
         .logo span {
-            color: var(--accent);
+            color: var(--color-accent);
         }
 
         /* Panel de Filtros Moderno */
         .filters-container {
             padding: 16px 24px;
-            background: var(--card-color);
-            border-bottom: 1px solid var(--border);
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
             display: flex;
             gap: 12px;
             overflow-x: auto;
@@ -152,19 +136,19 @@
         select, input {
             padding: 10px 16px;
             border-radius: 20px;
-            border: 1px solid var(--border);
-            background: var(--bg-color);
+            border: 1px solid var(--color-border);
+            background: var(--color-bg);
             font-size: 14px;
             outline: none;
-            color: var(--text-primary);
+            color: var(--color-ink);
             cursor: pointer;
             transition: all 0.2s ease;
             white-space: nowrap;
         }
 
         select:focus, input:focus {
-            border-color: var(--accent);
-            background: var(--card-color);
+            border-color: var(--color-accent);
+            background: var(--color-surface);
         }
 
         /* Contenedores de Visualización */
@@ -176,8 +160,8 @@
         }
 
         .btn-toggle {
-            background: var(--card-color);
-            border: 1px solid var(--border);
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
             padding: 8px 16px;
             border-radius: 16px;
             font-size: 13px;
@@ -187,9 +171,9 @@
         }
 
         .btn-toggle.active {
-            background: var(--text-primary);
+            background: var(--color-ink);
             color: white;
-            border-color: var(--text-primary);
+            border-color: var(--color-ink);
         }
 
         /* Grid de Inmuebles */
@@ -201,11 +185,11 @@
         }
 
         .property-card {
-            background: var(--card-color);
+            background: var(--color-surface);
             border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.02);
-            border: 1px solid var(--border);
+            border: 1px solid var(--color-border);
             text-decoration: none;
             color: inherit;
             display: flex;
@@ -255,13 +239,13 @@
         .price {
             font-size: 22px;
             font-weight: 700;
-            color: var(--text-primary);
+            color: var(--color-ink);
         }
 
         .title {
             font-size: 16px;
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--color-ink);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -269,15 +253,15 @@
 
         .loc {
             font-size: 13px;
-            color: var(--text-secondary);
+            color: var(--color-ink-muted);
         }
 
         .specs {
             display: flex;
             gap: 16px;
             font-size: 13px;
-            color: var(--text-secondary);
-            border-top: 1px solid var(--border);
+            color: var(--color-ink-muted);
+            border-top: 1px solid var(--color-border);
             padding-top: 12px;
             margin-top: 4px;
         }
@@ -286,7 +270,7 @@
         #map-view {
             width: 100%;
             height: 60vh;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--color-border);
             display: none;
         }
 
@@ -296,7 +280,7 @@
             bottom: 0;
             right: 0;
             left: 0;
-            background: var(--card-color);
+            background: var(--color-surface);
             border-top-left-radius: 24px;
             border-top-right-radius: 24px;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
@@ -314,7 +298,7 @@
 
         .chat-header {
             padding: 16px 24px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--color-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -350,15 +334,15 @@
         }
 
         .msg.user {
-            background: var(--accent);
+            background: var(--color-accent);
             color: white;
             align-self: flex-end;
             border-bottom-right-radius: 4px;
         }
 
         .msg.bot {
-            background: var(--bg-color);
-            color: var(--text-primary);
+            background: var(--color-bg);
+            color: var(--color-ink);
             align-self: flex-start;
             border-bottom-left-radius: 4px;
         }
@@ -367,7 +351,7 @@
             display: inline-block;
             margin-top: 6px;
             padding: 6px 12px;
-            background: var(--accent);
+            background: var(--color-accent);
             color: white !important;
             text-decoration: none;
             border-radius: 12px;
@@ -377,7 +361,7 @@
 
         .chat-input-area {
             padding: 16px 24px calc(16px + var(--safe-bottom));
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--color-border);
             display: flex;
             gap: 12px;
         }
@@ -387,7 +371,7 @@
         }
 
         .btn-send {
-            background: var(--accent);
+            background: var(--color-accent);
             color: white;
             border: none;
             padding: 12px 20px;
@@ -414,7 +398,7 @@
             position: fixed;
             bottom: 24px;
             right: 24px;
-            background: var(--text-primary);
+            background: var(--color-ink);
             color: white;
             padding: 14px 24px;
             border-radius: 30px;
@@ -432,7 +416,7 @@
 
     <header>
         <a href="/" class="logo">NE<span>X</span>O</a>
-        <a href="/admin.html" style="font-size: 14px; color: var(--text-secondary); text-decoration: none;">Gestión</a>
+        <a href="/admin.html" style="font-size: 14px; color: var(--color-ink-muted); text-decoration: none;">Gestión</a>
     </header>
 
     <!-- Filtros de Inmuebles -->
@@ -502,6 +486,13 @@
     <script>
         let propertiesData = [];
         let leafletPromise = null;
+
+        // srcset responsive: variantes webp almacenadas junto al JPG en R2 (-w400/-w800/-w1200)
+        function responsiveSrcSet(url) {
+            const m = url && url.match(/^(\/media\/.+)\.(jpe?g|png)$/i);
+            if (!m) return "";
+            return `${m[1]}-w400.webp 400w, ${m[1]}-w800.webp 800w, ${m[1]}-w1200.webp 1200w`;
+        }
 
         // Carga perezosa de Leaflet solo si el usuario abre el mapa (ahorra ~40KB en 3G)
         function loadLeafletOnce() {
@@ -606,8 +597,8 @@
                     if (attempt === retries.length - 1) {
                         document.getElementById("catalog").innerHTML = `
                             <div class="state-inline" style="grid-column:1/-1;text-align:center;padding:48px 24px;">
-                                <p style="color:var(--text-secondary);margin-bottom:12px;">No se pudo cargar el catálogo. Tu conexión parece lenta.</p>
-                                <button class="btn-retry" style="background:var(--accent);color:#fff;border:none;padding:12px 24px;border-radius:20px;font-weight:600;cursor:pointer;" onclick="loadProperties()">Reintentar</button>
+                                <p style="color:var(--color-ink-muted);margin-bottom:12px;">No se pudo cargar el catálogo. Tu conexión parece lenta.</p>
+                                <button class="btn-retry" style="background:var(--color-accent);color:#fff;border:none;padding:12px 24px;border-radius:20px;font-weight:600;cursor:pointer;" onclick="loadProperties()">Reintentar</button>
                             </div>
                         `;
                     }
@@ -618,7 +609,7 @@
         function renderCatalog() {
             const catalog = document.getElementById("catalog");
             if (propertiesData.length === 0) {
-                catalog.innerHTML = `<p style="grid-column: 1/-1; padding: 48px; text-align: center; color: var(--text-secondary);">No hay inmuebles disponibles con estos filtros.</p>`;
+                catalog.innerHTML = `<p style="grid-column: 1/-1; padding: 48px; text-align: center; color: var(--color-ink-muted);">No hay inmuebles disponibles con estos filtros.</p>`;
                 return;
             }
 
@@ -628,7 +619,7 @@
                     <a href="/property.html?id=${p.id}" class="property-card">
                         <div class="img-wrapper">
                             <span class="badge-op">${p.operation}</span>
-                            <img src="${mainImg}" alt="${p.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80'">
+                            <img src="${mainImg}" srcset="${responsiveSrcSet(mainImg)}" sizes="(max-width: 600px) 100vw, 300px" alt="${p.title}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.src='https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80'">
                         </div>
                         <div class="card-info">
                             <div class="price">$${parseFloat(p.price).toLocaleString()} USD</div>
@@ -668,7 +659,7 @@
                             <img src="${mainImg}" style="width:100%; height:80px; object-fit:cover; border-radius:8px;">
                             <strong style="display:block; margin-top:6px;">$${parseFloat(p.price).toLocaleString()} USD</strong>
                             <span style="font-size:12px; color:#666;">${p.title}</span>
-                            <a href="/property.html?id=${p.id}" style="display:block; font-size:12px; color:var(--accent); margin-top:4px; text-decoration:none;">Ver Detalles</a>
+                            <a href="/property.html?id=${p.id}" style="display:block; font-size:12px; color:var(--color-accent); margin-top:4px; text-decoration:none;">Ver Detalles</a>
                         </div>
                     `);
                     markersGroup.addLayer(marker);
@@ -787,6 +778,11 @@
         }
 
         window.onload = loadProperties;
+    </script>
+<script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js").catch(() => {});
+        }
     </script>
 </body>
 </html>

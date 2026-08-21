@@ -533,5 +533,10 @@
             document.querySelectorAll('.price-marker').forEach(el => el.classList.remove('active-marker'));
         }
     </script>
+<script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js").catch(() => {});
+        }
+    </script>
 </body>
 </html>

@@ -20,7 +20,7 @@
             padding: 0 var(--space-4); border-bottom: 1px solid var(--border-subtle);
         }
         .btn-back { display: flex; align-items: center; gap: 4px; color: var(--interactive-blue); font-weight: var(--weight-medium); font-size: var(--text-base); }
-        .nav-id { font-weight: var(--weight-semibold); color: var(--text-primary); font-size: var(--text-sm); }
+        .nav-id { font-weight: var(--weight-semibold); color: var(--color-ink); font-size: var(--text-sm); }
 
         /* Galería Horizontal Snap (PWA Touch Optimized) */
         .gallery-wrapper {
@@ -48,12 +48,12 @@
         /* Cabecera Info */
         .info-header { display: flex; flex-direction: column; gap: var(--space-3); }
         .tags-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-        .tag { background: var(--bg-tertiary); padding: 4px 12px; border-radius: var(--radius-sm); font-size: 11px; font-weight: var(--weight-bold); text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em;}
+        .tag { background: var(--bg-tertiary); padding: 4px 12px; border-radius: var(--radius-sm); font-size: 11px; font-weight: var(--weight-bold); text-transform: uppercase; color: var(--color-ink-muted); letter-spacing: 0.05em;}
         .tag.premium { background: rgba(0, 113, 227, 0.1); color: var(--interactive-blue); }
         
         .prop-title { font-size: var(--text-xxl); font-weight: var(--weight-bold); line-height: var(--line-height-tight); letter-spacing: -0.03em; }
-        .prop-price { font-size: 32px; font-weight: 800; color: var(--text-primary); margin-top: -4px; }
-        .prop-loc { font-size: var(--text-base); color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+        .prop-price { font-size: 32px; font-weight: 800; color: var(--color-ink); margin-top: -4px; }
+        .prop-loc { font-size: var(--text-base); color: var(--color-ink-muted); display: flex; align-items: center; gap: 6px; }
 
         /* Grid Specs Físicas */
         .specs-grid {
@@ -62,8 +62,8 @@
             padding: var(--space-4) 0;
         }
         .spec-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .spec-val { font-weight: var(--weight-bold); font-size: var(--text-lg); color: var(--text-primary); }
-        .spec-lbl { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .spec-val { font-weight: var(--weight-bold); font-size: var(--text-lg); color: var(--color-ink); }
+        .spec-lbl { font-size: 11px; color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 
         /* Secciones Bloque */
         .section-block { display: flex; flex-direction: column; gap: var(--space-3); }
@@ -74,10 +74,10 @@
         .ruta-segura { background: var(--bg-tertiary); border-radius: var(--radius-lg); padding: 0 var(--space-4); border: 1px solid var(--border-default); }
         .accordion-item { border-bottom: 1px solid var(--border-default); }
         .accordion-item:last-child { border-bottom: none; }
-        .accordion-btn { width: 100%; text-align: left; padding: var(--space-4) 0; font-weight: var(--weight-semibold); font-size: var(--text-sm); display: flex; justify-content: space-between; align-items: center; color: var(--text-primary); cursor: pointer; }
+        .accordion-btn { width: 100%; text-align: left; padding: var(--space-4) 0; font-weight: var(--weight-semibold); font-size: var(--text-sm); display: flex; justify-content: space-between; align-items: center; color: var(--color-ink); cursor: pointer; }
         .accordion-btn span { transition: transform 0.3s var(--ease-spring); font-size: 18px; }
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s var(--ease-spring); }
-        .accordion-content p { padding-bottom: var(--space-4); font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; }
+        .accordion-content p { padding-bottom: var(--space-4); font-size: var(--text-sm); color: var(--color-ink-muted); line-height: 1.5; }
         .accordion-item.active .accordion-content { max-height: 300px; }
         .accordion-item.active .accordion-btn span { transform: rotate(45deg); color: var(--interactive-blue); }
 
@@ -90,8 +90,8 @@
         .similar-card { min-width: 240px; display: flex; flex-direction: column; text-decoration: none; border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-primary); border: 1px solid var(--border-subtle); transition: var(--transition-fast); box-shadow: var(--shadow-sm); scroll-snap-align: start; }
         .similar-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; background: var(--bg-tertiary); }
         .similar-info { padding: var(--space-3); display: flex; flex-direction: column; gap: 4px; }
-        .similar-price { font-weight: var(--weight-bold); font-size: var(--text-base); color: var(--text-primary); }
-        .similar-title { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary); }
+        .similar-price { font-weight: var(--weight-bold); font-size: var(--text-base); color: var(--color-ink); }
+        .similar-title { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-ink); }
 
         /* Barra Inferior Fija (Safe Area iOS) */
         .bottom-bar {
@@ -101,8 +101,8 @@
             display: flex; justify-content: space-between; align-items: center;
         }
         .price-col { display: flex; flex-direction: column; }
-        .price-col span { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: var(--weight-medium); }
-        .price-col strong { font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--text-primary); }
+        .price-col span { font-size: 11px; color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: var(--weight-medium); }
+        .price-col strong { font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--color-ink); }
         
         .btn-contact {
             background: var(--success); color: white; border-radius: var(--radius-round); padding: 0 var(--space-5);
@@ -167,7 +167,7 @@
         <!-- P1: RUTA SEGURA (Guía Legal Cubana) -->
         <section class="section-block">
             <h2 class="section-title">Guía de Compra Segura</h2>
-            <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; margin-top: -8px;">Conoce los pasos legales para adquirir esta propiedad sin contratiempos.</p>
+            <p style="font-size: var(--text-sm); color: var(--color-ink-muted); line-height: 1.5; margin-top: -8px;">Conoce los pasos legales para adquirir esta propiedad sin contratiempos.</p>
             <div class="ruta-segura">
                 <div class="accordion-item" onclick="toggleAccordion(this)">
                     <button class="accordion-btn">1. Título y Gravámenes <span>+</span></button>
@@ -199,7 +199,7 @@
         <!-- Mapa Lazy Loaded -->
         <section class="section-block" id="map-section">
             <h2 class="section-title">Ubicación aproximada</h2>
-            <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; margin-top: -8px;">Por razones de privacidad, se muestra un radio de cobertura en la zona.</p>
+            <p style="font-size: var(--text-sm); color: var(--color-ink-muted); line-height: 1.5; margin-top: -8px;">Por razones de privacidad, se muestra un radio de cobertura en la zona.</p>
             <div id="map-container"></div>
         </section>
 
@@ -313,7 +313,7 @@
                                         <div class="similar-info">
                                             <div class="similar-price">$${parseFloat(p.price).toLocaleString()} USD</div>
                                             <div class="similar-title">${p.title}</div>
-                                            <div style="font-size:11px; color:var(--text-secondary);">${p.neighborhood}</div>
+                                            <div style="font-size:11px; color:var(--color-ink-muted);">${p.neighborhood}</div>
                                         </div>
                                     </a>
                                 `;
@@ -333,6 +333,11 @@
         }
 
         window.onload = initProperty;
+    </script>
+<script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js").catch(() => {});
+        }
     </script>
 </body>
 </html>
