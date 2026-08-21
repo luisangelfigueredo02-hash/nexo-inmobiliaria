@@ -1,5 +1,7 @@
 // worker.js - NEXO Master API, SEO & AI Engine
 
+import { enforceRateLimit, rejectResponse, NO_CACHE_HEADERS, LIMIT_DEF } from "./rate-limit.js";
+
 // Cliente Sentry mínimo (sin dependencias) para capturar errores no controlados
 function reportError(env, ctx, error, requestUrl) {
   if (!env.SENTRY_DSN) return;
@@ -652,6 +654,12 @@ export default {
           return new Response(JSON.stringify({ error: "Mensaje requerido" }), { status: 400, headers: corsHeaders });
         }
 
+        // Rate limit ANTES de cualquier costo AI (requerido 03.3)
+        const rate = await enforceRateLimit(env, request);
+        if (rate.limited) {
+          return rejectResponse(rate.retryAfter, corsHeaders);
+        }
+
         let matchedProperties = [];
 
         // Búsqueda semántica híbrida con Vectorize
@@ -713,12 +721,12 @@ export default {
           response: aiResponse.response,
           properties: matchedProperties
         }), {
-          headers: { "Content-Type": "application/json", ...corsHeaders }
+          headers: { "Content-Type": "application/json", ...corsHeaders, ...NO_CACHE_HEADERS }
         });
       } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
+        return new Response(JSON.stringify({ error: "Error interno" }), {
           status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders }
+          headers: { "Content-Type": "application/json", ...corsHeaders, ...NO_CACHE_HEADERS }
         });
       }
     }
