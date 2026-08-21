@@ -71,11 +71,20 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // 3. API DE DATOS: Stale-While-Revalidate (Modo Isla)
+  // 3. API DE DATOS: Stale-While-Revalidate con frescura limitada (Modo Isla).
+  // Inventario: revalidamos si el cache tiene más de DATA_MAX_AGE_MS; el detalle
+  // de propiedad es más estable (el inventario cambia con publicaciones).
+  const DATA_MAX_AGE_MS = url.pathname.includes("/api/properties") && !/\/api\/properties\//.test(url.pathname)
+    ? 5 * 60 * 1000        // inventario: 5 minutos
+    : 30 * 60 * 1000;      // detalle/config: 30 minutos
+
   if (url.pathname.startsWith("/api/properties") || url.pathname === "/api/config") {
     event.respondWith(
       caches.open(DATA_CACHE).then(async cache => {
         const cachedResponse = await cache.match(request);
+        const isFresh = cachedResponse &&
+          Date.now() - new Date(cachedResponse.headers.get("date") || 0).getTime() < DATA_MAX_AGE_MS;
+
         const fetchPromise = fetch(request).then(networkResponse => {
           if (networkResponse.ok) {
             cache.put(request, networkResponse.clone());
@@ -84,7 +93,8 @@ self.addEventListener("fetch", event => {
         }).catch(err => {
           if (!cachedResponse) throw err;
         });
-        return cachedResponse || fetchPromise;
+
+        return (isFresh ? cachedResponse : fetchPromise).catch(() => cachedResponse || fetchPromise);
       })
     );
     return;

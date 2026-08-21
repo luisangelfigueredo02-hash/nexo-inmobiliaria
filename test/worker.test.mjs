@@ -140,7 +140,39 @@ test("POST /api/admin/properties crea propiedad con token", async () => {
   const res = await worker.fetch(req("/api/admin/properties", {
     method: "POST",
     headers: { ...adminHeaders(), "Content-Type": "application/json" },
-    body: JSON.stringify({ title: "x", type: "casa", operation: "venta", price: 10 })
+    body: JSON.stringify({ title: "Casa de prueba", type: "casa", operation: "venta", price: 10 })
   }), makeEnv());
   assert.equal(res.status, 200);
+});
+
+
+test("POST /api/admin/properties rechaza payload inválido → 400", async () => {
+  const res = await worker.fetch(req("/api/admin/properties", {
+    method: "POST",
+    headers: { ...adminHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({ title: "x" })
+  }), makeEnv());
+  assert.equal(res.status, 400);
+});
+
+test("CORS: origin no permitido no recibe cabecera", async () => {
+  const res = await worker.fetch(req("/api/config", {
+    headers: { Origin: "https://malicioso.evil.com" }
+  }), makeEnv());
+  assert.equal(res.headers.get("access-control-allow-origin"), null);
+});
+
+test("CORS: origin mismo host sí recibe cabecera", async () => {
+  const res = await worker.fetch(req("/api/config", {
+    headers: { Origin: "https://nexo.test" }
+  }), makeEnv());
+  assert.equal(res.headers.get("access-control-allow-origin"), "https://nexo.test");
+});
+
+test("Rutas admin no emiten cabeceras CORS", async () => {
+  const res = await worker.fetch(req("/api/admin/properties", {
+    headers: { Origin: "https://nexo.test" }
+  }), makeEnv());
+  assert.equal(res.status, 401);
+  assert.equal(res.headers.get("access-control-allow-origin"), null);
 });

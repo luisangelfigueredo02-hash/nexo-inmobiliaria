@@ -804,18 +804,14 @@
         });
 
         /* ---------- Similares (datos reales) ---------- */
+        // Similares se calculan server-side: un solo request mínimo al endpoint,
+        // en lugar de descargar todo el inventario y filtrar localmente.
         async function loadSimilar(p) {
             try {
-                const params = new URLSearchParams();
-                if (p.operation) params.set("operation", p.operation);
-                const res = await fetch("/api/properties?" + params.toString());
+                const res = await fetch(`/api/properties/${encodeURIComponent(p.id)}/similar`);
                 if (!res.ok) return;
-                const all = await res.json();
-                const similar = all
-                    .filter(x => String(x.id) !== String(p.id))
-                    .sort((a, b) => (b.neighborhood === p.neighborhood) - (a.neighborhood === p.neighborhood))
-                    .slice(0, 3);
-                if (similar.length === 0) return;
+                const similar = await res.json();
+                if (!Array.isArray(similar) || similar.length === 0) return;
 
                 document.getElementById("similar-section").hidden = false;
                 document.getElementById("similar-grid").innerHTML = similar.map(s => {

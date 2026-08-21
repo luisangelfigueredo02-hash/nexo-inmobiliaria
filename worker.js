@@ -47,6 +47,45 @@ function escJson(str) {
     .replace(/>/g, "\\u003e");
 }
 
+// Validación server-side de propiedad (admin POST/PUT). La del frontend no es suficiente.
+// Devuelve string con el error o null si válido.
+function validatePropertyInput(data) {
+  if (!data || typeof data !== "object") return "Payload inválido";
+  if (!data.title || typeof data.title !== "string" || data.title.trim().length < 3 || data.title.length > 200) {
+    return "title requerido (3-200 caracteres)";
+  }
+  const ALLOWED_TYPES = ["casa", "apartamento", "terreno", "penthouse", "Casa", "Apartamento", "Terreno", "Penthouse"];
+  if (data.type && !ALLOWED_TYPES.includes(data.type)) return "type inválido";
+  const ALLOWED_OPS = ["venta", "alquiler"];
+  if (data.operation && !ALLOWED_OPS.includes(data.operation)) return "operation inválida";
+  const price = parseFloat(data.price);
+  if (isNaN(price) || price < 0 || price > 999_000_000) return "price inválido";
+  const beds = parseInt(data.bedrooms ?? 0, 10);
+  if (isNaN(beds) || beds < 0 || beds > 50) return "bedrooms inválido";
+  const baths = parseInt(data.bathrooms ?? 0, 10);
+  if (isNaN(baths) || baths < 0 || baths > 50) return "bathrooms inválido";
+  const area = parseFloat(data.area ?? 0);
+  if (isNaN(area) || area < 0 || area > 100_000) return "area inválida";
+  if (data.latitude != null && (isNaN(parseFloat(data.latitude)) || Math.abs(parseFloat(data.latitude)) > 90)) {
+    return "latitude inválida";
+  }
+  if (data.longitude != null && (isNaN(parseFloat(data.longitude)) || Math.abs(parseFloat(data.longitude)) > 180)) {
+    return "longitude inválida";
+  }
+  if (data.description && String(data.description).length > 5000) return "description excede 5000 caracteres";
+  if (data.images && (!Array.isArray(data.images) || data.images.length > 40)) return "images inválidas (máx 40)";
+  if (Array.isArray(data.images)) {
+    for (const url of data.images) {
+      if (typeof url !== "string" || url.length > 500) return "image URL inválida";
+      // Solo permitimos rutas /media/* o http(s) externas explícitas del panel
+      if (!url.startsWith("/media/") && !/^https?:\/\//i.test(url)) return "image URL debe ser /media/* o http(s)";
+    }
+  }
+  const ALLOWED_STATUS = ["published", "draft"];
+  if (data.status && !ALLOWED_STATUS.includes(data.status)) return "status inválido";
+  return null;
+}
+
 export default {
   async fetch(request, env, ctx) {
     try {
@@ -64,23 +103,68 @@ export default {
     // Configuración global de WhatsApp
     const WHATSAPP_PHONE = env.WHATSAPP_PHONE || "+5350000000";
 
-    // Cabeceras de seguridad y CORS
-    const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    };
+    // CORS: política mínima. La app es same-origin (el frontend vive en el
+    // mismo Worker), así que solo reflejamos orígenes del propio deployment.
+    // API pública permite CORS restringido; endpoints admin NO envían cabeceras CORS.
+    const allowedOrigin = (() => {
+      const origin = request.headers.get("Origin");
+      if (!origin) return null;
+      const host = url.hostname;
+      try {
+        const o = new URL(origin);
+        if (o.hostname === host || o.hostname.endsWith(".workers.dev") || o.hostname === "localhost") {
+          return origin;
+        }
+      } catch (e) { /* origin inválido */ }
+      return null;
+    })();
+
+    const isAdminRoute = url.pathname.startsWith("/api/admin/");
+
+    const corsHeaders = allowedOrigin && !isAdminRoute
+      ? {
+          "Access-Control-Allow-Origin": allowedOrigin,
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          "Vary": "Origin",
+        }
+      : {};
 
     if (method === "OPTIONS") {
+      // Preflight solo para orígenes permitidos; admin sin CORS
+      if (isAdminRoute || !allowedOrigin) {
+        return new Response(null, { status: 204 });
+      }
       return new Response(null, { headers: corsHeaders });
     }
 
-    // Helper de autenticación administrativa
+    // Comparación de secretos en tiempo constante (evita timing attacks)
+    const timingSafeEqual = (a, b) => {
+      const sa = String(a || "");
+      const sb = String(b || "");
+      if (sa.length !== sb.length) {
+        // Comparación dummy de igual longitud para no filtrar la longitud real
+        let r = 0;
+        for (let i = 0; i < sa.length; i++) r |= sa.charCodeAt(i) ^ sa.charCodeAt(i);
+        return false;
+      }
+      let result = 0;
+      for (let i = 0; i < sa.length; i++) {
+        result |= sa.charCodeAt(i) ^ sb.charCodeAt(i);
+      }
+      return result === 0;
+    };
+
+    // Autenticación administrativa: un único secreto canónico (ADMIN_TOKEN).
+    // ADMIN_PASSWORD queda como fallback legacy temporal (deprecar en futura fase).
     const isAdmin = (req) => {
       const authHeader = req.headers.get("Authorization");
-      if (!authHeader) return false;
-      const token = authHeader.replace("Bearer ", "");
-      return token === env.ADMIN_TOKEN || token === env.ADMIN_PASSWORD;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) return false;
+      const token = authHeader.slice("Bearer ".length).trim();
+      if (!token) return false;
+      if (env.ADMIN_TOKEN && timingSafeEqual(token, env.ADMIN_TOKEN)) return true;
+      if (env.ADMIN_PASSWORD && timingSafeEqual(token, env.ADMIN_PASSWORD)) return true;
+      return false;
     };
 
     // Normalizador de imágenes para prevenir inconsistencias de formato
@@ -165,12 +249,23 @@ export default {
       let key = decodeURIComponent(url.pathname.slice("/media/".length));
       const accept = request.headers.get("accept") || "";
 
-      // Negociación WebP/AVIF: el bucket guarda variantes *.webp junto al JPG original
-      let format = key.match(/\.(jpe?g|png)$/i) && accept.includes("image/webp") ? "webp" : null;
+      // Negociación WebP: si la key apunta a un JPG original y el cliente acepta
+      // WebP, probamos cada variante por ancho (-w400/-w800/-w1200) hasta servir
+      // la que exista. El frontend pide una variante concreta vía srcset.
+      const isOriginalJpg = /\.(jpe?g|png)$/i.test(key) && !/-w(400|800|1200)\.webp$/i.test(key);
+      let format = isOriginalJpg && accept.includes("image/webp") ? "webp" : null;
       let object = null;
       if (format) {
-        const webpKey = key.replace(/\.(jpe?g|png)$/i, "-w1200.webp");
-        object = method === "HEAD" ? await env.BUCKET_IMAGENES.head(webpKey) : await env.BUCKET_IMAGENES.get(webpKey);
+        const widths = [400, 800, 1200];
+        const requestedWidth = (url.searchParams.get("w") || "").match(/^\d+$/) ? parseInt(url.searchParams.get("w"), 10) : null;
+        const order = requestedWidth ? [requestedWidth, ...widths.filter(w => w !== requestedWidth)] : widths;
+        for (const w of order) {
+          const webpKey = key.replace(/\.(jpe?g|png)$/i, `-w${w}.webp`);
+          object = method === "HEAD"
+            ? await env.BUCKET_IMAGENES.head(webpKey)
+            : await env.BUCKET_IMAGENES.get(webpKey);
+          if (object) break;
+        }
         if (!object) format = null; // fallback al original si no hay variante optimizada
       }
       if (!object) {
@@ -320,7 +415,11 @@ export default {
         });
       }
       try {
-        const { results } = await env.DB.prepare("SELECT * FROM properties ORDER BY created_at DESC").all();
+        // ADMIN DTO: campos explícitos (incluye privados, es el panel admin).
+        // Campos internos futuros no se filtrarán accidentalmente al panel.
+        const { results } = await env.DB.prepare(
+          "SELECT id, title, type, operation, price, province, city, neighborhood, address, bedrooms, bathrooms, area, description, images, latitude, longitude, status, owner_name, owner_phone, internal_notes, created_at FROM properties ORDER BY created_at DESC"
+        ).all();
         const formatted = results.map(row => ({
           ...row,
           images: normalizeImages(row.images)
@@ -344,26 +443,48 @@ export default {
       try {
         const data = await request.json();
 
-        // Autogenerar ID secuencial premium N-001, N-002...
-        const lastRow = await env.DB.prepare("SELECT id FROM properties ORDER BY created_at DESC LIMIT 1").first();
-        let nextNum = 1;
-        if (lastRow && lastRow.id && lastRow.id.startsWith("N-")) {
-          const lastNum = parseInt(lastRow.id.replace("N-", ""), 10);
-          if (!isNaN(lastNum)) nextNum = lastNum + 1;
+        // --- Validación server-side de inputs (la del frontend no es suficiente) ---
+        const validationError = validatePropertyInput(data);
+        if (validationError) {
+          return new Response(JSON.stringify({ error: validationError }), {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders }
+          });
         }
-        const generatedId = `N-${String(nextNum).padStart(3, "0")}`;
-        const imagesStr = JSON.stringify(data.images || []);
 
-        await env.DB.prepare(`
-          INSERT INTO properties (id, title, type, operation, price, province, city, neighborhood, address, bedrooms, bathrooms, area, description, images, latitude, longitude, status, owner_name, owner_phone, internal_notes)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).bind(
-          generatedId, data.title, data.type, data.operation, parseFloat(data.price),
-          data.province, data.city, data.neighborhood, data.address || "",
-          parseInt(data.bedrooms || 0), parseInt(data.bathrooms || 0), parseFloat(data.area || 0),
-          data.description || "", imagesStr, parseFloat(data.latitude || 0), parseFloat(data.longitude || 0),
-          data.status || "published", data.owner_name || "", data.owner_phone || "", data.internal_notes || ""
-        ).run();
+        // ID secuencial N-001...: el INSERT con subconsulta de MAX es atómico
+        // en SQLite → elimina la race condition de "leer último + insertar".
+        // Si dos requests concurrentes calculan el mismo id, el UNIQUE/PK del
+        // segundo falla y reintentamos con el siguiente número (máx 3 intentos).
+        const imagesStr = JSON.stringify(data.images || []);
+        let generatedId = null;
+
+        for (let attempt = 0; attempt < 3 && !generatedId; attempt++) {
+          try {
+            const inserted = await env.DB.prepare(`
+              INSERT INTO properties (id, title, type, operation, price, province, city, neighborhood, address, bedrooms, bathrooms, area, description, images, latitude, longitude, status, owner_name, owner_phone, internal_notes)
+              SELECT
+                'N-' || printf('%03d',
+                  COALESCE(
+                    (SELECT MAX(CAST(SUBSTR(id, 3) AS INTEGER)) FROM properties WHERE id LIKE 'N-%'),
+                    0
+                  ) + 1 + ?),
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+              RETURNING id
+            `).bind(
+              attempt,
+              data.title, data.type, data.operation, parseFloat(data.price),
+              data.province, data.city, data.neighborhood, data.address || "",
+              parseInt(data.bedrooms || 0), parseInt(data.bathrooms || 0), parseFloat(data.area || 0),
+              data.description || "", imagesStr, parseFloat(data.latitude || 0), parseFloat(data.longitude || 0),
+              data.status || "published", data.owner_name || "", data.owner_phone || "", data.internal_notes || ""
+            ).first();
+            generatedId = inserted && inserted.id;
+          } catch (insertErr) {
+            // Conflicto de PK: otro request ganó la carrera → reintentar
+            if (attempt === 2) throw insertErr;
+          }
+        }
 
         // Sincronizar con Vectorize si el binding existe
         if (env.AI && env.VECTORIZE && (data.status || "published") === "published") {
