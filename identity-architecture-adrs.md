@@ -473,3 +473,56 @@ listing_id (TEXT 'N-001' real vs INTEGER de ADR-009) debe resolverse en
 (04.7/04.8); (3) la matriz compilada exige disciplina de review (mitigada
 por tests de contrato en 04.5); (4) SUPERADMIN break-glass queda
 documentado pero sin implementación hasta su primer uso real.
+
+
+---
+
+## ADR-015 — Canonical Listing Identifier (04.4.1)
+
+**CONTEXT.** 04.4 §0.3 detectó una contradicción crítica: la documentación
+declaraba properties.id TEXT 'N-001' (schema.sql + admin POST generaba
+'N-00X' como PK), pero la base de producción real tiene properties.id
+INTEGER AUTOINCREMENT (id=9) con columna `public_code TEXT` sin usar por el
+código. Consecuencias: admin POST roto en producción (TEXT en INTEGER PK),
+URLs públicas por código rotas (`/api/properties/N-001` → 404), la IA citaba
+la PK interna, y `moderation_events.listing_id` TEXT no podía JOIN con el id
+INTEGER real (listing_owners ya era INTEGER).
+
+**DECISION.** Modelo canónico de doble identificador:
+1. `properties.id` INTEGER PRIMARY KEY = identificador interno único para
+   relaciones (listing_owners, moderation_events, favorites) y admin plane.
+2. `properties.public_code` TEXT NOT NULL UNIQUE = identificador público
+   estable e irreutilizable ('N-001'), usado en URLs, SEO, IA/chat y
+   Vectorize vector ids.
+3. Generación delete-safe vía tabla `listing_id_sequence` (UPDATE+INSERT en
+   batch atómico D1); fallback MAX(public_code)+retry pre-migration; jamás
+   COUNT(properties)+1.
+4. Resolución dual por patrón en lectura (N-XXX → public_code; numérico → id)
+   sin CASTs, preservando URLs legacy existentes.
+5. FKs explícitas: listing_owners → properties(id) ON DELETE CASCADE
+   (ownership muere con el listing); moderation_events INTEGER sin FK
+   (historial audit sobrevive al borrado; CASCADE destructivo prohibido).
+6. Migration 0005 create→copy→validate→swap sobre snapshot real de
+   producción (1 property, 0 relaciones); validación completa en local;
+   producción NO migrada sin aprobación explícita.
+
+**ALTERNATIVES.**
+1. Mantener TEXT id 'N-001' como PK (doc vieja) — rechazado: contradice la
+   realidad de producción (INTEGER con datos), rompería relaciones INTEGER
+   existentes y expondría el identificador público como PK interna.
+2. Renombrar public_code → public_id — rechazado: rename cosmético sobre
+   columna existente; `public_code` ya existía en producción con el valor
+   correcto; se conserva para minimizar superficie de migration.
+3. Aplicar la migration a producción directamente — rechazado: 04.4.1 §21
+   exige aprobación explícita previa; backup + validación local primero.
+
+**RATIONALE.** Alinea código, documentación y DB real sin perder datos ni
+URLs; los JOINs de ownership/moderación quedan type-safe sin CASTs; el id
+público deja de revelar secuencia interna; admin POST vuelve a funcionar.
+
+**CONSEQUENCES.** Positivas: integridad referencial garantizable (FK reales),
+admin create reparado, IA/SEO/chat consistentes, tests 129/129, procedimiento
+de migración de producción documentado con backup/rollback. Riesgos:
+public_code nullable en prod hasta aplicar 0005 (mitigado por código);
+tablas legacy favorites/user_favorites/users vacías pendientes de cleanup
+futuro; properties.status sin CHECK completo hasta 04.7/04.8.

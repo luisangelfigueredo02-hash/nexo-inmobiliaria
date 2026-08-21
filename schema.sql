@@ -1,10 +1,13 @@
--- schema.sql - NEXO Unificado
+-- schema.sql - NEXO Unificado (04.4.1: modelo canónico listing identity)
+-- Bootstrap local únicamente. Las tablas Identity vienen de migrations/.
+-- Producción se alinea vía 0005_canonical_listing_identity.sql.
 DROP TABLE IF EXISTS properties;
 CREATE TABLE properties (
-    id TEXT PRIMARY KEY, -- Formato estructurado: N-001, N-002, etc.
+    id INTEGER PRIMARY KEY AUTOINCREMENT, -- identificador interno (relaciones)
+    public_code TEXT NOT NULL UNIQUE,     -- identificador público estable 'N-001'
     title TEXT NOT NULL,
     type TEXT NOT NULL, -- 'casa', 'apartamento', 'terreno', 'penthouse'
-    operation TEXT NOT NULL, -- 'venta', 'alquiler'
+    operation TEXT NOT NULL DEFAULT 'venta', -- 'venta', 'alquiler'
     price REAL NOT NULL,
     province TEXT NOT NULL,
     city TEXT NOT NULL,
@@ -21,5 +24,13 @@ CREATE TABLE properties (
     owner_name TEXT, -- Datos privados
     owner_phone TEXT, -- Datos privados
     internal_notes TEXT, -- Datos privados
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    contact_email TEXT, -- legacy (privado)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Generador de public_code delete-safe (nunca reusa códigos tras DELETE)
+CREATE TABLE IF NOT EXISTS listing_id_sequence (
+    name TEXT PRIMARY KEY,
+    value INTEGER NOT NULL
+);
+INSERT OR IGNORE INTO listing_id_sequence (name, value) VALUES ('public_code', 0);

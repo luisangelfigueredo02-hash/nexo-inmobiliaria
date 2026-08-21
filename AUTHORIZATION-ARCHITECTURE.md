@@ -58,11 +58,14 @@ Fronteras heredadas (no se mezclan):
   generan `N-00X`). `listing_owners.listing_id` es `INTEGER` y
   `moderation_events.listing_id` es `TEXT`. **JOIN directo
   `properties.id = listing_owners.listing_id` es imposible hoy sin CAST.**
-- Impacto en 04.4: el modelo de ownership es agnóstico al tipo; la
-  corrección del tipo es una decisión de schema para la fase de
-  implementación de Listings (04.7) o un 04.4.x-FIX posterior. Esta spec
-  asume que la fase de implementación resolverá el tipo ANTES de escribir
-  el primer JOIN de ownership. **Riesgo registrado: alto.**
+- Impacto en 04.4: el modelo de ownership es agnóstico al tipo.
+  **RESUELTO en 04.4.1**: inspección real reveló que producción usa
+  `properties.id` INTEGER (id=9) + `public_code` TEXT ('N-001'); la
+  documentación previa (TEXT 'N-001' como PK) era la parte incorrecta.
+  Modelo canónico congelado en ADR-015 / LISTING-IDENTITY.md:
+  `listing_owners`/`moderation_events` INTEGER → `properties(id)`;
+  código, SEO, IA y Vectorize usan `public_code`. Migration 0005
+  validada en local; producción pendiente de aprobación explícita.
 - `properties.status` no tiene CHECK; hoy solo usa 'published'/'draft'.
   La máquina de estados completa (§9) requerirá migration futura (04.7/04.8).
 

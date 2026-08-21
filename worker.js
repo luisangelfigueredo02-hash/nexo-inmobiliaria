@@ -3,6 +3,21 @@
 import { enforceRateLimit, rejectResponse, NO_CACHE_HEADERS, LIMIT_DEF } from "./rate-limit.js";
 import { getAuthenticatedSession, destroySession, isStateChangingAllowed } from "./session-runtime.js";
 
+// --- LISTING IDENTITY (04.4.1) ---
+// Interno: properties.id INTEGER PK (relaciones, admin). Público: public_code
+// TEXT UNIQUE 'N-XXX' (URLs, SEO, IA, chat). Las relaciones internas
+// (listing_owners, moderation_events, favorites) referencian SIEMPRE id.
+const PUBLIC_CODE_RE = /^N-\d+$/i;
+
+// Resolución dual de identificador de listing: 'N-001' → public_code;
+// numérico → id interno (compatibilidad legacy). Sin CASTs: se decide la
+// columna por el patrón, no por el valor.
+function listingLookup(param) {
+  return PUBLIC_CODE_RE.test(param)
+    ? { column: "public_code", value: param.toUpperCase() }
+    : { column: "id", value: param };
+}
+
 // Cliente Sentry mínimo (sin dependencias) para capturar errores no controlados
 function reportError(env, ctx, error, requestUrl) {
   if (!env.SENTRY_DSN) return;
@@ -117,7 +132,7 @@ function normalizeCoord(value) {
 ========================================================= */
 
 // === GENERATED CSP-SCRIPT-SRC:BEGIN (scripts/generate-csp-hashes.mjs, no editar a mano) ===
-const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-NrzaWnsjOu1ZAhFEpP1o+wYS0eRr5mU6WCMsAZockGk=' 'sha256-X1+NFVlpfDhIGbwE78nVUvjWPb5x6TU/1Hl6HpjSMe8=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-kQlCj9qMO2xDUQUAJV/jS73uuXUY3voXEsEEiHg6PH8=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-ow5J81bvIAcViT02n5kJQl35m+TaUiLeIEvxncpvPZk=' 'sha256-vxJ7leDBrqXJjUVrVQqgthikAZNpK4DVv0XvrnZAcC4=' 'sha256-yJu3FsIaHh1tSlyaCNuksaOURnf2j3dZJ60v+AfuWY0='";
+const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-NrzaWnsjOu1ZAhFEpP1o+wYS0eRr5mU6WCMsAZockGk=' 'sha256-TZURs6R2xl/1Gy9UOixrPAONUCwPHbzf0BsBjfjd+JA=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-gN/koTz4OkQohzjk+1sfDTHyBqzrKgHTLZNFTYPuwxQ=' 'sha256-kQlCj9qMO2xDUQUAJV/jS73uuXUY3voXEsEEiHg6PH8=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-qdtM/5NpU8kzqUaDCDOZvLeNuA7NDt9lFa618ULvyz4=' 'sha256-yJu3FsIaHh1tSlyaCNuksaOURnf2j3dZJ60v+AfuWY0='";
 // === GENERATED CSP-SCRIPT-SRC:END ===
 
 const CSP_POLICY = [
@@ -337,14 +352,18 @@ export default {
       assetUrl.pathname = "/property";
       assetUrl.search = "";
       assetUrl.hash = "";
-      const assetRes = await env.ASSETS.fetch(new Request(assetUrl)).catch(() => null);
+      const assetRes = env.ASSETS
+        ? await env.ASSETS.fetch(new Request(assetUrl)).catch(() => null)
+        : null;
       let htmlContent = assetRes && assetRes.ok ? await assetRes.text() : PROPERTY_HTML_TEMPLATE;
 
       if (id) {
         try {
+          // Resolución dual: public_code (N-001) o id interno legacy (04.4.1)
+          const lookup = listingLookup(id);
           const property = await env.DB.prepare(
-            "SELECT id, title, description, images, price, city, province FROM properties WHERE id = ?"
-          ).bind(id).first();
+            `SELECT id, public_code, title, description, images, price, city, province FROM properties WHERE ${lookup.column} = ?`
+          ).bind(lookup.value).first();
           if (property) {
             const images = normalizeImages(property.images);
             const mainImage = images[0] || "https://nexo.estate/placeholder.jpg";
@@ -441,7 +460,9 @@ export default {
         const province = url.searchParams.get("province");
         const bedrooms = url.searchParams.get("bedrooms");
 
-        let query = "SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images, latitude, longitude, created_at FROM properties WHERE status = 'published'";
+        // public_code expuesto (04.4.1); id interno se preserva por
+        // compatibilidad pero los links públicos deben usar public_code.
+        let query = "SELECT id, public_code, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images, latitude, longitude, created_at FROM properties WHERE status = 'published'";
         const params = [];
 
         // Comparación case-insensitive: la BD mezcla valores capitalizados
@@ -474,9 +495,11 @@ export default {
     // --- PROPIEDADES SIMILARES PÚBLICAS (±30% PRECIO) ---
     const similarMatch = url.pathname.match(/^\/api\/properties\/([^\/]+)\/similar$/);
     if (similarMatch && method === "GET") {
-      const id = similarMatch[1];
+      const lookup = listingLookup(decodeURIComponent(similarMatch[1]));
       try {
-        const row = await env.DB.prepare("SELECT price, city, province FROM properties WHERE id = ? AND status = 'published'").bind(id).first();
+        const row = await env.DB.prepare(
+          `SELECT id, price, city, province FROM properties WHERE ${lookup.column} = ? AND status = 'published'`
+        ).bind(lookup.value).first();
         if (!row) {
           return new Response(JSON.stringify([]), { headers: { "Content-Type": "application/json", ...corsHeaders } });
         }
@@ -485,13 +508,13 @@ export default {
         const maxPrice = row.price * 1.3;
 
         let { results } = await env.DB.prepare(
-          "SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE status = 'published' AND id != ? AND city = ? AND price BETWEEN ? AND ? LIMIT 4"
-        ).bind(id, row.city, minPrice, maxPrice).all();
+          "SELECT id, public_code, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE status = 'published' AND id != ? AND city = ? AND price BETWEEN ? AND ? LIMIT 4"
+        ).bind(row.id, row.city, minPrice, maxPrice).all();
 
         if (results.length === 0) {
           const provRes = await env.DB.prepare(
-            "SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE status = 'published' AND id != ? AND province = ? AND price BETWEEN ? AND ? LIMIT 4"
-          ).bind(id, row.province, minPrice, maxPrice).all();
+            "SELECT id, public_code, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE status = 'published' AND id != ? AND province = ? AND price BETWEEN ? AND ? LIMIT 4"
+          ).bind(row.id, row.province, minPrice, maxPrice).all();
           results = provRes.results;
         }
 
@@ -508,11 +531,11 @@ export default {
     // --- DETALLE PÚBLICO DE PROPIEDAD ---
     const detailMatch = url.pathname.match(/^\/api\/properties\/([^\/]+)$/);
     if (detailMatch && method === "GET") {
-      const id = detailMatch[1];
+      const lookup = listingLookup(decodeURIComponent(detailMatch[1]));
       try {
         const row = await env.DB.prepare(
-          "SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images, latitude, longitude FROM properties WHERE id = ? AND status = 'published'"
-        ).bind(id).first();
+          `SELECT id, public_code, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images, latitude, longitude FROM properties WHERE ${lookup.column} = ? AND status = 'published'`
+        ).bind(lookup.value).first();
 
         if (!row) {
           return new Response(JSON.stringify({ error: "Propiedad no encontrada o inactiva" }), {
@@ -562,7 +585,7 @@ export default {
         // ADMIN DTO: campos explícitos (incluye privados, es el panel admin).
         // Campos internos futuros no se filtrarán accidentalmente al panel.
         const { results } = await env.DB.prepare(
-          "SELECT id, title, type, operation, price, province, city, neighborhood, address, bedrooms, bathrooms, area, description, images, latitude, longitude, status, owner_name, owner_phone, internal_notes, created_at FROM properties ORDER BY created_at DESC"
+          "SELECT id, public_code, title, type, operation, price, province, city, neighborhood, address, bedrooms, bathrooms, area, description, images, latitude, longitude, status, owner_name, owner_phone, internal_notes, created_at FROM properties ORDER BY created_at DESC"
         ).all();
         const formatted = results.map(row => ({
           ...row,
@@ -596,39 +619,62 @@ export default {
           });
         }
 
-        // ID secuencial N-001...: el INSERT con subconsulta de MAX es atómico
-        // en SQLite → elimina la race condition de "leer último + insertar".
-        // Si dos requests concurrentes calculan el mismo id, el UNIQUE/PK del
-        // segundo falla y reintentamos con el siguiente número (máx 3 intentos).
+        // public_code secuencial N-001... (04.4.1): id interno = autoincrement,
+        // código público estable e irreutilizable. Preferimos la tabla
+        // listing_id_sequence (delete-safe); si no existe (schema previo a
+        // 0005), fallback MAX(public_code) + retry por UNIQUE.
+        // Ambos caminos usan INSERT...SELECT atómico + retry de conflicto.
         const imagesStr = JSON.stringify(data.images || []);
-        let generatedId = null;
+        let generated = null; // { id, public_code }
 
-        for (let attempt = 0; attempt < 3 && !generatedId; attempt++) {
+        const columns = "title, type, operation, price, province, city, neighborhood, address, bedrooms, bathrooms, area, description, images, latitude, longitude, status, owner_name, owner_phone, internal_notes";
+        const values = [
+          data.title, data.type, data.operation, parseFloat(data.price),
+          data.province, data.city, data.neighborhood, data.address || "",
+          parseInt(data.bedrooms || 0), parseInt(data.bathrooms || 0), parseFloat(data.area || 0),
+          data.description || "", imagesStr, normalizeCoord(data.latitude), normalizeCoord(data.longitude),
+          data.status || "published", data.owner_name || "", data.owner_phone || "", data.internal_notes || ""
+        ];
+
+        for (let attempt = 0; attempt < 3 && !generated; attempt++) {
           try {
-            const inserted = await env.DB.prepare(`
-              INSERT INTO properties (id, title, type, operation, price, province, city, neighborhood, address, bedrooms, bathrooms, area, description, images, latitude, longitude, status, owner_name, owner_phone, internal_notes)
-              SELECT
-                'N-' || printf('%03d',
-                  COALESCE(
-                    (SELECT MAX(CAST(SUBSTR(id, 3) AS INTEGER)) FROM properties WHERE id LIKE 'N-%'),
-                    0
-                  ) + 1 + ?),
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-              RETURNING id
-            `).bind(
-              attempt,
-              data.title, data.type, data.operation, parseFloat(data.price),
-              data.province, data.city, data.neighborhood, data.address || "",
-              parseInt(data.bedrooms || 0), parseInt(data.bathrooms || 0), parseFloat(data.area || 0),
-              data.description || "", imagesStr, normalizeCoord(data.latitude), normalizeCoord(data.longitude),
-              data.status || "published", data.owner_name || "", data.owner_phone || "", data.internal_notes || ""
-            ).first();
-            generatedId = inserted && inserted.id;
-          } catch (insertErr) {
-            // Conflicto de PK: otro request ganó la carrera → reintentar
-            if (attempt === 2) throw insertErr;
+            if (typeof env.DB.batch !== "function") {
+              throw new Error("no such table: listing_id_sequence"); // fallback
+            }
+            // Intento con secuencia: UPDATE e INSERT atómicos en un batch D1.
+            const seqStmts = [
+              env.DB.prepare("UPDATE listing_id_sequence SET value = value + 1 WHERE name = 'public_code'"),
+              env.DB.prepare(`
+                INSERT INTO properties (public_code, ${columns})
+                SELECT 'N-' || printf('%03d', (SELECT value FROM listing_id_sequence WHERE name = 'public_code')),
+                  ${values.map(() => "?").join(", ")}
+                RETURNING id, public_code
+              `).bind(...values)
+            ];
+            const [, inserted] = await env.DB.batch(seqStmts);
+            generated = inserted.results && inserted.results[0];
+          } catch (seqErr) {
+            if (!/no such table: listing_id_sequence/i.test(String(seqErr.message || seqErr))) {
+              if (attempt === 2) throw seqErr;
+              continue; // conflicto UNIQUE concurrente → reintento
+            }
+            // Fallback pre-0005: MAX(public_code) + retry por UNIQUE
+            try {
+              const inserted = await env.DB.prepare(`
+                INSERT INTO properties (public_code, ${columns})
+                SELECT 'N-' || printf('%03d',
+                  COALESCE((SELECT MAX(CAST(SUBSTR(public_code, 3) AS INTEGER)) FROM properties WHERE public_code LIKE 'N-%'), 0) + 1 + ?),
+                  ${values.map(() => "?").join(", ")}
+                RETURNING id, public_code
+              `).bind(attempt, ...values).first();
+              generated = inserted;
+            } catch (insertErr) {
+              if (attempt === 2) throw insertErr;
+            }
           }
         }
+        const generatedId = generated && generated.id;
+        const generatedCode = generated && generated.public_code;
 
         // Sincronizar con Vectorize si el binding existe
         if (env.AI && env.VECTORIZE && (data.status || "published") === "published") {
@@ -637,8 +683,9 @@ export default {
             const embeddingResponse = await env.AI.run("@cf/baai/bge-small-en-v1.5", { text: [indexText] });
             const vector = embeddingResponse.data[0];
 
+            // Vector id = public_code (estable, público) — nunca PK interna
             await env.VECTORIZE.upsert([{
-              id: generatedId,
+              id: generatedCode,
               values: vector,
               metadata: { title: data.title, price: data.price, location: data.neighborhood }
             }]);
@@ -647,7 +694,7 @@ export default {
           }
         }
 
-        return new Response(JSON.stringify({ success: true, id: generatedId }), {
+        return new Response(JSON.stringify({ success: true, id: generatedId, public_code: generatedCode }), {
           headers: { "Content-Type": "application/json", ...corsHeaders }
         });
       } catch (error) {
@@ -677,7 +724,7 @@ export default {
         }
 
         // Propiedad inexistente → 404 (nunca success:true)
-        const existing = await env.DB.prepare("SELECT id FROM properties WHERE id = ?").bind(id).first();
+        const existing = await env.DB.prepare("SELECT id, public_code FROM properties WHERE id = ?").bind(id).first();
         if (!existing) {
           return new Response(JSON.stringify({ error: "Propiedad no encontrada" }), {
             status: 404,
@@ -709,12 +756,12 @@ export default {
               const vector = embeddingResponse.data[0];
 
               await env.VECTORIZE.upsert([{
-                id: id,
+                id: existing.public_code,
                 values: vector,
                 metadata: { title: data.title, price: data.price, location: data.neighborhood }
               }]);
             } else {
-              await env.VECTORIZE.deleteByIds([id]);
+              await env.VECTORIZE.deleteByIds([existing.public_code]);
             }
           } catch (vErr) {
             console.error("Vectorize sync failed on update:", vErr);
@@ -739,11 +786,13 @@ export default {
       }
       const id = url.pathname.split("/").pop();
       try {
+        // public_code resuelto ANTES del DELETE para limpiar Vectorize (04.4.1)
+        const victim = await env.DB.prepare("SELECT public_code FROM properties WHERE id = ?").bind(id).first();
         await env.DB.prepare("DELETE FROM properties WHERE id = ?").bind(id).run();
 
-        if (env.VECTORIZE) {
+        if (env.VECTORIZE && victim) {
           try {
-            await env.VECTORIZE.deleteByIds([id]);
+            await env.VECTORIZE.deleteByIds([victim.public_code]);
           } catch (vErr) {
             console.error("No se pudo eliminar de Vectorize:", vErr);
           }
@@ -789,8 +838,9 @@ export default {
               const matchedIds = vecResults.matches.map(match => match.id);
               const placeholders = matchedIds.map(() => "?").join(",");
               
+              // Vector ids = public_code (04.4.1)
               const { results } = await env.DB.prepare(
-                `SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE id IN (${placeholders}) AND status = 'published'`
+                `SELECT id, public_code, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE public_code IN (${placeholders}) AND status = 'published'`
               ).bind(...matchedIds).all();
               
               matchedProperties = results.map(row => ({
@@ -806,7 +856,7 @@ export default {
         // Fallback de texto si Vectorize no devolvió resultados
         if (matchedProperties.length === 0) {
           const { results } = await env.DB.prepare(
-            "SELECT id, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE status = 'published' LIMIT 3"
+            "SELECT id, public_code, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE status = 'published' LIMIT 3"
           ).all();
           matchedProperties = results.map(row => ({
             ...row,
@@ -814,14 +864,15 @@ export default {
           }));
         }
 
-        // Contexto estructurado para el LLM
+        // Contexto estructurado para el LLM — la IA solo conoce public_code
+        // (04.4.1 §14): jamás expone la PK interna al usuario.
         const contextString = matchedProperties.map(p => 
-          `ID: ${p.id}\nTítulo: ${p.title}\nTipo: ${p.type}\nOperación: ${p.operation}\nPrecio: ${p.price} USD\nUbicación: ${p.neighborhood}, ${p.city}, ${p.province}\nHabitaciones: ${p.bedrooms}, Baños: ${p.bathrooms}, Área: ${p.area} m²\nDescripción: ${p.description}\n---`
+          `ID: ${p.public_code}\nTítulo: ${p.title}\nTipo: ${p.type}\nOperación: ${p.operation}\nPrecio: ${p.price} USD\nUbicación: ${p.neighborhood}, ${p.city}, ${p.province}\nHabitaciones: ${p.bedrooms}, Baños: ${p.bathrooms}, Área: ${p.area} m²\nDescripción: ${p.description}\n---`
         ).join("\n");
 
         const systemPrompt = `Eres NEXO IA, el asesor virtual premium y sofisticado de NEXO en Cuba. Tu tono es profesional, minimalista y educado.
         Recomienda exclusivamente propiedades del siguiente contexto real. Jamás inventes propiedades, ubicaciones o precios.
-        Siempre que menciones o recomiendes un inmueble, cita explícitamente su ID entre corchetes, por ejemplo [${matchedProperties[0]?.id || 'N-001'}].
+        Siempre que menciones o recomiendes un inmueble, cita explícitamente su ID entre corchetes, por ejemplo [${matchedProperties[0]?.public_code || 'N-001'}].
         
         Propiedades disponibles reales:
         ${contextString}`;

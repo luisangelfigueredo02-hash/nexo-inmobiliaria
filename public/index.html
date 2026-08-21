@@ -680,7 +680,7 @@
             inv.innerHTML = visibleProperties.map(p => {
                 const img = (p.images && p.images[0]) || FALLBACK_IMG;
                 return `
-                <a href="/property.html?id=${p.id}" class="nx-card" data-prop-id="${p.id}">
+                <a href="/property.html?id=${p.public_code || p.id}" class="nx-card" data-prop-id="${p.id}">
                     <div class="nx-card__media">
                         <span class="nx-card__badge">${p.operation}</span>
                         <img src="${img}" srcset="${responsiveSrcSet(img)}" sizes="(max-width: 600px) 100vw, 340px"
@@ -774,7 +774,7 @@
                     <div class="title">${p.title}</div>
                     <div class="loc">${p.neighborhood}, ${p.city}</div>
                     <div class="sheet-actions">
-                        <a class="nx-btn nx-btn--primary" style="min-height:36px; padding: 0 var(--space-4); font-size: var(--text-label);" href="/property.html?id=${p.id}">Ver propiedad</a>
+                        <a class="nx-btn nx-btn--primary" style="min-height:36px; padding: 0 var(--space-4); font-size: var(--text-label);" href="/property.html?id=${p.public_code || p.id}">Ver propiedad</a>
                     </div>
                 </div>`;
             const sheet = document.getElementById("property-sheet");

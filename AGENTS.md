@@ -51,8 +51,19 @@ URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.de
 - Moderation boundary: create/submit (user) ≠ approve/publish (NEXO); published nunca directo; moderation_events inmutable
 - Privilege change ⇒ security_stamp rotation + revokeAllSessions (04.3)
 - Serialización whitelist por audiencia (field-level); 404 indistinguible anti-IDOR
-- Riesgo registrado: properties.id TEXT 'N-001' real vs listing_owners/moderation INTEGER-TEXT (resolver en 04.7 antes del primer JOIN de ownership)
+- Riesgo de tipos listing_id: RESUELTO en 04.4.1 (ver sección abajo)
 - Docs: AUTHORIZATION-ARCHITECTURE.md + ADR-014
+
+### Listing identity (04.4.1)
+- Canónico: `properties.id` INTEGER PK (interno/relaciones) + `properties.public_code` TEXT NOT NULL UNIQUE (público: URLs/SEO/IA/Vectorize)
+- Generación: tabla `listing_id_sequence` (batch UPDATE+INSERT); fallback MAX(public_code)+retry; jamás COUNT+1
+- Resolución dual por patrón en lectura: `listingLookup()` en worker.js (N-XXX → public_code, numérico → id legacy)
+- FKs: listing_owners → properties(id) ON DELETE CASCADE; moderation_events INTEGER sin FK (audit sobrevive borrado)
+- Migration 0005 validada local (clon prod); **producción NO migrada — requiere aprobación** (procedimiento en LISTING-IDENTITY.md §5)
+- Producción real ≠ docs viejas: properties.id siempre fue INTEGER; public_code existía sin uso; admin POST estaba roto (TEXT→INT), ahora reparado
+- Tablas legacy vacías sin uso: favorites, user_favorites, users (cleanup futuro)
+- Docs: LISTING-IDENTITY.md + ADR-015
+- Backup prod: /tmp/nexo-backup-20260821.sql (fuera del repo, no versionar)
 
 ### Security headers (04.2.1)
 - Baseline en worker.js `withSecurityHeaders()` aplicada en `fetch()` a TODA respuesta (API, SEO, assets, media, 404/500)

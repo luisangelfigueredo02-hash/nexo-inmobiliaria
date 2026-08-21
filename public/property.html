@@ -671,7 +671,7 @@
             // Precio + CTA
             document.getElementById("cta-price").textContent = `${fmtPrice(p.price)}`;
             const phone = (config.whatsapp_phone || "+5350000000").replace("+", "");
-            const msg = `Hola NEXO, me interesa la propiedad [${p.id}]: "${p.title}" en ${p.neighborhood}. Solicito más información. URL: ${location.href}`;
+            const msg = `Hola NEXO, me interesa la propiedad [${p.public_code || p.id}]: "${p.title}" en ${p.neighborhood}. Solicito más información. URL: ${location.href}`;
             document.getElementById("cta-whatsapp").href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
 
             // Favorito sincronizado
@@ -808,7 +808,7 @@
         // en lugar de descargar todo el inventario y filtrar localmente.
         async function loadSimilar(p) {
             try {
-                const res = await fetch(`/api/properties/${encodeURIComponent(p.id)}/similar`);
+                const res = await fetch(`/api/properties/${encodeURIComponent(p.public_code || p.id)}/similar`);
                 if (!res.ok) return;
                 const similar = await res.json();
                 if (!Array.isArray(similar) || similar.length === 0) return;
@@ -817,7 +817,7 @@
                 document.getElementById("similar-grid").innerHTML = similar.map(s => {
                     const img = (s.images && s.images[0]) || FALLBACK_IMG;
                     return `
-                    <a href="/property.html?id=${encodeURIComponent(s.id)}" class="nx-card">
+                    <a href="/property.html?id=${encodeURIComponent(s.public_code || s.id)}" class="nx-card">
                         <div class="nx-card__media">
                             <img src="${esc(img)}" srcset="${responsiveSrcSet(img)}" sizes="220px"
                                  alt="${esc(s.title)}" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_IMG}">
