@@ -495,17 +495,37 @@
         }
 
         function getFavs() {
+            if (favsMemoryFallback) return favsMemoryFallback.slice();
             try {
                 const raw = localStorage.getItem("nexo_favs");
                 if (!raw) return [];
                 const parsed = JSON.parse(raw);
                 // Degradación elegante: JSON corrupto o tipo inesperado → lista vacía
                 return Array.isArray(parsed) ? parsed.filter(x => typeof x === 'number' || typeof x === 'string') : [];
-            } catch { return []; }
+            } catch {
+                // localStorage bloqueado: usar fallback en memoria si existe
+                return favsMemoryFallback ? favsMemoryFallback.slice() : [];
+            }
         }
+        let favsMemoryFallback = null;
+
+        // Persistencia de favoritos: intenta localStorage; si está bloqueado
+        // (SecurityError) o lleno (QuotaExceededError), usa memoria como fallback
+        // sin interrumpir Discovery. Devuelve true si persistió en disco.
         function saveFavs(favs) {
-            try { saveFavs(favs); }
-            catch { /* storage lleno o bloqueado: favorito solo en memoria */ }
+            try {
+                localStorage.setItem("nexo_favs", JSON.stringify(favs));
+                favsMemoryFallback = null;
+                return true;
+            } catch (err) {
+                if (err && (err.name === "SecurityError" || err.name === "QuotaExceededError")) {
+                    favsMemoryFallback = favs.slice();
+                    return false;
+                }
+                // Error inesperado: tampoco rompemos Discovery
+                favsMemoryFallback = favs.slice();
+                return false;
+            }
         }
         function toggleFav(id, btn) {
             const favs = getFavs();
