@@ -260,3 +260,64 @@ ahora y añadir cuando se decida explícitamente evita scope creep.
 **CONSEQUENCES.** accounts no tiene password_hash. 04.0 passwordless-first
 queda en force. Si se decide password auth en futuro, nueva migration con
 Argon2id + password reset flow + migration de datos.
+
+---
+
+## ADR-012 — Authentication Strategy (04.2)
+
+**CONTEXT.** NEXO necesita autenticación de usuarios públicos (PWA inmobiliaria
+mobile-first, Cuba). 04.0 definió passwordless-first; 04.1-FIX eliminó
+`accounts.password_hash` (schema FROZEN sin vía password). Se evaluaron
+rigurosamente Passkeys/WebAuthn, Magic Link, Email OTP y OAuth (análisis
+completo en `authentication-architecture.md` §3–§6).
+
+**DECISION.**
+- **PRIMARY AUTHENTICATION: Passkey (WebAuthn platform authenticator).**
+  residentKey=preferred, userVerification=preferred, attestation=none.
+- **SECONDARY / RECOVERY: Email Magic Link.** Bootstrap universal, fallback
+  permanente de primera clase, y recovery canónico (TTL ≤15min, single-use
+  atómico, hash-only storage, revocación global de sesiones al recovery).
+- **OPTIONAL FUTURE: OAuth (Google/Apple), Email OTP (solo si se justifica),
+  hardware security keys.**
+- Email OTP rechazado como mecanismo: UX móvil peor (copy/paste) y entropía
+  10⁶ vulnerable a brute force.
+- Admin auth (Bearer ADMIN_TOKEN) permanece separada; no se degrada ni mezcla
+  (migración a accounts+passkey obligatoria es fase posterior con ADR propio).
+
+**ALTERNATIVES.**
+1. Magic-Link-only — rechazado: email comprometido = cuenta comprometida de
+   forma permanente; passkey-first reduce el uso del email a bootstrap/recovery.
+2. Password + OTP — rechazado: stuffing, phishing, reset flows, espacio OTP 10⁶.
+3. OAuth-only — rechazado: dependencia de tercero como único factor; riesgo de
+   bloqueo/fallo regional; vendor lock-in de identidad.
+4. SMS OTP — rechazado (04.0 ADR-006): coste y fragilidad en Cuba.
+
+**SECURITY ANALYSIS.** Passkeys son phishing-resistant (RP ID binding), inmunes
+a credential stuffing y a exfiltración por XSS (clave privada fuera de JS).
+Magic links: tokens 256-bit WebCrypto, SHA-256-only en D1, single-use atómico,
+TTL ≤15min; recovery revoca sesiones globalmente y rota security_stamp.
+Enumeration mitigada con respuestas uniformes + timing constante + rate limit
+IP/email (hasheado). Sesión resultante: cookie HttpOnly+Secure+SameSite=Lax
+(04.3), nunca localStorage.
+
+**UX ANALYSIS.** Login returning = 1 tap biométrico. Bootstrap = email → tap
+link → (opcional) registrar passkey. Sin códigos manuales ni copy/paste.
+Multi-device: passkeys synced (iCloud/Google) + cross-device QR; magic link
+universal. Tolerante a red variable: ceremony WebAuthn mayormente local;
+magic link espera en el email.
+
+**OPERATIONAL ANALYSIS.** Sin password reset flows ni breached-password
+handling. Única dependencia nueva: proveedor de email (decisión diferida a
+implementación; open question 04.0). Verificación WebAuthn con challenges
+one-time en D1 (mismo patrón probado que rate_limits). Coste por autenticación
+≈ 0 (passkey local); sin SMS.
+
+**CONSEQUENCES.** Positivas: seguridad y UX Tier 1, dependencia mínima viable
+(email), Cuba-compatible, alineado con schema FROZEN (sin cambios de
+migración). Negativas: adopción de passkeys no universal → mitigado con
+magic link permanente; recovery depende del email → mitigado con rate limit
+reforzado, notificación, revocación global y re-registro obligatorio; requiere
+security headers (CSP/HSTS) aún ausentes → documentado como requisito previo
+a implementación en `authentication-architecture.md` §19. Tablas nuevas
+(`auth_tokens`, `webauthn_credentials`, `webauthn_challenges`) se crearán con
+migration propia en la fase de implementación, no en 04.2.
