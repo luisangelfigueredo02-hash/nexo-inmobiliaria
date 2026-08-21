@@ -2,6 +2,15 @@
 
 import { enforceRateLimit, rejectResponse, NO_CACHE_HEADERS, LIMIT_DEF } from "./rate-limit.js";
 import { getAuthenticatedSession, destroySession, isStateChangingAllowed } from "./session-runtime.js";
+import {
+  PERMISSIONS,
+  legacyAdminActor,
+  authorize,
+  isAllowed,
+  denyResponse,
+  serializeProperty,
+  emitAuthorizationAudit,
+} from "./src/auth/authorization/index.js";
 
 // --- LISTING IDENTITY (04.4.1) ---
 // Interno: properties.id INTEGER PK (relaciones, admin). Público: public_code
@@ -278,6 +287,28 @@ export default {
       return false;
     };
 
+    // --- AUTHORIZATION RUNTIME (04.5) ---
+    // Correlación por request para audit_events (04.4 §17).
+    const correlationId = crypto.randomUUID();
+
+    // Plano admin legado: el Bearer (secreto server-side, timing-safe)
+    // AUTENTICA el plano; authorize() DECIDE según la lista cerrada del
+    // plane (04.4 §7/§12) y las acciones sensibles auditan con
+    // actor_type='system' + admin_plane='legacy_bearer'.
+    const authorizeAdminPlane = async (action) => {
+      if (!isAdmin(request)) return null;
+      const actor = legacyAdminActor();
+      const decision = await authorize(actor, action, null, { env });
+      if (!isAllowed(decision)) {
+        await emitAuthorizationAudit(env, ctx, {
+          actor, action, resourceType: "property", decision: decision.decision,
+          reason: decision.reason, request, correlationId,
+        });
+        return { actor, decision };
+      }
+      return { actor, decision };
+    };
+
     // Normalizador de imágenes para prevenir inconsistencias de formato
     const normalizeImages = (imagesStr) => {
       if (!imagesStr) return [];
@@ -476,10 +507,9 @@ export default {
         query += " ORDER BY created_at DESC";
         const { results } = await env.DB.prepare(query).bind(...params).all();
 
-        const formatted = results.map(row => ({
-          ...row,
-          images: normalizeImages(row.images)
-        }));
+        // Serialización whitelist por audiencia (04.5): además del SELECT
+        // de columnas públicas, la respuesta pasa por la allowlist PUBLIC.
+        const formatted = results.map(row => serializeProperty(row, "public"));
 
         return new Response(JSON.stringify(formatted), {
           headers: { "Content-Type": "application/json", ...corsHeaders }
@@ -518,7 +548,7 @@ export default {
           results = provRes.results;
         }
 
-        const formatted = results.map(r => ({ ...r, images: normalizeImages(r.images) }));
+        const formatted = results.map(r => serializeProperty(r, "public"));
         return new Response(JSON.stringify(formatted), { headers: { "Content-Type": "application/json", ...corsHeaders } });
       } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
@@ -544,7 +574,7 @@ export default {
           });
         }
 
-        const formatted = { ...row, images: normalizeImages(row.images) };
+        const formatted = serializeProperty(row, "public");
         return new Response(JSON.stringify(formatted), {
           headers: { "Content-Type": "application/json", ...corsHeaders }
         });
@@ -575,22 +605,23 @@ export default {
 
     // 2. Listado Completo Admin (Incluye datos privados)
     if (url.pathname === "/api/admin/properties" && method === "GET") {
-      if (!isAdmin(request)) {
+      const authz = await authorizeAdminPlane(PERMISSIONS.PROPERTY_READ_INTERNAL);
+      if (!authz) {
         return new Response(JSON.stringify({ error: "No autorizado" }), {
           status: 401,
           headers: { "Content-Type": "application/json", ...corsHeaders }
         });
       }
+      if (!isAllowed(authz.decision)) {
+        return denyResponse(authz.decision, { corsHeaders, staff: true, resourceScoped: false });
+      }
       try {
-        // ADMIN DTO: campos explícitos (incluye privados, es el panel admin).
-        // Campos internos futuros no se filtrarán accidentalmente al panel.
+        // ADMIN DTO: SELECT explícito + serialización whitelist 'admin'
+        // (04.5): doble barrera, campos fuera de audiencia jamás cruzan.
         const { results } = await env.DB.prepare(
           "SELECT id, public_code, title, type, operation, price, province, city, neighborhood, address, bedrooms, bathrooms, area, description, images, latitude, longitude, status, owner_name, owner_phone, internal_notes, created_at FROM properties ORDER BY created_at DESC"
         ).all();
-        const formatted = results.map(row => ({
-          ...row,
-          images: normalizeImages(row.images)
-        }));
+        const formatted = results.map(row => serializeProperty(row, "admin"));
         return new Response(JSON.stringify(formatted), {
           headers: { "Content-Type": "application/json", ...corsHeaders }
         });
@@ -604,8 +635,12 @@ export default {
 
     // 3. Crear Propiedad (Admin) + Vectorize Sync
     if (url.pathname === "/api/admin/properties" && method === "POST") {
-      if (!isAdmin(request)) {
+      const authz = await authorizeAdminPlane(PERMISSIONS.PROPERTY_CREATE);
+      if (!authz) {
         return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers: corsHeaders });
+      }
+      if (!isAllowed(authz.decision)) {
+        return denyResponse(authz.decision, { corsHeaders, staff: true, resourceScoped: false });
       }
       try {
         const data = await request.json();
@@ -694,6 +729,14 @@ export default {
           }
         }
 
+        // Audit de acción sensible permitida (04.5 §17): tras éxito,
+        // con el identificador real del recurso creado.
+        await emitAuthorizationAudit(env, ctx, {
+          actor: authz.actor, action: PERMISSIONS.PROPERTY_CREATE, resourceType: "property",
+          resourceId: generatedCode || generatedId, decision: authz.decision.decision,
+          reason: authz.decision.reason, request, correlationId,
+        });
+
         return new Response(JSON.stringify({ success: true, id: generatedId, public_code: generatedCode }), {
           headers: { "Content-Type": "application/json", ...corsHeaders }
         });
@@ -707,8 +750,12 @@ export default {
 
     // 4. Editar Propiedad (Admin) + Vectorize Sync
     if (url.pathname.startsWith("/api/admin/properties/") && method === "PUT") {
-      if (!isAdmin(request)) {
+      const authz = await authorizeAdminPlane(PERMISSIONS.PROPERTY_UPDATE);
+      if (!authz) {
         return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers: corsHeaders });
+      }
+      if (!isAllowed(authz.decision)) {
+        return denyResponse(authz.decision, { corsHeaders, staff: true, resourceScoped: false });
       }
       const id = url.pathname.split("/").pop();
       try {
@@ -768,6 +815,12 @@ export default {
           }
         }
 
+        await emitAuthorizationAudit(env, ctx, {
+          actor: authz.actor, action: PERMISSIONS.PROPERTY_UPDATE, resourceType: "property",
+          resourceId: existing.public_code || id, decision: authz.decision.decision,
+          reason: authz.decision.reason, request, correlationId,
+        });
+
         return new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json", ...corsHeaders }
         });
@@ -781,8 +834,12 @@ export default {
 
     // 5. Eliminar Propiedad (Admin)
     if (url.pathname.startsWith("/api/admin/properties/") && method === "DELETE") {
-      if (!isAdmin(request)) {
+      const authz = await authorizeAdminPlane(PERMISSIONS.PROPERTY_DELETE);
+      if (!authz) {
         return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers: corsHeaders });
+      }
+      if (!isAllowed(authz.decision)) {
+        return denyResponse(authz.decision, { corsHeaders, staff: true, resourceScoped: false });
       }
       const id = url.pathname.split("/").pop();
       try {
@@ -797,6 +854,12 @@ export default {
             console.error("No se pudo eliminar de Vectorize:", vErr);
           }
         }
+
+        await emitAuthorizationAudit(env, ctx, {
+          actor: authz.actor, action: PERMISSIONS.PROPERTY_DELETE, resourceType: "property",
+          resourceId: victim ? victim.public_code : id, decision: authz.decision.decision,
+          reason: authz.decision.reason, request, correlationId,
+        });
 
         return new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json", ...corsHeaders }
@@ -842,11 +905,9 @@ export default {
               const { results } = await env.DB.prepare(
                 `SELECT id, public_code, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE public_code IN (${placeholders}) AND status = 'published'`
               ).bind(...matchedIds).all();
-              
-              matchedProperties = results.map(row => ({
-                ...row,
-                images: normalizeImages(row.images)
-              }));
+
+              // La IA solo consume campos PUBLIC (04.4 §11 / 04.5).
+              matchedProperties = results.map(row => serializeProperty(row, "public"));
             }
           } catch (aiErr) {
             console.error("Falla en contexto vectorial, usando fallback de texto:", aiErr);
@@ -858,10 +919,7 @@ export default {
           const { results } = await env.DB.prepare(
             "SELECT id, public_code, title, type, operation, price, province, city, neighborhood, bedrooms, bathrooms, area, description, images FROM properties WHERE status = 'published' LIMIT 3"
           ).all();
-          matchedProperties = results.map(row => ({
-            ...row,
-            images: normalizeImages(row.images)
-          }));
+          matchedProperties = results.map(row => serializeProperty(row, "public"));
         }
 
         // Contexto estructurado para el LLM — la IA solo conoce public_code

@@ -29,7 +29,7 @@ URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.de
 
 ### Comandos
 - Deploy: `npx wrangler deploy`
-- Tests: `npm test` (6 suites, 112 tests)
+- Tests: `npm test` (7 suites, 188 tests)
 - Verificación: `curl .../api/health`
 - CSP: tras tocar cualquier `<script>` inline en public/, ejecutar `node scripts/generate-csp-hashes.mjs --write` (el test anti-drift falla si no se sincroniza)
 - D1 local: `schema.sql` primero (crea `properties`), luego `npx wrangler d1 migrations apply nexo-db --local` (0002 hace ALTER sobre properties)
@@ -53,6 +53,17 @@ URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.de
 - Serialización whitelist por audiencia (field-level); 404 indistinguible anti-IDOR
 - Riesgo de tipos listing_id: RESUELTO en 04.4.1 (ver sección abajo)
 - Docs: AUTHORIZATION-ARCHITECTURE.md + ADR-014
+
+### Authorization runtime (04.5)
+- Módulo `src/auth/authorization/` (roles/permissions/matrix/actor/resource/ownership/authorize/serialize/audit/index); NUNCA lógica de decisión en endpoints
+- `authorize(actor, action, resource, {env})` → `{decision:'ALLOW'|'DENY', reason}`; resuelve recurso + relationship (listing_owners, revoked_at IS NULL) server-side en cada llamada — campos forjados en `resource` se ignoran
+- Actor: `resolveActor()` (sesión 04.3 + user_roles current; error de roles → rolesError → todo DENY) o `legacyAdminActor()` (system + plane legacy_admin_bearer); HTTP jamás declara type/roles/plane
+- Plano admin: Bearer ADMIN_TOKEN autentica → authorize() decide (lista cerrada LEGACY_ADMIN_PLANE_ACTIONS) → audit `authorization_sensitive_allowed` (actor_type='system', metadata.admin_plane='legacy_bearer') tras éxito; DENY autenticado → audit `authorization_denied`
+- Serialización whitelist por audiencia (`serializeProperty`): public/owner/moderator/admin; doble barrera (SELECT público + serializer) en /api/properties*, chat IA solo campos public
+- denyResponse: 401 sin auth; 404 indistinguible para no-staff sobre listings; 403 staff
+- Sin cache de decisiones, sin migrations, sin endpoints USER CRUD (04.7); workflow moderation → 04.8
+- Tests: test/authorization.test.mjs (59: deny-by-default, fail-closed, IDOR/BOLA, escalación H/V, tampering role/owner_id/public_code, serializers, audit, integración worker)
+- Docs: AUTHORIZATION.md
 
 ### Listing identity (04.4.1)
 - Canónico: `properties.id` INTEGER PK (interno/relaciones) + `properties.public_code` TEXT NOT NULL UNIQUE (público: URLs/SEO/IA/Vectorize)
