@@ -540,6 +540,18 @@
            ================================================================ */
 
         const FALLBACK_IMG = "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80";
+
+        /* Escape de datos provenientes de D1 antes de inyectar en innerHTML.
+           Todo contenido controlado por usuarios (título, ubicación, descripción)
+           debe pasar por aquí para prevenir XSS. */
+        function esc(str) {
+            return String(str == null ? "" : str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
         const propId = new URLSearchParams(location.search).get("id");
 
         let property = null;
@@ -588,8 +600,8 @@
         function showErrorState(title, sub, actionText, action) {
             document.body.innerHTML = `
                 <div class="nx-state" style="min-height:100dvh; justify-content:center; padding: var(--space-6);">
-                    <h2>${title}</h2>
-                    <p>${sub}</p>
+                    <h2>${esc(title)}</h2>
+                    <p>${esc(sub)}</p>
                     ${actionText ? `<button class="nx-btn nx-btn--primary" id="err-action">${actionText}</button>` : ""}
                     <a href="/" class="nx-btn nx-btn--tertiary">Volver al descubrimiento</a>
                 </div>`;
@@ -704,7 +716,7 @@
             const track = document.getElementById("hero-track");
             track.innerHTML = images.map((src, i) => `
                 <div class="hero-slide">
-                    <img src="${src}" srcset="${responsiveSrcSet(src)}" sizes="100vw"
+                    <img src="${esc(src)}" srcset="${responsiveSrcSet(src)}" sizes="100vw"
                          alt="Fotografía ${i + 1} de la propiedad"
                          ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}
                          decoding="async" onerror="this.src='${FALLBACK_IMG}'">
@@ -809,15 +821,15 @@
                 document.getElementById("similar-grid").innerHTML = similar.map(s => {
                     const img = (s.images && s.images[0]) || FALLBACK_IMG;
                     return `
-                    <a href="/property.html?id=${s.id}" class="nx-card">
+                    <a href="/property.html?id=${encodeURIComponent(s.id)}" class="nx-card">
                         <div class="nx-card__media">
-                            <img src="${img}" srcset="${responsiveSrcSet(img)}" sizes="220px"
-                                 alt="${s.title}" loading="lazy" decoding="async" onerror="this.src='${FALLBACK_IMG}'">
+                            <img src="${esc(img)}" srcset="${responsiveSrcSet(img)}" sizes="220px"
+                                 alt="${esc(s.title)}" loading="lazy" decoding="async" onerror="this.src='${FALLBACK_IMG}'">
                         </div>
                         <div class="nx-card__body">
                             <div class="nx-card__price" style="font-size: var(--text-body);">${fmtPrice(s.price)}</div>
-                            <div class="nx-card__title">${s.title}</div>
-                            <div class="nx-card__location">${s.neighborhood}, ${s.city}</div>
+                            <div class="nx-card__title">${esc(s.title)}</div>
+                            <div class="nx-card__location">${esc(s.neighborhood)}, ${esc(s.city)}</div>
                         </div>
                     </a>`;
                 }).join("");

@@ -28,6 +28,25 @@ function reportError(env, ctx, error, requestUrl) {
   );
 }
 
+// Escape de datos provenientes de D1 antes de inyectar en HTML (SEO interceptor)
+function escHtml(str) {
+  return String(str == null ? "" : str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// Escape para valores dentro de JSON-LD (evita romper el script con comillas)
+function escJson(str) {
+  return String(str == null ? "" : str)
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e");
+}
+
 export default {
   async fetch(request, env, ctx) {
     try {
@@ -102,29 +121,32 @@ export default {
             const images = normalizeImages(property.images);
             const mainImage = images[0] || "https://nexo.estate/placeholder.jpg";
             
+            const seoTitle = escHtml(property.title);
+            const seoDesc = escHtml(property.description ? property.description.substring(0, 155) : "");
+            const seoImage = escHtml(mainImage);
             const seoTags = `
-              <title>${property.title} | NEXO</title>
-              <meta name="description" content="${property.description ? property.description.substring(0, 155) : 'Propiedad en Cuba'}.">
-              <meta property="og:title" content="${property.title} - NEXO">
-              <meta property="og:description" content="${property.description ? property.description.substring(0, 155) : ''}">
-              <meta property="og:image" content="${mainImage}">
+              <title>${seoTitle} | NEXO</title>
+              <meta name="description" content="${seoDesc || 'Propiedad en Cuba'}.">
+              <meta property="og:title" content="${seoTitle} - NEXO">
+              <meta property="og:description" content="${seoDesc}">
+              <meta property="og:image" content="${seoImage}">
               <meta property="og:type" content="website">
               <meta name="twitter:card" content="summary_large_image">
-              <meta name="twitter:title" content="${property.title}">
-              <meta name="twitter:description" content="${property.description ? property.description.substring(0, 155) : ''}">
-              <meta name="twitter:image" content="${mainImage}">
+              <meta name="twitter:title" content="${seoTitle}">
+              <meta name="twitter:description" content="${seoDesc}">
+              <meta name="twitter:image" content="${seoImage}">
               <script type="application/ld+json">
               {
                 "@context": "https://schema.org",
                 "@type": "RealEstateListing",
-                "name": "${property.title}",
-                "description": "${property.description}",
-                "price": "${property.price}",
+                "name": "${escJson(property.title)}",
+                "description": "${escJson(property.description)}",
+                "price": "${escJson(property.price)}",
                 "priceCurrency": "USD",
                 "address": {
                   "@type": "PostalAddress",
-                  "addressLocality": "${property.city}",
-                  "addressRegion": "${property.province}"
+                  "addressLocality": "${escJson(property.city)}",
+                  "addressRegion": "${escJson(property.province)}"
                 }
               }
               </script>
