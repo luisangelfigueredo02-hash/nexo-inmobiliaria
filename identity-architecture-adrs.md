@@ -178,3 +178,85 @@ Fase 04.0. Documentación de especificación, sin implementación. Cada ADR: CON
 **RATIONALE.** Revocación real + sencillez.
 
 **CONSEQUENCES.** Documentado explícitamente aquí para responder al prompt sección 6; nada adicional.
+
+---
+
+## ADR-009 — Listing Identifier Strategy (04.1-FIX)
+
+**CONTEXT.** 04.1 commit 19532be introdujo listing_owners.listing_id TEXT
+para coexistir con properties.id INTEGER, requiriendo CASTs permanentes en JOINs.
+Esto viola la regla "NO utilizar casts como mecanismo normal de JOIN".
+
+**DECISION.** **properties.id INTEGER (legacy) es canonical listing identifier.**
+listing_owners.listing_id INTEGER, moderation_events.listing_id INTEGER.
+No CASTs permanentes. Si una futura fase necesita ID público inmutable no
+vinculado a DB PK, se crea `public_listing_id` TEXT separado (no INTEGER CAST).
+
+**ALTERNATIVES.**
+1. TEXT listing_id (status quo pre-fix) — rechazado: CASTs permanentes,
+   inconsistencia tipos, JOIN fragility.
+2. Migrar properties.id a TEXT — rechazado: migration destructiva, impacta
+   properties table production (1 row real, URLs, indexes).
+3. Introducir public_listing_id TEXT ahora — rechazado: añade complejidad
+   sin uso inmediato; si se necesita, se añade en 04.2+ como columna nueva.
+
+**RATIONALE.** properties.id INTEGER existe en producción, tiene índices,
+es la PK autoincremental de la única property real. La consistencia INTEGER
+elimina CASTs y mantiene type safety.
+
+**CONSEQUENCES.** listing_owners.listing_id INTEGER FK-compatible;
+moderation_events.listing_id INTEGER. Worker joins usan `properties.id =
+listing_owners.listing_id` directo. Si en 04.2+ se requiere ID público no
+vinculado a DB PK (ej: URL SEO inmutable), se crea columna separada TEXT.
+
+---
+
+## ADR-010 — Role Grant Actor Model (04.1-FIX)
+
+**CONTEXT.** user_roles.granted_by carecía de FK. No añadir FK ciegamente
+sin determinar si granted_by es siempre account o puede ser system/migration.
+
+**DECISION.** **granted_by = TEXT REFERENCES accounts(id) NULLABLE.**
+- NULL = system grant (bootstrap, migration, admin automation).
+- NOT NULL = explicit account FK (actor humano que concedió el rol).
+
+No string magic. No default value. No FK ciega a accounts solo si el actor
+es siempre usuario; el sistema puede necesitar grants sin account.
+
+**RATIONALE.** FK real para cuando granted_by es usuario (integridad
+referencial). NULL para system grants (no forzar FK inválida). No
+"migration"/"system" strings magic.
+
+**CONSEQUENCES.** user_roles.granted_by TEXT REFERENCES accounts(id) ON DELETE
+RESTRICT. Grants de sistema insertan granted_by = NULL. Grants de admin
+insertan granted_by = admin_account_id. Lookup:
+- System grants: WHERE granted_by IS NULL
+- Account grants: WHERE granted_by = ?
+
+---
+
+## ADR-011 — Password Storage Decision (04.1-FIX)
+
+**CONTEXT.** 04.1 introdujo accounts.password_hash TEXT nullable como
+"legacy compatibility field". 04.0 ADR-001 establece passwordless-first
+(magic link). No se implementa password auth en esta fase.
+
+**DECISION.** **accounts.password_hash ELIMINADO (no reservado).**
+No se mantiene para "compatibilidad futura". Si en fases posteriores se
+requiere password auth explícitamente (legacy), se añade en migration
+nueva con ADR específico, evaluando Argon2id y migración de datos.
+
+**ALTERNATIVES.**
+1. Mantener password_hash NULL — rechazado: introduce vía de autenticación
+   no decidida, riesgo de uso prematuro, columnas huérfanas en schema.
+2. Password auth ahora — fuera de scope; 04.0 define passwordless-first.
+3. Passkeys/OAuth — fases posteriores per 04.0.
+
+**RATIONALE.** 04.0 ADR-001: passwordless-first por magic link como método
+primario. Password opcional legacy si se habilita (no MVP). Mantener
+password_hash sin uso crea falsa expectativa de autenticación. Eliminar
+ahora y añadir cuando se decida explícitamente evita scope creep.
+
+**CONSEQUENCES.** accounts no tiene password_hash. 04.0 passwordless-first
+queda en force. Si se decide password auth en futuro, nueva migration con
+Argon2id + password reset flow + migration de datos.

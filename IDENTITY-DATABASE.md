@@ -10,6 +10,8 @@ sin authentication/session behavior (eso pertenece a 04.2/04.3).
 - **accounts** — entidad principal de identidad. PK: `id` TEXT (ULID/randomUUID
   al alta). UNIQUE(email), CHECK(status), deletion_state ADR-008.
   Nota: `security_stamp` TEXT cambia en password change/session-revoke.
+  **HARDENED 04.1-FIX (0003)**: password_hash eliminado (passwordless-first
+  per ADR-001).
 
 - **profiles** — separación (04.0 #6). 1:1 con accounts.pk.
   display_name, avatar_url (R2), bio, city, language, agent_verificationmarkers,
@@ -18,16 +20,21 @@ sin authentication/session behavior (eso pertenece a 04.2/04.3).
 - **roles** (`MODERATOR`,`ADMIN`,`SUPERADMIN`,`AGENCY`): catálogo estable.
   NO ownership por roles. Seedeable con `INSERT OR IGNORE`.
 
-- **user_roles** — composite PK (account_id, role) UNIQUE; granted_by,
-  granted_at, revoked_at temporal.
+- **user_roles** — **ROLE GRANT ACTOR MODEL (04.1-FIX ADR-010)**:
+  PRIMARY KEY (account_id, role, revoked_at): soporta grant→revoke→regrant
+  role history. UNIQUE index partial `(account_id, role) WHERE revoked_at IS NULL`
+  garantiza único current. granted_by TEXT REFS accounts(id) nullable (actor
+  explicit account, null para grants system/bootstrap).
 
 - **sessions** — data structure only. account_id FK; token_hash (nunca plaintext);
   device_label, user_agent, ip_subset; expires_at; revoked_at; last_seen_at.
-  Índices: `(account_id)`, `(expires_at)`.
+  Índices: `(account_id)`, `(expires_at)`, **UNIQUE partial `(token_hash)
+  WHERE revoked_at IS NULL`** (04.1-FIX).
 
-- **listing_owners** — ownership explícito ∩ identity: (listing_id, account_id,
-  relationship IN owner|agent|managed_by), PK composite, opcional revoked_at.
-  Developer/admin role no se asume.
+- **listing_owners** — **LISTING IDENTIFIER STRATEGY (ADR-009)**: listing_id
+  INTEGER canonical (properties.id type), account_id, relationship IN
+  owner|agent|managed_by), PK composite, opcional revoked_at. Developer/admin
+  role no se asume. **No CASTs permanentes.**
 
 - **moderation_events** — state transition events IMMUTABLE:
   (listing_id, actor_id REFS accounts, previous_state, new_state, reason,
@@ -78,6 +85,12 @@ onde aplica (no CASCADE vs audit; restrict en profiles/user_roles/listing_owners
   `CREATE TABLE IF NOT EXISTS`, `INSERT OR IGNORE`.
 - `migrations/0002_properties_created_by.sql` — `ALTER TABLE properties ADD
   COLUMN created_by REFS accounts(id)` safely additive + 1 index.
+- `migrations/0003_identity_hardening.sql` — **04.1-FIX hardening**:
+  `listing_owners.listing_id` INTEGER (ADR-009), `user_roles` rebuild con
+  granted_by FK + role history PK, `accounts.password_hash` eliminado,
+  `sessions` UNIQUE partial token_hash.
+- `migrations/0004_user_roles_current_unique.sql` — UNIQUE index partial
+  current (SQLite NULL PK permite duplicados current).
 
 WRANGER apply: `wrangler d1 execute nexo-db --remote --file migrations/0001_....`
 (`--file` determinate: lee y aplica exactamente el archivo, no hay runner
