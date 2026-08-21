@@ -103,19 +103,29 @@ export default {
     // Configuración global de WhatsApp
     const WHATSAPP_PHONE = env.WHATSAPP_PHONE || "+5350000000";
 
-    // CORS: política mínima. La app es same-origin (el frontend vive en el
-    // mismo Worker), así que solo reflejamos orígenes del propio deployment.
-    // API pública permite CORS restringido; endpoints admin NO envían cabeceras CORS.
+    // CORS: EXPLICIT ALLOWLIST. La app es same-origin (frontend en el mismo
+    // Worker), así que los orígenes autorizables son el propio del deployment
+    // en producción y localhost exclusivamente en desarrollo local (wrangler dev).
+    // *.workers.dev arbitrarios NO se permiten.
+    const PRODUCTION_ORIGINS = new Set([
+      url.origin, // el deployment actual (p.ej. https://nexo-inmueble.<cuenta>.workers.dev)
+    ]);
+    const isLocalDev = ["localhost", "127.0.0.1"].includes(url.hostname);
+    const DEVELOPMENT_ORIGINS = new Set(isLocalDev ? [
+      "http://localhost",
+      "http://localhost:8787",
+      "http://127.0.0.1",
+      "http://127.0.0.1:8787",
+    ] : []);
+
+    const requestOrigin = request.headers.get("Origin");
     const allowedOrigin = (() => {
-      const origin = request.headers.get("Origin");
-      if (!origin) return null;
-      const host = url.hostname;
-      try {
-        const o = new URL(origin);
-        if (o.hostname === host || o.hostname.endsWith(".workers.dev") || o.hostname === "localhost") {
-          return origin;
-        }
-      } catch (e) { /* origin inválido */ }
+      if (!requestOrigin) return null;
+      let o;
+      try { o = new URL(requestOrigin); } catch (e) { return null; }
+      const full = o.origin; // scheme + host + puerto normalizado
+      if (PRODUCTION_ORIGINS.has(full)) return full;
+      if (isLocalDev && DEVELOPMENT_ORIGINS.has(full)) return full;
       return null;
     })();
 
@@ -138,21 +148,23 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
-    // Comparación de secretos en tiempo constante (evita timing attacks)
+    // Comparación de secretos en tiempo constante, robusta ante longitudes
+    // diferentes: itera siempre `max` caracteres (la longitud mayor se extiende
+    // con ceros); el acumulador solo es 0 si ambas cadenas son idénticas en
+    // contenido Y longitud. El tiempo de ejecución depende solo de max(a,b),
+    // nunca del contenido → no hay fuga de posición ni de longitud relativa.
     const timingSafeEqual = (a, b) => {
       const sa = String(a || "");
       const sb = String(b || "");
-      if (sa.length !== sb.length) {
-        // Comparación dummy de igual longitud para no filtrar la longitud real
-        let r = 0;
-        for (let i = 0; i < sa.length; i++) r |= sa.charCodeAt(i) ^ sa.charCodeAt(i);
-        return false;
+      const max = Math.max(sa.length, sb.length);
+      if (max === 0) return false;
+      let diff = sa.length ^ sb.length; // 0 solo si misma longitud
+      for (let i = 0; i < max; i++) {
+        const ca = i < sa.length ? sa.charCodeAt(i) : 0;
+        const cb = i < sb.length ? sb.charCodeAt(i) : 0;
+        diff |= ca ^ cb;
       }
-      let result = 0;
-      for (let i = 0; i < sa.length; i++) {
-        result |= sa.charCodeAt(i) ^ sb.charCodeAt(i);
-      }
-      return result === 0;
+      return diff === 0;
     };
 
     // Autenticación administrativa: un único secreto canónico (ADMIN_TOKEN).

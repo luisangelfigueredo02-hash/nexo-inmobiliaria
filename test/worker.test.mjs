@@ -162,7 +162,7 @@ test("CORS: origin no permitido no recibe cabecera", async () => {
   assert.equal(res.headers.get("access-control-allow-origin"), null);
 });
 
-test("CORS: origin mismo host sí recibe cabecera", async () => {
+test("CORS: origin de producción permitido recibe cabecera reflejada", async () => {
   const res = await worker.fetch(req("/api/config", {
     headers: { Origin: "https://nexo.test" }
   }), makeEnv());
@@ -175,4 +175,62 @@ test("Rutas admin no emiten cabeceras CORS", async () => {
   }), makeEnv());
   assert.equal(res.status, 401);
   assert.equal(res.headers.get("access-control-allow-origin"), null);
+});
+
+test("CORS: subdominio workers.dev arbitrario rechazado", async () => {
+  const res = await worker.fetch(req("/api/config", {
+    headers: { Origin: "https://otro-proyecto.workers.dev" }
+  }), makeEnv());
+  assert.equal(res.headers.get("access-control-allow-origin"), null);
+});
+
+test("CORS OPTIONS: preflight válido para origen permitido", async () => {
+  const res = await worker.fetch(req("/api/config", {
+    method: "OPTIONS",
+    headers: { Origin: "https://nexo.test" }
+  }), makeEnv());
+  assert.equal(res.headers.get("access-control-allow-origin"), "https://nexo.test");
+});
+
+test("CORS OPTIONS: preflight inválido no autorizado", async () => {
+  const res = await worker.fetch(req("/api/config", {
+    method: "OPTIONS",
+    headers: { Origin: "https://otro-proyecto.workers.dev" }
+  }), makeEnv());
+  assert.equal(res.headers.get("access-control-allow-origin"), null);
+});
+
+test("AUTH: token correcto con timingSafeEqual", async () => {
+  const res = await worker.fetch(req("/api/admin/verify", {
+    method: "POST", headers: adminHeaders()
+  }), makeEnv());
+  assert.equal(res.status, 200);
+});
+
+test("AUTH: token incorrecto rechazado", async () => {
+  const res = await worker.fetch(req("/api/admin/verify", {
+    method: "POST", headers: { Authorization: "Bearer secreto-mal" }
+  }), makeEnv());
+  assert.equal(res.status, 401);
+});
+
+test("AUTH: token vacío rechazado", async () => {
+  const res = await worker.fetch(req("/api/admin/verify", {
+    method: "POST", headers: { Authorization: "Bearer " }
+  }), makeEnv());
+  assert.equal(res.status, 401);
+});
+
+test("AUTH: token con longitud diferente rechazado", async () => {
+  const res = await worker.fetch(req("/api/admin/verify", {
+    method: "POST", headers: { Authorization: "Bearer x" }
+  }), makeEnv());
+  assert.equal(res.status, 401);
+});
+
+test("AUTH: header sin esquema Bearer rechazado", async () => {
+  const res = await worker.fetch(req("/api/admin/verify", {
+    method: "POST", headers: { Authorization: "secreto-test" }
+  }), makeEnv());
+  assert.equal(res.status, 401);
 });
