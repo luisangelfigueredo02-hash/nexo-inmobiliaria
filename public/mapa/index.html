@@ -331,13 +331,19 @@
 
                 globalProperties = await response.json();
                 
-                // Centrar dinámicamente el mapa en el promedio de propiedades si existen
+                // Centrar el mapa en el promedio de propiedades geolocalizadas;
+                // NULL = "sin geolocalización", nunca 0,0 ni coordenadas inventadas.
                 if (globalProperties.length > 0) {
-                    const lats = globalProperties.map(p => parseFloat(p.latitude) || -12.046374);
-                    const lngs = globalProperties.map(p => parseFloat(p.longitude) || -77.042793);
-                    const avgLat = lats.reduce((a,b)=>a+b, 0) / lats.length;
-                    const avgLng = lngs.reduce((a,b)=>a+b, 0) / lngs.length;
-                    map.setView([avgLat, avgLng], 14);
+                    const geo = globalProperties.filter(p => {
+                        const lat = parseFloat(p.latitude);
+                        const lng = parseFloat(p.longitude);
+                        return !isNaN(lat) && !isNaN(lng);
+                    });
+                    if (geo.length > 0) {
+                        const avgLat = geo.reduce((a, p) => a + parseFloat(p.latitude), 0) / geo.length;
+                        const avgLng = geo.reduce((a, p) => a + parseFloat(p.longitude), 0) / geo.length;
+                        map.setView([avgLat, avgLng], 14);
+                    }
                 }
 
                 plotMarkers();

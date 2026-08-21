@@ -13,23 +13,36 @@ Sigue un protocolo en 2 fases:
 
 ---
 
-## 📋 Estado del proyecto (fecha: 2026-08-20)
+## 📋 Estado del proyecto (fecha: 2026-08-21)
 
-### URLs
-- Worker (API/Backend): https://nexo-inmueble.luisangelfigueredo02.workers.dev (funciona)
-- Pages (Frontend estático): https://nexoinmueble.pages.dev (funciona, sin bindings de backend)
+### Arquitectura actual (verificada)
+**Worker único** `nexo-inmueble` — todo el sistema vive en un solo Cloudflare Worker:
+- `worker.js` como entrypoint
+- Static Assets vía `[assets]` → `public/`
+- D1: `nexo-db`
+- R2: `nexo-media` (binding `BUCKET_IMAGENES`)
+- Vectorize: `nexo-index` (binding `VECTOR_INDEX`)
+- Workers AI (binding `AI`)
+- Smart Placement enabled
 
-### Problema activo
-La unificación Pages+API fName= pessoa — os bindings D1/R2/Vectorize nao se resolvem en Pages Functions (`_worker.js`). Endpoints API im Pages devolvem 500.
+URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.dev
 
-### Último estado
-- Commit 396b42f em main com deploy unificado tentativa (pofna ruta API)
-- NPE y reventors
-- `~/.cf_token` y `~/.gh_token` with secrets visibles (rotar)
-- Completo commands:
-  - Deploy Worker: `npx wrangler deploy`
-  - Verify Worker: `curl https://nexo-inmueble.luisangelfigueredo02.workers.dev/api/config`
+### Comandos
+- Deploy: `npx wrangler deploy`
+- Tests: `npm test` (worker.test.mjs + worker-integrity.test.mjs, 41 tests)
+- Verificación: `curl .../api/health`
 
-### Siguientes pasos bloqueados (decidir)
-1. Fijar bindings Pages Functions via wrangler.toml o configuración CF
-2. Revertir a arquitectura separada (Pages frontend + Workers backend)
+### Estado comprobado este pase
+- API pública: sin campos privados (owner_name/owner_phone/internal_notes/address verificados ausentes)
+- Coordenadas ausentes persisten como NULL (nunca 0)
+- PUT /api/admin/properties/:id valida igual que POST; inexistente → 404
+- Modelo IA del chat: `@cf/google/gemma-4-26b-a4b-it` (llama-3 fue deprecado 2026-05-30; era causa de 500 en /api/chat)
+- R2 imágenes: formato `/media/*` consistente en D1; objetos existen en producción
+
+### Problemas reales abiertos
+- Secrets expuestos en ~/.cf_token / ~/.gh_token (rotar)
+- Chat AI no aplicó rate-limit (roadmap P0 A-08a pendiente)
+
+## 📐 Especificaciones de arquitectura (docs)
+- `identity-architecture.md` — Fase 04.0 Identity & Security spec (ARCHITECTURE READY)
+- `identity-architecture-adrs.md` — ADRs 001-011

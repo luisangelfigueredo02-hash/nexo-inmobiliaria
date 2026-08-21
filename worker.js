@@ -66,10 +66,11 @@ function validatePropertyInput(data) {
   if (isNaN(baths) || baths < 0 || baths > 50) return "bathrooms inválido";
   const area = parseFloat(data.area ?? 0);
   if (isNaN(area) || area < 0 || area > 100_000) return "area inválida";
-  if (data.latitude != null && (isNaN(parseFloat(data.latitude)) || Math.abs(parseFloat(data.latitude)) > 90)) {
+  // Coordenadas: null/undefined/"" se tratan como ausentes (no como error).
+  if (data.latitude != null && data.latitude !== "" && (isNaN(parseFloat(data.latitude)) || Math.abs(parseFloat(data.latitude)) > 90)) {
     return "latitude inválida";
   }
-  if (data.longitude != null && (isNaN(parseFloat(data.longitude)) || Math.abs(parseFloat(data.longitude)) > 180)) {
+  if (data.longitude != null && data.longitude !== "" && (isNaN(parseFloat(data.longitude)) || Math.abs(parseFloat(data.longitude)) > 180)) {
     return "longitude inválida";
   }
   if (data.description && String(data.description).length > 5000) return "description excede 5000 caracteres";
@@ -78,12 +79,23 @@ function validatePropertyInput(data) {
     for (const url of data.images) {
       if (typeof url !== "string" || url.length > 500) return "image URL inválida";
       // Solo permitimos rutas /media/* o http(s) externas explícitas del panel
-      if (!url.startsWith("/media/") && !/^https?:\/\//i.test(url)) return "image URL debe ser /media/* o http(s)";
+          if (/^(javascript|data|file):/i.test(url)) return "image URL con esquema prohibido";
+      // Solo se permiten rutas /media/* (R2) o https:// externas explícitas
+      if (!url.startsWith("/media/") && !/^https:\/\//i.test(url)) return "image URL debe ser /media/* o https://";
     }
   }
+
   const ALLOWED_STATUS = ["published", "draft"];
   if (data.status && !ALLOWED_STATUS.includes(data.status)) return "status inválido";
   return null;
+}
+
+// Normaliza coordenadas para persistencia: NULL si ausente (nunca 0),
+// número si presente. Llamar después de validatePropertyInput (ya validó rango).
+function normalizeCoord(value) {
+  if (value == null || value === "") return null;
+  const n = parseFloat(value);
+  return isNaN(n) ? null : n;
 }
 
 export default {
@@ -212,7 +224,9 @@ export default {
 
       if (id) {
         try {
-          const property = await env.DB.prepare("SELECT * FROM properties WHERE id = ?").bind(id).first();
+          const property = await env.DB.prepare(
+            "SELECT id, title, description, images, price, city, province FROM properties WHERE id = ?"
+          ).bind(id).first();
           if (property) {
             const images = normalizeImages(property.images);
             const mainImage = images[0] || "https://nexo.estate/placeholder.jpg";
@@ -488,7 +502,7 @@ export default {
               data.title, data.type, data.operation, parseFloat(data.price),
               data.province, data.city, data.neighborhood, data.address || "",
               parseInt(data.bedrooms || 0), parseInt(data.bathrooms || 0), parseFloat(data.area || 0),
-              data.description || "", imagesStr, parseFloat(data.latitude || 0), parseFloat(data.longitude || 0),
+              data.description || "", imagesStr, normalizeCoord(data.latitude), normalizeCoord(data.longitude),
               data.status || "published", data.owner_name || "", data.owner_phone || "", data.internal_notes || ""
             ).first();
             generatedId = inserted && inserted.id;
@@ -534,6 +548,25 @@ export default {
       const id = url.pathname.split("/").pop();
       try {
         const data = await request.json();
+
+        // Misma validación server-side que POST: PUT no puede introducir lo que POST rechaza
+        const validationError = validatePropertyInput(data);
+        if (validationError) {
+          return new Response(JSON.stringify({ error: validationError }), {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders }
+          });
+        }
+
+        // Propiedad inexistente → 404 (nunca success:true)
+        const existing = await env.DB.prepare("SELECT id FROM properties WHERE id = ?").bind(id).first();
+        if (!existing) {
+          return new Response(JSON.stringify({ error: "Propiedad no encontrada" }), {
+            status: 404,
+            headers: { "Content-Type": "application/json", ...corsHeaders }
+          });
+        }
+
         const imagesStr = JSON.stringify(data.images || []);
 
         await env.DB.prepare(`
@@ -545,7 +578,7 @@ export default {
         `).bind(
           data.title, data.type, data.operation, parseFloat(data.price), data.province, data.city, data.neighborhood,
           data.address || "", parseInt(data.bedrooms || 0), parseInt(data.bathrooms || 0), parseFloat(data.area || 0),
-          data.description || "", imagesStr, parseFloat(data.latitude || 0), parseFloat(data.longitude || 0),
+          data.description || "", imagesStr, normalizeCoord(data.latitude), normalizeCoord(data.longitude),
           data.status, data.owner_name || "", data.owner_phone || "", data.internal_notes || "", id
         ).run();
 
@@ -669,7 +702,7 @@ export default {
         Propiedades disponibles reales:
         ${contextString}`;
 
-        const aiResponse = await env.AI.run("@cf/meta/llama-3-8b-instruct", {
+        const aiResponse = await env.AI.run("@cf/google/gemma-4-26b-a4b-it", {
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: message }
