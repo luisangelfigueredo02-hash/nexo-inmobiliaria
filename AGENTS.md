@@ -44,6 +44,16 @@ URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.de
 - createSession/rotateSession/revokeAllSessions listos para handoff de Authentication (contrato 04.2 §11)
 - Docs: SESSION-RUNTIME.md + ADR-013
 
+### Authorization architecture (04.4, FROZEN — solo docs)
+- Modelo: RBAC + Ownership (listing_owners) + Explicit Policy Checks → `authorize(actor, action, resource) → ALLOW | DENY`, deny-by-default, fail-closed
+- Roles: PUBLIC/USER implícitos (sin fila); OWNER/AGENT = relación por listing (no rol); MODERATOR/ADMIN core; AGENCY future; SUPERADMIN break-glass (0 en prod); SYSTEM actor (actor_type='system', actor_id NULL)
+- Sin herencia jerárquica; matriz rol→permiso = constante compilada (fuente única)
+- Moderation boundary: create/submit (user) ≠ approve/publish (NEXO); published nunca directo; moderation_events inmutable
+- Privilege change ⇒ security_stamp rotation + revokeAllSessions (04.3)
+- Serialización whitelist por audiencia (field-level); 404 indistinguible anti-IDOR
+- Riesgo registrado: properties.id TEXT 'N-001' real vs listing_owners/moderation INTEGER-TEXT (resolver en 04.7 antes del primer JOIN de ownership)
+- Docs: AUTHORIZATION-ARCHITECTURE.md + ADR-014
+
 ### Security headers (04.2.1)
 - Baseline en worker.js `withSecurityHeaders()` aplicada en `fetch()` a TODA respuesta (API, SEO, assets, media, 404/500)
 - CSP hash-based: script-src sin `unsafe-inline`; hashes sha256 generados desde public/ (9 hashes)

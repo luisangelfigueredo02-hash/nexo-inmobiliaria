@@ -372,3 +372,104 @@ alcance de CORS credentialed y comportamiento del service worker.
 sin tocar el schema FROZEN ni el admin Bearer. Authentication (futura) solo
 llama `createSession`/`rotateSession`. Deuda conocida y acotada: idle
 expiration y cleanup cron (estrategia documentada, sin implementar en 04.3).
+
+---
+
+## ADR-014 — Authorization Model (04.4)
+
+**CONTEXT.** 04.3 entrega `{ authenticated, accountId, sessionId }` por
+request. ADR-003/004/005 esbozaron la forma (función única, híbrido,
+ownership explícito) pero no congelaron: modelo final, catálogo de permisos,
+jerarquía de roles, frontera de moderación, tenancy, entitlements, field
+security y mitigaciones IDOR/BOLA. Sin esa congelación, 04.5 sería ad-hoc.
+
+**DECISION.** **PRIMARY AUTHORIZATION MODEL: RBAC + Resource Ownership
+(relaciones explícitas) + Explicit Policy Checks**, evaluado en un único
+punto de decisión server-side `authorize(actor, action, resource) →
+ALLOW | DENY`, deny-by-default y fail-closed.
+
+1. **Roles globales pocos** (catálogo cerrado en DB, ya existente):
+   MODERATOR, ADMIN (CORE); AGENCY (FUTURE); SUPERADMIN (SYSTEM,
+   break-glass, 0 cuentas en MVP). USER es baseline implícito **sin fila**
+   en user_roles; PUBLIC es ausencia de sesión.
+2. **Ownership/relación, no rol global**: OWNER/AGENT son filas vigentes
+   en `listing_owners` (relationship owner/agent/managed_by) por listing.
+   Un usuario no "es" OWNER; es owner *del listing X* (ADR-005 confirmado).
+3. **Sin herencia jerárquica**: ningún rol implica permisos de otro. La
+   matriz rol→permiso (constante de política compilada) es la fuente única
+   de verdad; cada intersección (p.ej. ADMIN puede moderar) es un grant
+   explícito, no transitividad.
+4. **Moderation boundary**: create/edit/submit (usuario) ≠
+   approve/publish (decisión de NEXO). `published` jamás se fija
+   directamente; toda transición en `moderation_events` inmutable.
+   `status` describe workflow; no es permiso.
+5. **Admin plane separado**: `ADMIN_TOKEN` legado jamás se convierte en
+   rol de usuario; su migración a `user_roles.ADMIN`+passkey es fase
+   posterior con ADR propio. SYSTEM actor: `actor_type='system'`,
+   `actor_id=NULL`; jamás falsificar account_id.
+6. **Role ≠ Entitlement**: monetización futura (featured, subscriptions)
+   son grants comerciales separados; nunca en `roles`; featured nunca
+   salta moderación.
+7. **Multi-tenant diseñado, no implementado**: condición `tenant_match`
+   (agency_id) documentada para la fase AGENCY; mismo rol en tenant A
+   jamás abre tenant B.
+8. **Privilege change ⇒ invalidación**: grant/revoke de rol implica
+   `security_stamp` rotation + `revokeAllSessions` (04.3) + audit +
+   re-autenticación staff (passkey).
+9. **Cache seguridad-performante**: presupuesto ≤4 lookups indexados por
+   request, cero N+1 (autorización a nivel de query en colecciones); cache
+   opcional isolate-local keyed `(account_id, security_stamp)`, TTL ≤35s;
+   jamás cache de decisiones cross-user.
+
+**ALTERNATIVES.**
+1. **RBAC puro** — rechazado: no distingue "mi listing" de "listing ajeno"
+   (IDOR por diseño); requeriría ownership fuera del modelo.
+2. **ABAC / policy-as-code (OPA, Cedar)** — rechazado: motor + lenguaje +
+   superficie de error para ~30 permisos y 4 tablas; sobrecoste inasumible
+   en Workers+D1 con restricciones Cuba; el híbrido expresa el 100% de las
+   reglas reales sin motor.
+3. **ReBAC / grafo de relaciones (Zanzibar-style)** — rechazado para MVP:
+   las relaciones de NEXO son pocas y explícitas (owner/agent/managed_by;
+   membership futura). Un grafo general es sobreingeniería; `listing_owners`
+   + membership futura cubren el dominio.
+4. **Jerarquía de roles (SUPERADMIN⊃ADMIN⊃MODERATOR transitiva)** —
+   rechazada: privilege inheritance accidental; la matriz explícita es
+   auditable línea a línea.
+
+**SECURITY REASONING.** El modelo ataca el threat model obligatorio por
+construcción: IDOR/BOLA (toda resolución por ID pasa por authorize() +
+relationship + 404 indistinguible para no-staff), escalación horizontal
+(relación vigente obligatoria), vertical (roles solo server-side desde
+user_roles; cliente jamás aporta rol/permiso/owner), role/permission/
+ownership tampering (catálogo CHECK, constantes compiladas, `created_by`
+inmutable + transferencia auditada), tenant breakout (tenant_match),
+field-level exposure (serializadores whitelist por audiencia, nunca
+blacklist), moderator/admin abuse (decide-no-redacta, reason obligatoria,
+audit inmutable doble: audit_events + moderation_events), stale privilege
+(stamp rotation + revocación total de sesiones), fail-open (excepción ⇒
+DENY + audit). Deny-by-default y fail-closed son invariantes del contrato.
+
+**PERFORMANCE REASONING.** ≤4 lookups indexados por request autorizado
+(session 04.3, user_roles por account_id, listing_owners por PK, resource
+row). Colecciones autorizan en el WHERE (owner list, cola de moderación),
+nunca fila a fila post-fetch. Cache isolate ≤35s opcional con clave
+(account_id, security_stamp) — invalidada naturalmente por stamp rotation.
+Sin Redis/infra nueva: Cloudflare-native (D1 + isolate).
+
+**SCALABILITY REASONING.** Añadir permiso = fila en matriz + test de
+contrato (no migration). Añadir rol = migration deliberada del CHECK
+(fricción intencional). AGENCY/membership y entitlements se añaden como
+tablas/compras futuras sin remodelar la decisión. La serialización por
+audiencia escala a nuevos recursos repitiendo el patrón whitelist.
+
+**CONSEQUENCES.** Positivas: 04.5 tiene especificación completa y
+testeable (matriz + 18 clases de test de contrato); fronteras
+Authentication/Session/Authorization/Ownership/Moderation limpias;
+auditoría doble inmutable; el plano admin legado tiene ruta de migración
+documentada. Negativas/riesgos: (1) inconsistencia de tipos
+listing_id (TEXT 'N-001' real vs INTEGER de ADR-009) debe resolverse en
+04.7 antes del primer JOIN de ownership — riesgo registrado alto; (2)
+`properties.status` necesitará migration para la máquina de estados completa
+(04.7/04.8); (3) la matriz compilada exige disciplina de review (mitigada
+por tests de contrato en 04.5); (4) SUPERADMIN break-glass queda
+documentado pero sin implementación hasta su primer uso real.
