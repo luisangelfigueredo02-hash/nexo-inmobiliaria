@@ -93,7 +93,7 @@ function makeEnv({ rows = [ROW], seqValue = 1 } = {}) {
         }
       },
       ADMIN_TOKEN: ADMIN,
-      VECTORIZE: {
+      VECTOR_INDEX: {
         async upsert(v) { vectorOps.push({ op: "upsert", id: v[0].id }); },
         async deleteByIds(ids) { vectorOps.push({ op: "delete", id: ids[0] }); }
       },

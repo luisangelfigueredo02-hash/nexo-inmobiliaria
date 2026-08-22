@@ -3,7 +3,7 @@
    Arquitectura de caché ultra-resiliente para Cuba.
 ========================================================= */
 
-const SW_VERSION = "nexo-v3-stable";
+const SW_VERSION = "nexo-v5-perf";
 const STATIC_CACHE = `${SW_VERSION}-static`;
 const DATA_CACHE = `${SW_VERSION}-data`;
 const IMAGE_CACHE = `${SW_VERSION}-images`;
@@ -14,8 +14,10 @@ const SHELL_URLS = [
   "/property.html",
   "/variables.css",
   "/manifest.json",
+  "/favicon.ico",
   "/icons/icon-192.png",
-  "/icons/icon-512.png"
+  "/icons/icon-512.png",
+  "/icons/placeholder.svg"
 ];
 
 // Instalar y forzar activación inmediata
@@ -97,7 +99,9 @@ self.addEventListener("fetch", event => {
           if (!cachedResponse) throw err;
         });
 
-        return (isFresh ? cachedResponse : fetchPromise).catch(() => cachedResponse || fetchPromise);
+        return Promise.resolve(
+          isFresh ? cachedResponse : fetchPromise
+        ).catch(() => cachedResponse || fetchPromise);
       })
     );
     return;

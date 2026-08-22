@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
     <title>NEXO — Panel Administrativo</title>
     <link rel="stylesheet" href="/variables.css">
     <link rel="manifest" href="/manifest.json">
@@ -254,8 +255,17 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Precio (USD)</label>
+                                <label>Precio</label>
                                 <input type="number" id="p-price" required placeholder="120000">
+                            </div>
+                            <div class="form-group">
+                                <label>Moneda</label>
+                                <select id="p-currency">
+                                    <option value="">No especificada</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="CUP">CUP</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label>Área (m²)</label>
@@ -374,6 +384,10 @@
         let mapAdmin = null;
         let selectedMarker = null;
 
+        // Escape de datos de origen D1/input admin antes de interpolar en innerHTML
+        const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g,
+            c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
         // Comprobar credenciales previamente validadas
         window.onload = () => {
             const savedToken = sessionStorage.getItem("nexo_admin_token");
@@ -415,8 +429,15 @@
         }
 
         // 9. Inicialización de mapa para configurar coordenadas con clics de precisión
-        function initAdminMap() {
-            mapAdmin = L.map('admin-map').setView([23.1136, -82.3666], 12);
+        async function initAdminMap() {
+            // Centro desde /api/config (MARKET CONFIG, 04.7-B); fallback = mercado inicial.
+            let center = [23.1136, -82.3666], zoom = 12;
+            try {
+                const cfg = await fetch("/api/config").then(r => r.ok ? r.json() : null);
+                if (cfg && Array.isArray(cfg.map_center) && cfg.map_center.length === 2) center = cfg.map_center;
+                if (cfg && cfg.map_zoom) zoom = cfg.map_zoom;
+            } catch { /* fallback estático */ }
+            mapAdmin = L.map('admin-map').setView(center, zoom);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; OpenStreetMap'
             }).addTo(mapAdmin);
@@ -454,7 +475,7 @@
             const list = document.getElementById("p-photo-list");
             list.innerHTML = imageList.map((url, index) => `
                 <div class="photo-thumb">
-                    <img src="${url}">
+                    <img src="${escapeHtml(url)}">
                     <button type="button" class="del-btn" data-action="delete-photo" data-photo-index="${index}">×</button>
                 </div>
             `).join('');
@@ -484,12 +505,12 @@
             container.innerHTML = adminProperties.map(p => `
                 <div class="prop-item">
                     <div>
-                        <strong>${p.public_code || p.id} — ${p.title}</strong>
-                        <span style="font-size:12px; color:var(--color-ink-muted);">${p.neighborhood} • $${parseFloat(p.price).toLocaleString()} USD • Status: <b>${p.status}</b></span>
+                        <strong>${escapeHtml(p.public_code || p.id)} — ${escapeHtml(p.title)}</strong>
+                        <span style="font-size:12px; color:var(--color-ink-muted);">${escapeHtml(p.neighborhood)} • ${p.currency ? ({USD:'US$',EUR:'€'}[p.currency] || '') + parseFloat(p.price).toLocaleString() + (p.currency==='CUP'?' CUP':'') : parseFloat(p.price).toLocaleString() + ' (moneda no especificada)'} • Status: <b>${escapeHtml(p.status)}</b></span>
                     </div>
                     <div style="flex-direction:row; gap:8px;">
-                        <button class="btn" style="padding:6px 12px; font-size:11px;" data-action="edit-property" data-id="${p.id}">Editar</button>
-                        <button class="btn danger" style="padding:6px 12px; font-size:11px;" data-action="delete-property" data-id="${p.id}">Eliminar</button>
+                        <button class="btn" style="padding:6px 12px; font-size:11px;" data-action="edit-property" data-id="${escapeHtml(p.id)}">Editar</button>
+                        <button class="btn danger" style="padding:6px 12px; font-size:11px;" data-action="delete-property" data-id="${escapeHtml(p.id)}">Eliminar</button>
                     </div>
                 </div>
             `).join('');
@@ -497,7 +518,8 @@
 
         // Preparar formulario para modo Edición de Inmueble
         function enableEditMode(id) {
-            const p = adminProperties.find(prop => prop.id === id);
+            // data-id llega como string; p.id es number → comparación laxa explícita
+            const p = adminProperties.find(prop => String(prop.id) === String(id));
             if (!p) return;
 
             document.getElementById("form-action-title").textContent = `Editar Inmueble ${p.id}`;
@@ -506,6 +528,7 @@
             document.getElementById("p-type").value = p.type;
             document.getElementById("p-operation").value = p.operation;
             document.getElementById("p-price").value = p.price;
+            document.getElementById("p-currency").value = p.currency || "";
             document.getElementById("p-area").value = p.area;
             document.getElementById("p-beds").value = p.bedrooms;
             document.getElementById("p-baths").value = p.bathrooms;
@@ -569,6 +592,7 @@
                 type: document.getElementById("p-type").value,
                 operation: document.getElementById("p-operation").value,
                 price: parseFloat(document.getElementById("p-price").value),
+                currency: document.getElementById("p-currency").value || null,
                 area: parseFloat(document.getElementById("p-area").value),
                 bedrooms: parseInt(document.getElementById("p-beds").value),
                 bathrooms: parseInt(document.getElementById("p-baths").value),

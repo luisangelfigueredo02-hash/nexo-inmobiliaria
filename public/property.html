@@ -7,7 +7,12 @@
     <title>NEXO — Propiedad</title>
     <link rel="stylesheet" href="/variables.css">
     <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta name="theme-color" content="#faf9f7">
+    <!-- Preconnect: el mapa (si hay coordenadas) carga Leaflet + tiles desde estos orígenes -->
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin>
     <style>
         /* ================================================================
            PROPERTY EXPERIENCE — estilos específicos de la página
@@ -83,13 +88,15 @@
         .hero-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(to top, rgba(12, 14, 17, 0.55) 0%, rgba(12, 14, 17, 0.12) 34%, transparent 55%);
+            background:
+                linear-gradient(to bottom, rgba(12, 14, 17, 0.28) 0%, transparent 18%),
+                linear-gradient(to top, rgba(12, 14, 17, 0.55) 0%, rgba(12, 14, 17, 0.12) 34%, transparent 55%);
             pointer-events: none;
         }
 
         .hero-counter {
             position: absolute;
-            bottom: calc(var(--space-4) + 120px);
+            top: var(--space-4);
             right: var(--space-4);
             background: rgba(12, 14, 17, 0.55);
             color: #fff;
@@ -104,11 +111,13 @@
 
         .hero-expand {
             position: absolute;
-            bottom: calc(var(--space-4) + 120px);
+            top: var(--space-4);
             left: var(--space-4);
             display: flex;
             align-items: center;
             gap: var(--space-2);
+            min-height: var(--touch-target);
+            border: none;
             background: rgba(12, 14, 17, 0.55);
             color: #fff;
             padding: var(--space-2) var(--space-3);
@@ -218,6 +227,31 @@
             color: var(--color-ink-secondary);
             white-space: pre-line;
         }
+        .features-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-2);
+        }
+        .features-list li {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--text-body);
+            color: var(--color-ink);
+        }
+        .features-list .feat-icon {
+            flex: 0 0 18px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #15803d;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        @media (max-width: 480px) { .features-list { grid-template-columns: 1fr; } }
         .desc-text.collapsed {
             display: -webkit-box;
             -webkit-line-clamp: 5;
@@ -229,7 +263,7 @@
             color: var(--color-link);
             font-size: var(--text-label);
             font-weight: var(--weight-semibold);
-            min-height: 36px;
+            min-height: var(--touch-target);
         }
 
         /* Guía legal (accordion) */
@@ -342,6 +376,7 @@
         .cta-price { display: flex; flex-direction: column; flex: 1; min-width: 0; }
         .cta-price .lbl { font-size: var(--text-caption); color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: var(--tracking-label); }
         .cta-price .val { font-size: var(--text-subhead); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cta-price .currency-note { font-size: var(--text-caption); color: var(--color-ink-muted); }
 
         .cta-fav {
             width: var(--touch-target);
@@ -461,6 +496,11 @@
             <button class="desc-toggle" id="desc-toggle" hidden>Ver descripción completa</button>
         </section>
 
+        <section id="features-section" hidden>
+            <h2 class="section-title">Características</h2>
+            <ul class="features-list" id="features-list"></ul>
+        </section>
+
         <section>
             <h2 class="section-title">Guía de compra segura</h2>
             <div class="ruta-segura">
@@ -502,22 +542,23 @@
             <div class="similar-grid" id="similar-grid"></div>
         </section>
 
-    </main>
-
-    <!-- CTA persistente -->
-    <div class="cta-bar">
+        <!-- CTA persistente: fija abajo en móvil; columna sticky en desktop -->
+        <div class="cta-bar">
         <div class="cta-price">
             <span class="lbl">Precio</span>
             <span class="val" id="cta-price">…</span>
+            <span class="currency-note" id="currency-note" hidden>Moneda no especificada</span>
         </div>
         <button class="cta-fav" id="cta-fav" aria-label="Guardar en favoritos" aria-pressed="false">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
         </button>
-        <a href="#" class="cta-contact" id="cta-whatsapp" target="_blank" rel="noopener noreferrer">
+        <a href="#" class="cta-contact" id="cta-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp sobre esta propiedad">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-            Contactar
+            Contactar por WhatsApp
         </a>
-    </div>
+        </div>
+
+    </main>
 
     <!-- Visor fullscreen accesible -->
     <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Visor de fotografías a pantalla completa">
@@ -539,7 +580,7 @@
            PROPERTY EXPERIENCE — lógica
            ================================================================ */
 
-        const FALLBACK_IMG = "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80";
+        const FALLBACK_IMG = "/icons/placeholder.svg";
 
         /* Escape de datos provenientes de D1 antes de inyectar en innerHTML.
            Todo contenido controlado por usuarios (título, ubicación, descripción)
@@ -565,9 +606,15 @@
             return `${m[1]}-w400.webp 400w, ${m[1]}-w800.webp 800w, ${m[1]}-w1200.webp 1200w`;
         }
 
-        const fmtPrice = (n) => new Intl.NumberFormat("en-US", {
-            style: "currency", currency: "USD", maximumFractionDigits: 0
-        }).format(n);
+        const fmtPrice = (n, currency) => {
+            // 04.6-E2-A: USD → US$10,500, EUR → €10,500, CUP → 10,500 CUP,
+            // NULL → número sin símbolo (moneda no especificada; nunca se asume USD).
+            const num = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n);
+            if (currency === "USD") return `US$${num}`;
+            if (currency === "EUR") return `€${num}`;
+            if (currency === "CUP") return `${num} CUP`;
+            return num;
+        };
 
         /* ---------- Favoritos (mismo sistema que Discovery) ---------- */
         function getFavs() {
@@ -651,7 +698,7 @@
                 p.area ? { val: p.area, lbl: "m² de área" } : null
             ].filter(Boolean);
             document.getElementById("key-facts").innerHTML = facts.map(f => `
-                <div class="key-fact"><span class="val">${f.val}</span><span class="lbl">${f.lbl}</span></div>
+                <div class="key-fact"><span class="val">${esc(f.val)}</span><span class="lbl">${f.lbl}</span></div>
             `).join("");
 
             // Descripción con disclosure si es larga
@@ -668,9 +715,29 @@
                 };
             }
 
+            // Características estructuradas (04.6-E2-B.1): solo valores
+            // explícitamente afirmativos (=1). NULL/0 → no se muestran.
+            // Jamás se infieren desde description.
+            const FEATURES = [
+                [p.agua_247, "Agua 24/7"],
+                [p.gas_calle, "Gas de la calle"],
+                [p.placa_libre, "Placa libre"],
+                [p.pago_exterior, "Acepta pago desde el exterior"],
+            ];
+            const present = FEATURES.filter(([v]) => v === 1 || v === true);
+            if (present.length > 0) {
+                const CHECK = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>`;
+                document.getElementById("features-list").innerHTML = present.map(([, label]) =>
+                    `<li><span class="feat-icon" aria-hidden="true">${CHECK}</span>${label}</li>`
+                ).join("");
+                document.getElementById("features-section").hidden = false;
+            }
+
             // Precio + CTA
-            document.getElementById("cta-price").textContent = `${fmtPrice(p.price)}`;
-            const phone = (config.whatsapp_phone || "+5350000000").replace("+", "");
+            document.getElementById("cta-price").textContent = `${fmtPrice(p.price, p.currency)}`;
+            // Sin moneda determinada → indicación honesta (nunca símbolo engañoso).
+            document.getElementById("currency-note").hidden = !!p.currency;
+            const phone = (config.whatsapp_phone || "+5358385702").replace("+", "");
             const msg = `Hola NEXO, me interesa la propiedad [${p.public_code || p.id}]: "${p.title}" en ${p.neighborhood}. Solicito más información. URL: ${location.href}`;
             document.getElementById("cta-whatsapp").href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
 
@@ -681,7 +748,7 @@
 
             // Share (Web Share API + fallback copiar)
             document.getElementById("btn-share").onclick = async () => {
-                const data = { title: p.title, text: `${p.title} — ${fmtPrice(p.price)} | NEXO`, url: location.href };
+                const data = { title: p.title, text: `${p.title} — ${fmtPrice(p.price, p.currency)} | NEXO`, url: location.href };
                 if (navigator.share) {
                     try { await navigator.share(data); } catch {}
                 } else {
@@ -707,20 +774,25 @@
                 });
             }
 
-            // Similares (misma zona u operación, datos reales)
+            // Similares (misma zona u operación)
             loadSimilar(p);
         }
 
         /* ---------- Galería hero (snap nativo + fullscreen) ---------- */
         function renderHero() {
             const track = document.getElementById("hero-track");
-            track.innerHTML = images.map((src, i) => `
+            track.innerHTML = images.map((raw, i) => {
+                // La URL se escapa ANTES de derivar el srcset: un '"' en la URL
+                // no puede romper el atributo srcset (defensa en profundidad).
+                const src = esc(raw);
+                return `
                 <div class="hero-slide">
-                    <img src="${esc(src)}" srcset="${responsiveSrcSet(src)}" sizes="100vw"
+                    <img src="${src}" srcset="${responsiveSrcSet(src)}" sizes="100vw"
                          alt="Fotografía ${i + 1} de la propiedad"
                          ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}
                          decoding="async" data-fallback-src="${FALLBACK_IMG}">
-                </div>`).join("");
+                </div>`;
+            }).join("");
 
             const counter = document.getElementById("hero-counter");
             counter.textContent = `1 / ${images.length}`;
@@ -803,7 +875,7 @@
             });
         });
 
-        /* ---------- Similares (datos reales) ---------- */
+        /* ---------- Similares ---------- */
         // Similares se calculan server-side: un solo request mínimo al endpoint,
         // en lugar de descargar todo el inventario y filtrar localmente.
         async function loadSimilar(p) {
@@ -815,15 +887,15 @@
 
                 document.getElementById("similar-section").hidden = false;
                 document.getElementById("similar-grid").innerHTML = similar.map(s => {
-                    const img = (s.images && s.images[0]) || FALLBACK_IMG;
+                    const img = esc((s.images && s.images[0]) || FALLBACK_IMG);
                     return `
                     <a href="/property.html?id=${encodeURIComponent(s.public_code || s.id)}" class="nx-card">
                         <div class="nx-card__media">
-                            <img src="${esc(img)}" srcset="${responsiveSrcSet(img)}" sizes="220px"
+                            <img src="${img}" srcset="${responsiveSrcSet(img)}" sizes="220px"
                                  alt="${esc(s.title)}" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_IMG}">
                         </div>
                         <div class="nx-card__body">
-                            <div class="nx-card__price" style="font-size: var(--text-body);">${fmtPrice(s.price)}</div>
+                            <div class="nx-card__price" style="font-size: var(--text-body);">${fmtPrice(s.price, s.currency)}</div>
                             <div class="nx-card__title">${esc(s.title)}</div>
                             <div class="nx-card__location">${esc(s.neighborhood)}, ${esc(s.city)}</div>
                         </div>

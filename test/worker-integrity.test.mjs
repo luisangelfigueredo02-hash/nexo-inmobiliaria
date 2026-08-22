@@ -43,6 +43,7 @@ function makeEnv() {
     const call = { sql, binds: [] };
     captured.push(call);
     return {
+      _sql: sql,
       bind(...args) { call.binds = args; return this; },
       async all() { return { results: [...ROWS] }; },
       async first() {
@@ -60,7 +61,20 @@ function makeEnv() {
   };
   return {
     ADMIN_TOKEN: "secreto-test",
-    DB: { prepare: (sql) => statement(sql) },
+    DB: {
+      prepare: (sql) => statement(sql),
+      // Path primario del alta admin (04.4.1): UPDATE listing_id_sequence
+      // + INSERT ... RETURNING en batch. Los binds del INSERT son solo
+      // `values` (sin prefijo `attempt`, exclusivo del path fallback).
+      async batch(stmts) {
+        const out = [];
+        for (const st of stmts) {
+          if (/RETURNING/i.test(st._sql)) out.push({ results: [await st.first()] });
+          else { await st.run(); out.push({ results: [] }); }
+        }
+        return out;
+      }
+    },
     AI: { async run() { return { response: "respuesta-ia" }; } },
     __captured: captured
   };

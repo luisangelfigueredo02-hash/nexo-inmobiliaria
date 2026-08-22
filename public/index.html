@@ -2,12 +2,17 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
     <title>NEXO — Descubre tu próximo hogar en Cuba</title>
-    <meta name="description" content="Descubre casas, apartamentos y terrenos en Cuba. Búsqueda inteligente, mapa interactivo y fotografía real.">
+    <meta name="description" content="Descubre casas, apartamentos y terrenos en Cuba. Búsqueda inteligente, mapa interactivo y contacto directo por WhatsApp.">
     <link rel="stylesheet" href="/variables.css">
     <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta name="theme-color" content="#faf9f7">
+    <!-- Preconnect: el mapa (map-mode) carga Leaflet + tiles desde estos orígenes -->
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin>
 
     <script>
         window.__SENTRY_DSN = "";
@@ -23,8 +28,6 @@
             }).catch(function () {});
         }, true);
     </script>
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
     <style>
         body { padding-bottom: calc(96px + var(--safe-bottom)); }
@@ -103,7 +106,7 @@
             display: inline-flex;
             align-items: center;
             gap: var(--space-1);
-            min-height: 36px;
+            min-height: var(--touch-target);
             padding: var(--space-1) var(--space-3);
             border-radius: var(--radius-full);
             border: 1px solid var(--color-border);
@@ -154,7 +157,7 @@
             padding: var(--space-1) var(--space-3);
             font-size: var(--text-label);
             color: var(--color-ink-secondary);
-            min-height: 36px;
+            min-height: var(--touch-target);
             cursor: pointer;
         }
 
@@ -178,7 +181,7 @@
             box-shadow: var(--shadow-2);
         }
         .toggle-group button {
-            min-height: 36px;
+            min-height: var(--touch-target);
             padding: 0 var(--space-4);
             border-radius: var(--radius-full);
             font-size: var(--text-label);
@@ -194,7 +197,7 @@
             margin: 0 auto;
             padding: var(--space-4);
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
             gap: var(--space-4);
         }
 
@@ -366,13 +369,12 @@
         <a href="/" class="nx-logo">NE<em>X</em>O</a>
         <nav style="display:flex; gap: var(--space-4); align-items:center;">
             <a href="/comparar/index.html" class="nx-btn nx-btn--tertiary" style="min-height:0; padding: var(--space-2) var(--space-3);">Comparar</a>
-            <a href="/admin.html" class="nx-btn nx-btn--tertiary" style="min-height:0; padding: var(--space-2) var(--space-3);">Gestión</a>
         </nav>
     </header>
 
     <section class="discovery-hero" aria-labelledby="hero-title">
         <h1 id="hero-title">Encuentra tu próximo lugar.</h1>
-        <p class="sub">Casas, apartamentos y terrenos en Cuba — con datos reales.</p>
+        <p class="sub">Casas, apartamentos y terrenos en Cuba.</p>
 
         <form class="search-bar" id="search-form" role="search">
             <label class="sr-only" for="search-input">Buscar propiedades</label>
@@ -417,8 +419,8 @@
     </div>
 
     <div class="filters-advanced" id="filters-advanced">
-        <label class="sr-only" for="filter-price">Precio máximo USD</label>
-        <input type="number" class="nx-input" id="filter-price" placeholder="Precio máx. USD" inputmode="numeric" min="0" aria-label="Precio máximo en USD" style="max-width:180px;">
+        <label class="sr-only" for="filter-price">Precio máximo</label>
+        <input type="number" class="nx-input" id="filter-price" placeholder="Precio máx." inputmode="numeric" min="0" aria-label="Precio máximo" style="max-width:180px;">
         <label class="sr-only" for="filter-bedrooms">Habitaciones mínimas</label>
         <select class="nx-select" id="filter-bedrooms" aria-label="Habitaciones mínimas">
             <option value="">Habitaciones</option>
@@ -464,7 +466,7 @@
 
     <button type="button" class="ai-fab" id="ai-fab" aria-expanded="false" aria-controls="chat-drawer" data-action="open-chat">✨ NEXO IA</button>
 
-    <div class="chat-drawer" id="chat-drawer" role="dialog" aria-label="Asistente NEXO IA" aria-hidden="true">
+    <div class="chat-drawer" id="chat-drawer" role="dialog" aria-modal="true" aria-label="Asistente NEXO IA" aria-hidden="true">
         <div class="chat-header">
             <div class="chat-title">✨ NEXO IA — Asistente Inteligente</div>
             <button class="nx-btn nx-btn--tertiary" style="min-height:0; font-size:20px;" data-action="close-chat" aria-label="Cerrar chat">×</button>
@@ -482,10 +484,16 @@
         let allProperties = [];
         let visibleProperties = [];
         let map = null;
+        let activeQuery = "";
         let markers = {};
         let leafletPromise = null;
 
-        const FALLBACK_IMG = "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80";
+        const FALLBACK_IMG = "/icons/placeholder.svg";
+
+        // Escape de datos de origen D1/LLM antes de interpolar en innerHTML
+        function esc(s) {
+            return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        }
 
         function responsiveSrcSet(url) {
             const m = url && url.match(/^(\/media\/.+)\.(jpe?g|png)$/i);
@@ -507,6 +515,20 @@
             }
         }
         let favsMemoryFallback = null;
+
+        // Config de mercado desde /api/config (MARKET CONFIG, 04.7-B):
+        // teléfono WhatsApp + centro/zoom de mapa. Fallbacks = mercado inicial.
+        let whatsappPhone = "+5358385702";
+        const MARKET = { mapCenter: [23.1136, -82.3666], mapZoom: 12 };
+        fetch("/api/config")
+            .then(r => r.ok ? r.json() : null)
+            .then(c => {
+                if (!c) return;
+                if (c.whatsapp_phone) whatsappPhone = c.whatsapp_phone;
+                if (Array.isArray(c.map_center) && c.map_center.length === 2) MARKET.mapCenter = c.map_center;
+                if (c.map_zoom) MARKET.mapZoom = c.map_zoom;
+            })
+            .catch(() => { /* fallback estático */ });
 
         // Persistencia de favoritos: intenta localStorage; si está bloqueado
         // (SecurityError) o lleno (QuotaExceededError), usa memoria como fallback
@@ -535,30 +557,57 @@
             if (btn) btn.setAttribute("aria-pressed", String(i === -1));
         }
 
-        const fmtPrice = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
-        const compactPrice = (n) => n >= 1e6 ? `$${(n/1e6).toFixed(1)}M` : n >= 1e3 ? `$${Math.round(n/1e3)}k` : `$${n}`;
+        // Formato de precio currency-aware (04.6-E2-A): USD → US$10,500,
+        // EUR → €10,500, CUP → 10,500 CUP, NULL → número sin símbolo
+        // (moneda no especificada; jamás se asume USD).
+        const fmtPrice = (n, currency) => {
+            const num = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n);
+            if (currency === "USD") return `US$${num}`;
+            if (currency === "EUR") return `€${num}`;
+            if (currency === "CUP") return `${num} CUP`;
+            return num;
+        };
+        const compactPrice = (n, currency) => {
+            const num = n >= 1e6 ? `${(n/1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n/1e3)}k` : `${esc(n)}`;
+            if (currency === "USD") return `$${num}`;
+            if (currency === "EUR") return `€${num}`;
+            if (currency === "CUP") return `${num} CUP`;
+            return num; // moneda no especificada → sin símbolo
+        };
 
         /* Parser de búsqueda en lenguaje natural → filtros de la API existente */
         function parseQuery(text) {
-            const t = text.toLowerCase();
+            // t con padding para que \b funcione en los bordes; cada filtro
+            // reconocido se consume del texto para que el resto quede como q.
+            let t = ` ${text.toLowerCase()} `;
             const out = { filters: {} };
-            if (/\b(terreno|lote|solar)\b/.test(t)) out.filters.type = "terreno";
-            else if (/\bpenthouse|ático|atico\b/.test(t)) out.filters.type = "penthouse";
-            else if (/\b(apartamento|apto|departamento|depto)\b/.test(t)) out.filters.type = "apartamento";
-            else if (/\bcasa\b/.test(t)) out.filters.type = "casa";
-            if (/\b(alquiler|alquilar|renta|rentar)\b/.test(t)) out.filters.operation = "alquiler";
-            else if (/\b(venta|comprar|compra|vendo)\b/.test(t)) out.filters.operation = "venta";
+            const consume = (s) => { t = t.replace(s, " "); };
+            const mType = t.match(/\b(terreno|lote|solar)\b|\b(penthouse|ático|atico)\b|\b(apartamento|apto|departamento|depto)\b|\b(casa)\b/);
+            if (mType) {
+                out.filters.type = mType[1] ? "terreno" : mType[2] ? "penthouse" : mType[3] ? "apartamento" : "casa";
+                consume(mType[0]);
+            }
+            const mOp = t.match(/\b(alquiler|alquilar|renta|rentar)\b|\b(venta|comprar|compra|vendo)\b/);
+            if (mOp) { out.filters.operation = mOp[1] ? "alquiler" : "venta"; consume(mOp[0]); }
             const hab = t.match(/(\d+)\s*(habitaciones|hab|cuartos|dormitorios)/);
-            if (hab) out.filters.bedrooms = hab[1];
+            if (hab) { out.filters.bedrooms = hab[1]; consume(hab[0]); }
             const price = t.match(/(?:menos de|hasta|máximo|max|debajo de)\s*\$?(\d[\d.,]*)(k|mil)?/);
             if (price) {
                 let n = parseFloat(price[1].replace(/[.,]/g, ""));
                 if (price[2]) n *= 1000;
                 if (n > 0) out.filters.maxPrice = n;
+                consume(price[0]);
             }
-            ["la habana", "habana", "matanzas", "cienfuegos"].forEach(p => {
-                if (t.includes(p)) out.filters.province = p === "habana" ? "La Habana" : p.charAt(0).toUpperCase() + p.slice(1);
-            });
+            const PROVINCES = { "la habana": "La Habana", "habana": "La Habana", "matanzas": "Matanzas", "cienfuegos": "Cienfuegos" };
+            for (const key of Object.keys(PROVINCES)) {
+                if (t.includes(key)) { out.filters.province = PROVINCES[key]; consume(key); break; }
+            }
+            // Texto no reconocido como filtro estructurado (barrio, zona,
+            // municipio): va como búsqueda textual q contra el backend.
+            const rest = t
+                .replace(/\b(con|de|del|la|el|en|y|a|al|un|una|por|para|que|tenga)\b/g, " ")
+                .replace(/\s+/g, " ").trim();
+            if (rest.length >= 3) out.filters.q = rest;
             return out;
         }
 
@@ -583,11 +632,18 @@
 
         function showState(type) {
             const inv = document.getElementById("inventory");
+            // CTA de demanda: si no hay inventario que mostrar, capturar la intención
+            const waPhone = whatsappPhone.replace("+", "");
+            const demandHref = `https://wa.me/${waPhone}?text=${encodeURIComponent(
+                "Hola NEXO, busco una propiedad y no la encontré en el catálogo. ¿Pueden ayudarme?")}`;
             const states = {
                 empty: `<div class="nx-state" style="grid-column:1/-1;">
                     <h2>Sin resultados con estos filtros</h2>
                     <p>Prueba ampliando la zona, quitando algún filtro o ajustando el presupuesto máximo.</p>
-                    <button class="nx-btn nx-btn--secondary" data-action="clear-filters">Limpiar filtros</button>
+                    <div style="display:flex; gap: var(--space-3); flex-wrap:wrap; justify-content:center;">
+                        <button class="nx-btn nx-btn--secondary" data-action="clear-filters">Limpiar filtros</button>
+                        <a class="nx-btn nx-btn--tertiary" href="${demandHref}" target="_blank" rel="noopener noreferrer">Cuéntanos qué buscas</a>
+                    </div>
                 </div>`,
                 error: `<div class="nx-state" style="grid-column:1/-1;">
                     <h2>No pudimos cargar el inventario</h2>
@@ -612,7 +668,8 @@
                 operation: document.getElementById("filter-operation").value,
                 province: document.getElementById("filter-province").value,
                 maxPrice: document.getElementById("filter-price").value,
-                bedrooms: document.getElementById("filter-bedrooms").value
+                bedrooms: document.getElementById("filter-bedrooms").value,
+                q: activeQuery
             };
         }
 
@@ -623,6 +680,7 @@
             if (f.province) p.set("province", f.province);
             if (f.maxPrice) p.set("maxPrice", f.maxPrice);
             if (f.bedrooms) p.set("bedrooms", f.bedrooms);
+            if (f.q) p.set("q", f.q);
             return "/api/properties?" + p.toString();
         }
 
@@ -646,6 +704,7 @@
 
         async function runSearch(text) {
             const parsed = parseQuery(text);
+            activeQuery = parsed.filters.q || "";
             const filters = { ...activeFilters(), ...parsed.filters };
             reflectFilters(filters);
             await loadProperties(filters);
@@ -678,25 +737,28 @@
             count.innerHTML = `<strong>${visibleProperties.length}</strong> propiedad${visibleProperties.length !== 1 ? "es" : ""} encontrada${visibleProperties.length !== 1 ? "s" : ""}`;
             const favs = getFavs();
             inv.innerHTML = visibleProperties.map(p => {
-                const img = (p.images && p.images[0]) || FALLBACK_IMG;
+                const img = esc((p.images && p.images[0]) || FALLBACK_IMG);
+                const href = `/property.html?id=${encodeURIComponent(p.public_code || p.id)}`;
                 return `
-                <a href="/property.html?id=${p.public_code || p.id}" class="nx-card" data-prop-id="${p.id}">
+                <article class="nx-card" data-prop-id="${esc(p.id)}">
                     <div class="nx-card__media">
-                        <span class="nx-card__badge">${p.operation}</span>
+                        <span class="nx-card__badge">${esc(p.operation)}</span>
                         <img src="${img}" srcset="${responsiveSrcSet(img)}" sizes="(max-width: 600px) 100vw, 340px"
-                             alt="${p.title}" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_IMG}">
+                             alt="${esc(p.title)}" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_IMG}">
                     </div>
                     <div class="nx-card__body">
-                        <div class="nx-card__price">${fmtPrice(p.price)}</div>
-                        <div class="nx-card__title">${p.title}</div>
-                        <div class="nx-card__location">${p.neighborhood}, ${p.city}</div>
+                        <div class="nx-card__price">${fmtPrice(p.price, p.currency)}</div>
+                        <div class="nx-card__title">
+                            <a href="${href}" class="nx-card__link">${esc(p.title)}</a>
+                        </div>
+                        <div class="nx-card__location">${esc(p.neighborhood)}, ${esc(p.city)}</div>
                         <div class="nx-card__specs">
-                            <span><span class="sr-only">Habitaciones: </span>${p.bedrooms} hab</span>
-                            <span><span class="sr-only">Baños: </span>${p.bathrooms} baños</span>
-                            ${p.area ? `<span><span class="sr-only">Área: </span>${p.area} m²</span>` : ""}
+                            <span><span class="sr-only">Habitaciones: </span>${esc(p.bedrooms)} hab</span>
+                            <span><span class="sr-only">Baños: </span>${esc(p.bathrooms)} baños</span>
+                            ${p.area ? `<span><span class="sr-only">Área: </span>${esc(p.area)} m²</span>` : ""}
                         </div>
                     </div>
-                </a>`;
+                </article>`;
             }).join("");
             inv.querySelectorAll(".nx-card").forEach(card => {
                 const id = card.dataset.propId;
@@ -714,6 +776,7 @@
         function clearFilters() {
             ["filter-type","filter-operation","filter-province","filter-price","filter-bedrooms"].forEach(id => document.getElementById(id).value = "");
             document.getElementById("search-input").value = "";
+            activeQuery = "";
             updateChipLabels();
             loadProperties();
         }
@@ -721,6 +784,14 @@
         function loadLeafletOnce() {
             if (leafletPromise) return leafletPromise;
             leafletPromise = new Promise((resolve, reject) => {
+                // CSS inyectado aquí (no eager en <head>): el mapa está oculto
+                // por defecto y no debe bloquear el render de la vista de lista.
+                const link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+                link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+                link.crossOrigin = "";
+                document.head.appendChild(link);
                 const s = document.createElement("script");
                 s.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
                 s.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
@@ -734,7 +805,7 @@
 
         function initMap() {
             if (map) return;
-            map = L.map("discovery-map", { scrollWheelZoom: true }).setView([23.1136, -82.3666], 12);
+            map = L.map("discovery-map", { scrollWheelZoom: true }).setView(MARKET.mapCenter, MARKET.mapZoom);
             L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
         }
 
@@ -748,7 +819,7 @@
                 if (!lat || !lng) return;
                 const icon = L.divIcon({
                     className: "",
-                    html: `<div class="nx-price-marker" data-marker-id="${p.id}">${compactPrice(p.price)}</div>`,
+                    html: `<div class="nx-price-marker" data-marker-id="${esc(p.id)}">${compactPrice(p.price, p.currency)}</div>`,
                     iconSize: [64, 32],
                     iconAnchor: [32, 16]
                 });
@@ -766,15 +837,15 @@
 
         function openSheet(p) {
             selectMarker(p.id);
-            const img = (p.images && p.images[0]) || FALLBACK_IMG;
+            const img = esc((p.images && p.images[0]) || FALLBACK_IMG);
             document.getElementById("sheet-content").innerHTML = `
-                <img src="${img}" alt="${p.title}" data-fallback-src="${FALLBACK_IMG}">
+                <img src="${img}" alt="${esc(p.title)}" data-fallback-src="${FALLBACK_IMG}">
                 <div class="sheet-info">
-                    <div class="price">${fmtPrice(p.price)}</div>
-                    <div class="title">${p.title}</div>
-                    <div class="loc">${p.neighborhood}, ${p.city}</div>
+                    <div class="price">${fmtPrice(p.price, p.currency)}</div>
+                    <div class="title">${esc(p.title)}</div>
+                    <div class="loc">${esc(p.neighborhood)}, ${esc(p.city)}</div>
                     <div class="sheet-actions">
-                        <a class="nx-btn nx-btn--primary" style="min-height:36px; padding: 0 var(--space-4); font-size: var(--text-label);" href="/property.html?id=${p.public_code || p.id}">Ver propiedad</a>
+                        <a class="nx-btn nx-btn--primary" style="min-height:var(--touch-target); padding: 0 var(--space-4); font-size: var(--text-label);" href="/property.html?id=${encodeURIComponent(p.public_code || p.id)}">Ver propiedad</a>
                     </div>
                 </div>`;
             const sheet = document.getElementById("property-sheet");
@@ -849,13 +920,44 @@
         window.addEventListener("offline", () => showOverlay("Sin conexión", "Revisa tu conexión y reintenta."));
         window.addEventListener("online", () => { hideOverlay(); loadProperties(); });
 
+        /* ---------- Chat drawer accesible (WCAG 2.2 — dialog modal) ----------
+           Focus trap + Escape + restauración del foco al disparador. */
+        let chatTrigger = null;
+
+        function chatFocusables(drawer) {
+            return [...drawer.querySelectorAll(
+                'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )].filter(el => el.offsetParent !== null || el === document.activeElement);
+        }
+
         function toggleChat(show) {
             const d = document.getElementById("chat-drawer");
             d.classList.toggle("open", show);
             document.getElementById("ai-fab").setAttribute("aria-expanded", String(show));
             d.setAttribute("aria-hidden", String(!show));
-            if (show) document.getElementById("chat-input").focus();
+            if (show) {
+                chatTrigger = document.activeElement;
+                document.getElementById("chat-input").focus();
+            } else if (chatTrigger && document.contains(chatTrigger)) {
+                chatTrigger.focus();
+                chatTrigger = null;
+            }
         }
+
+        document.getElementById("chat-drawer").addEventListener("keydown", e => {
+            if (e.key === "Escape") { toggleChat(false); return; }
+            if (e.key !== "Tab") return;
+            const drawer = e.currentTarget;
+            const focusables = chatFocusables(drawer);
+            if (focusables.length === 0) return;
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault(); last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault(); first.focus();
+            }
+        });
 
         async function sendChatMessage() {
             const input = document.getElementById("chat-input");
@@ -877,8 +979,10 @@
                 typing.remove();
                 const bm = document.createElement("div");
                 bm.className = "msg bot";
-                let html = (data.response || "").replace(/\n/g, "<br>");
-                html = html.replace(/\[(N-\d{3}|\d+)\]/g, (m, id) => `<br><a href="/property.html?id=${id}" class="chat-property-link">Ver propiedad ${id} ↗</a>`);
+                // Escapar el texto del LLM antes de interpolar: solo se
+                // reintroducen <br> y el enlace generado con id saneado.
+                let html = esc(data.response || "").replace(/\n/g, "<br>");
+                html = html.replace(/\[(N-\d{3}|\d+)\]/g, (m, id) => `<br><a href="/property.html?id=${encodeURIComponent(id)}" class="chat-property-link">Ver propiedad ${id} ↗</a>`);
                 bm.innerHTML = html;
                 box.appendChild(bm);
             } catch (e) {
@@ -902,7 +1006,8 @@
                 operation: p.get("operation") || "",
                 province: p.get("province") || "",
                 maxPrice: p.get("maxPrice") || "",
-                bedrooms: p.get("bedrooms") || ""
+                bedrooms: p.get("bedrooms") || "",
+                q: p.get("q") || ""
             };
         }
 
@@ -913,6 +1018,7 @@
             if (f.province) p.set("province", f.province);
             if (f.maxPrice) p.set("maxPrice", f.maxPrice);
             if (f.bedrooms) p.set("bedrooms", f.bedrooms);
+            if (f.q) p.set("q", f.q);
             const qs = p.toString();
             history.replaceState(null, "", qs ? "?" + qs : location.pathname);
         }
@@ -927,6 +1033,7 @@
                 document.getElementById("filter-province").value = f.province;
                 document.getElementById("filter-price").value = f.maxPrice;
                 document.getElementById("filter-bedrooms").value = f.bedrooms;
+                if (f.q) { activeQuery = f.q; document.getElementById("search-input").value = f.q; }
                 updateChipLabels();
             }
             loadProperties();

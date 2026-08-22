@@ -97,7 +97,9 @@ function normalizeCoord(value) {
   const n = parseFloat(value);
   return isNaN(n) ? null : n;
 }
-var CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-1khKeq5K/ew7TSjC3cL0XDcBJJ2B7AM2KhOdz++J2qo=' 'sha256-9qbTwzNJeXkhqo1wYO6aj4N3cQ1Q6rOKjL20Fl2SiXc=' 'sha256-SJ1RHO+1ytvWaxwjB9jFO6KC+9tL3WaOvEFUtBrryr4=' 'sha256-a8MZi3UWgS8zY2bwXTUyY9uKCG1TvSSYPk1Y2yoWPgg=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-eh10Ggz5IxwLgYMFovKU0FL0ULi31D0uMj/MkmQCOz0=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-s6QrhcaEMu+35KUHHRKAAkkxu3qyjS0Z2XvGJ36C+aE='";
+// === GENERATED CSP-SCRIPT-SRC:BEGIN (scripts/generate-csp-hashes.mjs, no editar a mano) ===
+const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-1khKeq5K/ew7TSjC3cL0XDcBJJ2B7AM2KhOdz++J2qo=' 'sha256-9qbTwzNJeXkhqo1wYO6aj4N3cQ1Q6rOKjL20Fl2SiXc=' 'sha256-SJ1RHO+1ytvWaxwjB9jFO6KC+9tL3WaOvEFUtBrryr4=' 'sha256-a8MZi3UWgS8zY2bwXTUyY9uKCG1TvSSYPk1Y2yoWPgg=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-eh10Ggz5IxwLgYMFovKU0FL0ULi31D0uMj/MkmQCOz0=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-s6QrhcaEMu+35KUHHRKAAkkxu3qyjS0Z2XvGJ36C+aE='";
+// === GENERATED CSP-SCRIPT-SRC:END ===
 var CSP_POLICY = [
   "default-src 'self'",
   `script-src ${CSP_SCRIPT_SRC}`,
@@ -473,7 +475,7 @@ ${urls}
         }
         query += " ORDER BY created_at DESC";
         const { results } = await env.DB.prepare(query).bind(...params).all();
-        const formatted = results.map((row) => serializeProperty(row));
+        const formatted = results.map((row) => serializeProperty(row, "public"));
         return new Response(JSON.stringify(formatted), {
           headers: { "Content-Type": "application/json", ...corsHeaders }
         });
@@ -505,7 +507,7 @@ ${urls}
           ).bind(row.id, row.province, minPrice, maxPrice).all();
           results = provRes.results;
         }
-        const formatted = results.map((r) => serializeProperty(r));
+        const formatted = results.map((r) => serializeProperty(r, "public"));
         return new Response(JSON.stringify(formatted), { headers: { "Content-Type": "application/json", ...corsHeaders } });
       } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
@@ -527,7 +529,7 @@ ${urls}
             headers: { "Content-Type": "application/json", ...corsHeaders }
           });
         }
-        const formatted = serializeProperty(row);
+        const formatted = serializeProperty(row, "public");
         return new Response(JSON.stringify(formatted), {
           headers: { "Content-Type": "application/json", ...corsHeaders }
         });
@@ -566,7 +568,7 @@ ${urls}
         const { results } = await env.DB.prepare(
           "SELECT id, public_code, title, type, operation, price, currency, province, city, neighborhood, address, bedrooms, bathrooms, area, description, images, latitude, longitude, status, owner_name, owner_phone, internal_notes, created_at FROM properties ORDER BY created_at DESC"
         ).all();
-        const formatted = results.map((row) => serializeProperty(row));
+        const formatted = results.map((row) => serializeProperty(row, "admin"));
         return new Response(JSON.stringify(formatted), {
           headers: { "Content-Type": "application/json", ...corsHeaders }
         });
@@ -844,7 +846,7 @@ ${urls}
               const { results } = await env.DB.prepare(
                 `SELECT id, public_code, title, type, operation, price, currency, province, city, neighborhood, bedrooms, bathrooms, area, description, images, placa_libre, gas_calle, agua_247, pago_exterior FROM properties WHERE public_code IN (${placeholders}) AND status = 'published'`
               ).bind(...matchedIds).all();
-              matchedProperties = results.map((row) => serializeProperty(row));
+              matchedProperties = results.map((row) => serializeProperty(row, "public"));
             }
           } catch (aiErr) {
             console.error("Falla en contexto vectorial, usando fallback de texto:", aiErr);
@@ -854,7 +856,7 @@ ${urls}
           const { results } = await env.DB.prepare(
             "SELECT id, public_code, title, type, operation, price, currency, province, city, neighborhood, bedrooms, bathrooms, area, description, images, placa_libre, gas_calle, agua_247, pago_exterior FROM properties WHERE status = 'published' LIMIT 3"
           ).all();
-          matchedProperties = results.map((row) => serializeProperty(row));
+          matchedProperties = results.map((row) => serializeProperty(row, "public"));
         }
         const contextString = matchedProperties.map(
           (p) => `ID: ${p.public_code}

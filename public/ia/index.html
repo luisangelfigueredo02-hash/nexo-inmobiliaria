@@ -2,9 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
     <title>NEXO IA — Tu Asesor Inmobiliario Inteligente</title>
-    
+    <meta name="description" content="Pregunta a NEXO IA qué hogar buscas y recibe recomendaciones reales del catálogo: precio, ubicación y características verificadas.">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="theme-color" content="#faf9f7">
+
     <!-- Enlace al sistema de diseño global -->
     <link rel="stylesheet" href="/variables.css">
     
@@ -53,6 +58,9 @@
             color: var(--text-secondary);
             padding: var(--space-2) var(--space-3);
             border-radius: var(--radius-sm);
+            display: inline-flex;
+            align-items: center;
+            min-height: var(--touch-target);
         }
 
         nav a:hover, nav a.active {
@@ -68,6 +76,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            min-height: 100dvh;
         }
 
         /* Pantalla de Introducción Minimalista (Siri/Linear Style) */
@@ -213,7 +222,7 @@
         /* Sub-grilla para inyectar propiedades recomendadas dentro del chat */
         .ai-recommendations {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
             gap: var(--space-4);
             width: 100%;
             margin-top: var(--space-3);
@@ -245,10 +254,12 @@
             40% { transform: scale(1); }
         }
 
-        /* Barra de Entrada de Mensajes Flotante (Apple Intelligence Style) */
+        /* Barra de Entrada de Mensajes Flotante (Apple Intelligence Style)
+           Con interactive-widget=resizes-content, bottom se ancla al viewport
+           visual: el teclado virtual nunca cubre el input. */
         .input-wrapper {
             position: fixed;
-            bottom: var(--space-5);
+            bottom: calc(var(--space-5) + var(--safe-bottom-mobile, 0px));
             left: 50%;
             transform: translateX(-50%);
             width: calc(100% - var(--space-5));
@@ -350,7 +361,6 @@
             <a href="/mapa/index.html">Mapa</a>
             <a href="/comparar/index.html">Comparar</a>
             <a href="/ia/index.html" class="active">Chat IA</a>
-            <a href="/admin.html" style="border: 1px solid var(--border-default);">Admin</a>
         </nav>
     </header>
 
@@ -383,7 +393,7 @@
     <!-- Barra de Entrada Flotante -->
     <footer class="input-wrapper">
         <form class="input-bar" id="chat-form">
-            <input type="text" id="chat-input" placeholder="Pregunta a NEXO IA..." autocomplete="off">
+            <input type="text" id="chat-input" placeholder="Pregunta a NEXO IA..." autocomplete="off" aria-label="Escribe tu pregunta para NEXO IA">
             <button type="submit" class="send-btn" aria-label="Enviar mensaje">
                 <svg viewBox="0 0 24 24">
                     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
@@ -398,6 +408,18 @@
         const welcomeScreen = document.getElementById('welcome-screen');
         const chatForm = document.getElementById('chat-form');
         const chatInput = document.getElementById('chat-input');
+        const FALLBACK_IMG = "/icons/placeholder.svg";
+
+        // Escape de datos provenientes de la API antes de inyectar en innerHTML
+        const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g,
+            c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+        // srcset responsive: solo para rutas /media/* (R2) con variantes -wXXX.webp
+        function responsiveSrcSet(url) {
+            const m = url && url.match(/^(\/media\/.+)\.(jpe?g|png)$/i);
+            if (!m) return "";
+            return `${m[1]}-w400.webp 400w, ${m[1]}-w800.webp 800w, ${m[1]}-w1200.webp 1200w`;
+        }
 
         // Enviar consulta sugerida desde las píldoras
         function sendSuggestedQuery(queryText) {
@@ -439,7 +461,7 @@
                 const data = await response.json();
                 
                 // 3. Renderizar la respuesta conversacional de la IA
-                appendMessage('ai', data.reply || 'Aquí tienes las mejores opciones de NEXO para ti.');
+                appendMessage('ai', data.response || data.reply || 'Aquí tienes las mejores opciones de NEXO para ti.');
 
                 // 4. Si la IA recomendó propiedades específicas, inyectar el grid de propiedades directamente
                 if (data.properties && data.properties.length > 0) {
@@ -467,10 +489,14 @@
                 </div>
             ` : '';
 
-            bubble.innerHTML = `
-                ${avatarHtml}
-                <div class="bubble-text">${text}</div>
-            `;
+            bubble.innerHTML = avatarHtml;
+
+            // textContent: el texto del usuario y la salida del modelo jamás
+            // se interpretan como HTML (anti-XSS en la superficie de chat)
+            const textDiv = document.createElement('div');
+            textDiv.className = 'bubble-text';
+            textDiv.textContent = text;
+            bubble.appendChild(textDiv);
 
             chatContainer.appendChild(bubble);
             scrollToBottom();
@@ -513,32 +539,47 @@
             const grid = document.createElement('div');
             grid.className = 'ai-recommendations';
 
+            const fmtPrice = (n, currency) => {
+            // 04.6-E2-A: USD → US$, EUR → €, CUP → sufijo CUP, NULL → sin símbolo.
+            const num = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(n);
+            if (currency === 'USD') return `US$${num}`;
+            if (currency === 'EUR') return `€${num}`;
+            if (currency === 'CUP') return `${num} CUP`;
+            return num;
+        };
+
             properties.forEach(property => {
                 const card = document.createElement('article');
                 card.className = 'property-card';
 
-                const formattedPrice = new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                    maximumFractionDigits: 0
-                }).format(property.price);
+                const formattedPrice = fmtPrice(property.price, property.currency);
+
+                // Campos reales del contrato público de la API (04.5)
+                const cardImg = escapeHtml((property.images && property.images[0]) || FALLBACK_IMG);
+                const cardTitle = escapeHtml(property.title);
+                const cardLocation = escapeHtml(
+                    [property.neighborhood, property.city].filter(Boolean).join(', ')
+                    || 'Ubicación no disponible');
+                const cardOperation = escapeHtml(
+                    (property.operation || 'venta').replace(/^./, c => c.toUpperCase()));
+                const canonicalId = encodeURIComponent(property.public_code || property.id);
 
                 card.innerHTML = `
                     <div class="image-container" style="aspect-ratio: 16/10;">
-                        <span class="badge" style="font-size: 10px; padding: 2px 6px;">${property.type_transaction || 'Venta'}</span>
-                        <img src="${property.image_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=600&q=80'}" alt="${property.title}" loading="lazy">
+                        <span class="badge" style="font-size: 10px; padding: 2px 6px;">${cardOperation}</span>
+                        <img src="${cardImg}" srcset="${responsiveSrcSet(cardImg)}" sizes="(max-width: 600px) 100vw, 300px" alt="${cardTitle}" loading="lazy" decoding="async">
                     </div>
                     <div class="details-container" style="padding: var(--space-3); gap: 4px;">
                         <div class="price" style="font-size: var(--text-base);">${formattedPrice}</div>
-                        <h4 class="title" style="font-size: var(--text-sm);">${property.title}</h4>
-                        <div class="location" style="font-size: var(--text-xs);">${property.location || 'Ubicación no disponible'}</div>
+                        <h4 class="title" style="font-size: var(--text-sm);">${cardTitle}</h4>
+                        <div class="location" style="font-size: var(--text-xs);">${cardLocation}</div>
                     </div>
                 `;
 
                 // Clic directo a la propiedad desde el chat de IA
                 card.style.cursor = 'pointer';
                 card.addEventListener('click', () => {
-                    window.location.href = `/property.html?id=${property.id}`;
+                    window.location.href = `/property.html?id=${canonicalId}`;
                 });
 
                 grid.appendChild(card);

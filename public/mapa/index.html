@@ -4,10 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Mapa Interactivo de Propiedades — NEXO</title>
-    
+    <meta name="description" content="Explora casas, apartamentos y terrenos en un mapa interactivo. Ubicación, precio y detalles de cada propiedad en NEXO.">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="theme-color" content="#faf9f7">
+
+    <!-- Preconnect a terceros del mapa: reduce latencia TLS/DNS al iniciar -->
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+
     <!-- Enlace al sistema de diseño global -->
     <link rel="stylesheet" href="/variables.css">
-    
+
     <!-- Estilos de Leaflet para el mapa -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     
@@ -56,6 +65,9 @@
             color: var(--text-secondary);
             padding: var(--space-2) var(--space-3);
             border-radius: var(--radius-sm);
+            display: inline-flex;
+            align-items: center;
+            min-height: var(--touch-target);
         }
 
         nav a:hover, nav a.active {
@@ -117,7 +129,7 @@
         /* Contenedor de tarjetas scrollables */
         .list-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
             gap: var(--space-4);
         }
 
@@ -256,7 +268,6 @@
             <a href="/mapa/index.html" class="active">Mapa</a>
             <a href="/comparar/index.html">Comparar</a>
             <a href="/ia/index.html">Chat IA</a>
-            <a href="/admin.html" style="border: 1px solid var(--border-default);">Admin</a>
         </nav>
     </header>
 
@@ -302,8 +313,31 @@
         let globalProperties = [];
         let markersGroup = [];
         const API_ENDPOINT = '/api/properties';
+        const FALLBACK_IMG = "/icons/placeholder.svg";
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // Escape de datos provenientes de la API antes de inyectar en innerHTML
+        const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g,
+            c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+        // srcset responsive: solo para rutas /media/* (R2) con variantes -wXXX.webp
+        function responsiveSrcSet(url) {
+            const m = url && url.match(/^(\/media\/.+)\.(jpe?g|png)$/i);
+            if (!m) return "";
+            return `${m[1]}-w400.webp 400w, ${m[1]}-w800.webp 800w, ${m[1]}-w1200.webp 1200w`;
+        }
+
+        // Centro/zoom del mapa desde /api/config (MARKET CONFIG, 04.7-B).
+        // Fallback = mercado inicial (La Habana). Se hidrata antes de init.
+        const MARKET = { mapCenter: [23.1136, -82.3666], mapZoom: 12 };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const cfg = await fetch('/api/config').then(r => r.ok ? r.json() : null);
+                if (cfg) {
+                    if (Array.isArray(cfg.map_center) && cfg.map_center.length === 2) MARKET.mapCenter = cfg.map_center;
+                    if (cfg.map_zoom) MARKET.mapZoom = cfg.map_zoom;
+                }
+            } catch { /* fallback estático */ }
             initializeMap();
             loadMapData();
         });
@@ -313,7 +347,7 @@
             map = L.map('fullscreen-map', {
                 scrollWheelZoom: false, // Evita atrapar el scroll de ratón en desktop
                 touchZoom: true
-            }).setView([-12.046374, -77.042793], 13); // Coordenadas de inicio genéricas
+            }).setView(MARKET.mapCenter, MARKET.mapZoom);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap'
@@ -366,13 +400,13 @@
                 const lng = parseFloat(property.longitude);
                 if (!lat || !lng) return;
 
-                // Formatear precio compacto (ej: $150k en vez de $150,000 USD)
-                const compactPrice = formatCompactPrice(property.price);
+                // Precio compacto currency-aware (símbolo solo si moneda determinada)
+                const compactPrice = formatCompactPrice(property.price, property.currency);
 
                 // Crear un icono HTML personalizado (L.divIcon)
                 const priceIcon = L.divIcon({
                     className: 'custom-leaflet-icon',
-                    html: `<div class="price-marker" id="marker-${property.id}">${compactPrice}</div>`,
+                    html: `<div class="price-marker" id="marker-${escapeHtml(property.id)}">${compactPrice}</div>`,
                     iconSize: [60, 30],
                     iconAnchor: [30, 15]
                 });
@@ -390,15 +424,15 @@
             });
         }
 
-        // 4. Formateador compacto de precios (Tier 1 Standard)
-        function formatCompactPrice(price) {
-            if (price >= 1000000) {
-                return `$${(price / 1000000).toFixed(1)}M`;
-            }
-            if (price >= 1000) {
-                return `$${Math.round(price / 1000)}k`;
-            }
-            return `$${price}`;
+        // 4. Formateador compacto de precios (Tier 1 Standard) — currency-aware
+        // (04.6-E2-A): símbolo solo si la moneda está determinada.
+        function formatCompactPrice(price, currency) {
+            const num = price >= 1000000 ? `${(price / 1000000).toFixed(1)}M`
+                : price >= 1000 ? `${Math.round(price / 1000)}k` : `${escapeHtml(price)}`;
+            if (currency === 'USD') return `$${num}`;
+            if (currency === 'EUR') return `€${num}`;
+            if (currency === 'CUP') return `${num} CUP`;
+            return num; // moneda no especificada → sin símbolo
         }
 
         // 5. Filtrar las tarjetas del sidebar mostrando solo las visibles en pantalla
@@ -406,6 +440,19 @@
             const bounds = map.getBounds();
             const sidebarGrid = document.getElementById('properties-sidebar-grid');
             const countLabel = document.getElementById('visible-properties-count');
+
+            // Sin inventario geolocalizado: estado honesto en lugar de un
+            // mapa vacío que aparenta ausencia de propiedades en la zona.
+            const hasGeo = globalProperties.some(p => !isNaN(parseFloat(p.latitude)) && !isNaN(parseFloat(p.longitude)));
+            if (!hasGeo) {
+                countLabel.textContent = 'Mapa sin ubicaciones publicadas';
+                sidebarGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; padding: var(--space-5) 0; text-align: center; color: var(--text-secondary); font-size: var(--text-sm);">
+                        Las propiedades actuales aún no tienen ubicación en el mapa. Explóralas desde el <a href="/" style="color: inherit;">listado principal</a>.
+                    </div>
+                `;
+                return;
+            }
 
             // Filtrar propiedades dentro del cuadrante actual
             const visibleProperties = globalProperties.filter(property => {
@@ -435,25 +482,36 @@
                 return;
             }
 
+            const fmtPrice = (n, currency) => {
+            // 04.6-E2-A: USD → US$, EUR → €, CUP → sufijo CUP, NULL → sin símbolo.
+            const num = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(n);
+            if (currency === 'USD') return `US$${num}`;
+            if (currency === 'EUR') return `€${num}`;
+            if (currency === 'CUP') return `${num} CUP`;
+            return num;
+        };
+
             properties.forEach(property => {
                 const card = document.createElement('article');
                 card.className = 'property-card';
                 
-                const formattedPrice = new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                    maximumFractionDigits: 0
-                }).format(property.price);
+                const formattedPrice = fmtPrice(property.price, property.currency);
+
+                // Campos reales del contrato público de la API (04.5)
+                const cardImg = escapeHtml((property.images && property.images[0]) || FALLBACK_IMG);
+                const cardLocation = [property.neighborhood, property.city].filter(Boolean).join(', ') || 'Ubicación';
+                const cardOperation = escapeHtml((property.operation || 'venta').replace(/^./, c => c.toUpperCase()));
+                const canonicalId = encodeURIComponent(property.public_code || property.id);
 
                 card.innerHTML = `
                     <div class="image-container" style="aspect-ratio: 16/10;">
-                        <span class="badge" style="font-size: 10px; padding: 2px 6px;">${property.type_transaction || 'Venta'}</span>
-                        <img src="${property.image_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=600&q=80'}" alt="${property.title}" loading="lazy">
+                        <span class="badge" style="font-size: 10px; padding: 2px 6px;">${cardOperation}</span>
+                        <img src="${cardImg}" srcset="${responsiveSrcSet(cardImg)}" sizes="(max-width: 768px) 100vw, 400px" alt="${escapeHtml(property.title)}" loading="lazy" decoding="async">
                     </div>
                     <div class="details-container" style="padding: var(--space-3); gap: 4px;">
                         <div class="price" style="font-size: var(--text-md);">${formattedPrice}</div>
-                        <h4 class="title" style="font-size: var(--text-sm);">${property.title}</h4>
-                        <div class="location" style="font-size: var(--text-xs);">${property.location || 'Ubicación'}</div>
+                        <h4 class="title" style="font-size: var(--text-sm);">${escapeHtml(property.title)}</h4>
+                        <div class="location" style="font-size: var(--text-xs);">${escapeHtml(cardLocation)}</div>
                     </div>
                 `;
 
@@ -463,7 +521,7 @@
 
                 card.style.cursor = 'pointer';
                 card.addEventListener('click', () => {
-                    window.location.href = `/property.html?id=${property.id}`;
+                    window.location.href = `/property.html?id=${canonicalId}`;
                 });
 
                 container.appendChild(card);
@@ -493,24 +551,25 @@
             if (isMobile) {
                 // Inyectar previsualización móvil flotante estilo Airbnb
                 const mobileSlot = document.getElementById('mobile-card-slot');
-                const formattedPrice = new Intl.NumberFormat('en-US', {
-                    style: 'currency', currency: 'USD', maximumFractionDigits: 0
-                }).format(property.price);
+                const formattedPrice = fmtPrice(property.price, property.currency);
+
+                const previewImg = escapeHtml((property.images && property.images[0]) || FALLBACK_IMG);
+                const previewId = encodeURIComponent(property.public_code || property.id);
 
                 mobileSlot.innerHTML = `
-                    <article class="property-card" data-href="/property.html?id=${encodeURIComponent(property.id)}" tabindex="0" role="link">
+                    <article class="property-card" data-href="/property.html?id=${previewId}" tabindex="0" role="link">
                         <div class="image-container">
-                            <img src="${property.image_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=600&q=80'}" alt="${property.title}">
+                            <img src="${previewImg}" srcset="${responsiveSrcSet(previewImg)}" sizes="(max-width: 768px) 100vw, 400px" alt="${escapeHtml(property.title)}" decoding="async">
                         </div>
                         <div class="details-container">
                             <div class="price">${formattedPrice}</div>
-                            <h4 class="title">${property.title}</h4>
+                            <h4 class="title">${escapeHtml(property.title)}</h4>
                             <div class="features-grid">
                                 <div class="feature-item">
-                                    <span>${property.bedrooms || 0}</span> habs
+                                    <span>${escapeHtml(property.bedrooms || 0)}</span> habs
                                 </div>
                                 <div class="feature-item">
-                                    <span>${property.area || 0}</span> m²
+                                    <span>${escapeHtml(property.area || 0)}</span> m²
                                 </div>
                             </div>
                         </div>

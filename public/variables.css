@@ -15,7 +15,7 @@
 
     --color-ink: #14181f;              /* tinta principal (azul-noche) */
     --color-ink-secondary: #4a525e;    /* texto secundario */
-    --color-ink-muted: #8a919c;        /* metadatos, captions */
+    --color-ink-muted: #646c78;        /* metadatos, captions — 5.04:1 sobre bg (WCAG AA) */
     --color-ink-on-accent: #ffffff;
 
     --color-border: rgba(20, 24, 31, 0.09);
@@ -119,7 +119,7 @@
 
         --color-ink: #eef0f4;
         --color-ink-secondary: #a8b0bc;
-        --color-ink-muted: #6b7380;
+        --color-ink-muted: #8b93a1;            /* 5.57:1 sobre surface oscuro (WCAG AA) */
 
         --color-border: rgba(238, 240, 244, 0.10);
         --color-border-strong: rgba(238, 240, 244, 0.20);
@@ -317,6 +317,7 @@ img { display: block; max-width: 100%; height: auto; }
 
 /* ---------- Tarjeta de propiedad (única fuente del sistema) ---------- */
 .nx-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     background: var(--color-surface);
@@ -326,6 +327,16 @@ img { display: block; max-width: 100%; height: auto; }
     box-shadow: var(--shadow-1);
     transition: transform var(--duration-normal) var(--ease-out-expo),
                 box-shadow var(--duration-normal) var(--ease-out-expo);
+}
+
+/* Card clicable sin nesting interactivo: el enlace del título cubre toda
+   la tarjeta; elementos interactivos propios (fav) quedan por encima. */
+.nx-card__link { color: inherit; }
+.nx-card__link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
 }
 
 @media (hover: hover) {
