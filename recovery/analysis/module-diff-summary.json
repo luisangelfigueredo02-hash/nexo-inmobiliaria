@@ -1,0 +1,180 @@
+[
+ {
+  "module": "rate-limit.js",
+  "similarity": 0.882,
+  "bundle_size": 2586,
+  "local_size": 2930,
+  "bundle_only": [],
+  "local_only": [],
+  "common": 17
+ },
+ {
+  "module": "session-runtime.js",
+  "similarity": 0.404,
+  "bundle_size": 3831,
+  "local_size": 11100,
+  "bundle_only": [],
+  "local_only": [
+   "MAX_CONCURRENT_SESSIONS",
+   "TOKEN_BYTES",
+   "audit",
+   "b",
+   "b64",
+   "base64urlDecode",
+   "base64urlEncode",
+   "bin",
+   "buildSessionCookie",
+   "bytes",
+   "createSession",
+   "created",
+   "expiresAt",
+   "generateSessionToken",
+   "i",
+   "ip",
+   "ipSubset",
+   "now",
+   "revokeAllSessions",
+   "revokeSession",
+   "rotateSession",
+   "segs",
+   "session",
+   "sessionId",
+   "ua",
+   "userAgentBounded"
+  ],
+  "common": 27
+ },
+ {
+  "module": "src/auth/authorization/permissions.js",
+  "similarity": 0.83,
+  "bundle_size": 1179,
+  "local_size": 1555,
+  "bundle_only": [],
+  "local_only": [],
+  "common": 3
+ },
+ {
+  "module": "src/auth/authorization/roles.js",
+  "similarity": 0.468,
+  "bundle_size": 395,
+  "local_size": 1207,
+  "bundle_only": [],
+  "local_only": [
+   "anonymousActor"
+  ],
+  "common": 3
+ },
+ {
+  "module": "src/auth/authorization/matrix.js",
+  "similarity": 0.716,
+  "bundle_size": 1731,
+  "local_size": 3068,
+  "bundle_only": [],
+  "local_only": [],
+  "common": 6
+ },
+ {
+  "module": "src/auth/authorization/actor.js",
+  "similarity": 0.072,
+  "bundle_size": 209,
+  "local_size": 1892,
+  "bundle_only": [],
+  "local_only": [
+   "actor",
+   "resolveActor",
+   "session"
+  ],
+  "common": 1
+ },
+ {
+  "module": "src/auth/authorization/resource.js",
+  "similarity": 0.597,
+  "bundle_size": 610,
+  "local_size": 1065,
+  "bundle_only": [],
+  "local_only": [],
+  "common": 5
+ },
+ {
+  "module": "src/auth/authorization/ownership.js",
+  "similarity": 0.538,
+  "bundle_size": 417,
+  "local_size": 884,
+  "bundle_only": [],
+  "local_only": [],
+  "common": 2
+ },
+ {
+  "module": "src/auth/authorization/authorize.js",
+  "similarity": 0.723,
+  "bundle_size": 4933,
+  "local_size": 7593,
+  "bundle_only": [],
+  "local_only": [],
+  "common": 20
+ },
+ {
+  "module": "src/auth/authorization/serialize.js",
+  "similarity": 0.589,
+  "bundle_size": 1807,
+  "local_size": 3475,
+  "bundle_only": [],
+  "local_only": [
+   "propertyAudienceFor"
+  ],
+  "common": 12
+ },
+ {
+  "module": "src/auth/authorization/audit.js",
+  "similarity": 0.81,
+  "bundle_size": 2282,
+  "local_size": 2784,
+  "bundle_only": [],
+  "local_only": [],
+  "common": 11
+ },
+ {
+  "module": "src/auth/authorization/index.js",
+  "similarity": 0.426,
+  "bundle_size": 680,
+  "local_size": 2107,
+  "bundle_only": [],
+  "local_only": [],
+  "common": 5
+ },
+ {
+  "module": "worker.js",
+  "similarity": 0.776,
+  "bundle_size": 42834,
+  "local_size": 45518,
+  "bundle_only": [
+   "ALLOWED_CURRENCIES",
+   "MARKET_CONFIG",
+   "PUBLIC_CODE_RE2",
+   "canonicalUrl",
+   "content",
+   "currencyJson",
+   "extractAiText",
+   "geoJson",
+   "hasGeo",
+   "like",
+   "neighborhood",
+   "normalizeCurrency",
+   "origin",
+   "q",
+   "rawImage",
+   "seoUrl",
+   "staticPages",
+   "tok",
+   "tokens",
+   "urls",
+   "worker_default",
+   "xml"
+  ],
+  "local_only": [
+   "PUBLIC_CODE_RE",
+   "inyecta"
+  ],
+  "common": 117
+ }
+]

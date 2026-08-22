@@ -1,0 +1,68 @@
+{
+ "src/auth/authorization/permissions.js": {
+  "prod_len": 1179,
+  "reb_len": 1131,
+  "delta": -48,
+  "sim": 0.978
+ },
+ "src/auth/authorization/roles.js": {
+  "prod_len": 395,
+  "reb_len": 395,
+  "delta": 0,
+  "sim": 1.0
+ },
+ "src/auth/authorization/matrix.js": {
+  "prod_len": 1731,
+  "reb_len": 1731,
+  "delta": 0,
+  "sim": 1.0
+ },
+ "src/auth/authorization/actor.js": {
+  "prod_len": 209,
+  "reb_len": 163,
+  "delta": -46,
+  "sim": 0.865
+ },
+ "src/auth/authorization/resource.js": {
+  "prod_len": 610,
+  "reb_len": 504,
+  "delta": -106,
+  "sim": 0.893
+ },
+ "src/auth/authorization/ownership.js": {
+  "prod_len": 417,
+  "reb_len": 359,
+  "delta": -58,
+  "sim": 0.913
+ },
+ "src/auth/authorization/authorize.js": {
+  "prod_len": 4933,
+  "reb_len": 4713,
+  "delta": -220,
+  "sim": 0.975
+ },
+ "src/auth/authorization/serialize.js": {
+  "prod_len": 1807,
+  "reb_len": 1644,
+  "delta": -163,
+  "sim": 0.95
+ },
+ "src/auth/authorization/audit.js": {
+  "prod_len": 2282,
+  "reb_len": 2102,
+  "delta": -180,
+  "sim": 0.952
+ },
+ "src/auth/authorization/index.js": {
+  "prod_len": 680,
+  "reb_len": 610,
+  "delta": -70,
+  "sim": 0.939
+ },
+ "worker.js": {
+  "prod_len": 42834,
+  "reb_len": 42201,
+  "delta": -633,
+  "sim": 0.99
+ }
+}
