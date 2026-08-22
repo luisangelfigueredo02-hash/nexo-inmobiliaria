@@ -1,0 +1,41 @@
+{
+  "production": [
+    [
+      "ADMIN_PASSWORD",
+      "secret_text"
+    ],
+    [
+      "ADMIN_TOKEN",
+      "secret_text"
+    ],
+    [
+      "AI",
+      "ai"
+    ],
+    [
+      "ASSETS",
+      "assets"
+    ],
+    [
+      "BUCKET_IMAGENES",
+      "r2_bucket"
+    ],
+    [
+      "DB",
+      "d1"
+    ],
+    [
+      "SENTRY_DSN",
+      "plain_text"
+    ],
+    [
+      "VECTOR_INDEX",
+      "vectorize"
+    ],
+    [
+      "WHATSAPP_PHONE",
+      "plain_text"
+    ]
+  ],
+  "dry_run_text": []
+}

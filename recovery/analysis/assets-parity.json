@@ -1,0 +1,95 @@
+{
+  "admin.html": {
+    "local_sha": "1a6d164fefcfe57add714aa62eb99fb62ca35c1b6468fd1ef7391a97cbf13b77",
+    "prod_sha": "043045bbb96c94bd4aaac422b024ee84068a8f22adabc53d3d5747ab0dbf557a",
+    "status": "DIFF",
+    "code": "200",
+    "bytes": 29245,
+    "redirected": true
+  },
+  "comparar/index.html": {
+    "local_sha": "e4f57a4cedf7456fa56392baa62ab2d570a759a0c3c0fef3543d2adea96b22d4",
+    "prod_sha": "1e81713ea2601e8e32b2511555330273fc3accd84ce5c17bdfb0daa7130b7f0d",
+    "status": "DIFF",
+    "code": "200",
+    "bytes": 27887,
+    "redirected": true
+  },
+  "config.js": {
+    "local_sha": "b9b257aecb6a772bddbe03eea179d5c0ed0420ffee1292b31e9b92962885858b",
+    "prod_sha": "b9b257aecb6a772bddbe03eea179d5c0ed0420ffee1292b31e9b92962885858b",
+    "status": "MATCH",
+    "code": "200",
+    "bytes": 405
+  },
+  "ia/index.html": {
+    "local_sha": "616ccbba215739dee68e94a955851560d3e0b2753b7bc8201a273a674f288f78",
+    "prod_sha": "b5a498e69f5d5c70eaa620269786c28c01800d461d88e729c4afe209b4ab2f82",
+    "status": "DIFF",
+    "code": "200",
+    "bytes": 22584,
+    "redirected": true
+  },
+  "icons/icon-192.png": {
+    "local_sha": "4a74466ce6ef52733b15dc2a1964b7eba0f169cda5f538f9efe900041d2ddf05",
+    "prod_sha": "4a74466ce6ef52733b15dc2a1964b7eba0f169cda5f538f9efe900041d2ddf05",
+    "status": "MATCH",
+    "code": "200",
+    "bytes": 1656
+  },
+  "icons/icon-512.png": {
+    "local_sha": "7808409f1047b6455baa561f17d0e863a0382c3dfd5a48d5c819fd1a06e42fe9",
+    "prod_sha": "7808409f1047b6455baa561f17d0e863a0382c3dfd5a48d5c819fd1a06e42fe9",
+    "status": "MATCH",
+    "code": "200",
+    "bytes": 4648
+  },
+  "index.html": {
+    "local_sha": "8ab7a42513bb78968c9799838ac341ab43d22616b21cde7dec80dcf08867b003",
+    "prod_sha": "359a0a5cf7e7dd1d82c91d2c6eb64a3535d5cadf6a9d2ed52e851f48950e4206",
+    "status": "DIFF",
+    "code": "200",
+    "bytes": 52803,
+    "redirected": true
+  },
+  "manifest.json": {
+    "local_sha": "cb2ed9ec6aa480a5c59200dfe44cd314f860a0e612a73cb6b437117cde2bad7e",
+    "prod_sha": "8bb8c0058b155fd7bb89f1057a7627fc7fc761ca6e745d45f88445e6f82d710a",
+    "status": "DIFF",
+    "code": "200",
+    "bytes": 1260,
+    "redirected": true
+  },
+  "mapa/index.html": {
+    "local_sha": "0b312625617bd20a9f69a45546d7277585d8ea63a0e256a783f3456cb7d005ff",
+    "prod_sha": "de6bc6fd99330a8daa7cba396423e0cae8cd836db536250831a501bdfefdddc9",
+    "status": "DIFF",
+    "code": "200",
+    "bytes": 25840,
+    "redirected": true
+  },
+  "property.html": {
+    "local_sha": "81d144226d599036f51d4fbf388cbdd0476c20d3701a25eb2696daa4d1712b2a",
+    "prod_sha": "32cd507d27d26488519e0a868a2092e61fbf60b3509e550e0d2f359fab4c7464",
+    "status": "DIFF",
+    "code": "200",
+    "bytes": 43702,
+    "redirected": true
+  },
+  "sw.js": {
+    "local_sha": "9ae991f13fd3c40680c8e8610258e83196523aba129b8c6432b9210d54dc37c2",
+    "prod_sha": "140f4edff2f99402d984ad722b61c283d426bceada1b5fdcd91aa628de543ca8",
+    "status": "DIFF",
+    "code": "200",
+    "bytes": 4836,
+    "redirected": true
+  },
+  "variables.css": {
+    "local_sha": "256a9cb4bc012638a202873e974da81d5009dd7882226f49689dd4528ac46cef",
+    "prod_sha": "05970f5baa3d060ed36923c1cff28d98c36ee7a2703c4b2101a8dcaf52e5cf8a",
+    "status": "DIFF",
+    "code": "200",
+    "bytes": 16266,
+    "redirected": true
+  }
+}

@@ -1,0 +1,15 @@
+-- NEXO 05.5 — FICHA DE RECONCILIACIÓN (NO ES UNA MIGRACIÓN APLICABLE)
+--
+-- Producción reporta en d1_migrations una fila:
+--   0006_properties_currency.sql  |  2026-08-22 15:15:47
+-- contenido NO PRESENTE en repo (sólo inferible del efecto observable).
+--
+-- Efecto observable en sqlite_master (properties.sql):
+--   ... created_by TEXT REFERENCES accounts(id),
+--   currency TEXT)
+--
+-- Recreación mínima equivalente (documentación):
+--   ALTER TABLE properties ADD COLUMN currency TEXT;
+--
+-- NO EJECUTAR. PRODUCTION SCHEMA ≠ GIT SCHEMA hasta reconciliación formal de
+-- migraciones en una fase autorizada.

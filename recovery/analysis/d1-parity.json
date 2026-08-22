@@ -1,0 +1,123 @@
+{
+  "accounts": {
+    "status": "PARITY"
+  },
+  "analytics_counters": {
+    "status": "PRODUCTION-ONLY",
+    "prod": [
+      "count",
+      "day",
+      "kind"
+    ]
+  },
+  "analytics_events": {
+    "status": "PRODUCTION-ONLY",
+    "prod": [
+      "created_at",
+      "id",
+      "kind",
+      "property_id"
+    ]
+  },
+  "audit_events": {
+    "status": "PARITY"
+  },
+  "favorites": {
+    "status": "PRODUCTION-ONLY",
+    "prod": [
+      "created_at",
+      "id",
+      "property_id",
+      "user_id"
+    ]
+  },
+  "ia_events": {
+    "status": "PRODUCTION-ONLY",
+    "prod": [
+      "created_at",
+      "event_data",
+      "event_type",
+      "id",
+      "session_id"
+    ]
+  },
+  "ia_feedback": {
+    "status": "PRODUCTION-ONLY",
+    "prod": [
+      "assistant_answer",
+      "created_at",
+      "id",
+      "rating",
+      "session_id",
+      "user_message"
+    ]
+  },
+  "ia_sessions": {
+    "status": "PRODUCTION-ONLY",
+    "prod": [
+      "first_seen",
+      "last_seen",
+      "preferences",
+      "session_id",
+      "total_messages"
+    ]
+  },
+  "listing_id_sequence": {
+    "status": "PARITY"
+  },
+  "listing_owners": {
+    "status": "PARITY"
+  },
+  "moderation_events": {
+    "status": "PARITY"
+  },
+  "profiles": {
+    "status": "PARITY"
+  },
+  "properties": {
+    "status": "DIFF",
+    "prod_only": [
+      "currency"
+    ],
+    "local_only": [],
+    "type_diff": []
+  },
+  "rate_limits": {
+    "status": "PRODUCTION-ONLY",
+    "prod": [
+      "expiry",
+      "key",
+      "requests",
+      "window_start"
+    ]
+  },
+  "roles": {
+    "status": "PARITY"
+  },
+  "sessions": {
+    "status": "PARITY"
+  },
+  "user_favorites": {
+    "status": "PRODUCTION-ONLY",
+    "prod": [
+      "created_at",
+      "id",
+      "property_id",
+      "user_id"
+    ]
+  },
+  "user_roles": {
+    "status": "PARITY"
+  },
+  "users": {
+    "status": "PRODUCTION-ONLY",
+    "prod": [
+      "created_at",
+      "email",
+      "id",
+      "name",
+      "password_hash",
+      "role"
+    ]
+  }
+}
