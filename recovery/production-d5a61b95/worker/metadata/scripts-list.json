@@ -1,0 +1,35 @@
+{
+  "result": [
+    {
+      "created_on": "2026-08-20T21:41:01.120245Z",
+      "modified_on": "2026-08-22T18:45:57.070958Z",
+      "id": "nexo-inmueble",
+      "tag": "ca01d3f579e042e9860cee807e6e8430",
+      "tags": [],
+      "deployment_id": "",
+      "tail_consumers": null,
+      "logpush": false,
+      "has_assets": true,
+      "has_modules": true,
+      "etag": "f15272d091c3bf87aa814509b0461a5642b8160485802bff1f7e74b2bcf22c2e",
+      "handlers": [
+        "fetch",
+        "route"
+      ],
+      "placement_mode": "smart",
+      "placement_status": "SUCCESS",
+      "placement": {
+        "mode": "smart",
+        "status": "SUCCESS",
+        "last_analyzed_at": "2026-08-22T18:46:24.049595Z"
+      },
+      "last_deployed_from": "wrangler",
+      "compatibility_date": "2026-08-19",
+      "usage_model": "standard",
+      "routes": null
+    }
+  ],
+  "success": true,
+  "errors": [],
+  "messages": []
+}
