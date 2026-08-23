@@ -24,12 +24,14 @@ Variables de entorno en `wrangler.toml [vars]`. Secretos con
 
 ## 2. Rebranding / white-label
 
-Todo lo configurable por el comprador se sirve en `/api/config` y se define con
-variables de entorno en `wrangler.toml`:
+El white-label es **real y sin tocar código**: el worker sustituye tokens
+`{{BRAND_*}}` en el HTML servido (transform en `src/brand.js`, fuente única de
+config) con las variables de entorno de `wrangler.toml [vars]`. Todo lo
+configurable también se expone en `/api/config`:
 
 | Variable | Efecto |
 |---|---|
-| `BRAND_NAME` | Nombre de marca (título SEO, OG, config) |
+| `BRAND_NAME` | Nombre de marca (header, footer, título SEO, OG, manifest PWA) |
 | `BRAND_DESCRIPTION` | Descripción SEO/OG |
 | `BRAND_TAGLINE` | Lema |
 | `BRAND_THEME_COLOR` | Color de tema (PWA/meta) |
@@ -41,9 +43,8 @@ variables de entorno en `wrangler.toml`:
 | `MAP_CENTER_LAT` / `MAP_CENTER_LNG` / `MAP_ZOOM` | Centro/zoom inicial del mapa |
 | `DEMO_MODE` | `"1"` muestra banner "Modo demostración" |
 
-> Los textos visibles "NEXO" en las páginas (`public/*.html`) son literales.
-> Para un rebrand completo, sustituir el nombre/logo en el header, footer y
-> hero de `index.html`, `property.html`, `comparar/`, `mapa/`, `ia/`.
+Para rebrand: editar `[vars]`, `npx wrangler deploy`. Sin búsqueda/reemplazo
+manual en el HTML.
 
 ---
 
@@ -81,10 +82,11 @@ Esquema canónico: `schema.sql` + migraciones `migrations/0001–0005`.
 
 ## 5. Datos de demostración
 
-Para mostrar el producto con inventario de ejemplo (claramente rotulado):
+Para mostrar el producto con inventario de ejemplo (claramente rotulado con
+badge DEMO en la UI y marca de agua en las imágenes):
 
 ```bash
-node scripts/seed-demo.mjs                 # genera demo-seed.sql (25 props, coords reales)
+node scripts/seed-demo.mjs                 # genera demo-seed.sql (25 props, coords reales, imágenes propias)
 wrangler d1 execute nexo-db --remote --file=./demo-seed.sql
 
 # Banner de demo en la UI
@@ -95,7 +97,24 @@ node scripts/seed-demo.mjs --clear         # genera demo-clear.sql
 wrangler d1 execute nexo-db --remote --file=./demo-clear.sql
 ```
 
-Los `.sql` generados **no se versionan** (se generan bajo demanda).
+Los `.sql` generados **no se versionan** (se generan bajo demanda). Las
+imágenes demo (`public/demo-media/*.svg`) son ilustraciones propias sin
+licencias de terceros; el clear solo borra filas `D-*`/`internal_notes='DEMO'`,
+nunca inventario real.
+
+---
+
+## 5b. Backup y rollback
+
+```bash
+# Backup de D1 antes de cualquier operación de datos
+npx wrangler d1 export nexo-db --remote --output=backup-$(date +%F).sql
+
+# Rollback de código: Cloudflare → Workers → nexo-inmueble →
+#   Deployments → seleccionar versión anterior → Rollback (instantáneo)
+```
+
+Guardar los backups **fuera del repo** (contienen datos de producción).
 
 ---
 

@@ -33,7 +33,8 @@ WHATSAPP_PHONE = "+5358385702"
 SENTRY_DSN = ""
 # DEMO_MODE: "1" para marcar datos de demostración en la UI y API.
 # Útil para mostrar el producto con inventario de ejemplo claramente rotulado.
-DEMO_MODE = "0"
+# Activo: el inventario actual es seed DEMO (reversible: scripts/seed-demo.mjs --clear).
+DEMO_MODE = "1"
 # White-label (opcional, se sirven en /api/config.brand):
 # BRAND_NAME = "NEXO"
 # BRAND_DESCRIPTION = "..."

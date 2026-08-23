@@ -113,3 +113,33 @@ test("Guard anti-drift: hashes CSP de worker.js sincronizados con public/ y sin 
   });
   assert.ok(out.includes("OK"), out);
 });
+
+test("14B/14G: HTML transformado lleva CSP con hashes del HTML FINAL (anti-bloqueo white-label)", async () => {
+  // Regresión P0: applyTokens cambia los bytes de los <script> inline; si el CSP
+  // usara los hashes estáticos de public/, el navegador bloquearía TODA la JS.
+  const html = `<!DOCTYPE html><html><head><title>{{BRAND_NAME}}</title></head><body><script>console.log("{{BRAND_NAME}}");</script></body></html>`;
+  const env = makeEnv();
+  env.BRAND_NAME = "CASANOVA";
+  env.ASSETS = { fetch: async () => new Response(html, { status: 200, headers: { "Content-Type": "text/html" } }) };
+  const res = await worker.fetch(req("/"), env);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  const csp = res.headers.get("Content-Security-Policy");
+  assert.ok(csp, "CSP presente");
+  assert.ok(!cspSegment(csp, "script-src").includes("'unsafe-inline'"));
+  const { createHash } = await import("node:crypto");
+  for (const m of body.matchAll(/<script>([\s\S]*?)<\/script>/g)) {
+    const hash = "'sha256-" + createHash("sha256").update(m[1], "utf8").digest("base64") + "'";
+    assert.ok(csp.includes(hash), `CSP debe incluir el hash del script inline servido: ${hash}`);
+  }
+});
+
+test("14B/14G: una respuesta con CSP propio no es sobrescrita por la baseline", async () => {
+  const html = `<!DOCTYPE html><html><body><script>1</script></body></html>`;
+  const env = makeEnv();
+  env.ASSETS = { fetch: async () => new Response(html, { status: 200, headers: { "Content-Type": "text/html" } }) };
+  const res = await worker.fetch(req("/"), env);
+  const csp = res.headers.get("Content-Security-Policy");
+  assert.ok(!csp.includes("sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE="),
+    "la lista estática no debe mezclarse con el CSP por respuesta");
+});

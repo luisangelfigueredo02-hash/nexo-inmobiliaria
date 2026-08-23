@@ -129,6 +129,19 @@ var CSP_POLICY = [
   "worker-src 'self'",
   "upgrade-insecure-requests"
 ].join("; ");
+// CSP por respuesta para HTML transformado (white-label): applyTokens cambia
+// los bytes de los <script> inline (p. ej. {{BRAND_NAME}}), así que los hashes
+// estáticos de CSP_SCRIPT_SRC no coincidirían y el navegador bloquearía toda
+// la JS de la app. Se hashean los scripts inline del HTML FINAL servido.
+const INLINE_SCRIPT_RE = /<script>([\s\S]*?)<\/script>/g;
+async function cspForHtml(html) {
+  const hashes = [];
+  for (const m of html.matchAll(INLINE_SCRIPT_RE)) {
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(m[1]));
+    hashes.push(`'sha256-${btoa(String.fromCharCode(...new Uint8Array(digest)))}'`);
+  }
+  return CSP_POLICY.replace(CSP_SCRIPT_SRC, `'self' https://unpkg.com ${hashes.join(" ")}`);
+}
 var SECURITY_HEADERS = {
   "Content-Security-Policy": CSP_POLICY,
   "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
@@ -141,7 +154,11 @@ var SECURITY_HEADERS = {
 };
 function withSecurityHeaders(response, request) {
   const headers = new Headers(response.headers);
-  for (const [k, v] of Object.entries(SECURITY_HEADERS)) headers.set(k, v);
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) {
+    // El CSP por respuesta (HTML transformado white-label) tiene prioridad.
+    if (k === "Content-Security-Policy" && headers.has(k)) continue;
+    headers.set(k, v);
+  }
   const path = new URL(request.url).pathname;
   headers.set("Cross-Origin-Resource-Policy", path.startsWith("/media/") ? "cross-origin" : "same-origin");
   if (path.startsWith("/api/") && !headers.has("Cache-Control")) {
@@ -509,7 +526,10 @@ export default {
           console.error("Error en SEO dinámico:", err);
         }
       }
-      return new Response(applyTokens(htmlContent, BRAND, url.origin), { headers: { "Content-Type": "text/html" } });
+      const transformed = applyTokens(htmlContent, BRAND, url.origin);
+      return new Response(transformed, {
+        headers: { "Content-Type": "text/html", "Content-Security-Policy": await cspForHtml(transformed) }
+      });
     }
     if ((url.pathname === "/manifest.json" || url.pathname === "/manifest.webmanifest") && method === "GET") {
       return new Response(JSON.stringify(buildManifest(BRAND, url.origin)), {
@@ -1125,10 +1145,12 @@ Descripción: ${p.description}
       const contentType = assetRes.headers.get("Content-Type") || "";
       if (assetRes.ok && contentType.includes("text/html")) {
         const html = await assetRes.text();
+        const transformed = applyTokens(html, BRAND, url.origin);
         const headers = new Headers(assetRes.headers);
         headers.set("Content-Type", "text/html; charset=utf-8");
         headers.set("Cache-Control", "public, max-age=0, must-revalidate");
-        return new Response(applyTokens(html, BRAND, url.origin), { status: assetRes.status, headers });
+        headers.set("Content-Security-Policy", await cspForHtml(transformed));
+        return new Response(transformed, { status: assetRes.status, headers });
       }
       return assetRes;
     }

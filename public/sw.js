@@ -3,7 +3,7 @@
    Arquitectura de caché ultra-resiliente para Cuba.
 ========================================================= */
 
-const SW_VERSION = "nexo-v8-private-cache-guard";
+const SW_VERSION = "nexo-v9-static-swr";
 const STATIC_CACHE = `${SW_VERSION}-static`;
 const DATA_CACHE = `${SW_VERSION}-data`;
 const IMAGE_CACHE = `${SW_VERSION}-images`;
@@ -129,16 +129,20 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // 5. OTROS ESTÁTICOS (CSS, JS, manifest, fonts)
+  // 5. OTROS ESTÁTICOS (CSS, JS, manifest, fonts): Stale-While-Revalidate.
+  // Cache-first puro dejaría CSS/JS obsoletos para siempre (la caché solo se
+  // purga al cambiar SW_VERSION); SWR mantiene el modo offline y a la vez
+  // actualiza la caché en segundo plano en cada visita con red.
   event.respondWith(
     caches.match(request).then(cached => {
-      return cached || fetch(request).then(response => {
+      const network = fetch(request).then(response => {
         if (response.ok && response.type === "basic") {
           const clone = response.clone();
           caches.open(STATIC_CACHE).then(cache => cache.put(request, clone));
         }
         return response;
       });
+      return cached || network;
     })
   );
 });
