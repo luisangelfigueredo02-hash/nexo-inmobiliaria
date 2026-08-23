@@ -88,6 +88,9 @@ test("1. request permitido", async () => {
 
 test("2. límite alcanzado → conteo exacto hasta MAX", async () => {
   const env = makeEnv();
+  // GATE 19: /api/chat tiene además límite scoped "ai-chat" (10/5min); para
+  // medir el contador general en /api/chat se desactiva el scoped en este test.
+  env.__DISABLE_CHAT_SCOPE = true;
   for (let i = 0; i < LIMIT_DEF.max; i++) {
     const res = await worker.fetch(chatReq(env.__LIMIT_IP), env);
     assert.equal(res.status, 200, `request ${i} debería pasar`);

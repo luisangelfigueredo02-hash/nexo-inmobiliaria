@@ -1081,6 +1081,14 @@ ${urls}
         if (rate.limited) {
           return rejectResponse(rate.retryAfter, corsHeaders);
         }
+        // A-08a: límite estricto — el chat consume Workers AI (coste por llamada).
+        // __DISABLE_CHAT_SCOPE: escape hatch solo para tests del contador general.
+        if (!env.__DISABLE_CHAT_SCOPE) {
+          const chatRate = await enforceScopedRateLimit(env, request, "ai-chat");
+          if (chatRate.limited) {
+            return rejectResponse(chatRate.retryAfter, corsHeaders);
+          }
+        }
         let matchedProperties = [];
         if (env.AI && env.VECTOR_INDEX) {
           try {
