@@ -18,6 +18,7 @@
            PROPERTY EXPERIENCE — estilos específicos de la página
            Tokens y componentes base: variables.css
            ================================================================ */
+        :root { --color-accent: {{BRAND_PRIMARY_COLOR}}; }
 
         body { padding-bottom: calc(88px + var(--safe-bottom)); }
 
@@ -638,16 +639,34 @@
             if (i === -1) favs.push(sid); else favs.splice(i, 1);
             saveFavs(favs);
             syncFavUI(i === -1);
+            showToast(i === -1 ? "Guardado en favoritos" : "Eliminado de favoritos");
         }
         function syncFavUI(active) {
             ["btn-fav", "cta-fav"].forEach(elId =>
                 document.getElementById(elId).setAttribute("aria-pressed", String(active)));
         }
 
+        let toastTimer = null;
+        function showToast(msg) {
+            let t = document.getElementById("nx-toast");
+            if (!t) {
+                t = document.createElement("div");
+                t.id = "nx-toast";
+                t.className = "nx-toast";
+                t.setAttribute("role", "status");
+                document.body.appendChild(t);
+            }
+            t.textContent = msg;
+            requestAnimationFrame(() => t.classList.add("show"));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+        }
+
         /* ---------- Error states ---------- */
         function showErrorState(title, sub, actionText, action) {
             document.body.innerHTML = `
                 <div class="nx-state" style="min-height:100dvh; justify-content:center; padding: var(--space-6);">
+                    <div class="nx-state__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/><path d="M8 11h6"/></svg></div>
                     <h2>${esc(title)}</h2>
                     <p>${esc(sub)}</p>
                     ${actionText ? `<button class="nx-btn nx-btn--primary" id="err-action">${actionText}</button>` : ""}
@@ -699,8 +718,8 @@
 
             // Key facts (solo datos que existen)
             const facts = [
-                p.bedrooms != null ? { val: p.bedrooms, lbl: "Habitaciones" } : null,
-                p.bathrooms != null ? { val: p.bathrooms, lbl: "Baños" } : null,
+                Number(p.bedrooms) > 0 ? { val: p.bedrooms, lbl: "Habitaciones" } : null,
+                Number(p.bathrooms) > 0 ? { val: p.bathrooms, lbl: "Baños" } : null,
                 p.area ? { val: p.area, lbl: "m² de área" } : null
             ].filter(Boolean);
             document.getElementById("key-facts").innerHTML = facts.map(f => `
@@ -774,8 +793,9 @@
                     const map = L.map("map-container", { zoomControl: false, dragging: false, scrollWheelZoom: false })
                         .setView([p.latitude, p.longitude], 15);
                     L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "© OpenStreetMap" }).addTo(map);
+                    const accent = getComputedStyle(document.documentElement).getPropertyValue("--color-accent").trim() || "#c2410c";
                     L.circle([p.latitude, p.longitude], {
-                        color: "#c2410c", fillColor: "#c2410c", fillOpacity: 0.14, radius: 250
+                        color: accent, fillColor: accent, fillOpacity: 0.14, radius: 250
                     }).addTo(map);
                 });
             }

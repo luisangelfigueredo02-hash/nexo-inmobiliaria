@@ -8,20 +8,14 @@
     <meta name="robots" content="noindex">
     <link rel="stylesheet" href="/variables.css">
     <style>
+        :root { --color-accent: {{BRAND_PRIMARY_COLOR}}; }
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
         body {
             margin: 0; font-family: var(--font-sans); background: var(--color-bg);
             color: var(--color-ink); min-height: 100vh; display: flex; flex-direction: column;
         }
-        .nx-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: var(--space-4) var(--space-5); background: var(--color-surface);
-            border-bottom: 1px solid var(--color-border); position: sticky; top: 0; z-index: 10;
-        }
-        .nx-logo { text-decoration: none; font-weight: 800; font-size: 22px; color: var(--color-ink); letter-spacing: -0.5px; }
-        .nx-logo em { font-style: normal; color: var(--color-accent); }
         .back-link {
-            font-size: var(--font-sm); color: var(--color-ink-muted); text-decoration: none;
+            font-size: var(--text-label); color: var(--color-ink-muted); text-decoration: none;
             padding: 6px 12px; border-radius: var(--radius-full); border: 1px solid var(--color-border);
         }
         .back-link:hover { color: var(--color-ink); }
@@ -36,16 +30,16 @@
         .brand-splash {
             text-align: center; margin-bottom: var(--space-5);
         }
-        .brand-splash h1 { font-size: var(--font-2xl); margin: 0 0 var(--space-1); letter-spacing: -0.02em; }
-        .brand-splash p { color: var(--color-ink-muted); margin: 0; font-size: var(--font-sm); }
+        .brand-splash h1 { font-size: var(--text-display); margin: 0 0 var(--space-1); letter-spacing: -0.02em; }
+        .brand-splash p { color: var(--color-ink-muted); margin: 0; font-size: var(--text-label); }
         .tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); }
         .tab {
             flex: 1; padding: 10px; border-radius: var(--radius-full); text-align: center;
             font-weight: var(--weight-semibold); cursor: pointer; border: 1px solid var(--color-border);
-            background: transparent; color: var(--color-ink-muted); font-size: var(--font-sm);
+            background: transparent; color: var(--color-ink-muted); font-size: var(--text-label);
         }
         .tab.active { background: var(--color-ink); color: var(--color-surface); border-color: var(--color-ink); }
-        label { display: block; font-size: var(--font-sm); font-weight: var(--weight-medium); margin: var(--space-3) 0 var(--space-1); }
+        label { display: block; font-size: var(--text-label); font-weight: var(--weight-medium); margin: var(--space-3) 0 var(--space-1); }
         input {
             width: 100%; padding: 12px 14px; border-radius: var(--radius-md);
             border: 1px solid var(--color-border); font: inherit; background: var(--color-bg); color: var(--color-ink);
@@ -63,10 +57,10 @@
             background: transparent; color: var(--color-ink); border: 1px solid var(--color-border);
             font: inherit; font-weight: var(--weight-medium); cursor: pointer;
         }
-        .feedback { margin-top: var(--space-3); font-size: var(--font-sm); min-height: 18px; }
+        .feedback { margin-top: var(--space-3); font-size: var(--text-label); min-height: 18px; }
         .feedback.error { color: var(--danger, #b91c1c); }
         .feedback.ok { color: #15803d; }
-        .privacy { margin-top: var(--space-4); font-size: var(--font-xs, 12px); color: var(--color-ink-muted); text-align: center; }
+        .privacy { margin-top: var(--space-4); font-size: var(--text-caption); color: var(--color-ink-muted); text-align: center; }
         /* Vista autenticada */
         .account-view { display: none; }
         body.authed .auth-view { display: none; }
@@ -80,7 +74,7 @@
         .fav-item img { width: 84px; height: 64px; object-fit: cover; border-radius: var(--radius-md); background: var(--color-surface-sunken, #eee); }
         .fav-item .meta { flex: 1; min-width: 0; }
         .fav-item .price { font-weight: var(--weight-bold); }
-        .fav-item .loc { font-size: var(--font-sm); color: var(--color-ink-muted); }
+        .fav-item .loc { font-size: var(--text-label); color: var(--color-ink-muted); }
         .empty { text-align: center; color: var(--color-ink-muted); padding: var(--space-6) 0; }
         .acct-summary { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
         .avatar {
@@ -97,7 +91,13 @@
     <script src="/demo-banner.js"></script>
     <header class="nx-header">
         <a href="/" class="nx-logo">NE<em>X</em>O</a>
-        <a href="/" class="back-link">← Explorar</a>
+        <nav class="nx-header__nav" aria-label="Navegación principal">
+            <a href="/">Explorar</a>
+            <a href="/mapa/index.html">Mapa</a>
+            <a href="/comparar/index.html">Comparar</a>
+            <a href="/ia/index.html">IA</a>
+            <a href="/cuenta/" class="account-link active">Entrar</a>
+        </nav>
     </header>
 
     <main class="auth-shell">
@@ -135,10 +135,10 @@
                     <div class="avatar" id="acct-avatar">?</div>
                     <div>
                         <div id="acct-name" style="font-weight:var(--weight-bold);">Tu cuenta</div>
-                        <div id="acct-email" style="font-size:var(--font-sm); color:var(--color-ink-muted);"></div>
+                        <div id="acct-email" style="font-size:var(--text-label); color:var(--color-ink-muted);"></div>
                     </div>
                 </div>
-                <h2 style="font-size:var(--font-lg); margin:var(--space-3) 0;">Favoritos</h2>
+                <h2 style="font-size:var(--text-heading); margin:var(--space-3) 0;">Favoritos</h2>
                 <div class="fav-list" id="fav-list"></div>
                 <button class="btn-ghost" id="btn-logout" type="button">Cerrar sesión</button>
                 <div class="feedback" id="acct-feedback" role="status"></div>
@@ -208,7 +208,12 @@
                 if (!resp.ok) { list.innerHTML = '<div class="empty">No se pudieron cargar tus favoritos.</div>'; return; }
                 const { favorites } = await resp.json();
                 if (!favorites || !favorites.length) {
-                    list.innerHTML = '<div class="empty">Aún no tienes favoritos.<br>Explora y toca el corazón para guardar.</div>';
+                    list.innerHTML = `<div class="nx-state" style="padding: var(--space-6) var(--space-4);">
+                        <div class="nx-state__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>
+                        <h2 style="font-size:var(--text-subhead);">Aún no tienes favoritos</h2>
+                        <p>Explora el catálogo y toca el corazón para guardar las viviendas que te interesen. Se sincronizan en todos tus dispositivos.</p>
+                        <a class="nx-btn nx-btn--primary" href="/">Explorar catálogo</a>
+                    </div>`;
                     return;
                 }
                 // Una única consulta al catálogo; se filtran los códigos favoritos.
@@ -255,12 +260,37 @@
                 const r = await fetch("/api/session/status", { credentials: "same-origin" });
                 const s = await r.json();
                 if (s.authenticated) {
+                    const link = document.querySelector(".account-link");
+                    if (link) { link.textContent = "Cuenta"; link.classList.add("logged"); }
                     document.getElementById("acct-email").textContent = "";
                     renderAccount({ name: null });
                 }
             } catch {}
         })();
     </script>
+    <nav class="nx-bottomnav" aria-label="Navegación inferior">
+        <a href="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            Explorar
+        </a>
+        <a href="/mapa/index.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Mapa
+        </a>
+        <a href="/comparar/index.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3m8-18h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3M12 1v22"/></svg>
+            Comparar
+        </a>
+        <a href="/ia/index.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"/></svg>
+            IA
+        </a>
+        <a href="/cuenta/" class="account-tab active" aria-current="page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+            Cuenta
+        </a>
+    </nav>
+
     <footer class="nx-footer" aria-label="Información de {{BRAND_NAME}}">
         <div class="nx-footer__inner">
             <div class="nx-footer__brand">

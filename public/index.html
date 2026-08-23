@@ -49,14 +49,16 @@
     </script>
 
     <style>
-        body { padding-bottom: calc(96px + var(--safe-bottom)); }
+        :root { --color-accent: {{BRAND_PRIMARY_COLOR}}; }
 
-        /* ---------- Discovery Hero compacto ---------- */
+        /* ---------- Hero de descubrimiento ---------- */
         .discovery-hero {
-            max-width: 760px;
+            max-width: 720px;
             margin: 0 auto;
-            padding: var(--space-7) var(--space-4) var(--space-5);
+            padding: var(--space-6) var(--space-4) var(--space-4);
+            text-align: center;
         }
+        .discovery-hero .search-bar { text-align: left; }
         .discovery-hero h1 {
             font-size: var(--text-display);
             font-weight: var(--weight-bold);
@@ -93,6 +95,7 @@
             font-size: var(--text-body);
             color: var(--color-ink);
             min-height: 44px;
+            min-width: 0;
         }
         .search-bar input::placeholder { color: var(--color-ink-muted); }
         .search-bar button {
@@ -111,43 +114,10 @@
         .search-bar button:hover { background: var(--color-accent-hover); }
         .search-bar button:active { transform: scale(0.96); }
 
-        /* ---------- Header nav unificada ---------- */
-        .nx-header__nav { display: flex; gap: var(--space-1); align-items: center; }
-        .nx-header__nav a {
-            font-size: var(--text-label);
-            font-weight: var(--weight-medium);
-            color: var(--color-ink-secondary);
-            padding: var(--space-2) var(--space-3);
-            border-radius: var(--radius-full);
-            min-height: var(--touch-target);
-            display: inline-flex;
-            align-items: center;
-            transition: color var(--duration-fast), background var(--duration-fast);
-        }
-        /* 17B: viewports ≤480px — los 5 enlaces exceden el ancho y "Entrar"
-           quedaba clipeado. Se compactan paddings/fuente y el logo;
-           la altura táctil (44px) se mantiene. */
-        @media (max-width: 480px) {
-            .nx-header { padding: 0 var(--space-2); }
-            .nx-logo { font-size: var(--text-body); }
-            .nx-header__nav a { padding: var(--space-2) 6px; font-size: 12px; }
-        }
-        .nx-header__nav a:hover { color: var(--color-ink); background: var(--color-surface-sunken); }
-        .nx-header__nav a.active { color: var(--color-accent); font-weight: var(--weight-semibold); }
-        .nx-header__nav a.account-link {
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-full);
-        }
-        .nx-header__nav a.account-link.logged {
-            color: var(--color-accent);
-            font-weight: var(--weight-semibold);
-            border-color: var(--color-accent);
-        }
-
-        /* ---------- Trust bar bajo el search ---------- */
+        /* ---------- Trust bar ---------- */
         .trust-bar {
             display: flex; gap: var(--space-5); justify-content: center; flex-wrap: wrap;
-            margin: var(--space-5) 0 0; padding: 0; list-style: none;
+            margin: var(--space-4) 0 0; padding: 0; list-style: none;
         }
         .trust-bar li {
             font-size: var(--text-label); color: var(--color-ink-secondary);
@@ -159,46 +129,41 @@
             background: var(--color-accent); display: inline-block; margin-right: var(--space-2);
         }
 
-        /* ---------- Chips de filtros (progresivos) ---------- */
+        /* ---------- Rail de filtros ---------- */
         .filter-rail {
-            max-width: 760px;
+            max-width: var(--max-content);
             margin: 0 auto;
-            padding: 0 var(--space-4) var(--space-4);
+            padding: var(--space-2) var(--space-4) var(--space-3);
             display: flex;
             gap: var(--space-2);
-            flex-wrap: wrap;
             align-items: center;
+            overflow-x: auto;
+            scrollbar-width: none;
         }
-        .chip {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-1);
-            min-height: var(--touch-target);
-            padding: var(--space-1) var(--space-3);
+        .filter-rail::-webkit-scrollbar { display: none; }
+        .filter-rail .nx-chip { flex-shrink: 0; }
+        .chip-filter {
+            gap: var(--space-2);
+            font-weight: var(--weight-semibold);
+            color: var(--color-ink);
+        }
+        .chip-filter svg { width: 16px; height: 16px; }
+        .chip-filter .chip-count {
+            background: var(--color-accent);
+            color: var(--color-ink-on-accent);
             border-radius: var(--radius-full);
-            border: 1px solid var(--color-border);
-            background: var(--color-surface);
-            font-size: var(--text-label);
-            font-weight: var(--weight-medium);
-            color: var(--color-ink-secondary);
-            cursor: pointer;
-            transition: all var(--duration-fast) var(--ease-out-expo);
-            position: relative;
+            min-width: 20px; height: 20px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: var(--weight-bold);
+            padding: 0 5px;
         }
-        .chip:hover { border-color: var(--color-border-strong); color: var(--color-ink); }
-        .chip.active {
-            background: var(--color-ink);
-            color: var(--color-bg);
-            border-color: var(--color-ink);
-        }
-        .chip select { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
         .chip-more { color: var(--color-ink-muted); }
         .chip-more[aria-expanded="true"] { color: var(--color-accent); font-weight: var(--weight-semibold); }
 
         .filters-advanced {
-            max-width: 760px;
+            max-width: var(--max-content);
             margin: 0 auto;
-            padding: 0 var(--space-4) var(--space-4);
+            padding: 0 var(--space-4) var(--space-3);
             display: none;
             gap: var(--space-2);
             flex-wrap: wrap;
@@ -209,7 +174,7 @@
         .results-context {
             max-width: var(--max-content);
             margin: 0 auto;
-            padding: var(--space-4) var(--space-4) var(--space-2);
+            padding: var(--space-3) var(--space-4) var(--space-2);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -287,6 +252,14 @@
         }
         .fav-btn:active { transform: scale(0.9); }
         .fav-btn[aria-pressed="true"] svg { fill: var(--color-accent); stroke: var(--color-accent); }
+        @media (prefers-reduced-motion: no-preference) {
+            .fav-btn.fav-pop svg { animation: fav-pop 320ms var(--ease-spring); }
+            @keyframes fav-pop {
+                0% { transform: scale(0.6); }
+                60% { transform: scale(1.25); }
+                100% { transform: scale(1); }
+            }
+        }
 
         /* ---------- Mapa ---------- */
         .map-experience { display: none; }
@@ -298,54 +271,35 @@
             background: var(--color-image-placeholder);
         }
 
-        /* ---------- Bottom sheet (móvil) ---------- */
-        .sheet {
+        /* ---------- Preview sheet del mapa (móvil) ---------- */
+        .map-preview {
             position: fixed;
             left: var(--space-3);
             right: var(--space-3);
-            bottom: calc(var(--space-3) + var(--safe-bottom));
-            z-index: 600;
+            bottom: calc(72px + var(--safe-bottom));
+            z-index: 450;
             background: var(--color-surface);
             border: 1px solid var(--color-border);
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-3);
-            transform: translateY(calc(100% + var(--space-6)));
+            transform: translateY(calc(100% + var(--space-8)));
             transition: transform var(--duration-normal) var(--ease-out-expo);
             overflow: hidden;
         }
-        .sheet.open { transform: translateY(0); }
-        .sheet-handle { width: 40px; height: 4px; border-radius: var(--radius-full); background: var(--color-border-strong); margin: var(--space-2) auto; }
-        .sheet-content { display: flex; gap: var(--space-3); padding: 0 var(--space-3) var(--space-3); }
-        .sheet-content img { width: 96px; height: 96px; object-fit: cover; border-radius: var(--radius-sm); flex-shrink: 0; background: var(--color-image-placeholder); }
-        .sheet-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-        .sheet-info .price { font-size: var(--text-subhead); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums; }
-        .sheet-info .title { font-size: var(--text-label); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sheet-info .loc { font-size: var(--text-caption); color: var(--color-ink-muted); }
-        .sheet-actions { margin-top: var(--space-2); }
-
-        /* ---------- Marcadores ---------- */
-        .nx-price-marker {
-            background: var(--color-surface);
-            border: 1.5px solid var(--color-border-strong);
-            border-radius: var(--radius-full);
-            padding: 4px 10px;
-            font-size: var(--text-caption);
-            font-weight: var(--weight-bold);
-            color: var(--color-ink);
-            box-shadow: var(--shadow-1);
-            white-space: nowrap;
-            transition: transform var(--duration-fast) var(--ease-spring),
-                        background var(--duration-fast) var(--ease-out-expo),
-                        color var(--duration-fast) var(--ease-out-expo);
-            cursor: pointer;
-            font-variant-numeric: tabular-nums;
+        .map-preview.open { transform: translateY(0); }
+        .map-preview__content { display: flex; gap: var(--space-3); padding: var(--space-3); }
+        .map-preview__content img {
+            width: 96px; height: 96px; object-fit: cover;
+            border-radius: var(--radius-sm); flex-shrink: 0;
+            background: var(--color-image-placeholder);
         }
-        .nx-price-marker.selected {
-            background: var(--color-accent);
-            color: var(--color-ink-on-accent);
-            border-color: var(--color-accent);
-            transform: scale(1.12);
-            box-shadow: var(--shadow-2);
+        .map-preview__info { min-width: 0; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+        .map-preview__info .price { font-size: var(--text-subhead); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums; }
+        .map-preview__info .title { font-size: var(--text-label); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .map-preview__info .loc { font-size: var(--text-caption); color: var(--color-ink-muted); }
+        .map-preview__info .sheet-actions { margin-top: var(--space-2); }
+        @media (min-width: 768px) {
+            .map-preview { bottom: var(--space-5); left: auto; right: var(--space-5); width: 380px; }
         }
 
         /* ---------- Desktop: split map + list ---------- */
@@ -387,14 +341,15 @@
         /* ---------- FAB IA ---------- */
         .ai-fab {
             position: fixed;
-            bottom: calc(var(--space-5) + var(--safe-bottom));
-            right: var(--space-5);
+            bottom: calc(76px + var(--safe-bottom));
+            right: var(--space-4);
             background: var(--color-ink);
             color: var(--color-bg);
             padding: var(--space-3) var(--space-5);
             border-radius: var(--radius-full);
             box-shadow: var(--shadow-3);
             font-weight: var(--weight-semibold);
+            font-size: var(--text-label);
             display: flex;
             align-items: center;
             gap: var(--space-2);
@@ -403,6 +358,9 @@
             transition: transform var(--duration-fast) var(--ease-spring);
         }
         .ai-fab:active { transform: scale(0.96); }
+        @media (min-width: 768px) {
+            .ai-fab { bottom: var(--space-5); right: var(--space-5); }
+        }
 
         /* ---------- Chat drawer ---------- */
         .chat-drawer {
@@ -430,6 +388,7 @@
         .chat-input-area { padding: var(--space-4) var(--space-5) calc(var(--space-4) + var(--safe-bottom)); border-top: 1px solid var(--color-border); display: flex; gap: var(--space-3); }
         .chat-input-area input { flex: 1; }
     </style>
+
 </head>
 <body>
     <script src="/demo-banner.js"></script>
@@ -466,8 +425,12 @@
         </ul>
     </section>
 
-    <div class="filter-rail" role="group" aria-label="Filtros rápidos">
-        <button type="button" class="chip" id="chip-operation">
+    <div class="filter-rail" role="group" aria-label="Filtros de búsqueda">
+        <button type="button" class="nx-chip chip-filter" id="btn-open-filters" aria-haspopup="dialog">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10m-7 6h4"/></svg>
+            Filtros <span class="chip-count" id="filter-count" hidden>0</span>
+        </button>
+        <button type="button" class="nx-chip" id="chip-operation">
             Operación <span class="chip-value" id="chip-operation-value"></span>
             <select id="filter-operation" aria-label="Operación">
                 <option value="">Todas</option>
@@ -475,7 +438,7 @@
                 <option value="alquiler">Alquiler</option>
             </select>
         </button>
-        <button type="button" class="chip" id="chip-type">
+        <button type="button" class="nx-chip" id="chip-type">
             Tipo <span class="chip-value" id="chip-type-value"></span>
             <select id="filter-type" aria-label="Tipo de inmueble">
                 <option value="">Todos</option>
@@ -485,7 +448,7 @@
                 <option value="penthouse">Penthouse</option>
             </select>
         </button>
-        <button type="button" class="chip" id="chip-province">
+        <button type="button" class="nx-chip" id="chip-province">
             Provincia <span class="chip-value" id="chip-province-value"></span>
             <select id="filter-province" aria-label="Provincia">
                 <option value="">Todas</option>
@@ -494,7 +457,7 @@
                 <option value="Cienfuegos">Cienfuegos</option>
             </select>
         </button>
-        <button type="button" class="chip chip-more" id="btn-more-filters" aria-expanded="false" aria-controls="filters-advanced">Más filtros ⌄</button>
+        <button type="button" class="nx-chip chip-more" id="btn-more-filters" aria-expanded="false" aria-controls="filters-advanced">Más filtros ⌄</button>
     </div>
 
     <div class="filters-advanced" id="filters-advanced">
@@ -536,14 +499,69 @@
         </section>
     </div>
 
-    <aside class="sheet" id="property-sheet" aria-hidden="true" aria-label="Vista previa de propiedad">
-        <div class="sheet-handle" aria-hidden="true"></div>
-        <div class="sheet-content" id="sheet-content"></div>
+    <aside class="map-preview" id="property-sheet" aria-hidden="true" aria-label="Vista previa de propiedad">
+        <div class="map-preview__content" id="sheet-content"></div>
     </aside>
 
     <div class="state-overlay" id="state-overlay" hidden role="alert" aria-live="assertive"></div>
 
-    <button type="button" class="ai-fab" id="ai-fab" aria-expanded="false" aria-controls="chat-drawer" data-action="open-chat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:4px;"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"/></svg>{{BRAND_NAME}} IA</button>
+    <div class="nx-scrim" id="filter-scrim" data-action="close-filters"></div>
+    <div class="nx-sheet" id="filter-sheet" role="dialog" aria-modal="true" aria-label="Filtros de búsqueda" aria-hidden="true">
+        <div class="nx-sheet__handle" aria-hidden="true"></div>
+        <div class="nx-sheet__head">
+            <span class="nx-sheet__title">Filtros</span>
+            <button type="button" class="nx-btn nx-btn--tertiary" style="min-height:var(--touch-target);" data-action="close-filters" aria-label="Cerrar filtros">✕</button>
+        </div>
+        <div class="nx-sheet__body">
+            <div class="nx-optgroup">
+                <span class="nx-optgroup__label" id="fs-op-label">Operación</span>
+                <div class="nx-optgroup__row" role="group" aria-labelledby="fs-op-label">
+                    <button type="button" class="nx-chip active" data-fs="operation" data-value="">Todas</button>
+                    <button type="button" class="nx-chip" data-fs="operation" data-value="venta">Venta</button>
+                    <button type="button" class="nx-chip" data-fs="operation" data-value="alquiler">Alquiler</button>
+                </div>
+            </div>
+            <div class="nx-optgroup">
+                <span class="nx-optgroup__label" id="fs-type-label">Tipo de inmueble</span>
+                <div class="nx-optgroup__row" role="group" aria-labelledby="fs-type-label">
+                    <button type="button" class="nx-chip active" data-fs="type" data-value="">Todos</button>
+                    <button type="button" class="nx-chip" data-fs="type" data-value="casa">Casa</button>
+                    <button type="button" class="nx-chip" data-fs="type" data-value="apartamento">Apartamento</button>
+                    <button type="button" class="nx-chip" data-fs="type" data-value="terreno">Terreno</button>
+                    <button type="button" class="nx-chip" data-fs="type" data-value="penthouse">Penthouse</button>
+                </div>
+            </div>
+            <div class="nx-optgroup">
+                <span class="nx-optgroup__label" id="fs-prov-label">Provincia</span>
+                <div class="nx-optgroup__row" role="group" aria-labelledby="fs-prov-label">
+                    <button type="button" class="nx-chip active" data-fs="province" data-value="">Todas</button>
+                    <button type="button" class="nx-chip" data-fs="province" data-value="La Habana">La Habana</button>
+                    <button type="button" class="nx-chip" data-fs="province" data-value="Matanzas">Matanzas</button>
+                    <button type="button" class="nx-chip" data-fs="province" data-value="Cienfuegos">Cienfuegos</button>
+                </div>
+            </div>
+            <div class="nx-optgroup">
+                <span class="nx-optgroup__label" id="fs-bed-label">Habitaciones mínimas</span>
+                <div class="nx-optgroup__row" role="group" aria-labelledby="fs-bed-label">
+                    <button type="button" class="nx-chip active" data-fs="bedrooms" data-value="">Cualquiera</button>
+                    <button type="button" class="nx-chip" data-fs="bedrooms" data-value="1">1+</button>
+                    <button type="button" class="nx-chip" data-fs="bedrooms" data-value="2">2+</button>
+                    <button type="button" class="nx-chip" data-fs="bedrooms" data-value="3">3+</button>
+                    <button type="button" class="nx-chip" data-fs="bedrooms" data-value="4">4+</button>
+                </div>
+            </div>
+            <div class="nx-optgroup">
+                <label class="nx-optgroup__label" for="fs-price">Precio máximo</label>
+                <input type="number" class="nx-input" id="fs-price" placeholder="Sin límite" inputmode="numeric" min="0">
+            </div>
+        </div>
+        <div class="nx-sheet__foot">
+            <button type="button" class="nx-btn nx-btn--secondary" data-action="reset-filters">Limpiar</button>
+            <button type="button" class="nx-btn nx-btn--primary" data-action="apply-filters">Ver resultados</button>
+        </div>
+    </div>
+
+    <button type="button" class="ai-fab" id="ai-fab" aria-expanded="false" aria-controls="chat-drawer" data-action="open-chat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"/></svg>{{BRAND_NAME}} IA</button>
 
     <div class="chat-drawer" id="chat-drawer" role="dialog" aria-modal="true" aria-label="Asistente {{BRAND_NAME}} IA" aria-hidden="true">
         <div class="chat-header">
@@ -558,6 +576,29 @@
             <button class="nx-btn nx-btn--primary" data-action="send-chat">Enviar</button>
         </div>
     </div>
+
+    <nav class="nx-bottomnav" aria-label="Navegación inferior">
+        <a href="/" class="active" aria-current="page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            Explorar
+        </a>
+        <a href="/mapa/index.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Mapa
+        </a>
+        <a href="/comparar/index.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3m8-18h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3M12 1v22"/></svg>
+            Comparar
+        </a>
+        <a href="/ia/index.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"/></svg>
+            IA
+        </a>
+        <a href="/cuenta/" class="account-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+            Cuenta
+        </a>
+    </nav>
 
     <footer class="nx-footer" aria-label="Información de {{BRAND_NAME}}">
         <div class="nx-footer__inner">
@@ -579,6 +620,7 @@
             <p class="nx-footer__legal">© {{YEAR}} {{LEGAL_NAME}}</p>
         </div>
     </footer>
+
 
     <script>
         let allProperties = [];
@@ -627,6 +669,8 @@
                     nxSession = { authenticated: true, accountId: s.accountId };
                     const link = document.querySelector(".account-link");
                     if (link) { link.textContent = "Cuenta"; link.classList.add("logged"); }
+                    const tab = document.querySelector(".nx-bottomnav .account-tab");
+                    if (tab) tab.classList.add("logged");
                     // Merge: favoritos locales (anónimos) suben al servidor al autenticarse.
                     fetch("/api/me/favorites", { credentials: "same-origin" })
                         .then(r => r.ok ? r.json() : null)
@@ -685,13 +729,37 @@
                 return false;
             }
         }
+        let toastTimer = null;
+        function showToast(msg) {
+            let t = document.getElementById("nx-toast");
+            if (!t) {
+                t = document.createElement("div");
+                t.id = "nx-toast";
+                t.className = "nx-toast";
+                t.setAttribute("role", "status");
+                document.body.appendChild(t);
+            }
+            t.textContent = msg;
+            requestAnimationFrame(() => t.classList.add("show"));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+        }
+
         function toggleFav(id, btn) {
             const favs = getFavs();
             const sid = String(id);
             const i = favs.map(String).indexOf(sid);
             if (i === -1) favs.push(sid); else favs.splice(i, 1);
             saveFavs(favs);
-            if (btn) btn.setAttribute("aria-pressed", String(i === -1));
+            if (btn) {
+                btn.setAttribute("aria-pressed", String(i === -1));
+                if (i === -1) {
+                    btn.classList.remove("fav-pop");
+                    void btn.offsetWidth;
+                    btn.classList.add("fav-pop");
+                }
+            }
+            showToast(i === -1 ? "Guardado en favoritos" : "Eliminado de favoritos");
             // Si hay sesión, el corazón persiste en el servidor (optimista).
             if (nxSession.authenticated) {
                 const adding = i === -1;
@@ -785,6 +853,7 @@
                 "Hola {{BRAND_NAME}}, busco una propiedad y no la encontré en el catálogo. ¿Pueden ayudarme?")}`;
             const states = {
                 empty: `<div class="nx-state" style="grid-column:1/-1;">
+                    <div class="nx-state__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/><path d="M8 11h6"/></svg></div>
                     <h2>Sin resultados con estos filtros</h2>
                     <p>Prueba ampliando la zona, quitando algún filtro o ajustando el presupuesto máximo.</p>
                     <div style="display:flex; gap: var(--space-3); flex-wrap:wrap; justify-content:center;">
@@ -793,6 +862,7 @@
                     </div>
                 </div>`,
                 error: `<div class="nx-state" style="grid-column:1/-1;">
+                    <div class="nx-state__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
                     <h2>No pudimos cargar el inventario</h2>
                     <p>Tu conexión parece lenta o intermitente.</p>
                     <button class="nx-btn nx-btn--primary" data-action="reload-properties">Reintentar</button>
@@ -803,7 +873,9 @@
 
         function showOverlay(msg, sub) {
             const o = document.getElementById("state-overlay");
-            o.innerHTML = `<div class="nx-state"><h2>${msg}</h2><p>${sub}</p>
+            o.innerHTML = `<div class="nx-state">
+                <div class="nx-state__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M1 1l22 22M8.5 8.6A9 9 0 0 1 12 8c2.4 0 4.6.9 6.3 2.4M5 12.4A13 13 0 0 1 12 11m-9.5-4.6A17 17 0 0 1 12 4c3 0 5.8.8 8.2 2.1M12 20h.01"/></svg></div>
+                <h2>${msg}</h2><p>${sub}</p>
                 <button class="nx-btn nx-btn--primary" data-action="reload-properties">Reintentar</button></div>`;
             o.hidden = false;
         }
@@ -862,6 +934,7 @@
             document.getElementById("filter-operation").value = f.operation || "";
             document.getElementById("filter-province").value = f.province || "";
             updateChipLabels();
+            updateFilterCount();
         }
 
         function applySortAndRender() {
@@ -904,8 +977,8 @@
                         </div>
                         <div class="nx-card__location">${esc(p.neighborhood)}, ${esc(p.city)}</div>
                         <div class="nx-card__specs">
-                            <span><span class="sr-only">Habitaciones: </span>${esc(p.bedrooms)} hab</span>
-                            <span><span class="sr-only">Baños: </span>${esc(p.bathrooms)} baños</span>
+                            ${Number(p.bedrooms) > 0 ? `<span><span class="sr-only">Habitaciones: </span>${esc(p.bedrooms)} hab</span>` : ""}
+                            ${Number(p.bathrooms) > 0 ? `<span><span class="sr-only">Baños: </span>${esc(p.bathrooms)} baños</span>` : ""}
                             ${p.area ? `<span><span class="sr-only">Área: </span>${esc(p.area)} m²</span>` : ""}
                         </div>
                     </div>
@@ -1007,7 +1080,7 @@
             const img = esc((p.images && p.images[0]) || FALLBACK_IMG);
             document.getElementById("sheet-content").innerHTML = `
                 <img src="${img}" alt="${esc(p.title)}" data-fallback-src="${FALLBACK_IMG}">
-                <div class="sheet-info">
+                <div class="map-preview__info">
                     <div class="price">${fmtPrice(p.price, p.currency)}</div>
                     <div class="title">${esc(p.title)}</div>
                     <div class="loc">${esc(p.neighborhood)}, ${esc(p.city)}</div>
@@ -1038,13 +1111,89 @@
             }
         }
 
+        /* ---------- Sheet de filtros (móvil = bottom sheet, desktop = modal) ---------- */
+        const FS_KEYS = ["operation", "type", "province", "bedrooms"];
+        let fsTrigger = null;
+
+        function fsRead() {
+            return {
+                operation: document.getElementById("filter-operation").value,
+                type: document.getElementById("filter-type").value,
+                province: document.getElementById("filter-province").value,
+                bedrooms: document.getElementById("filter-bedrooms").value,
+                maxPrice: document.getElementById("filter-price").value
+            };
+        }
+
+        function fsWrite(f) {
+            document.getElementById("filter-operation").value = f.operation || "";
+            document.getElementById("filter-type").value = f.type || "";
+            document.getElementById("filter-province").value = f.province || "";
+            document.getElementById("filter-bedrooms").value = f.bedrooms || "";
+            document.getElementById("filter-price").value = f.maxPrice || "";
+        }
+
+        function fsSyncUI() {
+            const f = fsRead();
+            document.querySelectorAll("#filter-sheet [data-fs]").forEach(btn => {
+                btn.classList.toggle("active", (f[btn.dataset.fs] || "") === btn.dataset.value);
+            });
+            document.getElementById("fs-price").value = f.maxPrice || "";
+        }
+
+        function fsCount() {
+            const f = fsRead();
+            return FS_KEYS.reduce((n, k) => n + (f[k] ? 1 : 0), 0) + (f.maxPrice ? 1 : 0);
+        }
+
+        function updateFilterCount() {
+            const n = fsCount();
+            const badge = document.getElementById("filter-count");
+            badge.hidden = n === 0;
+            badge.textContent = n;
+        }
+
+        function openFilterSheet() {
+            fsTrigger = document.activeElement;
+            fsSyncUI();
+            document.getElementById("filter-scrim").classList.add("open");
+            const sheet = document.getElementById("filter-sheet");
+            sheet.classList.add("open");
+            sheet.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+            const first = sheet.querySelector("[data-fs]");
+            if (first) first.focus();
+        }
+
+        function closeFilterSheet() {
+            document.getElementById("filter-scrim").classList.remove("open");
+            const sheet = document.getElementById("filter-sheet");
+            sheet.classList.remove("open");
+            sheet.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+            if (fsTrigger && document.contains(fsTrigger)) { fsTrigger.focus(); fsTrigger = null; }
+        }
+
+        document.getElementById("btn-open-filters").addEventListener("click", openFilterSheet);
+        document.getElementById("filter-sheet").addEventListener("click", e => {
+            const chip = e.target.closest("[data-fs]");
+            if (!chip) return;
+            const map = { operation: "filter-operation", type: "filter-type", province: "filter-province", bedrooms: "filter-bedrooms" };
+            document.getElementById(map[chip.dataset.fs]).value = chip.dataset.value;
+            fsSyncUI();
+        });
+        document.getElementById("filter-sheet").addEventListener("keydown", e => {
+            if (e.key === "Escape") closeFilterSheet();
+        });
+
         function updateChipLabels() {
             [["filter-operation","chip-operation-value"],["filter-type","chip-type-value"],["filter-province","chip-province-value"]].forEach(([sel, lbl]) => {
                 const s = document.getElementById(sel);
                 const text = s.value ? s.options[s.selectedIndex].text : "";
                 document.getElementById(lbl).textContent = text ? "· " + text : "";
-                s.closest(".chip").classList.toggle("active", !!s.value);
+                s.closest(".nx-chip").classList.toggle("active", !!s.value);
             });
+            updateFilterCount();
         }
 
         let filterDebounce = null;
@@ -1218,6 +1367,17 @@
                 case "send-chat": sendChatMessage(); break;
                 case "clear-filters": clearFilters(); break;
                 case "reload-properties": loadProperties(); break;
+                case "close-filters": closeFilterSheet(); break;
+                case "reset-filters":
+                    fsWrite({ operation: "", type: "", province: "", bedrooms: "", maxPrice: "" });
+                    fsSyncUI();
+                    break;
+                case "apply-filters":
+                    document.getElementById("filter-price").value = document.getElementById("fs-price").value;
+                    updateChipLabels();
+                    closeFilterSheet();
+                    loadProperties();
+                    break;
             }
         });
         document.getElementById("chat-input").addEventListener("keydown", e => {

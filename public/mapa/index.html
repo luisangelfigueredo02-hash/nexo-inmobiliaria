@@ -13,78 +13,28 @@
     <!-- Preconnect a terceros del mapa: reduce latencia TLS/DNS al iniciar -->
     <link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin>
 
-    <!-- Enlace al sistema de diseño global -->
+    <!-- Sistema de diseño global -->
     <link rel="stylesheet" href="/variables.css">
 
-    <!-- Estilos de Leaflet self-hosted (sin dependencia de CDN tercero) -->
+    <!-- Leaflet self-hosted (sin dependencia de CDN tercero) -->
     <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
-    
-    <!-- Estilos específicos de la experiencia de mapa dividido -->
+
     <style>
-        /* Ajuste de cabecera fija */
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: var(--header-height);
-            z-index: 1000; /* Por encima del mapa de Leaflet */
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 var(--space-5);
-            transition: var(--transition-normal);
-        }
+        :root { --color-accent: {{BRAND_PRIMARY_COLOR}}; }
 
-        .logo {
-            font-size: var(--text-lg);
-            font-weight: var(--weight-bold);
-            color: var(--text-primary);
-            letter-spacing: -0.03em;
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-        }
+        /* Header del mapa: fijo para no restar viewport al mapa */
+        .nx-header { position: fixed; left: 0; right: 0; }
 
-        .logo svg {
-            width: 24px;
-            height: 24px;
-            fill: var(--text-primary);
-        }
-
-        nav {
-            display: flex;
-            align-items: center;
-            gap: var(--space-5);
-        }
-
-        nav a {
-            font-size: var(--text-sm);
-            font-weight: var(--weight-medium);
-            color: var(--text-secondary);
-            padding: var(--space-2) var(--space-3);
-            border-radius: var(--radius-sm);
-            display: inline-flex;
-            align-items: center;
-            min-height: var(--touch-target);
-        }
-
-        nav a:hover, nav a.active {
-            color: var(--text-primary);
-            background-color: var(--bg-secondary);
-        }
-
-        /* Contenedor de Pantalla Dividida */
+        /* Contenedor de pantalla dividida */
         .map-split-view {
             display: grid;
             grid-template-columns: 1.2fr 1fr;
-            height: 100vh;
+            height: 100dvh;
             padding-top: var(--header-height);
             overflow: hidden;
             width: 100%;
         }
 
-        /* Contenedor del Mapa (Izquierda) */
         .map-wrapper {
             position: relative;
             width: 100%;
@@ -95,106 +45,87 @@
         #fullscreen-map {
             width: 100%;
             height: 100%;
-            background-color: var(--bg-secondary);
+            background-color: var(--color-image-placeholder);
         }
 
-        /* Panel de Tarjetas Lateral (Derecha) */
+        /* Panel lateral de tarjetas (desktop) */
         .sidebar-list {
             height: 100%;
             overflow-y: auto;
-            background-color: var(--bg-primary);
-            border-left: 1px solid var(--border-subtle);
+            background-color: var(--color-surface);
+            border-left: 1px solid var(--color-border);
             padding: var(--space-5);
             display: flex;
             flex-direction: column;
             gap: var(--space-4);
         }
 
-        .sidebar-header {
-            margin-bottom: var(--space-2);
-        }
-
         .sidebar-header h1 {
-            font-size: var(--text-lg);
+            font-size: var(--text-heading);
             font-weight: var(--weight-bold);
-            letter-spacing: -0.03em;
+            letter-spacing: var(--tracking-tight);
         }
 
         .sidebar-header p {
-            font-size: var(--text-sm);
-            color: var(--text-secondary);
+            font-size: var(--text-label);
+            color: var(--color-ink-secondary);
         }
 
-        /* Contenedor de tarjetas scrollables */
         .list-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
             gap: var(--space-4);
         }
 
-        /* Marcadores de Precio Personalizados (Estilo Airbnb) */
-        .price-marker {
-            background-color: var(--bg-primary);
-            border: 1.5px solid var(--border-default);
-            border-radius: var(--radius-round);
-            padding: var(--space-1) var(--space-2);
-            font-family: var(--font-sans);
-            font-size: var(--text-xs);
-            font-weight: var(--weight-bold);
-            color: var(--text-primary);
-            box-shadow: var(--shadow-sm);
-            white-space: nowrap;
-            transition: var(--transition-fast);
-            cursor: pointer;
-            display: inline-flex;
+        /* Preview flotante móvil (oculta en desktop) */
+        .mobile-preview-container { display: none; }
+
+        /* Banner de estado sobre el mapa (tiles caídos, etc.) */
+        .map-status {
+            position: absolute;
+            z-index: 800;
+            top: var(--space-4);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-surface);
+            color: var(--color-ink-secondary);
+            border: 1px solid var(--color-border);
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-full);
+            font-size: var(--text-caption);
+            box-shadow: var(--shadow-2);
+            max-width: calc(100% - var(--space-6));
+            text-align: center;
+        }
+
+        /* Estado de mapa vacío (sin coordenadas en el inventario) */
+        .map-empty {
+            position: absolute;
+            inset: 0;
+            z-index: 700;
+            display: flex;
             align-items: center;
             justify-content: center;
+            padding: var(--space-6);
+            background: var(--color-bg);
         }
+        .map-empty[hidden] { display: none; }
 
-        /* Estado Hover del Marcador */
-        .price-marker:hover, .price-marker.active-marker {
-            background-color: var(--accent);
-            color: var(--text-on-accent);
-            border-color: var(--accent);
-            transform: scale(1.08);
-            box-shadow: var(--shadow-md);
-            z-index: 999 !important;
-        }
-
-        /* Tarjeta flotante móvil de previsualización (Hidden on Desktop) */
-        .mobile-preview-container {
-            display: none;
-        }
-
-        /* Adaptabilidad Móvil */
+        /* Adaptabilidad móvil */
         @media (max-width: 992px) {
-            header {
-                padding: 0 var(--space-4);
-            }
+            .map-split-view { grid-template-columns: 1fr; }
+            .sidebar-list { display: none; }
 
-            nav {
-                display: none;
-            }
-
-            .map-split-view {
-                grid-template-columns: 1fr; /* El mapa ocupa todo */
-            }
-
-            .sidebar-list {
-                display: none; /* Se descarta la lista lateral en móviles */
-            }
-
-            /* Contenedor de previsualización flotante para Móviles */
             .mobile-preview-container {
                 display: block;
                 position: absolute;
-                bottom: calc(var(--space-4) + var(--safe-bottom-mobile));
+                bottom: calc(76px + var(--safe-bottom));
                 left: var(--space-4);
                 right: var(--space-4);
-                z-index: 100;
-                pointer-events: none; /* No bloquea clics en el mapa por detrás */
+                z-index: 450;
+                pointer-events: none;
                 transform: translateY(150%);
-                transition: var(--transition-normal);
+                transition: transform var(--duration-normal) var(--ease-out-expo);
             }
 
             .mobile-preview-container.visible {
@@ -202,51 +133,49 @@
                 pointer-events: auto;
             }
 
-            .mobile-preview-container .property-card {
+            .mobile-preview-container .nx-card {
                 pointer-events: auto;
-                flex-direction: row; /* Layout horizontal para mejor espacio en móvil */
-                background-color: var(--bg-primary);
-                box-shadow: var(--shadow-lg);
+                flex-direction: row;
+                box-shadow: var(--shadow-3);
                 max-width: 480px;
                 margin: 0 auto;
                 height: 120px;
             }
 
-            .mobile-preview-container .image-container {
+            .mobile-preview-container .nx-card__media {
                 width: 120px;
                 height: 100%;
-                aspect-ratio: 1 / 1;
+                aspect-ratio: auto;
                 flex-shrink: 0;
             }
 
-            .mobile-preview-container .details-container {
+            .mobile-preview-container .nx-card__body {
                 padding: var(--space-3);
                 gap: 2px;
                 justify-content: center;
                 overflow: hidden;
             }
 
-            .mobile-preview-container .features-grid {
+            .mobile-preview-container .nx-card__specs {
                 margin-top: var(--space-1);
                 padding-top: var(--space-1);
                 gap: var(--space-2);
             }
 
-            /* Botón móvil para cerrar previsualización */
             .close-preview-btn {
                 position: absolute;
                 top: -12px;
                 right: -12px;
                 width: 32px;
                 height: 32px;
-                background-color: var(--accent);
-                color: var(--text-on-accent);
-                border-radius: var(--radius-round);
+                background-color: var(--color-accent);
+                color: var(--color-ink-on-accent);
+                border-radius: var(--radius-full);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                box-shadow: var(--shadow-md);
-                z-index: 105;
+                box-shadow: var(--shadow-2);
+                z-index: 460;
                 pointer-events: auto;
             }
         }
@@ -255,33 +184,35 @@
 <body>
     <script src="/demo-banner.js"></script>
 
-    <!-- Cabecera de Navegación Glass Premium -->
-    <header class="glass-effect">
-        <a href="/" class="logo">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 3L2 12h3v8h14v-8h3L12 3zm2 15h-4v-4h4v4z"/>
-            </svg>
-            {{BRAND_NAME}}
-        </a>
-        <nav>
-            <a href="/">Propiedades</a>
+    <header class="nx-header">
+        <a href="/" class="nx-logo">NE<em>X</em>O</a>
+        <nav class="nx-header__nav" aria-label="Navegación principal">
+            <a href="/">Explorar</a>
             <a href="/mapa/index.html" class="active">Mapa</a>
             <a href="/comparar/index.html">Comparar</a>
-            <a href="/ia/index.html">Chat IA</a>
+            <a href="/ia/index.html">IA</a>
+            <a href="/cuenta/" class="account-link">Entrar</a>
         </nav>
     </header>
 
-    <!-- Contenedor Principal de la Experiencia Dividida -->
     <main class="map-split-view">
-        
-        <!-- Área del mapa (Izquierda) -->
         <section class="map-wrapper">
-            <div id="fullscreen-map"></div>
-            
-            <!-- Previsualización flotante móvil -->
+            <div id="fullscreen-map" role="application" aria-label="Mapa interactivo de propiedades"></div>
+
+            <div class="map-empty" id="map-empty" hidden>
+                <div class="nx-state">
+                    <div class="nx-state__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    </div>
+                    <h2 id="map-empty-title">Mapa sin ubicaciones todavía</h2>
+                    <p id="map-empty-text">Las propiedades actuales no tienen coordenadas registradas. Explora el listado mientras se geolocalizan.</p>
+                    <a class="nx-btn nx-btn--primary" href="/">Explorar catálogo</a>
+                </div>
+            </div>
+
             <div class="mobile-preview-container" id="mobile-preview">
                 <button class="close-preview-btn" data-action="close-preview" aria-label="Cerrar previsualización">
-                    <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor;">
+                    <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor;" aria-hidden="true">
                         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                     </svg>
                 </button>
@@ -289,20 +220,54 @@
             </div>
         </section>
 
-        <!-- Panel Lateral del Catálogo de Propiedades (Derecha - Desktop) -->
         <aside class="sidebar-list">
             <div class="sidebar-header">
                 <h1>Propiedades en el mapa</h1>
-                <p id="visible-properties-count" role="status" aria-live="polite">Consultando catálogo...</p>
+                <p id="visible-properties-count" role="status" aria-live="polite">Consultando catálogo…</p>
             </div>
             <div class="list-grid" id="properties-sidebar-grid">
-                <!-- Skeletons iniciales de carga -->
-                <div class="property-card shimmer-effect" style="height: 320px;"></div>
-                <div class="property-card shimmer-effect" style="height: 320px;"></div>
+                <div class="nx-card" aria-hidden="true">
+                    <div class="nx-card__media nx-skeleton"></div>
+                    <div class="nx-card__body">
+                        <div class="nx-skeleton" style="height:22px; width:45%;"></div>
+                        <div class="nx-skeleton" style="height:16px; width:85%;"></div>
+                        <div class="nx-skeleton" style="height:13px; width:60%;"></div>
+                    </div>
+                </div>
+                <div class="nx-card" aria-hidden="true">
+                    <div class="nx-card__media nx-skeleton"></div>
+                    <div class="nx-card__body">
+                        <div class="nx-skeleton" style="height:22px; width:45%;"></div>
+                        <div class="nx-skeleton" style="height:16px; width:85%;"></div>
+                        <div class="nx-skeleton" style="height:13px; width:60%;"></div>
+                    </div>
+                </div>
             </div>
         </aside>
-
     </main>
+
+    <nav class="nx-bottomnav" aria-label="Navegación inferior">
+        <a href="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            Explorar
+        </a>
+        <a href="/mapa/index.html" class="active" aria-current="page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Mapa
+        </a>
+        <a href="/comparar/index.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3m8-18h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3M12 1v22"/></svg>
+            Comparar
+        </a>
+        <a href="/ia/index.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"/></svg>
+            IA
+        </a>
+        <a href="/cuenta/" class="account-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+            Cuenta
+        </a>
+    </nav>
 
     <!-- Leaflet self-hosted; fallback a CDN si el asset local falla -->
     <script src="/vendor/leaflet/leaflet.js"></script>
@@ -312,8 +277,7 @@
             document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>');
         }
     </script>
-    
-    <!-- Lógica de Enlace y Controladores -->
+
     <script>
         let map;
         let globalProperties = [];
@@ -333,8 +297,17 @@
         }
 
         // Centro/zoom del mapa desde /api/config (MARKET CONFIG, 04.7-B).
-        // Fallback = mercado inicial (La Habana). Se hidrata antes de init.
         const MARKET = { mapCenter: [23.1136, -82.3666], mapZoom: 12 };
+
+        // Sesión: reflejar estado autenticado en el header
+        fetch("/api/session/status", { credentials: "same-origin" })
+            .then(r => r.ok ? r.json() : null)
+            .then(s => {
+                if (!s || !s.authenticated) return;
+                const link = document.querySelector(".account-link");
+                if (link) { link.textContent = "Cuenta"; link.classList.add("logged"); }
+            })
+            .catch(() => {});
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -348,55 +321,49 @@
             loadMapData();
         });
 
-        // Watchdog: el estado "Consultando catálogo..." nunca debe persistir.
-        // Si la carga no resolvió (JS error, Leaflet no cargó, API lenta),
-        // se sustituye por un estado honesto en lugar de un loading eterno.
+        // Watchdog: el estado "Consultando catálogo…" nunca debe persistir.
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const el = document.getElementById('visible-properties-count');
-                if (el && el.textContent.trim() === 'Consultando catálogo...') {
+                if (el && el.textContent.trim() === 'Consultando catálogo…') {
                     el.textContent = 'No se pudo cargar el mapa';
                     const grid = document.getElementById('properties-sidebar-grid');
                     if (grid) grid.innerHTML = `
-                        <div style="grid-column: 1/-1; padding: var(--space-5) 0; text-align: center; color: var(--text-secondary); font-size: var(--text-sm);">
-                            El mapa no está disponible ahora. Explora el <a href="/" style="color: inherit;">listado principal</a>.
+                        <div class="nx-state" style="grid-column:1/-1;">
+                            <h2>El mapa no está disponible ahora</h2>
+                            <p>Explora el listado principal mientras restablecemos la conexión.</p>
+                            <a class="nx-btn nx-btn--primary" href="/">Explorar catálogo</a>
                         </div>`;
                 }
             }, 5000);
         });
 
-        // 1. Inicializar el mapa bloqueando captura de scroll hasta hacer foco explícito
         function initializeMap() {
             map = L.map('fullscreen-map', {
-                scrollWheelZoom: false, // Evita atrapar el scroll de ratón en desktop
+                scrollWheelZoom: false,
                 touchZoom: true
             }).setView(MARKET.mapCenter, MARKET.mapZoom);
 
-            // Tiles consistentes con la homepage (CARTO light) — no OSM directo.
             const tiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
             }).addTo(map);
 
-            // 14D: si el proveedor de tiles falla (red 3G, bloqueo, caída de CARTO),
-            // el mapa no debe quedarse gris en silencio: aviso honesto + marcadores
-            // siguen operativos sobre el fondo.
+            // Aviso honesto si el proveedor de tiles falla (3G/bloqueo/caída).
             let tileErrors = 0;
             tiles.on('tileerror', () => {
                 tileErrors += 1;
-                if (tileErrors === 8) {
+                if (tileErrors === 8 && !document.getElementById('tiles-fallback-notice')) {
                     const notice = document.createElement('div');
                     notice.id = 'tiles-fallback-notice';
-                    notice.style.cssText = 'position:absolute;z-index:1000;bottom:12px;left:50%;transform:translateX(-50%);background:var(--surface,#fff);color:var(--text-secondary,#555);padding:8px 14px;border-radius:8px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.15);max-width:90%;text-align:center;';
+                    notice.className = 'map-status';
                     notice.textContent = 'El mapa base no está disponible. Los marcadores siguen activos.';
                     document.getElementById('fullscreen-map').appendChild(notice);
                 }
             });
 
-            // Escuchar el movimiento del mapa para filtrar elementos en el listado
             map.on('moveend', filterSidebarProperties);
         }
 
-        // 2. Cargar los datos del inventario (D1)
         async function loadMapData() {
             try {
                 const response = await fetch(API_ENDPOINT);
@@ -404,313 +371,215 @@
 
                 globalProperties = await response.json();
 
-                // Encuadrar TODAS las propiedades geolocalizadas (como la home):
-                // el promedio aritmético de un inventario multi-provincia cae en
-                // zonas rurales vacías (bug 15D: mapa "gris" con 0 visibles).
-                // NULL = "sin geolocalización", nunca 0,0 ni coordenadas inventadas.
-                if (globalProperties.length > 0) {
-                    const geo = globalProperties.filter(p => {
-                        const lat = parseFloat(p.latitude);
-                        const lng = parseFloat(p.longitude);
-                        return !isNaN(lat) && !isNaN(lng);
-                    });
-                    if (geo.length === 1) {
-                        map.setView([parseFloat(geo[0].latitude), parseFloat(geo[0].longitude)], 14);
-                    } else if (geo.length > 1) {
-                        map.fitBounds(
-                            geo.map(p => [parseFloat(p.latitude), parseFloat(p.longitude)]),
-                            { padding: [40, 40], maxZoom: 13 }
-                        );
-                    } else {
-                        // Sin ninguna coordenada: estado explícito, no mapa vacío mudo.
-                        showNoCoordsState();
-                    }
-                } else {
-                    showNoCoordsState(true);
+                const withCoords = globalProperties.filter(p => parseFloat(p.latitude) && parseFloat(p.longitude));
+
+                if (withCoords.length === 0) {
+                    // Estado honesto: inventario sin geolocalización (o vacío).
+                    // Jamás se inventan coordenadas.
+                    showNoCoordsState(globalProperties.length === 0);
+                    document.getElementById('visible-properties-count').textContent =
+                        globalProperties.length === 0 ? 'Sin propiedades publicadas' : '0 propiedades con ubicación';
+                    renderSidebarProperties([]);
+                    return;
                 }
 
-                plotMarkers();
-                filterSidebarProperties();
+                // Encuadrar TODAS las propiedades geolocalizadas
+                const bounds = withCoords.map(p => [parseFloat(p.latitude), parseFloat(p.longitude)]);
+                if (bounds.length === 1) map.setView(bounds[0], 14);
+                else map.fitBounds(bounds, { padding: [48, 48], maxZoom: 13 });
 
+                renderMarkers(withCoords);
+                filterSidebarProperties();
             } catch (error) {
                 console.error(error);
-                const countLabel = document.getElementById('visible-properties-count');
-                const sidebarGrid = document.getElementById('properties-sidebar-grid');
-                if (countLabel) countLabel.textContent = 'Error al cargar el catálogo';
-                if (sidebarGrid) sidebarGrid.innerHTML = `
-                    <div style="grid-column: 1/-1; padding: var(--space-5) 0; text-align: center; color: var(--text-secondary); font-size: var(--text-sm);">
-                        No se pudo cargar el catálogo. Reintentar desde el <a href="/" style="color: inherit;">listado principal</a>.
+                document.getElementById('visible-properties-count').textContent = 'Error al cargar propiedades';
+                const grid = document.getElementById('properties-sidebar-grid');
+                if (grid) grid.innerHTML = `
+                    <div class="nx-state" style="grid-column:1/-1;">
+                        <h2>No pudimos cargar el mapa</h2>
+                        <p>Tu conexión parece lenta o intermitente.</p>
+                        <button class="nx-btn nx-btn--primary" data-action="retry-map">Reintentar</button>
                     </div>`;
             }
         }
 
-        // Estado explícito cuando no hay inmuebles geolocalizados (o no hay inventario).
-        function showNoCoordsState(noInventory = false) {
-            const countLabel = document.getElementById('visible-properties-count');
-            const sidebarGrid = document.getElementById('properties-sidebar-grid');
-            const msg = noInventory
-                ? 'Aún no hay propiedades publicadas.'
-                : 'Las propiedades publicadas no tienen ubicación en el mapa todavía.';
-            const sub = noInventory
-                ? 'Vuelve pronto para descubrir nuevos inmuebles.'
-                : 'Explora el listado completo mientras se añaden ubicaciones.';
-            if (countLabel) countLabel.textContent = msg;
-            if (sidebarGrid) sidebarGrid.innerHTML = `
-                <div style="grid-column: 1/-1; padding: var(--space-7) var(--space-4); text-align: center;">
-                    <div style="margin-bottom: var(--space-3); color: var(--text-secondary);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14"/><path d="M15 6v14"/></svg></div>
-                    <h3 style="font-size: var(--text-md); font-weight: var(--weight-bold); color: var(--text-primary); margin-bottom: var(--space-2);">${msg}</h3>
-                    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-4);">${sub}</p>
-                    <a href="/" style="display:inline-block; padding: var(--space-2) var(--space-4); background: var(--accent); color: #fff; border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-medium);">Ver listado</a>
-                </div>`;
+        // Estado "sin coordenadas" (14D): nombre canónico showNoCoordsState.
+        function showNoCoordsState(noInventory) {
+            const el = document.getElementById('map-empty');
+            document.getElementById('map-empty-title').textContent =
+                noInventory ? 'Aún no hay propiedades publicadas' : 'Mapa sin ubicaciones todavía';
+            document.getElementById('map-empty-text').textContent =
+                noInventory
+                    ? 'Cuando se publique el primer inmueble aparecerá aquí geolocalizado.'
+                    : 'Las propiedades actuales no tienen coordenadas registradas. Explora el listado mientras se geolocalizan.';
+            el.hidden = false;
         }
 
-        // 3. Dibujar los marcadores de precio de estilo Airbnb
-        function plotMarkers() {
-            // Limpiar marcadores viejos
-            markersGroup.forEach(m => map.removeLayer(m));
-            markersGroup = [];
-
-            globalProperties.forEach(property => {
-                const lat = parseFloat(property.latitude);
-                const lng = parseFloat(property.longitude);
-                if (!lat || !lng) return;
-
-                // Precio compacto currency-aware (símbolo solo si moneda determinada)
-                const compactPrice = formatCompactPrice(property.price, property.currency);
-
-                // Crear un icono HTML personalizado (L.divIcon)
-                const priceIcon = L.divIcon({
-                    className: 'custom-leaflet-icon',
-                    html: `<div class="price-marker" id="marker-${escapeHtml(property.id)}">${compactPrice}</div>`,
-                    iconSize: [60, 30],
-                    iconAnchor: [30, 15]
-                });
-
-                const marker = L.marker([lat, lng], { icon: priceIcon }).addTo(map);
-                
-                // Al hacer clic, gestionar comportamiento responsivo
-                marker.on('click', () => {
-                    handleMarkerClick(property);
-                });
-
-                // Registrar para manipulación posterior
-                marker.propertyId = property.id;
-                markersGroup.push(marker);
-            });
-        }
-
-        // 4. Formateador compacto de precios (Tier 1 Standard) — currency-aware
-        // (04.6-E2-A): símbolo solo si la moneda está determinada.
-        function formatCompactPrice(price, currency) {
-            const num = price >= 1000000 ? `${(price / 1000000).toFixed(1)}M`
-                : price >= 1000 ? `${Math.round(price / 1000)}k` : `${escapeHtml(price)}`;
-            if (currency === 'USD') return `$${num}`;
-            if (currency === 'EUR') return `€${num}`;
-            if (currency === 'CUP') return `${num} CUP`;
-            return num; // moneda no especificada → sin símbolo
-        }
-
-        // 5. Filtrar las tarjetas del sidebar mostrando solo las visibles en pantalla
-        function filterSidebarProperties() {
-            const bounds = map.getBounds();
-            const sidebarGrid = document.getElementById('properties-sidebar-grid');
-            const countLabel = document.getElementById('visible-properties-count');
-
-            // Sin inventario geolocalizado: estado honesto en lugar de un
-            // mapa vacío que aparenta ausencia de propiedades en la zona.
-            const hasGeo = globalProperties.some(p => !isNaN(parseFloat(p.latitude)) && !isNaN(parseFloat(p.longitude)));
-            if (!hasGeo) {
-                countLabel.textContent = 'Mapa sin ubicaciones publicadas';
-                sidebarGrid.innerHTML = `
-                    <div style="grid-column: 1/-1; padding: var(--space-5) 0; text-align: center; color: var(--text-secondary); font-size: var(--text-sm);">
-                        Las propiedades actuales aún no tienen ubicación en el mapa. Explóralas desde el <a href="/" style="color: inherit;">listado principal</a>.
-                    </div>
-                `;
-                return;
-            }
-
-            // Filtrar propiedades dentro del cuadrante actual
-            const visibleProperties = globalProperties.filter(property => {
-                const lat = parseFloat(property.latitude);
-                const lng = parseFloat(property.longitude);
-                if (!lat || !lng) return false;
-                return bounds.contains([lat, lng]);
-            });
-
-            // Actualizar contador
-            countLabel.textContent = `${visibleProperties.length} propiedades visibles`;
-
-            // Renderizar listado de la barra lateral
-            renderSidebarList(visibleProperties, sidebarGrid);
-        }
-
-        // 6. Pintar listado lateral interactivo
-        function renderSidebarList(properties, container) {
-            container.innerHTML = '';
-
-            if (properties.length === 0) {
-                container.innerHTML = `
-                    <div style="grid-column: 1/-1; padding: var(--space-5) 0; text-align: center; color: var(--text-secondary); font-size: var(--text-sm);">
-                        Mueve el mapa o reduce el zoom para encontrar propiedades en esta área.
-                    </div>
-                `;
-                return;
-            }
-
-            const fmtPrice = (n, currency) => {
-            // 04.6-E2-A: USD → US$, EUR → €, CUP → sufijo CUP, NULL → sin símbolo.
+        const fmtPrice = (n, currency) => {
             const num = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(n);
             if (currency === 'USD') return `US$${num}`;
             if (currency === 'EUR') return `€${num}`;
             if (currency === 'CUP') return `${num} CUP`;
             return num;
         };
+        const compactPrice = (n, currency) => {
+            const num = n >= 1e6 ? `${(n/1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n/1e3)}k` : `${n}`;
+            if (currency === 'USD') return `$${num}`;
+            if (currency === 'EUR') return `€${num}`;
+            if (currency === 'CUP') return `${num} CUP`;
+            return num;
+        };
+
+        function renderMarkers(properties) {
+            markersGroup.forEach(m => map.removeLayer(m));
+            markersGroup = [];
+
+            properties.forEach(property => {
+                const lat = parseFloat(property.latitude), lng = parseFloat(property.longitude);
+                const icon = L.divIcon({
+                    className: '',
+                    html: `<div class="nx-price-marker" id="marker-${escapeHtml(property.id)}">${compactPrice(property.price, property.currency)}</div>`,
+                    iconSize: [64, 32],
+                    iconAnchor: [32, 16]
+                });
+                const marker = L.marker([lat, lng], { icon }).addTo(map);
+                marker.on('click', () => handleMarkerClick(property));
+                markersGroup.push(marker);
+            });
+        }
+
+        function filterSidebarProperties() {
+            if (!map || globalProperties.length === 0) return;
+            const bounds = map.getBounds();
+            const visible = globalProperties.filter(p => {
+                const lat = parseFloat(p.latitude), lng = parseFloat(p.longitude);
+                return lat && lng && bounds.contains([lat, lng]);
+            });
+            document.getElementById('visible-properties-count').textContent =
+                `${visible.length} propiedad${visible.length !== 1 ? 'es' : ''} visible${visible.length !== 1 ? 's' : ''}`;
+            renderSidebarProperties(visible);
+        }
+
+        function renderSidebarProperties(properties) {
+            const container = document.getElementById('properties-sidebar-grid');
+            container.innerHTML = '';
+
+            if (properties.length === 0) {
+                container.innerHTML = `
+                    <div class="nx-state" style="grid-column:1/-1;">
+                        <h2>Nada por aquí</h2>
+                        <p>Desplaza el mapa o aleja el zoom para descubrir propiedades en otras zonas.</p>
+                    </div>`;
+                return;
+            }
 
             properties.forEach(property => {
                 const card = document.createElement('article');
-                card.className = 'property-card';
-                
-                const formattedPrice = fmtPrice(property.price, property.currency);
+                card.className = 'nx-card';
 
-                // Campos reales del contrato público de la API (04.5)
                 const cardImg = escapeHtml((property.images && property.images[0]) || FALLBACK_IMG);
                 const cardLocation = [property.neighborhood, property.city].filter(Boolean).join(', ') || 'Ubicación';
-                const cardOperation = escapeHtml((property.operation || 'venta').replace(/^./, c => c.toUpperCase()));
+                const cardOperation = escapeHtml((property.operation || 'venta'));
                 const canonicalId = encodeURIComponent(property.public_code || property.id);
 
                 card.innerHTML = `
-                    <div class="image-container" style="aspect-ratio: 16/10;">
-                        <span class="badge" style="font-size: 10px; padding: 2px 6px;">${cardOperation}</span>
-                        <img src="${cardImg}" srcset="${responsiveSrcSet(cardImg)}" sizes="(max-width: 768px) 100vw, 400px" alt="${escapeHtml(property.title)}" loading="lazy" decoding="async">
+                    <div class="nx-card__media">
+                        <span class="nx-card__badge">${cardOperation}</span>
+                        <img src="${cardImg}" srcset="${responsiveSrcSet(cardImg)}" sizes="(max-width: 768px) 100vw, 400px" alt="${escapeHtml(property.title)}" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_IMG}">
                     </div>
-                    <div class="details-container" style="padding: var(--space-3); gap: 4px;">
-                        <div class="price" style="font-size: var(--text-md);">${formattedPrice}</div>
-                        <h4 class="title" style="font-size: var(--text-sm);">${escapeHtml(property.title)}</h4>
-                        <div class="location" style="font-size: var(--text-xs);">${escapeHtml(cardLocation)}</div>
+                    <div class="nx-card__body">
+                        <div class="nx-card__price" style="font-size: var(--text-subhead);">${fmtPrice(property.price, property.currency)}</div>
+                        <div class="nx-card__title">
+                            <a href="/property.html?id=${canonicalId}" class="nx-card__link">${escapeHtml(property.title)}</a>
+                        </div>
+                        <div class="nx-card__location">${escapeHtml(cardLocation)}</div>
                     </div>
                 `;
 
-                // Interacción bidireccional (Hover de tarjeta activa pin)
                 card.addEventListener('mouseenter', () => highlightMarker(property.id, true));
                 card.addEventListener('mouseleave', () => highlightMarker(property.id, false));
-
-                card.style.cursor = 'pointer';
-                card.addEventListener('click', () => {
-                    window.location.href = `/property.html?id=${canonicalId}`;
-                });
 
                 container.appendChild(card);
             });
         }
 
-        // Sincronización del hover: Resalta el pin del mapa
         function highlightMarker(id, isActive) {
             const element = document.getElementById(`marker-${id}`);
             if (!element) return;
-            if (isActive) {
-                element.classList.add('active-marker');
-            } else {
-                element.classList.remove('active-marker');
-            }
+            element.classList.toggle('active-marker', isActive);
         }
 
-        // 7. Gestionar clics en marcadores del mapa (Con previsualización móvil)
         function handleMarkerClick(property) {
-            // Desactivar marcas anteriores
-            document.querySelectorAll('.price-marker').forEach(el => el.classList.remove('active-marker'));
-            
-            // Activar marca cliqueada
+            document.querySelectorAll('.nx-price-marker').forEach(el => el.classList.remove('active-marker'));
             highlightMarker(property.id, true);
 
             const isMobile = window.innerWidth <= 992;
             if (isMobile) {
-                // Inyectar previsualización móvil flotante estilo Airbnb
                 const mobileSlot = document.getElementById('mobile-card-slot');
-                const formattedPrice = fmtPrice(property.price, property.currency);
-
                 const previewImg = escapeHtml((property.images && property.images[0]) || FALLBACK_IMG);
                 const previewId = encodeURIComponent(property.public_code || property.id);
 
                 mobileSlot.innerHTML = `
-                    <article class="property-card" data-href="/property.html?id=${previewId}" tabindex="0" role="link">
-                        <div class="image-container">
-                            <img src="${previewImg}" srcset="${responsiveSrcSet(previewImg)}" sizes="(max-width: 768px) 100vw, 400px" alt="${escapeHtml(property.title)}" decoding="async">
+                    <article class="nx-card" data-href="/property.html?id=${previewId}" tabindex="0" role="link" aria-label="Ver ${escapeHtml(property.title)}">
+                        <div class="nx-card__media">
+                            <img src="${previewImg}" srcset="${responsiveSrcSet(previewImg)}" sizes="120px" alt="${escapeHtml(property.title)}" decoding="async" data-fallback-src="${FALLBACK_IMG}">
                         </div>
-                        <div class="details-container">
-                            <div class="price">${formattedPrice}</div>
-                            <h4 class="title">${escapeHtml(property.title)}</h4>
-                            <div class="features-grid">
-                                <div class="feature-item">
-                                    <span>${escapeHtml(property.bedrooms || 0)}</span> habs
-                                </div>
-                                <div class="feature-item">
-                                    <span>${escapeHtml(property.area || 0)}</span> m²
-                                </div>
+                        <div class="nx-card__body">
+                            <div class="nx-card__price" style="font-size: var(--text-body);">${fmtPrice(property.price, property.currency)}</div>
+                            <div class="nx-card__title">${escapeHtml(property.title)}</div>
+                            <div class="nx-card__specs">
+                                ${Number(property.bedrooms) > 0 ? `<span>${escapeHtml(property.bedrooms)} hab</span>` : ''}
+                                ${property.area ? `<span>${escapeHtml(property.area)} m²</span>` : ''}
                             </div>
                         </div>
                     </article>
                 `;
 
-                const previewContainer = document.getElementById('mobile-preview');
-                previewContainer.classList.add('visible');
+                document.getElementById('mobile-preview').classList.add('visible');
             } else {
-                // En Desktop: Hacer scroll suave en el sidebar hasta encontrar la tarjeta
-                const cards = document.querySelectorAll('#properties-sidebar-grid .property-card');
+                const cards = document.querySelectorAll('#properties-sidebar-grid .nx-card');
                 cards.forEach(card => {
                     if (card.innerHTML.includes(property.title)) {
                         card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        card.style.borderColor = 'var(--accent)';
-                        setTimeout(() => card.style.borderColor = 'var(--border-subtle)', 2000);
+                        card.style.borderColor = 'var(--color-accent)';
+                        setTimeout(() => card.style.borderColor = '', 2000);
                     }
                 });
             }
         }
 
-        // Cerrar previsualización móvil
         function closeMobilePreview() {
-            const previewContainer = document.getElementById('mobile-preview');
-            previewContainer.classList.remove('visible');
-            document.querySelectorAll('.price-marker').forEach(el => el.classList.remove('active-marker'));
+            document.getElementById('mobile-preview').classList.remove('visible');
+            document.querySelectorAll('.nx-price-marker').forEach(el => el.classList.remove('active-marker'));
         }
 
         // Delegación sin handlers inline (CSP)
         document.addEventListener("click", e => {
             const close = e.target.closest('[data-action="close-preview"]');
             if (close) { closeMobilePreview(); return; }
+            const retry = e.target.closest('[data-action="retry-map"]');
+            if (retry) { loadMapData(); return; }
             const nav = e.target.closest("[data-href]");
             if (nav) { window.location.href = nav.dataset.href; }
         });
         document.addEventListener("keydown", e => {
             if (e.key !== "Enter" && e.key !== " ") return;
             const nav = e.target.closest("[data-href]");
-            if (nav) window.location.href = nav.dataset.href;
+            if (nav) { e.preventDefault(); window.location.href = nav.dataset.href; }
         });
+        // Fallback de imágenes sin onerror inline
+        document.addEventListener("error", e => {
+            const img = e.target;
+            if (img && img.tagName === "IMG" && img.dataset.fallbackSrc && !img.dataset.fallbackDone) {
+                img.dataset.fallbackDone = "1";
+                img.src = img.dataset.fallbackSrc;
+            }
+        }, true);
     </script>
-<script>
+    <script>
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker.register("/sw.js").catch(() => {});
         }
     </script>
-    <footer class="nx-footer" aria-label="Información de {{BRAND_NAME}}">
-        <div class="nx-footer__inner">
-            <div class="nx-footer__brand">
-                <span class="nx-footer__logo">{{BRAND_NAME}}</span>
-                <span class="nx-footer__tag">Plataforma inmobiliaria de {{MARKET_COUNTRY}}</span>
-            </div>
-            <nav class="nx-footer__nav" aria-label="Enlaces de {{BRAND_NAME}}">
-                <a href="/">Propiedades</a>
-                <a href="/mapa/index.html">Mapa</a>
-                <a href="/comparar/index.html">Comparar</a>
-                <a href="/ia/index.html">{{BRAND_NAME}} IA</a>
-            </nav>
-            <p class="nx-footer__legal">
-                <a href="/legal.html#privacidad">Privacidad</a> ·
-                <a href="/legal.html#terminos">Términos</a> ·
-                <a href="/legal.html#contacto">Contacto</a>
-            </p>
-            <p class="nx-footer__legal">© {{YEAR}} {{LEGAL_NAME}}</p>
-        </div>
-    </footer>
-
 </body>
 </html>

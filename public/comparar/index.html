@@ -15,58 +15,7 @@
     
     <!-- Estilos de la experiencia de comparación premium -->
     <style>
-        /* Ajuste de cabecera fija */
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: var(--header-height);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 var(--space-5);
-            transition: var(--transition-normal);
-        }
-
-        .logo {
-            font-size: var(--text-lg);
-            font-weight: var(--weight-bold);
-            color: var(--text-primary);
-            letter-spacing: -0.03em;
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-        }
-
-        .logo svg {
-            width: 24px;
-            height: 24px;
-            fill: var(--text-primary);
-        }
-
-        nav {
-            display: flex;
-            align-items: center;
-            gap: var(--space-5);
-        }
-
-        nav a {
-            font-size: var(--text-sm);
-            font-weight: var(--weight-medium);
-            color: var(--text-secondary);
-            padding: var(--space-2) var(--space-3);
-            border-radius: var(--radius-sm);
-            display: inline-flex;
-            align-items: center;
-            min-height: var(--touch-target);
-        }
-
-        nav a:hover, nav a.active {
-            color: var(--text-primary);
-            background-color: var(--bg-secondary);
-        }
+        :root { --color-accent: {{BRAND_PRIMARY_COLOR}}; }
 
         /* Área de Trabajo de Comparación */
         .compare-workspace {
@@ -339,14 +288,6 @@
 
         /* Adaptabilidad Móvil (Snap-Scroll horizontal) */
         @media (max-width: 768px) {
-            header {
-                padding: 0 var(--space-4);
-            }
-
-            nav {
-                display: none;
-            }
-
             /* Habilitar scroll horizontal nativo por columnas */
             .compare-layout {
                 grid-template-columns: 120px;
@@ -396,19 +337,14 @@
 <body>
     <script src="/demo-banner.js"></script>
 
-    <!-- Cabecera de Navegación Premium Glass-Effect -->
-    <header class="glass-effect">
-        <a href="/" class="logo">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 3L2 12h3v8h14v-8h3L12 3zm2 15h-4v-4h4v4z"/>
-            </svg>
-            {{BRAND_NAME}}
-        </a>
-        <nav>
-            <a href="/">Propiedades</a>
+    <header class="nx-header">
+        <a href="/" class="nx-logo">NE<em>X</em>O</a>
+        <nav class="nx-header__nav" aria-label="Navegación principal">
+            <a href="/">Explorar</a>
             <a href="/mapa/index.html">Mapa</a>
             <a href="/comparar/index.html" class="active">Comparar</a>
-            <a href="/ia/index.html">Chat IA</a>
+            <a href="/ia/index.html">IA</a>
+            <a href="/cuenta/" class="account-link">Entrar</a>
         </nav>
     </header>
 
@@ -464,22 +400,48 @@
 
         <!-- Estado vacío si el usuario no tiene favoritos -->
         <div class="empty-state" id="empty-favorites-view" style="display: none;">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>
+            <div class="nx-state__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3m8-18h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3M12 1v22"/></svg>
+            </div>
             <h2>No tienes propiedades para comparar</h2>
-            <p>Para comparar propiedades, primero navega por nuestro catálogo y añade algunas viviendas a tus favoritos pulsando en el icono del corazón.</p>
-            <button data-href="/">Explorar catálogo</button>
+            <p>Guarda viviendas con el corazón y compáralas aquí lado a lado: precio, zona, habitaciones y superficie.</p>
+            <button class="nx-btn nx-btn--primary" data-href="/">Explorar catálogo</button>
         </div>
 
         <!-- Estado de error de red: feedback en pantalla + reintento -->
         <div class="empty-state" id="error-view" style="display: none;">
+            <div class="nx-state__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+            </div>
             <h2>No pudimos cargar la comparación</h2>
             <p>Tu conexión parece lenta o intermitente. Inténtalo de nuevo.</p>
-            <button data-action="retry-comparison">Reintentar</button>
+            <button class="nx-btn nx-btn--primary" data-action="retry-comparison">Reintentar</button>
         </div>
 
     </main>
+
+    <nav class="nx-bottomnav" aria-label="Navegación inferior">
+        <a href="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            Explorar
+        </a>
+        <a href="/mapa/index.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Mapa
+        </a>
+        <a href="/comparar/index.html" class="active" aria-current="page">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3m8-18h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3M12 1v22"/></svg>
+            Comparar
+        </a>
+        <a href="/ia/index.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"/></svg>
+            IA
+        </a>
+        <a href="/cuenta/" class="account-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+            Cuenta
+        </a>
+    </nav>
 
     <!-- Lógica de Comparación y Renderizador de Favoritos (Vanilla) -->
     <script>
@@ -503,6 +465,16 @@
         // Escape de datos provenientes de la API antes de inyectar en innerHTML
         const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g,
             c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+        // Sesión: reflejar estado autenticado en el header
+        fetch("/api/session/status", { credentials: "same-origin" })
+            .then(r => r.ok ? r.json() : null)
+            .then(s => {
+                if (!s || !s.authenticated) return;
+                const link = document.querySelector(".account-link");
+                if (link) { link.textContent = "Cuenta"; link.classList.add("logged"); }
+            })
+            .catch(() => {});
 
         document.addEventListener('DOMContentLoaded', () => {
             loadComparisonData();
