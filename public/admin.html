@@ -9,7 +9,7 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#faf9f7">
     <!-- Leaflet para la selección de ubicación -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
     <style>
         /* Tokens: variables.css */
 
@@ -407,6 +407,12 @@
                 <!-- Columna de Propiedades Guardadas -->
                 <section class="panel-card">
                     <h2>Inmuebles Almacenados</h2>
+                    <div class="bulk-toolbar" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+                        <button type="button" class="btn secondary" style="font-size:12px; padding:8px 12px;" data-action="export-csv">⬇ Exportar CSV</button>
+                        <button type="button" class="btn secondary" style="font-size:12px; padding:8px 12px;" data-action="import-csv">⬆ Importar CSV</button>
+                        <input type="file" id="csv-file-input" accept=".csv,text/csv" hidden>
+                    </div>
+                    <div id="csv-feedback" style="font-size:12px; color:var(--color-ink-muted); margin-bottom:8px;"></div>
                     <div style="display:flex; flex-direction:column; gap:12px; max-height: 80vh; overflow-y:auto;" id="admin-properties-list">
                         <!-- Propiedades inyectadas dinámicamente -->
                     </div>
@@ -415,8 +421,13 @@
         </div>
     </div>
 
-    <!-- Scripts de Leaflet -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Leaflet self-hosted; fallback a CDN si el asset local falla -->
+    <script src="/vendor/leaflet/leaflet.js"></script>
+    <script>
+        if (typeof L === "undefined") {
+            document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""><\/script>');
+        }
+    </script>
     <script>
         let adminProperties = [];
         let imageList = [];
@@ -530,6 +541,94 @@
                     </div>
                 </div>
             `).join('');
+        }
+
+        // ===== Bulk CSV import/export =====
+        const CSV_COLS = ["title","type","operation","price","province","city","neighborhood","address","bedrooms","bathrooms","area","description","images","latitude","longitude","status","owner_name","owner_phone","internal_notes"];
+
+        function exportCsv() {
+            if (!adminProperties.length) { csvFeedback("No hay inmuebles para exportar."); return; }
+            const esc = v => {
+                if (v === null || v === undefined) return "";
+                const s = String(v);
+                return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+            };
+            const rows = [CSV_COLS.join(",")].concat(adminProperties.map(p => CSV_COLS.map(c => {
+                let val = p[c];
+                if (c === "images") val = typeof val === "string" ? val : JSON.stringify(val || []);
+                return esc(val);
+            }).join(",")));
+            const blob = new Blob(["﻿" + rows.join("\n")], { type: "text/csv;charset=utf-8" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `nexo-inmuebles-${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+            csvFeedback(`✓ Exportados ${adminProperties.length} inmuebles.`);
+        }
+
+        function csvFeedback(msg, isError = false) {
+            const el = document.getElementById("csv-feedback");
+            el.textContent = msg;
+            el.style.color = isError ? "var(--danger)" : "var(--success, #15803d)";
+        }
+
+        function parseCsvLine(line) {
+            const out = []; let cur = ""; let inQ = false;
+            for (let i = 0; i < line.length; i++) {
+                const ch = line[i];
+                if (inQ) {
+                    if (ch === '"') { if (line[i+1] === '"') { cur += '"'; i++; } else inQ = false; }
+                    else cur += ch;
+                } else if (ch === '"') inQ = true;
+                else if (ch === ",") { out.push(cur); cur = ""; }
+                else cur += ch;
+            }
+            out.push(cur);
+            return out;
+        }
+
+        async function importCsv(file) {
+            const token = sessionStorage.getItem("nexo_admin_token");
+            const text = await file.text();
+            const lines = text.replace(/^﻿/, "").split(/\r?\n/).filter(l => l.trim());
+            if (lines.length < 2) { csvFeedback("CSV vacío o sin filas de datos.", true); return; }
+            const header = parseCsvLine(lines[0]).map(h => h.trim());
+            let created = 0, failed = 0;
+            csvFeedback(`Importando ${lines.length - 1} inmuebles…`);
+            for (let i = 1; i < lines.length; i++) {
+                const vals = parseCsvLine(lines[i]);
+                const row = {};
+                header.forEach((h, idx) => { row[h] = vals[idx] !== undefined ? vals[idx] : ""; });
+                const payload = {
+                    title: row.title, type: row.type, operation: row.operation,
+                    price: parseFloat(row.price) || 0,
+                    province: row.province, city: row.city, neighborhood: row.neighborhood,
+                    address: row.address || null,
+                    bedrooms: parseInt(row.bedrooms) || 0,
+                    bathrooms: parseInt(row.bathrooms) || 0,
+                    area: parseFloat(row.area) || null,
+                    description: row.description || null,
+                    images: row.images ? (row.images.startsWith("[") ? JSON.parse(row.images) : [row.images]) : [],
+                    latitude: row.latitude ? parseFloat(row.latitude) : null,
+                    longitude: row.longitude ? parseFloat(row.longitude) : null,
+                    status: row.status || "published",
+                    owner_name: row.owner_name || null,
+                    owner_phone: row.owner_phone || null,
+                    internal_notes: row.internal_notes || null
+                };
+                if (!payload.title || !payload.type || !payload.price) { failed++; continue; }
+                try {
+                    const res = await fetch("/api/admin/properties", {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                    if (res.ok) created++; else failed++;
+                } catch { failed++; }
+            }
+            csvFeedback(`✓ ${created} importados${failed ? `, ${failed} con error` : ""}.`);
+            loadAdminProperties();
         }
 
         // Subida de imágenes a R2
@@ -772,7 +871,13 @@
                 case "move-photo-right": movePhoto(parseInt(t.dataset.photoIndex, 10), 1); break;
                 case "edit-property": enableEditMode(t.dataset.id); break;
                 case "delete-property": deleteProperty(t.dataset.id); break;
+                case "export-csv": exportCsv(); break;
+                case "import-csv": document.getElementById("csv-file-input").click(); break;
             }
+        });
+        document.getElementById("csv-file-input").addEventListener("change", e => {
+            if (e.target.files.length) importCsv(e.target.files[0]);
+            e.target.value = "";
         });
     </script>
 <script>
