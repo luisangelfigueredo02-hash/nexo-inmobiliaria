@@ -11,14 +11,13 @@
     <meta name="theme-color" content="#faf9f7">
 
     <!-- Preconnect a terceros del mapa: reduce latencia TLS/DNS al iniciar -->
-    <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin>
 
     <!-- Enlace al sistema de diseño global -->
     <link rel="stylesheet" href="/variables.css">
 
-    <!-- Estilos de Leaflet para el mapa -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Estilos de Leaflet self-hosted (sin dependencia de CDN tercero) -->
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
     
     <!-- Estilos específicos de la experiencia de mapa dividido -->
     <style>
@@ -304,8 +303,14 @@
 
     </main>
 
-    <!-- Librerías JS de Leaflet para el motor geográfico -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Leaflet self-hosted; fallback a CDN si el asset local falla -->
+    <script src="/vendor/leaflet/leaflet.js"></script>
+    <script>
+        // Si el asset self-hosted no cargó (despliegue parcial), fallback a CDN.
+        if (typeof L === "undefined") {
+            document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>');
+        }
+    </script>
     
     <!-- Lógica de Enlace y Controladores -->
     <script>
@@ -395,7 +400,12 @@
                         const avgLat = geo.reduce((a, p) => a + parseFloat(p.latitude), 0) / geo.length;
                         const avgLng = geo.reduce((a, p) => a + parseFloat(p.longitude), 0) / geo.length;
                         map.setView([avgLat, avgLng], 14);
+                    } else {
+                        // Sin ninguna coordenada: estado explícito, no mapa vacío mudo.
+                        showNoCoordsState();
                     }
+                } else {
+                    showNoCoordsState(true);
                 }
 
                 plotMarkers();
@@ -411,6 +421,26 @@
                         No se pudo cargar el catálogo. Reintentar desde el <a href="/" style="color: inherit;">listado principal</a>.
                     </div>`;
             }
+        }
+
+        // Estado explícito cuando no hay inmuebles geolocalizados (o no hay inventario).
+        function showNoCoordsState(noInventory = false) {
+            const countLabel = document.getElementById('visible-properties-count');
+            const sidebarGrid = document.getElementById('properties-sidebar-grid');
+            const msg = noInventory
+                ? 'Aún no hay propiedades publicadas.'
+                : 'Las propiedades publicadas no tienen ubicación en el mapa todavía.';
+            const sub = noInventory
+                ? 'Vuelve pronto para descubrir nuevos inmuebles.'
+                : 'Explora el listado completo mientras se añaden ubicaciones.';
+            if (countLabel) countLabel.textContent = msg;
+            if (sidebarGrid) sidebarGrid.innerHTML = `
+                <div style="grid-column: 1/-1; padding: var(--space-7) var(--space-4); text-align: center;">
+                    <div style="font-size:32px; margin-bottom: var(--space-3);">🗺️</div>
+                    <h3 style="font-size: var(--text-md); font-weight: var(--weight-bold); color: var(--text-primary); margin-bottom: var(--space-2);">${msg}</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-4);">${sub}</p>
+                    <a href="/" style="display:inline-block; padding: var(--space-2) var(--space-4); background: var(--accent); color: #fff; border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-medium);">Ver listado</a>
+                </div>`;
         }
 
         // 3. Dibujar los marcadores de precio de estilo Airbnb

@@ -92,6 +92,37 @@
         .search-bar button:hover { background: var(--color-accent-hover); }
         .search-bar button:active { transform: scale(0.96); }
 
+        /* ---------- Header nav unificada ---------- */
+        .nx-header__nav { display: flex; gap: var(--space-1); align-items: center; }
+        .nx-header__nav a {
+            font-size: var(--text-label);
+            font-weight: var(--weight-medium);
+            color: var(--color-ink-secondary);
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-full);
+            min-height: var(--touch-target);
+            display: inline-flex;
+            align-items: center;
+            transition: color var(--duration-fast), background var(--duration-fast);
+        }
+        .nx-header__nav a:hover { color: var(--color-ink); background: var(--color-surface-sunken); }
+        .nx-header__nav a.active { color: var(--color-accent); font-weight: var(--weight-semibold); }
+
+        /* ---------- Trust bar bajo el search ---------- */
+        .trust-bar {
+            display: flex; gap: var(--space-5); justify-content: center; flex-wrap: wrap;
+            margin: var(--space-5) 0 0; padding: 0; list-style: none;
+        }
+        .trust-bar li {
+            font-size: var(--text-label); color: var(--color-ink-secondary);
+            display: flex; align-items: center; gap: var(--space-1);
+        }
+        .trust-bar li strong { color: var(--color-ink); font-variant-numeric: tabular-nums; }
+        .trust-bar li::before {
+            content: ""; width: 5px; height: 5px; border-radius: 50%;
+            background: var(--color-accent); display: inline-block; margin-right: var(--space-2);
+        }
+
         /* ---------- Chips de filtros (progresivos) ---------- */
         .filter-rail {
             max-width: 760px;
@@ -367,8 +398,11 @@
 
     <header class="nx-header">
         <a href="/" class="nx-logo">NE<em>X</em>O</a>
-        <nav style="display:flex; gap: var(--space-4); align-items:center;">
-            <a href="/comparar/index.html" class="nx-btn nx-btn--tertiary" style="min-height:0; padding: var(--space-2) var(--space-3);">Comparar</a>
+        <nav class="nx-header__nav" aria-label="Navegación principal">
+            <a href="/" class="active">Explorar</a>
+            <a href="/mapa/index.html">Mapa</a>
+            <a href="/comparar/index.html">Comparar</a>
+            <a href="/ia/index.html">IA</a>
         </nav>
     </header>
 
@@ -385,6 +419,12 @@
                 </svg>
             </button>
         </form>
+
+        <ul class="trust-bar" id="trust-bar" aria-label="Señales de confianza">
+            <li id="trust-count"><strong>—</strong> propiedades</li>
+            <li><strong>Verificadas</strong> manualmente</li>
+            <li><strong>Contacto</strong> directo</li>
+        </ul>
     </section>
 
     <div class="filter-rail" role="group" aria-label="Filtros rápidos">
@@ -751,6 +791,8 @@
         function renderInventory() {
             const inv = document.getElementById("inventory");
             const count = document.getElementById("results-count");
+            const trust = document.getElementById("trust-count");
+            if (trust) trust.innerHTML = `<strong>${allProperties.length}</strong> propiedades`;
             if (visibleProperties.length === 0) { showState("empty"); count.textContent = "0 propiedades"; return; }
             count.innerHTML = `<strong>${visibleProperties.length}</strong> propiedad${visibleProperties.length !== 1 ? "es" : ""} encontrada${visibleProperties.length !== 1 ? "s" : ""}`;
             const favs = getFavs();
@@ -806,16 +848,21 @@
                 // por defecto y no debe bloquear el render de la vista de lista.
                 const link = document.createElement("link");
                 link.rel = "stylesheet";
-                link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-                link.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
-                link.crossOrigin = "";
+                link.href = "/vendor/leaflet/leaflet.css";
                 document.head.appendChild(link);
                 const s = document.createElement("script");
-                s.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-                s.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
-                s.crossOrigin = "";
+                s.src = "/vendor/leaflet/leaflet.js";
                 s.onload = resolve;
-                s.onerror = reject;
+                s.onerror = () => {
+                    // Fallback a CDN si el asset self-hosted falla
+                    const cdn = document.createElement("script");
+                    cdn.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+                    cdn.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
+                    cdn.crossOrigin = "";
+                    cdn.onload = resolve;
+                    cdn.onerror = reject;
+                    document.head.appendChild(cdn);
+                };
                 document.head.appendChild(s);
             });
             return leafletPromise;
