@@ -504,3 +504,33 @@ img { display: block; max-width: 100%; height: auto; }
     --max-width-content: var(--max-content);
     --safe-bottom-mobile: var(--safe-bottom);
 }
+
+/* ===== NEXO footer (05.21) ===== */
+.nx-footer {
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
+    margin-top: var(--space-7);
+    padding: var(--space-5) var(--space-4) calc(var(--space-5) + var(--safe-bottom));
+}
+.nx-footer__inner {
+    max-width: var(--max-content);
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.nx-footer__brand { display: flex; align-items: baseline; gap: var(--space-2); }
+.nx-footer__logo { font-weight: 800; letter-spacing: -0.02em; color: var(--color-ink); }
+.nx-footer__tag { font-size: var(--text-caption); color: var(--color-ink-muted); }
+.nx-footer__nav { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.nx-footer__nav a {
+    font-size: var(--text-label); color: var(--color-ink-secondary); text-decoration: none;
+    min-height: var(--touch-target); display: inline-flex; align-items: center;
+}
+.nx-footer__nav a:hover { color: var(--color-accent); }
+.nx-footer__legal {
+    font-size: var(--text-caption); color: var(--color-ink-muted); margin: 0; line-height: var(--leading-body);
+}
+@media (min-width: 768px) {
+    .nx-footer__inner { flex-direction: row; align-items: center; justify-content: space-between; }
+}

@@ -11,7 +11,7 @@ import { LEGACY_ADMIN_PLANE } from "./matrix.js";
 
 // Campos públicos: base de todas las audiencias de property.
 const PROPERTY_PUBLIC_FIELDS = Object.freeze([
-  "id", "public_code", "title", "type", "operation", "price",
+  "id", "public_code", "title", "type", "operation", "price", "currency",
   "province", "city", "neighborhood", "bedrooms", "bathrooms",
   "area", "description", "images", "latitude", "longitude",
   "created_at",

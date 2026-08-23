@@ -473,6 +473,7 @@ test("system sin plane reconocido → DENY en todo", async () => {
 
 const FULL_ROW = {
   id: 9, public_code: "N-001", title: "Casa", type: "casa", operation: "venta", price: 100,
+  currency: "USD",
   province: "La Habana", city: "La Habana", neighborhood: "Vedado", bedrooms: 3, bathrooms: 2,
   area: 120, description: "Desc", images: '["/media/a.jpg"]', latitude: 23.1, longitude: -82.4,
   created_at: "2026-08-01",
@@ -484,7 +485,7 @@ const FULL_ROW = {
 test("public: nunca expone privados ni campos de seguridad", async () => {
   const out = serializeProperty(FULL_ROW, "public");
   assert.deepEqual(Object.keys(out).sort(), [
-    "area", "bathrooms", "bedrooms", "city", "created_at", "description", "id", "images",
+    "area", "bathrooms", "bedrooms", "city", "created_at", "currency", "description", "id", "images",
     "latitude", "longitude", "neighborhood", "operation", "price", "province", "public_code", "title", "type",
   ].sort());
   assert.deepEqual(out.images, ["/media/a.jpg"]);

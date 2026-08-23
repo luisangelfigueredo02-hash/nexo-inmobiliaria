@@ -293,7 +293,7 @@
         <aside class="sidebar-list">
             <div class="sidebar-header">
                 <h1>Propiedades en el mapa</h1>
-                <p id="visible-properties-count">Consultando catálogo...</p>
+                <p id="visible-properties-count" role="status" aria-live="polite">Consultando catálogo...</p>
             </div>
             <div class="list-grid" id="properties-sidebar-grid">
                 <!-- Skeletons iniciales de carga -->
@@ -342,6 +342,23 @@
             loadMapData();
         });
 
+        // Watchdog: el estado "Consultando catálogo..." nunca debe persistir.
+        // Si la carga no resolvió (JS error, Leaflet no cargó, API lenta),
+        // se sustituye por un estado honesto en lugar de un loading eterno.
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const el = document.getElementById('visible-properties-count');
+                if (el && el.textContent.trim() === 'Consultando catálogo...') {
+                    el.textContent = 'No se pudo cargar el mapa';
+                    const grid = document.getElementById('properties-sidebar-grid');
+                    if (grid) grid.innerHTML = `
+                        <div style="grid-column: 1/-1; padding: var(--space-5) 0; text-align: center; color: var(--text-secondary); font-size: var(--text-sm);">
+                            El mapa no está disponible ahora. Explora el <a href="/" style="color: inherit;">listado principal</a>.
+                        </div>`;
+                }
+            }, 5000);
+        });
+
         // 1. Inicializar el mapa bloqueando captura de scroll hasta hacer foco explícito
         function initializeMap() {
             map = L.map('fullscreen-map', {
@@ -349,8 +366,9 @@
                 touchZoom: true
             }).setView(MARKET.mapCenter, MARKET.mapZoom);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap'
+            // Tiles consistentes con la homepage (CARTO light) — no OSM directo.
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
             }).addTo(map);
 
             // Escuchar el movimiento del mapa para filtrar elementos en el listado
@@ -364,7 +382,7 @@
                 if (!response.ok) throw new Error('Error al conectar con el catálogo.');
 
                 globalProperties = await response.json();
-                
+
                 // Centrar el mapa en el promedio de propiedades geolocalizadas;
                 // NULL = "sin geolocalización", nunca 0,0 ni coordenadas inventadas.
                 if (globalProperties.length > 0) {
@@ -385,7 +403,13 @@
 
             } catch (error) {
                 console.error(error);
-                document.getElementById('visible-properties-count').textContent = 'Error al cargar';
+                const countLabel = document.getElementById('visible-properties-count');
+                const sidebarGrid = document.getElementById('properties-sidebar-grid');
+                if (countLabel) countLabel.textContent = 'Error al cargar el catálogo';
+                if (sidebarGrid) sidebarGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; padding: var(--space-5) 0; text-align: center; color: var(--text-secondary); font-size: var(--text-sm);">
+                        No se pudo cargar el catálogo. Reintentar desde el <a href="/" style="color: inherit;">listado principal</a>.
+                    </div>`;
             }
         }
 

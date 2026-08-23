@@ -24,15 +24,6 @@
       "purpose": "any"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/icons/screenshot-home.png",
-      "type": "image/png",
-      "sizes": "1920x1080",
-      "form_factor": "wide",
-      "label": "Explora propiedades en Cuba con búsqueda, filtros y mapa"
-    }
-  ],
   "shortcuts": [
     {
       "name": "Buscar propiedades",
