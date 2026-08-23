@@ -10,7 +10,9 @@ El proyecto está construido sobre Cloudflare Workers + D1 y utiliza una arquite
 
 # 🎯 Visión
 
-NEXO busca ofrecer una experiencia inmobiliaria diferente en Cuba:
+NEXO es una plataforma inmobiliaria **white-label**: la marca, el país, la
+moneda, el WhatsApp comercial y los datos de contacto se configuran por
+variables de entorno (ver `TAKEOVER.md` y `src/brand.js`), sin tocar código.
 
 - Interfaz limpia y premium.
 - Experiencia optimizada para dispositivos móviles.
@@ -20,12 +22,13 @@ NEXO busca ofrecer una experiencia inmobiliaria diferente en Cuba:
 - Geolocalización de propiedades.
 - Favoritos.
 - Detalles de propiedades.
-- NEXO IA.
+- Asistente IA (`{{BRAND_NAME}} IA` en la UI, según marca configurada).
 - Panel privado de administración.
 - Protección de información privada de propietarios.
 - Arquitectura preparada para crecer.
 
-NEXO comienza enfocado en Cuba, con especial atención inicial a **La Habana**.
+La configuración actual está enfocada en Cuba, con especial atención inicial a
+**La Habana**. Ver `TAKEOVER.md` para despliegue, rebrand y entrega limpia.
 
 ---
 

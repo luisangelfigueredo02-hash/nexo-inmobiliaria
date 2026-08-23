@@ -111,7 +111,38 @@ nunca inventario real.
 
 ---
 
-## 5b. Backup y rollback
+## 5b. Entrega limpia al comprador (secuencia verificada 2026-08-23)
+
+Estado verificado en producción al ejecutar la limpieza: 1 cuenta de prueba,
+1 favorito (sobre propiedad real), 2 sesiones activas, 0 favoritos sobre
+propiedades demo. Para entregar el sistema "fábrica":
+
+```bash
+# 1. Eliminar inventario demo (25 props D-XXX + N-001 si era demo)
+node scripts/seed-demo.mjs --clear
+wrangler d1 execute nexo-db --remote --file=./demo-clear.sql
+
+# 2. Desactivar el banner de demo: wrangler.toml → DEMO_MODE = "0" → redeploy
+
+# 3. Purgar usuarios de prueba (verifica primero que son tuyos)
+wrangler d1 execute nexo-db --remote \
+  --command "DELETE FROM sessions; DELETE FROM account_favorites; DELETE FROM accounts;"
+
+# 4. Verificación: catálogo vacío + empty state, registro/login funcionales
+curl https://<dominio>/api/properties   # → {"properties":[]}
+```
+
+Limitaciones conocidas: `demo-clear.sql` NO borra cuentas/favoritos (los
+favoritos sobre props demo quedan huérfanos hasta el paso 3) ni resetea
+`listing_id_sequence` si ya hubo inventario real posterior al demo (el reset
+a 0 es seguro solo antes de cargar inventario real). Las tablas legacy
+vacías (`favorites`, `user_favorites`, `users`) y las tablas analíticas sin
+consumidor en el código (`analytics_*`, `ia_*`) son residuo inofensivo;
+eliminarlas es opcional (cleanup futuro).
+
+---
+
+## 5c. Backup y rollback
 
 ```bash
 # Backup de D1 antes de cualquier operación de datos
