@@ -29,10 +29,11 @@ URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.de
 
 ### Comandos
 - Deploy: `npx wrangler deploy`
-- Tests: `npm test` (7 suites, 188 tests)
+- Tests: `npm test` (15 suites, 249 tests)
 - Verificación: `curl .../api/health`
+- D1 migrations: usa SIEMPRE `scripts/apply-migrations.mjs` (nunca `wrangler d1 migrations apply`: el ALTER de 0007 falla por columna duplicada en D1 nueva)
 - CSP: tras tocar cualquier `<script>` inline en public/, ejecutar `node scripts/generate-csp-hashes.mjs --write` (el test anti-drift falla si no se sincroniza)
-- D1 local: `schema.sql` primero (crea `properties`), luego `npx wrangler d1 migrations apply nexo-db --local` (0002 hace ALTER sobre properties)
+- D1 local: `schema.sql` primero (crea `properties`), luego `node scripts/apply-migrations.mjs --local` (0002 hace ALTER sobre properties)
 
 ### Session runtime (04.3)
 - `session-runtime.js`: cookie `__Host-session` (HttpOnly; Secure; SameSite=Lax; Path=/; sin Domain), token 256-bit base64url, D1 guarda solo SHA-256 hex (idx partial UNIQUE token_hash)
@@ -78,11 +79,11 @@ URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.de
 
 ### Security headers (04.2.1)
 - Baseline en worker.js `withSecurityHeaders()` aplicada en `fetch()` a TODA respuesta (API, SEO, assets, media, 404/500)
-- CSP hash-based: script-src sin `unsafe-inline`; hashes sha256 generados desde public/ (9 hashes)
+- CSP hash-based: script-src sin `unsafe-inline`; hashes sha256 generados desde public/ (12 hashes actuales)
 - Excepción documentada: `style-src 'unsafe-inline'` (atributos style= extensos + Leaflet inyecta estilos)
 - Guard: `scripts/generate-csp-hashes.mjs` falla si aparece cualquier handler inline (on*=) en HTML
 - Handlers inline eliminados de las 6 páginas → delegación `data-action` + addEventListener
-- `public/config.js` es código muerto no referenciado (solo teléfono público; candidato a limpieza)
+- `public/config.js` (código muerto) fue eliminado en Gate 20; no recrearlo
 
 ### Estado comprobado este pase
 - API pública: sin campos privados (owner_name/owner_phone/internal_notes/address verificados ausentes)
@@ -92,8 +93,8 @@ URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.de
 - R2 imágenes: formato `/media/*` consistente en D1; objetos existen en producción
 
 ### Problemas reales abiertos
-- Secrets expuestos en ~/.cf_token / ~/.gh_token (rotar)
-- Chat AI no aplicó rate-limit (roadmap P0 A-08a pendiente)
+- Secrets expuestos en ~/.cf_token / ~/.gh_token (rotar — acción del vendedor, fuera del runtime)
+- ~~Chat AI no aplicó rate-limit~~ RESUELTO en Gate 19 (A-08a): `/api/chat` con límite scoped 10 req/5min/IP + rechazo de mensajes >2000 chars
 
 ### Gate 18 — Premium Visual Rebuild (2026-08-23, COMPLETADO)
 - Frontend rebuild UX/UI completo SIN tocar backend; reporte: reports/FINAL-GATE-18-PREMIUM-VISUAL-UX-AUDIT.md

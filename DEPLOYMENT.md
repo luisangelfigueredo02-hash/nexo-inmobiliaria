@@ -18,13 +18,26 @@ CI/CD: push a `main` ejecuta `.github/workflows/deploy.yml` (quality gates → d
 - Secretos (nunca en toml): `npx wrangler secret put ADMIN_TOKEN`, `SENTRY_DSN`, …
 
 ## Migraciones D1
-```bash
-# Local (primero schema base, luego migraciones)
-npx wrangler d1 execute nexo-db --local --file=schema.sql
-npx wrangler d1 migrations apply nexo-db --local
 
-# Producción (tracker `d1_migrations` reconciliado 0001–0006)
-npx wrangler d1 migrations apply nexo-db --remote
+Usa SIEMPRE `scripts/apply-migrations.mjs` (no `wrangler d1 migrations
+apply`): `schema.sql` ya incluye `properties.currency`, por lo que el ALTER
+crudo de la migration 0007 fallaría por columna duplicada en una D1 nueva;
+el script lo aplica de forma idempotente y reconcilia el tracker
+`d1_migrations` sin borrar entradas históricas.
+
+```bash
+# Local (schema base PRIMERO — crea `properties`; la migration 0002 hace
+# ALTER sobre ella y fallaría sin este paso)
+npx wrangler d1 execute nexo-db --local --file=schema.sql
+node scripts/apply-migrations.mjs --local
+
+# D1 nueva (producción del comprador): mismo orden
+npx wrangler d1 execute nexo-db --remote --file=schema.sql
+node scripts/apply-migrations.mjs --remote
+
+# D1 actual de producción (tracker reconciliado 0001–0007 + histórica
+# 0006_properties_currency): ya está aplicada; el script es no-op idempotente
+node scripts/apply-migrations.mjs --remote
 ```
 
 ## Rollback
@@ -32,8 +45,8 @@ Cloudflare conserva cada versión desplegada:
 ```bash
 npx wrangler deployments list        # ver versiones
 npx wrangler versions view <id>      # inspeccionar
-# Rollback inmediato (redirige todo el tráfico a la versión previa):
-npx wrangler versions upload --version-version <id-previo> --percentage 100
+# Rollback inmediato (redirige todo el tráfico a la versión indicada):
+npx wrangler rollback <version-id>
 # (o desplegar de nuevo el commit anterior desde git)
 ```
 En la práctica: `git revert` + `npx wrangler deploy` es el camino recomendado.

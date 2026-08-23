@@ -3,6 +3,29 @@
 Todos los cambios notables del producto NEXO. Formato basado en
 [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
+## [Unreleased] — Sale Hardening (Gates 19–21, 2026-08-23)
+
+### Corregido
+- **`/api/chat` hardened**: rate limit scoped 10 req/5 min/IP y rechazo 400 de
+  mensajes no-string o >2000 chars (antes: solo límite general 20/min).
+- **Precios demo sin moneda**: backfill `currency='USD'` en inventario demo y
+  fix en `scripts/seed-demo.mjs` (la UI mostraba `79,717` en vez de `US$79,717`).
+- **`/robots.txt` hardcodeaba el dominio personal**: ahora se genera dinámico
+  con el origin real (white-label).
+- **Manifest**: dinámico desde brand; referencia a icono maskable inexistente
+  (404) eliminada; `public/manifest.json` estático (código muerto) eliminado.
+- **`src/brand.js`**: el default de WhatsApp ya no embebe el teléfono del
+  operador; con `WHATSAPP_PHONE` vacío los CTAs se ocultan sin enlaces rotos.
+- **`DEPLOYMENT.md`**: sección de migraciones corregida (usar siempre
+  `scripts/apply-migrations.mjs`; el ALTER de 0007 falla por columna
+  duplicada en una D1 nueva con `wrangler d1 migrations apply`) y comando de
+  rollback corregido (`wrangler rollback <version-id>`).
+
+### Cambiado
+- `README.md` reescrito: API real, despliegue real, cifra de tests real.
+- Datos personales sanitizados en D1 producción (cuentas de prueba
+  anonimizadas/eliminadas, sesiones y favoritos purgados).
+
 ## [Unreleased] — Master Productization & Sale-Ready (Fases 06–12)
 
 ### Añadido (FASE 07)
