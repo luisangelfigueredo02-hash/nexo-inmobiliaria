@@ -102,7 +102,7 @@ function pathSegmentsUnsafe(key) {
   return key.split("/").some((seg) => seg === ".." || seg === "" || seg === ".");
 }
 // === GENERATED CSP-SCRIPT-SRC:BEGIN (scripts/generate-csp-hashes.mjs, no editar a mano) ===
-const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-1khKeq5K/ew7TSjC3cL0XDcBJJ2B7AM2KhOdz++J2qo=' 'sha256-EWX9TsBIT7O9I550wHRuLlnV7sBzUuvN22WIC8mDFik=' 'sha256-SJ1RHO+1ytvWaxwjB9jFO6KC+9tL3WaOvEFUtBrryr4=' 'sha256-a8MZi3UWgS8zY2bwXTUyY9uKCG1TvSSYPk1Y2yoWPgg=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-eh10Ggz5IxwLgYMFovKU0FL0ULi31D0uMj/MkmQCOz0=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-s6QrhcaEMu+35KUHHRKAAkkxu3qyjS0Z2XvGJ36C+aE='";
+const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-EWX9TsBIT7O9I550wHRuLlnV7sBzUuvN22WIC8mDFik=' 'sha256-SJ1RHO+1ytvWaxwjB9jFO6KC+9tL3WaOvEFUtBrryr4=' 'sha256-YTNEXBAIAVjgkhbGz0CXBrM0pjEtjeiv39zot/ieRkw=' 'sha256-a8MZi3UWgS8zY2bwXTUyY9uKCG1TvSSYPk1Y2yoWPgg=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-eh10Ggz5IxwLgYMFovKU0FL0ULi31D0uMj/MkmQCOz0=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-s6QrhcaEMu+35KUHHRKAAkkxu3qyjS0Z2XvGJ36C+aE='";
 // === GENERATED CSP-SCRIPT-SRC:END ===
 var CSP_POLICY = [
   "default-src 'self'",
@@ -165,7 +165,24 @@ export default {
         parseFloat(env.MAP_CENTER_LAT || "23.1136"),
         parseFloat(env.MAP_CENTER_LNG || "-82.3666")
       ],
-      map_zoom: parseInt(env.MAP_ZOOM || "12", 10)
+      map_zoom: parseInt(env.MAP_ZOOM || "12", 10),
+      brand: {
+        name: env.BRAND_NAME || "NEXO",
+        logo: env.BRAND_LOGO || "/icons/icon-192.png",
+        description: env.BRAND_DESCRIPTION || "Descubre casas, apartamentos y terrenos en Cuba con datos reales. Búsqueda, mapa, comparador y asistente IA.",
+        tagline: env.BRAND_TAGLINE || "Encuentra tu próximo lugar.",
+        theme_color: env.BRAND_THEME_COLOR || "#1C1917"
+      },
+      business: {
+        email: env.CONTACT_EMAIL || null,
+        phone: env.CONTACT_PHONE || null,
+        address: env.BUSINESS_ADDRESS || null
+      },
+      social: {
+        instagram: env.SOCIAL_INSTAGRAM || null,
+        facebook: env.SOCIAL_FACEBOOK || null,
+        linkedin: env.SOCIAL_LINKEDIN || null
+      }
     };
     const PRODUCTION_ORIGINS = new Set([
       url.origin
@@ -315,6 +332,8 @@ export default {
             `SELECT id, public_code, title, description, images, price, currency, city, province, latitude, longitude, placa_libre, gas_calle, agua_247, pago_exterior FROM properties WHERE ${lookup.column} = ?`
           ).bind(lookup.value).first();
           if (property) {
+            const brandName = env.BRAND_NAME || "NEXO";
+            const brandDesc = env.BRAND_DESCRIPTION || "Propiedad en Cuba";
             const origin = url.origin;
             const images = normalizeImages(property.images);
             const rawImage = images[0] || "/icons/icon-512.png";
@@ -324,6 +343,8 @@ export default {
             const seoDesc = escHtml(property.description ? property.description.substring(0, 155) : "");
             const seoImage = escHtml(mainImage);
             const seoUrl = escHtml(canonicalUrl);
+            const seoBrand = escHtml(brandName);
+            const seoBrandDesc = escHtml(brandDesc);
             const hasGeo = typeof property.latitude === "number" && typeof property.longitude === "number";
             const geoJson = hasGeo ? `,
                 "geo": {
@@ -334,16 +355,16 @@ export default {
             const currencyJson = property.currency ? `,
                 "priceCurrency": ${JSON.stringify(property.currency)}` : "";
             const seoTags = `
-              <title>${seoTitle} | NEXO</title>
-              <meta name="description" content="${seoDesc || "Propiedad en Cuba"}.">
+              <title>${seoTitle} | ${seoBrand}</title>
+              <meta name="description" content="${seoDesc || seoBrandDesc}.">
               <link rel="canonical" href="${seoUrl}">
-              <meta property="og:title" content="${seoTitle} - NEXO">
+              <meta property="og:title" content="${seoTitle} - ${seoBrand}">
               <meta property="og:description" content="${seoDesc}">
               <meta property="og:image" content="${seoImage}">
               <meta property="og:url" content="${seoUrl}">
               <meta property="og:type" content="website">
               <meta property="og:locale" content="es_CU">
-              <meta property="og:site_name" content="NEXO">
+              <meta property="og:site_name" content="${seoBrand}">
               <meta name="twitter:card" content="summary_large_image">
               <meta name="twitter:title" content="${seoTitle}">
               <meta name="twitter:description" content="${seoDesc}">
@@ -449,7 +470,7 @@ ${urls}
       object.writeHttpMetadata(headers);
       headers.set("etag", object.httpEtag);
       headers.set("Cache-Control", "public, max-age=31536000, immutable");
-      if (format) headers.set("Vary");
+      if (format) headers.set("Vary", "Accept");
       return new Response(method === "HEAD" ? null : object.body, { headers });
     }
     if (url.pathname === "/api/config" && method === "GET") {
@@ -847,6 +868,55 @@ ${urls}
           correlationId
         });
         return new Response(JSON.stringify({ success: true }), {
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      }
+    }
+    if (url.pathname === "/api/admin/upload-image" && method === "POST") {
+      const authz = await authorizeAdminPlane(PERMISSIONS.PROPERTY_CREATE);
+      if (!authz) {
+        return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401, headers: corsHeaders });
+      }
+      if (!isAllowed(authz.decision)) {
+        return denyResponse(authz.decision, { corsHeaders, staff: true, resourceScoped: false });
+      }
+      if (!env.BUCKET_IMAGENES) {
+        return new Response(JSON.stringify({ error: "Storage no disponible" }), { status: 503, headers: corsHeaders });
+      }
+      try {
+        const form = await request.formData();
+        const file = form.get("file");
+        if (!file || typeof file.arrayBuffer !== "function") {
+          return new Response(JSON.stringify({ error: "Archivo requerido" }), { status: 400, headers: corsHeaders });
+        }
+        const ct = String(file.type || "").toLowerCase();
+        if (!/^image\/(jpeg|png|webp)$/.test(ct)) {
+          return new Response(JSON.stringify({ error: "Solo JPEG, PNG o WebP" }), { status: 400, headers: corsHeaders });
+        }
+        const buf = await file.arrayBuffer();
+        if (buf.byteLength > 5 * 1024 * 1024) {
+          return new Response(JSON.stringify({ error: "Máximo 5MB" }), { status: 400, headers: corsHeaders });
+        }
+        const key = `uploads/${crypto.randomUUID()}.${{ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[ct]}`;
+        await env.BUCKET_IMAGENES.put(key, buf, {
+          httpMetadata: { contentType: ct }
+        });
+        await emitAuthorizationAudit(env, ctx, {
+          actor: authz.actor,
+          action: "image.upload",
+          resourceType: "media",
+          resourceId: key,
+          decision: authz.decision.decision,
+          reason: authz.decision.reason,
+          request,
+          correlationId
+        });
+        return new Response(JSON.stringify({ success: true, url: `/media/${key}` }), {
           headers: { "Content-Type": "application/json", ...corsHeaders }
         });
       } catch (error) {

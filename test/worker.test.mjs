@@ -234,3 +234,44 @@ test("AUTH: header sin esquema Bearer rechazado", async () => {
   }), makeEnv());
   assert.equal(res.status, 401);
 });
+
+
+/* =========================================================
+   MEDIA R2 — WebP negotiation
+========================================================= */
+
+function makeMediaEnv(hasVariant) {
+  return {
+    DB: { prepare() { return { bind() { return this; }, async run() { return {}; }, async first() { return null; } }; } },
+    BUCKET_IMAGENES: {
+      async get(key) {
+        if (/-w(400|800|1200)\.webp$/.test(key)) {
+          if (!hasVariant) return null;
+          return { body: new Uint8Array([1, 2, 3]), httpEtag: "e1", writeHttpMetadata(h) { h.set("content-type", "image/webp"); } };
+        }
+        return { body: new Uint8Array([1]), httpEtag: "e2", writeHttpMetadata(h) { h.set("content-type", "image/jpeg"); } };
+      },
+      async head(key) { return this.get(key); }
+    }
+  };
+}
+
+test("MEDIA: Accept webp devuelve variante con Vary: Accept", async () => {
+  const res = await worker.fetch(req("/media/n001/photo-01.jpg", { headers: { Accept: "image/webp" } }), makeMediaEnv(true));
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get("content-type"), "image/webp");
+  assert.equal(res.headers.get("vary"), "Accept");
+});
+
+test("MEDIA: Accept webp sin variante cae al original", async () => {
+  const res = await worker.fetch(req("/media/n001/photo-01.jpg", { headers: { Accept: "image/webp" } }), makeMediaEnv(false));
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get("content-type"), "image/jpeg");
+  assert.equal(res.headers.get("vary"), null);
+});
+
+test("MEDIA: Accept jpeg devuelve original sin Vary", async () => {
+  const res = await worker.fetch(req("/media/n001/photo-01.jpg", { headers: { Accept: "image/jpeg" } }), makeMediaEnv(true));
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get("content-type"), "image/jpeg");
+});
