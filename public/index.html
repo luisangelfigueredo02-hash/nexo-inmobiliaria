@@ -1352,6 +1352,14 @@
                 if (f.q) { activeQuery = f.q; document.getElementById("search-input").value = f.q; }
                 updateChipLabels();
             }
+            // Watchdog: el estado "Cargando propiedades…" nunca debe persistir
+            // (stall de red 3G, SW viejo, etc.) — tras 8s muestra error con reintento.
+            setTimeout(() => {
+                const status = document.getElementById("results-status");
+                if (status && status.textContent.trim() === "Cargando propiedades…" && allProperties.length === 0) {
+                    showState("error");
+                }
+            }, 8000);
             loadProperties();
         })();
 
