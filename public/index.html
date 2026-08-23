@@ -107,6 +107,15 @@
         }
         .nx-header__nav a:hover { color: var(--color-ink); background: var(--color-surface-sunken); }
         .nx-header__nav a.active { color: var(--color-accent); font-weight: var(--weight-semibold); }
+        .nx-header__nav a.account-link {
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-full);
+        }
+        .nx-header__nav a.account-link.logged {
+            color: var(--color-accent);
+            font-weight: var(--weight-semibold);
+            border-color: var(--color-accent);
+        }
 
         /* ---------- Trust bar bajo el search ---------- */
         .trust-bar {
@@ -403,6 +412,7 @@
             <a href="/mapa/index.html">Mapa</a>
             <a href="/comparar/index.html">Comparar</a>
             <a href="/ia/index.html">IA</a>
+            <a href="/cuenta/" class="account-link">Entrar</a>
         </nav>
     </header>
 
@@ -574,6 +584,41 @@
         }
         let favsMemoryFallback = null;
 
+        // Sesión de usuario (04.3/07): si autenticado, header refleja estado
+        // y los favoritos se sincronizan con /api/me/favorites (server-side).
+        let nxSession = { authenticated: false, accountId: null };
+        (function bootstrapSession() {
+            fetch("/api/session/status", { credentials: "same-origin" })
+                .then(r => r.ok ? r.json() : null)
+                .then(s => {
+                    if (!s || !s.authenticated) return;
+                    nxSession = { authenticated: true, accountId: s.accountId };
+                    const link = document.querySelector(".account-link");
+                    if (link) { link.textContent = "Cuenta"; link.classList.add("logged"); }
+                    // Merge: favoritos locales (anónimos) suben al servidor al autenticarse.
+                    fetch("/api/me/favorites", { credentials: "same-origin" })
+                        .then(r => r.ok ? r.json() : null)
+                        .then(d => {
+                            if (!d || !Array.isArray(d.favorites)) return;
+                            const local = getFavs();
+                            const localAsStr = local.map(String);
+                            const merged = [...new Set([...d.favorites, ...localAsStr])];
+                            if (localAsStr.length) {
+                                localAsStr.forEach(code => fetch("/api/me/favorites", {
+                                    method: "PUT",
+                                    headers: { "Content-Type": "application/json" },
+                                    credentials: "same-origin",
+                                    body: JSON.stringify({ listing: String(code) })
+                                }).catch(() => {}));
+                                saveFavs([]);
+                            }
+                            favsMemoryFallback = merged;
+                        })
+                        .catch(() => {});
+                })
+                .catch(() => {});
+        })();
+
         // Config de mercado desde /api/config (MARKET CONFIG, 04.7-B):
         // teléfono WhatsApp + centro/zoom de mapa. Fallbacks = mercado inicial.
         let whatsappPhone = "+5358385702";
@@ -625,6 +670,16 @@
             if (i === -1) favs.push(sid); else favs.splice(i, 1);
             saveFavs(favs);
             if (btn) btn.setAttribute("aria-pressed", String(i === -1));
+            // Si hay sesión, el corazón persiste en el servidor (optimista).
+            if (nxSession.authenticated) {
+                const adding = i === -1;
+                fetch(adding ? "/api/me/favorites" : `/api/me/favorites/${encodeURIComponent(sid)}`, {
+                    method: adding ? "PUT" : "DELETE",
+                    headers: adding ? { "Content-Type": "application/json" } : {},
+                    credentials: "same-origin",
+                    body: adding ? JSON.stringify({ listing: sid }) : undefined
+                }).catch(() => {});
+            }
         }
 
         // Formato de precio currency-aware (04.6-E2-A): USD → US$10,500,

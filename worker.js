@@ -1,6 +1,15 @@
 import { enforceRateLimit, rejectResponse, NO_CACHE_HEADERS } from "./rate-limit.js";
-import { getAuthenticatedSession, destroySession, isStateChangingAllowed } from "./session-runtime.js";
+import { getAuthenticatedSession, destroySession, createSession, isStateChangingAllowed } from "./session-runtime.js";
+import { hashPassword, verifyPassword, isPasswordValid } from "./src/auth/passwords.js";
 import { PERMISSIONS, legacyAdminActor, authorize, isAllowed, denyResponse, serializeProperty, emitAuthorizationAudit } from "./src/auth/authorization/index.js";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+function clientContext(request) {
+  const ua = (request.headers.get("User-Agent") || "").slice(0, 200) || null;
+  const ip = request.headers.get("CF-Connecting-IP") || "";
+  const ipSubset = ip ? ip.split(".").slice(0, 3).join(".") + ".0" : null;
+  return { userAgent: ua, ipSubset };
+}
 
 var PUBLIC_CODE_RE = /^N-\d+$/i;
 function listingLookup(param) {
@@ -102,7 +111,7 @@ function pathSegmentsUnsafe(key) {
   return key.split("/").some((seg) => seg === ".." || seg === "" || seg === ".");
 }
 // === GENERATED CSP-SCRIPT-SRC:BEGIN (scripts/generate-csp-hashes.mjs, no editar a mano) ===
-const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE=' 'sha256-SJ1RHO+1ytvWaxwjB9jFO6KC+9tL3WaOvEFUtBrryr4=' 'sha256-a8MZi3UWgS8zY2bwXTUyY9uKCG1TvSSYPk1Y2yoWPgg=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-ebNrBEyBPbWX3IpEKOsYL8DpsFpMnytqzmwFy9PsGNw=' 'sha256-k8/QEzy6VTXR1kQye4ofYhJXP6juQ9dnP+qQIuWw5ms=' 'sha256-lPXd+5fiaph4D51tYnQM455M1RyFavnNWmANinid5LA=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-s6QrhcaEMu+35KUHHRKAAkkxu3qyjS0Z2XvGJ36C+aE=' 'sha256-wBfcudqfFkOv2QcZ+2JKh3Zy4OdqQ6ObK8Qqwt/vbvg='";
+const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE=' 'sha256-JxxBVmI0ITtfR7TyyQwf2wti3WEPv/miUYSo0eD7kmo=' 'sha256-L3z+/oVX6PwfprsVX/TR3qgnCALHrlfprj1Ff2Kcgvk=' 'sha256-SJ1RHO+1ytvWaxwjB9jFO6KC+9tL3WaOvEFUtBrryr4=' 'sha256-a8MZi3UWgS8zY2bwXTUyY9uKCG1TvSSYPk1Y2yoWPgg=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-ebNrBEyBPbWX3IpEKOsYL8DpsFpMnytqzmwFy9PsGNw=' 'sha256-k8/QEzy6VTXR1kQye4ofYhJXP6juQ9dnP+qQIuWw5ms=' 'sha256-lPXd+5fiaph4D51tYnQM455M1RyFavnNWmANinid5LA=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-s6QrhcaEMu+35KUHHRKAAkkxu3qyjS0Z2XvGJ36C+aE='";
 // === GENERATED CSP-SCRIPT-SRC:END ===
 var CSP_POLICY = [
   "default-src 'self'",
@@ -211,7 +220,10 @@ export default {
       return null;
     })();
     const isAdminRoute = url.pathname.startsWith("/api/admin/");
-    const isSessionRoute = url.pathname.startsWith("/api/session/");
+    // Plano de sesión con credenciales: cookie __Host-session (04.3).
+    const isSessionRoute = url.pathname.startsWith("/api/session/")
+      || url.pathname.startsWith("/api/auth/")
+      || url.pathname.startsWith("/api/me/");
     const corsHeaders = allowedOrigin && !isAdminRoute ? {
       "Access-Control-Allow-Origin": allowedOrigin,
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -312,6 +324,100 @@ export default {
           ...corsHeaders
         }
       });
+    }
+    // ===== Autenticación pública (registro / login) =====
+    const authJson = async () => {
+      try { return await request.json(); } catch { return null; }
+    };
+    const authJsonReq = (res, status, cookie, extraHeaders = {}) => new Response(JSON.stringify(res), {
+      status,
+      headers: { "Content-Type": "application/json", ...(cookie ? { "Set-Cookie": cookie } : {}), ...NO_CACHE_HEADERS, ...corsHeaders, ...extraHeaders }
+    });
+    if (url.pathname === "/api/auth/register" && method === "POST") {
+      const rate = await enforceRateLimit(env, request);
+      if (rate.limited) return rejectResponse(rate.retryAfter, corsHeaders);
+      if (!isStateChangingAllowed(request, allowedOrigin)) return authJsonReq({ error: "Origin no permitido" }, 403);
+      const body = await authJson();
+      const email = String(body?.email || "").trim().toLowerCase();
+      const name = String(body?.name || "").trim().slice(0, 80) || null;
+      if (!EMAIL_RE.test(email)) return authJsonReq({ error: "Email inválido" }, 400);
+      if (!isPasswordValid(body?.password)) return authJsonReq({ error: "La contraseña debe tener entre 8 y 128 caracteres" }, 400);
+      const existing = await env.DB.prepare("SELECT id FROM accounts WHERE email = ?").bind(email).first();
+      if (existing) return authJsonReq({ error: "Ya existe una cuenta con ese email" }, 409);
+      const accountId = crypto.randomUUID();
+      const hash = await hashPassword(body.password);
+      try {
+        await env.DB.prepare(
+          "INSERT INTO accounts (id, email, security_stamp, password_hash) VALUES (?, ?, ?, ?)"
+        ).bind(accountId, email, crypto.randomUUID(), hash).run();
+        await env.DB.prepare("INSERT INTO profiles (account_id, display_name) VALUES (?, ?)").bind(accountId, name).run();
+      } catch (err) {
+        return authJsonReq({ error: "No se pudo crear la cuenta" }, 500);
+      }
+      const session = await createSession(env, accountId, clientContext(request));
+      return authJsonReq({ authenticated: true, accountId, name }, 201, session.cookie);
+    }
+    if (url.pathname === "/api/auth/login" && method === "POST") {
+      const rate = await enforceRateLimit(env, request);
+      if (rate.limited) return rejectResponse(rate.retryAfter, corsHeaders);
+      if (!isStateChangingAllowed(request, allowedOrigin)) return authJsonReq({ error: "Origin no permitido" }, 403);
+      const body = await authJson();
+      const email = String(body?.email || "").trim().toLowerCase();
+      const row = await env.DB.prepare(
+        "SELECT id, password_hash, status FROM accounts WHERE email = ?"
+      ).bind(email).first();
+      // Respuesta uniforme ante credenciales inválidas (anti-enumeración).
+      if (!row || row.status !== "active" || !(row.password_hash && await verifyPassword(String(body?.password || ""), row.password_hash))) {
+        return authJsonReq({ error: "Credenciales inválidas" }, 401);
+      }
+      const profile = await env.DB.prepare("SELECT display_name FROM profiles WHERE account_id = ?").bind(row.id).first().catch(() => null);
+      const session = await createSession(env, row.id, clientContext(request));
+      return authJsonReq({ authenticated: true, accountId: row.id, name: profile?.display_name || null }, 200, session.cookie);
+    }
+    // ===== Favoritos persistentes por cuenta =====
+    if (url.pathname === "/api/me/favorites" && method === "GET") {
+      const session = await getAuthenticatedSession(request, env, ctx);
+      if (!session.authenticated) return authJsonReq({ favorites: null, error: "No autenticado" }, 401);
+      const rows = await env.DB.prepare(
+        `SELECT af.listing_id, p.public_code FROM account_favorites af JOIN properties p ON p.id = af.listing_id WHERE af.account_id = ?`
+      ).bind(session.accountId).all().catch(() => ({ results: [] }));
+      const favorites = (rows.results || []).map(r => r.public_code || String(r.listing_id));
+      return authJsonReq({ favorites }, 200);
+    }
+    if (url.pathname === "/api/me/favorites" && method === "PUT") {
+      const rate = await enforceRateLimit(env, request);
+      if (rate.limited) return rejectResponse(rate.retryAfter, corsHeaders);
+      if (!isStateChangingAllowed(request, allowedOrigin)) return authJsonReq({ error: "Origin no permitido" }, 403);
+      const session = await getAuthenticatedSession(request, env, ctx);
+      if (!session.authenticated) return authJsonReq({ error: "No autenticado" }, 401);
+      const body = await authJson();
+      const listingRef = String(body?.listing || "").trim();
+      if (!listingRef) return authJsonReq({ error: "Falta listing" }, 400);
+      const lookup = listingLookup(listingRef);
+      const property = await env.DB.prepare(`SELECT id FROM properties WHERE ${lookup.column} = ?`).bind(lookup.value).first();
+      if (!property) return authJsonReq({ error: "Inmueble no encontrado" }, 404);
+      try {
+        await env.DB.prepare(
+          "INSERT OR IGNORE INTO account_favorites (account_id, listing_id) VALUES (?, ?)"
+        ).bind(session.accountId, property.id).run();
+      } catch {}
+      return authJsonReq({ ok: true, favorites: true }, 200);
+    }
+    if (url.pathname.startsWith("/api/me/favorites/") && method === "DELETE") {
+      const rate = await enforceRateLimit(env, request);
+      if (rate.limited) return rejectResponse(rate.retryAfter, corsHeaders);
+      if (!isStateChangingAllowed(request, allowedOrigin)) return authJsonReq({ error: "Origin no permitido" }, 403);
+      const session = await getAuthenticatedSession(request, env, ctx);
+      if (!session.authenticated) return authJsonReq({ error: "No autenticado" }, 401);
+      const listingRef = decodeURIComponent(url.pathname.slice("/api/me/favorites/".length));
+      const lookup = listingLookup(listingRef);
+      const property = await env.DB.prepare(`SELECT id FROM properties WHERE ${lookup.column} = ?`).bind(lookup.value).first();
+      if (property) {
+        await env.DB.prepare(
+          "DELETE FROM account_favorites WHERE account_id = ? AND listing_id = ?"
+        ).bind(session.accountId, property.id).run();
+      }
+      return authJsonReq({ ok: true }, 200);
     }
     if (url.pathname === "/api/health" && method === "GET") {
       return new Response(JSON.stringify({ ok: true, timestamp: (new Date()).toISOString() }), {

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Cuenta — NEXO</title>
+    <meta name="description" content="Accede a tu cuenta de NEXO para guardar y sincronizar tus inmuebles favoritos.">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="/variables.css">
+    <style>
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        body {
+            margin: 0; font-family: var(--font-sans); background: var(--color-bg);
+            color: var(--color-ink); min-height: 100vh; display: flex; flex-direction: column;
+        }
+        .nx-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: var(--space-4) var(--space-5); background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border); position: sticky; top: 0; z-index: 10;
+        }
+        .nx-logo { text-decoration: none; font-weight: 800; font-size: 22px; color: var(--color-ink); letter-spacing: -0.5px; }
+        .nx-logo em { font-style: normal; color: var(--color-accent); }
+        .back-link {
+            font-size: var(--font-sm); color: var(--color-ink-muted); text-decoration: none;
+            padding: 6px 12px; border-radius: var(--radius-full); border: 1px solid var(--color-border);
+        }
+        .back-link:hover { color: var(--color-ink); }
+        .auth-shell {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            padding: var(--space-8) var(--space-4); max-width: 460px; margin: 0 auto; width: 100%;
+        }
+        .auth-card {
+            background: var(--color-surface); border: 1px solid var(--color-border);
+            border-radius: var(--radius-xl); padding: var(--space-6); width: 100%;
+        }
+        .brand-splash {
+            text-align: center; margin-bottom: var(--space-5);
+        }
+        .brand-splash h1 { font-size: var(--font-2xl); margin: 0 0 var(--space-1); letter-spacing: -0.02em; }
+        .brand-splash p { color: var(--color-ink-muted); margin: 0; font-size: var(--font-sm); }
+        .tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); }
+        .tab {
+            flex: 1; padding: 10px; border-radius: var(--radius-full); text-align: center;
+            font-weight: var(--weight-semibold); cursor: pointer; border: 1px solid var(--color-border);
+            background: transparent; color: var(--color-ink-muted); font-size: var(--font-sm);
+        }
+        .tab.active { background: var(--color-ink); color: var(--color-surface); border-color: var(--color-ink); }
+        label { display: block; font-size: var(--font-sm); font-weight: var(--weight-medium); margin: var(--space-3) 0 var(--space-1); }
+        input {
+            width: 100%; padding: 12px 14px; border-radius: var(--radius-md);
+            border: 1px solid var(--color-border); font: inherit; background: var(--color-bg); color: var(--color-ink);
+        }
+        input:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; border-color: var(--color-accent); }
+        .btn-primary {
+            width: 100%; margin-top: var(--space-5); padding: 13px; border-radius: var(--radius-full);
+            background: var(--color-accent); color: #fff; border: none; font: inherit;
+            font-weight: var(--weight-semibold); cursor: pointer; transition: filter var(--duration-fast);
+        }
+        .btn-primary:hover { filter: brightness(1.08); }
+        .btn-primary:disabled { opacity: 0.5; cursor: wait; }
+        .btn-ghost {
+            width: 100%; margin-top: var(--space-3); padding: 12px; border-radius: var(--radius-full);
+            background: transparent; color: var(--color-ink); border: 1px solid var(--color-border);
+            font: inherit; font-weight: var(--weight-medium); cursor: pointer;
+        }
+        .feedback { margin-top: var(--space-3); font-size: var(--font-sm); min-height: 18px; }
+        .feedback.error { color: var(--danger, #b91c1c); }
+        .feedback.ok { color: #15803d; }
+        .privacy { margin-top: var(--space-4); font-size: var(--font-xs, 12px); color: var(--color-ink-muted); text-align: center; }
+        /* Vista autenticada */
+        .account-view { display: none; }
+        body.authed .auth-view { display: none; }
+        body.authed .account-view { display: block; }
+        .fav-list { display: flex; flex-direction: column; gap: var(--space-3); }
+        .fav-item {
+            display: flex; gap: var(--space-3); align-items: center; text-decoration: none;
+            color: var(--color-ink); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+            padding: var(--space-2); background: var(--color-surface);
+        }
+        .fav-item img { width: 84px; height: 64px; object-fit: cover; border-radius: var(--radius-md); background: var(--color-surface-sunken, #eee); }
+        .fav-item .meta { flex: 1; min-width: 0; }
+        .fav-item .price { font-weight: var(--weight-bold); }
+        .fav-item .loc { font-size: var(--font-sm); color: var(--color-ink-muted); }
+        .empty { text-align: center; color: var(--color-ink-muted); padding: var(--space-6) 0; }
+        .acct-summary { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
+        .avatar {
+            width: 44px; height: 44px; border-radius: var(--radius-full); background: var(--color-accent);
+            color: #fff; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; text-transform: uppercase;
+        }
+        @media (max-width: 480px) {
+            .auth-shell { padding: var(--space-5) var(--space-3); }
+        }
+    </style>
+</head>
+<body>
+    <header class="nx-header">
+        <a href="/" class="nx-logo">NE<em>X</em>O</a>
+        <a href="/" class="back-link">← Explorar</a>
+    </header>
+
+    <main class="auth-shell">
+        <!-- Vista de autenticación -->
+        <section class="auth-view">
+            <div class="brand-splash">
+                <h1>Tu cuenta</h1>
+                <p>Guarda favoritos y consúltalos en cualquier dispositivo.</p>
+            </div>
+            <div class="auth-card">
+                <div class="tabs" role="tablist">
+                    <button class="tab active" id="tab-login" role="tab" data-mode="login">Entrar</button>
+                    <button class="tab" id="tab-register" role="tab" data-mode="register">Crear cuenta</button>
+                </div>
+                <form id="auth-form" novalidate>
+                    <div id="name-field" hidden>
+                        <label for="auth-name">Nombre (opcional)</label>
+                        <input id="auth-name" type="text" autocomplete="name" placeholder="Tu nombre">
+                    </div>
+                    <label for="auth-email">Email</label>
+                    <input id="auth-email" type="email" autocomplete="email" required placeholder="tu@email.com">
+                    <label for="auth-password">Contraseña</label>
+                    <input id="auth-password" type="password" autocomplete="current-password" required minlength="8" placeholder="Mínimo 8 caracteres">
+                    <button class="btn-primary" id="auth-submit" type="submit">Entrar</button>
+                    <div class="feedback" id="auth-feedback" role="status" aria-live="polite"></div>
+                </form>
+                <p class="privacy">Tus datos se usan únicamente para tu cuenta. Tus favoritos se sincronizan entre dispositivos.</p>
+            </div>
+        </section>
+
+        <!-- Vista de cuenta autenticada -->
+        <section class="account-view">
+            <div class="auth-card">
+                <div class="acct-summary">
+                    <div class="avatar" id="acct-avatar">?</div>
+                    <div>
+                        <div id="acct-name" style="font-weight:var(--weight-bold);">Tu cuenta</div>
+                        <div id="acct-email" style="font-size:var(--font-sm); color:var(--color-ink-muted);"></div>
+                    </div>
+                </div>
+                <h2 style="font-size:var(--font-lg); margin:var(--space-3) 0;">Favoritos</h2>
+                <div class="fav-list" id="fav-list"></div>
+                <button class="btn-ghost" id="btn-logout" type="button">Cerrar sesión</button>
+                <div class="feedback" id="acct-feedback" role="status"></div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let mode = "login";
+        const form = document.getElementById("auth-form");
+        const feedback = document.getElementById("auth-feedback");
+        const submitBtn = document.getElementById("auth-submit");
+
+        document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+            mode = t.dataset.mode;
+            document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === t));
+            document.getElementById("name-field").hidden = mode !== "register";
+            submitBtn.textContent = mode === "register" ? "Crear cuenta" : "Entrar";
+            document.getElementById("auth-password").autocomplete = mode === "register" ? "new-password" : "current-password";
+            feedback.textContent = "";
+        }));
+
+        form.addEventListener("submit", async e => {
+            e.preventDefault();
+            feedback.className = "feedback";
+            submitBtn.disabled = true;
+            const email = document.getElementById("auth-email").value.trim();
+            const password = document.getElementById("auth-password").value;
+            const name = document.getElementById("auth-name").value.trim();
+            try {
+                const res = await fetch(`/api/auth/${mode}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "same-origin",
+                    body: JSON.stringify(mode === "register" ? { email, password, name } : { email, password })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    feedback.classList.add("error");
+                    feedback.textContent = data.error || "No se pudo completar la acción";
+                    submitBtn.disabled = false;
+                    return;
+                }
+                renderAccount(data);
+            } catch {
+                feedback.classList.add("error");
+                feedback.textContent = "Error de red. Comprueba tu conexión.";
+                submitBtn.disabled = false;
+            }
+        });
+
+        async function renderAccount(session) {
+            document.body.classList.add("authed");
+            const emailInput = document.getElementById("auth-email").value;
+            document.getElementById("acct-email").textContent = emailInput;
+            const name = session.name && session.name !== emailInput ? session.name : "";
+            document.getElementById("acct-name").textContent = name || "Tu cuenta";
+            document.getElementById("acct-avatar").textContent = (name || emailInput || "?")[0];
+            await loadFavorites();
+        }
+
+        async function loadFavorites() {
+            const list = document.getElementById("fav-list");
+            list.innerHTML = '<div class="empty">Cargando…</div>';
+            try {
+                const resp = await fetch("/api/me/favorites", { credentials: "same-origin" });
+                if (!resp.ok) { list.innerHTML = '<div class="empty">No se pudieron cargar tus favoritos.</div>'; return; }
+                const { favorites } = await resp.json();
+                if (!favorites || !favorites.length) {
+                    list.innerHTML = '<div class="empty">Aún no tienes favoritos.<br>Explora y toca el corazón para guardar.</div>';
+                    return;
+                }
+                // Una única consulta al catálogo; se filtran los códigos favoritos.
+                const catalog = await fetch("/api/properties")
+                    .then(r => r.ok ? r.json() : null).catch(() => null);
+                const items = (catalog?.properties || catalog || []);
+                const byCode = new Map(items.map(p => [p.public_code, p]));
+                const details = favorites.map(code => byCode.get(code)).filter(Boolean);
+                list.innerHTML = "";
+                details.forEach(p => {
+                    const a = document.createElement("a");
+                    a.className = "fav-item";
+                    a.href = `/property.html?id=${encodeURIComponent(p.public_code)}`;
+                    const img = Array.isArray(p.images) && p.images[0] ? p.images[0] : "";
+                    const price = p.currency === "USD" ? `US$${Number(p.price).toLocaleString("en-US")}` : Number(p.price).toLocaleString("en-US");
+                    const meta = document.createElement("div");
+                    meta.className = "meta";
+                    meta.innerHTML = `<div class="price">${price}</div><div>${p.title || p.public_code}</div><div class="loc">${[p.neighborhood, p.province].filter(Boolean).join(", ")}</div>`;
+                    if (img) {
+                        const el = document.createElement("img");
+                        el.src = img.replace(/\.(jpe?g|png)$/i, "-w400.webp");
+                        el.alt = "";
+                        el.loading = "lazy";
+                        el.addEventListener("error", () => { el.src = img; }, { once: true });
+                        a.appendChild(el);
+                    }
+                    a.appendChild(meta);
+                    list.appendChild(a);
+                });
+            } catch {
+                list.innerHTML = '<div class="empty">Error de red al cargar favoritos.</div>';
+            }
+        }
+
+        document.getElementById("btn-logout").addEventListener("click", async () => {
+            await fetch("/api/session/logout", { method: "POST", credentials: "same-origin" }).catch(() => {});
+            document.body.classList.remove("authed");
+            submitBtn.disabled = false;
+        });
+
+        // Estado inicial: ¿ya hay sesión?
+        (async () => {
+            try {
+                const r = await fetch("/api/session/status", { credentials: "same-origin" });
+                const s = await r.json();
+                if (s.authenticated) {
+                    document.getElementById("acct-email").textContent = "";
+                    renderAccount({ name: null });
+                }
+            } catch {}
+        })();
+    </script>
+</body>
+</html>
