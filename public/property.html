@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <!-- SEO_TAGS -->
-    <title>NEXO — Propiedad</title>
+    <title>{{BRAND_NAME}} — Propiedad</title>
     <link rel="stylesheet" href="/variables.css">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/favicon.ico" sizes="any">
@@ -444,6 +444,7 @@
     </style>
 </head>
 <body>
+    <script src="/demo-banner.js"></script>
 
     <!-- Navegación flotante -->
     <nav class="prop-nav" aria-label="Navegación de propiedad">
@@ -685,7 +686,7 @@
             document.getElementById("tag-type").textContent = p.type || "";
             document.getElementById("prop-title").textContent = p.title;
             document.getElementById("prop-loc").textContent = [p.neighborhood, p.city, p.province].filter(Boolean).join(", ");
-            document.title = `${p.title} | NEXO`;
+            document.title = `${p.title} | {{BRAND_NAME}}`;
 
             // Imágenes reales únicamente
             images = (p.images && p.images.length > 0) ? p.images : [FALLBACK_IMG];
@@ -737,8 +738,8 @@
             document.getElementById("cta-price").textContent = `${fmtPrice(p.price, p.currency)}`;
             // Sin moneda determinada → indicación honesta (nunca símbolo engañoso).
             document.getElementById("currency-note").hidden = !!p.currency;
-            const phone = (config.whatsapp_phone || "+5358385702").replace("+", "");
-            const msg = `Hola NEXO, me interesa la propiedad [${p.public_code || p.id}]: "${p.title}" en ${p.neighborhood}. Solicito más información. URL: ${location.href}`;
+            const phone = (config.whatsapp_phone || "{{WHATSAPP_PHONE}}").replace("+", "");
+            const msg = `Hola {{BRAND_NAME}}, me interesa la propiedad [${p.public_code || p.id}]: "${p.title}" en ${p.neighborhood}. Solicito más información. URL: ${location.href}`;
             document.getElementById("cta-whatsapp").href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
 
             // Favorito sincronizado
@@ -748,7 +749,7 @@
 
             // Share (Web Share API + fallback copiar)
             document.getElementById("btn-share").onclick = async () => {
-                const data = { title: p.title, text: `${p.title} — ${fmtPrice(p.price, p.currency)} | NEXO`, url: location.href };
+                const data = { title: p.title, text: `${p.title} — ${fmtPrice(p.price, p.currency)} | {{BRAND_NAME}}`, url: location.href };
                 if (navigator.share) {
                     try { await navigator.share(data); } catch {}
                 } else {

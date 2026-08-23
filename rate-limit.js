@@ -5,6 +5,11 @@ const WINDOW_SECONDS = 60;
 const MAX_REQUESTS = 20;
 export const LIMIT_DEF = Object.freeze({ window: WINDOW_SECONDS, max: MAX_REQUESTS });
 
+// 14F: login tiene un límite estricto adicional (fuerza bruta de credenciales).
+const AUTH_WINDOW_SECONDS = 300;
+const AUTH_MAX_ATTEMPTS = 10;
+export const AUTH_LIMIT_DEF = Object.freeze({ window: AUTH_WINDOW_SECONDS, max: AUTH_MAX_ATTEMPTS });
+
 const IDENTIFIER = "ip"; // extendible: "account" en 04.1
 
 async function hash(value) {
@@ -72,6 +77,40 @@ export function rejectResponse(retryAfter, corsHeaders) {
       ...corsHeaders
     }
   });
+}
+
+// 14F: límite estricto por scope (p.ej. "auth-login") independiente del límite
+// general. Comparte la tabla rate_limits con keys prefijadas por scope.
+export async function enforceScopedRateLimit(env, request, scope, maxAttempts = AUTH_MAX_ATTEMPTS, windowSeconds = AUTH_WINDOW_SECONDS) {
+  if (!env.DB) return { limited: false, retryAfter: 0 };
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const key = await hash(`${scope}:${IDENTIFIER}:${ip}`);
+  const windowStart = Math.floor(Date.now() / 1000 / windowSeconds);
+  const expiryTs = (windowStart + 1) * windowSeconds;
+
+  try {
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS rate_limits (
+        key TEXT, window_start INTEGER NOT NULL, requests INTEGER NOT NULL DEFAULT 0,
+        expiry INTEGER NOT NULL, PRIMARY KEY (key, window_start)
+      )`).run();
+    const row = await env.DB.prepare(
+      "SELECT requests FROM rate_limits WHERE key = ? AND window_start = ?"
+    ).bind(key, windowStart).first();
+    const count = row ? row.requests : 0;
+    if (count >= maxAttempts) {
+      return { limited: true, retryAfter: Math.max(expiryTs - Math.floor(Date.now() / 1000), 1) };
+    }
+    await env.DB.prepare(`
+      INSERT INTO rate_limits (key, window_start, requests, expiry)
+      VALUES (?, ?, 1, ?)
+      ON CONFLICT(key, window_start) DO UPDATE SET requests = requests + 1
+    `).bind(key, windowStart, expiryTs).run();
+    return { limited: false, retryAfter: 0 };
+  } catch (err) {
+    console.error("Scoped rate limit error:", err.message || err);
+    return { limited: false, retryAfter: 0 };
+  }
 }
 
 export const NO_CACHE_HEADERS = Object.freeze({

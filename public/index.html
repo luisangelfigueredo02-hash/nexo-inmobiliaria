@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-    <title>NEXO — Descubre tu próximo hogar en Cuba</title>
-    <meta name="description" content="Descubre casas, apartamentos y terrenos en Cuba. Búsqueda inteligente, mapa interactivo y contacto directo por WhatsApp.">
+    <title>{{BRAND_NAME}} — Descubre tu próximo hogar en {{MARKET_COUNTRY}}</title>
+    <meta name="description" content="{{BRAND_DESCRIPTION}}">
     <link rel="stylesheet" href="/variables.css">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/favicon.ico" sizes="any">
@@ -296,7 +296,7 @@
         .sheet-info .loc { font-size: var(--text-caption); color: var(--color-ink-muted); }
         .sheet-actions { margin-top: var(--space-2); }
 
-        /* ---------- Marcadores NEXO ---------- */
+        /* ---------- Marcadores ---------- */
         .nx-price-marker {
             background: var(--color-surface);
             border: 1.5px solid var(--color-border-strong);
@@ -405,6 +405,7 @@
     </style>
 </head>
 <body>
+    <script src="/demo-banner.js"></script>
 
     <header class="nx-header">
         <a href="/" class="nx-logo">NE<em>X</em>O</a>
@@ -419,7 +420,7 @@
 
     <section class="discovery-hero" aria-labelledby="hero-title">
         <h1 id="hero-title">Encuentra tu próximo lugar.</h1>
-        <p class="sub">Casas, apartamentos y terrenos en Cuba.</p>
+        <p class="sub">Casas, apartamentos y terrenos en {{MARKET_COUNTRY}}.</p>
 
         <form class="search-bar" id="search-form" role="search">
             <label class="sr-only" for="search-input">Buscar propiedades</label>
@@ -515,37 +516,40 @@
 
     <div class="state-overlay" id="state-overlay" hidden role="alert" aria-live="assertive"></div>
 
-    <button type="button" class="ai-fab" id="ai-fab" aria-expanded="false" aria-controls="chat-drawer" data-action="open-chat">✨ NEXO IA</button>
+    <button type="button" class="ai-fab" id="ai-fab" aria-expanded="false" aria-controls="chat-drawer" data-action="open-chat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:4px;"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"/></svg>{{BRAND_NAME}} IA</button>
 
-    <div class="chat-drawer" id="chat-drawer" role="dialog" aria-modal="true" aria-label="Asistente NEXO IA" aria-hidden="true">
+    <div class="chat-drawer" id="chat-drawer" role="dialog" aria-modal="true" aria-label="Asistente {{BRAND_NAME}} IA" aria-hidden="true">
         <div class="chat-header">
-            <div class="chat-title">✨ NEXO IA — Asistente Inteligente</div>
+            <div class="chat-title">{{BRAND_NAME}} IA — Asistente Inteligente</div>
             <button class="nx-btn nx-btn--tertiary" style="min-height:0; font-size:20px;" data-action="close-chat" aria-label="Cerrar chat">×</button>
         </div>
         <div class="chat-messages" id="chat-messages">
             <div class="msg bot">¡Hola! Cuéntame qué buscas: zona, precio, habitaciones… y encuentro las opciones reales del inventario.</div>
         </div>
         <div class="chat-input-area">
-            <input type="text" class="nx-input" id="chat-input" placeholder="Ej. Casa en Vedado con 3 habs…" aria-label="Mensaje para NEXO IA">
+            <input type="text" class="nx-input" id="chat-input" placeholder="Ej. Casa en Vedado con 3 habs…" aria-label="Mensaje para {{BRAND_NAME}} IA">
             <button class="nx-btn nx-btn--primary" data-action="send-chat">Enviar</button>
         </div>
     </div>
 
-    <footer class="nx-footer" aria-label="Información de NEXO">
+    <footer class="nx-footer" aria-label="Información de {{BRAND_NAME}}">
         <div class="nx-footer__inner">
             <div class="nx-footer__brand">
-                <span class="nx-footer__logo">NEXO</span>
-                <span class="nx-footer__tag">Plataforma inmobiliaria de Cuba</span>
+                <span class="nx-footer__logo">{{BRAND_NAME}}</span>
+                <span class="nx-footer__tag">Plataforma inmobiliaria de {{MARKET_COUNTRY}}</span>
             </div>
-            <nav class="nx-footer__nav" aria-label="Enlaces de NEXO">
+            <nav class="nx-footer__nav" aria-label="Enlaces de {{BRAND_NAME}}">
                 <a href="/">Propiedades</a>
                 <a href="/mapa/index.html">Mapa</a>
                 <a href="/comparar/index.html">Comparar</a>
-                <a href="/ia/index.html">NEXO IA</a>
+                <a href="/ia/index.html">{{BRAND_NAME}} IA</a>
             </nav>
             <p class="nx-footer__legal">
-                Sobre NEXO · Contacto · Privacidad · Términos
+                <a href="/legal.html#privacidad">Privacidad</a> ·
+                <a href="/legal.html#terminos">Términos</a> ·
+                <a href="/legal.html#contacto">Contacto</a>
             </p>
+            <p class="nx-footer__legal">© {{YEAR}} {{LEGAL_NAME}}</p>
         </div>
     </footer>
 
@@ -622,7 +626,7 @@
 
         // Config de mercado desde /api/config (MARKET CONFIG, 04.7-B):
         // teléfono WhatsApp + centro/zoom de mapa. Fallbacks = mercado inicial.
-        let whatsappPhone = "+5358385702";
+        let whatsappPhone = "{{WHATSAPP_PHONE}}";
         const MARKET = { mapCenter: [23.1136, -82.3666], mapZoom: 12 };
         fetch("/api/config")
             .then(r => r.ok ? r.json() : null)
@@ -635,16 +639,6 @@
             })
             .catch(() => { /* fallback estático */ });
 
-        // DEMO_MODE: banner de advertencia cuando el inventario es de demostración.
-        function showDemoBanner() {
-            if (document.getElementById("demo-banner")) return;
-            const b = document.createElement("div");
-            b.id = "demo-banner";
-            b.setAttribute("role", "note");
-            b.innerHTML = "🧪 <strong>Modo demostración</strong> — el inventario mostrado es de ejemplo.";
-            b.style.cssText = "position:sticky;top:0;z-index:60;background:linear-gradient(90deg,#b45309,#c2410c);color:#fff;text-align:center;padding:8px 12px;font-size:13px;font-weight:500;";
-            document.body.prepend(b);
-        }
 
         // Persistencia de favoritos: intenta localStorage; si está bloqueado
         // (SecurityError) o lleno (QuotaExceededError), usa memoria como fallback
@@ -761,7 +755,7 @@
             // CTA de demanda: si no hay inventario que mostrar, capturar la intención
             const waPhone = whatsappPhone.replace("+", "");
             const demandHref = `https://wa.me/${waPhone}?text=${encodeURIComponent(
-                "Hola NEXO, busco una propiedad y no la encontré en el catálogo. ¿Pueden ayudarme?")}`;
+                "Hola {{BRAND_NAME}}, busco una propiedad y no la encontré en el catálogo. ¿Pueden ayudarme?")}`;
             const states = {
                 empty: `<div class="nx-state" style="grid-column:1/-1;">
                     <h2>Sin resultados con estos filtros</h2>
@@ -811,7 +805,7 @@
         }
 
         async function loadProperties(filters) {
-            if (!navigator.onLine) { showOverlay("Sin conexión", "NEXO necesita internet para cargar el inventario."); return; }
+            if (!navigator.onLine) { showOverlay("Sin conexión", "{{BRAND_NAME}} necesita internet para cargar el inventario."); return; }
             hideOverlay();
             showSkeletons();
             const f = filters || activeFilters();

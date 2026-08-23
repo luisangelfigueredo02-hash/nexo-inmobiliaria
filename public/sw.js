@@ -3,7 +3,7 @@
    Arquitectura de caché ultra-resiliente para Cuba.
 ========================================================= */
 
-const SW_VERSION = "nexo-v7-map-assets";
+const SW_VERSION = "nexo-v8-private-cache-guard";
 const STATIC_CACHE = `${SW_VERSION}-static`;
 const DATA_CACHE = `${SW_VERSION}-data`;
 const IMAGE_CACHE = `${SW_VERSION}-images`;
@@ -43,12 +43,15 @@ self.addEventListener("fetch", event => {
   const url = new URL(request.url);
 
   // 1. Nunca interceptar peticiones que no sean GET ni rutas administrativas
-  //    ni endpoints de sesión (04.3): la Cache API NO respeta no-store;
-  //    cachear /api/session/* sería un cache leak de estado autenticado.
+  //    ni endpoints autenticados (04.3/14F): la Cache API NO respeta no-store;
+  //    cachear /api/session/*, /api/auth/* o /api/me/* sería un cache leak de
+  //    estado autenticado y de datos privados (favoritos de la cuenta).
   if (
     request.method !== "GET" || 
     url.pathname.startsWith("/api/admin/") || 
     url.pathname.startsWith("/api/session/") ||
+    url.pathname.startsWith("/api/auth/") ||
+    url.pathname.startsWith("/api/me/") ||
     url.pathname === "/admin.html"
   ) {
     return;

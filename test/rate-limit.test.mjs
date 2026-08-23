@@ -22,7 +22,7 @@ function makeEnv() {
       bind(...args) { call.binds = args; return this; },
       async all() { return { results: [] }; },
       async first() {
-        if (/SELECT requests, expiry FROM rate_limits/.test(sql)) {
+        if (/SELECT requests, expiry FROM rate_limits/.test(sql) || /SELECT requests FROM rate_limits/.test(sql)) {
           const key = call.binds[0];
           const wstart = call.binds[1];
           const row = rows.find(r => r.key === key && r.window_start === wstart);
@@ -160,3 +160,51 @@ test("8. respuesta 429 no contiene secretos/internos", async () => {
   assert.ok(!/d1|sqlite|schema|token|header/i.test(body));
   assert.ok(data.error);
 });
+
+/* =========================================================
+   14F — límite estricto de login (fuerza bruta)
+========================================================= */
+
+import { AUTH_LIMIT_DEF } from "../rate-limit.js";
+
+function loginReq(ip) {
+  return new Request(BASE + "/api/auth/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "CF-Connecting-IP": ip,
+      "Origin": BASE
+    },
+    body: JSON.stringify({ email: "victima@example.com", password: "guess-12345" })
+  });
+}
+
+test("9. login: primeros AUTH_LIMIT_DEF.max intentos NO devuelven 429", async () => {
+  const env = makeEnv();
+  for (let i = 0; i < AUTH_LIMIT_DEF.max; i++) {
+    const res = await worker.fetch(loginReq(env.__LIMIT_IP), env);
+    assert.notEqual(res.status, 429, `intento ${i + 1} no debe ser 429`);
+  }
+});
+
+test("10. login: intento AUTH_LIMIT_DEF.max+1 → 429", async () => {
+  const env = makeEnv();
+  for (let i = 0; i < AUTH_LIMIT_DEF.max; i++) {
+    await worker.fetch(loginReq(env.__LIMIT_IP), env);
+  }
+  const res = await worker.fetch(loginReq(env.__LIMIT_IP), env);
+  assert.equal(res.status, 429);
+  const retry = Number(res.headers.get("retry-after"));
+  assert.ok(retry >= 1 && retry <= AUTH_LIMIT_DEF.window);
+});
+
+test("11. login: el límite estricto no afecta a otras rutas", async () => {
+  const env = makeEnv();
+  for (let i = 0; i < AUTH_LIMIT_DEF.max; i++) {
+    await worker.fetch(loginReq(env.__LIMIT_IP), env);
+  }
+  // chat usa el límite general (20/60s); 10 logins no lo agotan
+  const res = await worker.fetch(chatReq(env.__LIMIT_IP), env);
+  assert.equal(res.status, 200);
+});
+

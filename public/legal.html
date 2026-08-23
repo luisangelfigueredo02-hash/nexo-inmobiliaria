@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Información legal — {{BRAND_NAME}}</title>
+    <meta name="description" content="Privacidad, términos de uso y contacto de {{BRAND_NAME}}.">
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="{{BRAND_BG_COLOR}}">
+    <link rel="icon" href="/icons/icon-192.png">
+    <link rel="stylesheet" href="/variables.css">
+    <style>
+        body { font-family: var(--font-sans); background: var(--color-bg); color: var(--color-ink); margin: 0; }
+        .legal-wrap { max-width: 720px; margin: 0 auto; padding: var(--space-6) var(--space-4) calc(var(--space-8) + var(--safe-bottom)); }
+        .legal-back { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-ink-muted); text-decoration: none; font-size: var(--text-sm); margin-bottom: var(--space-5); min-height: var(--touch-target); }
+        .legal-back:hover { color: var(--color-ink); }
+        h1 { font-size: var(--text-2xl); margin: 0 0 var(--space-2); letter-spacing: -0.02em; }
+        .legal-sub { color: var(--color-ink-muted); margin: 0 0 var(--space-6); }
+        h2 { font-size: var(--text-lg); margin: var(--space-6) 0 var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
+        p, li { line-height: 1.65; color: var(--color-ink-soft); }
+        .legal-note { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-md); padding: var(--space-4); font-size: var(--text-sm); color: var(--color-ink-muted); }
+        .legal-contact a { color: var(--color-accent); text-decoration: none; }
+    </style>
+</head>
+<body>
+    <script src="/demo-banner.js"></script>
+    <main class="legal-wrap">
+        <a class="legal-back" href="/" data-action="back-home">← Volver a {{BRAND_NAME}}</a>
+        <h1>Información legal</h1>
+        <p class="legal-sub">{{LEGAL_NAME}} — {{MARKET_COUNTRY}}</p>
+
+        <h2 id="privacidad">Privacidad</h2>
+        <p>{{BRAND_NAME}} recoge la mínima información necesaria para operar el servicio:</p>
+        <ul>
+            <li><strong>Cuenta:</strong> correo electrónico y contraseña (almacenada como hash PBKDF2; nunca en texto plano).</li>
+            <li><strong>Favoritos:</strong> los inmuebles que guardas, asociados a tu cuenta para sincronizarlos entre dispositivos.</li>
+            <li><strong>Sesión:</strong> una cookie técnica segura (HttpOnly) que mantiene tu sesión iniciada.</li>
+        </ul>
+        <p>Los datos de contacto de los propietarios no se publican: el contacto se realiza a través de los canales que cada anunciante habilita. No vendemos ni compartimos datos personales con terceros.</p>
+
+        <h2 id="terminos">Términos de uso</h2>
+        <p>{{BRAND_NAME}} es una plataforma de anuncios inmobiliarios. No interviene en la negociación, no cobra comisión al comprador y no garantiza la disponibilidad de los inmuebles publicados. El comprador contacta directamente con quien anuncia.</p>
+        <p>Quien publica es responsable de la veracidad de su anuncio y de contar con la titularidad o autorización necesaria sobre el inmueble. {{BRAND_NAME}} puede retirar anuncios que incumplan estas condiciones.</p>
+
+        <h2 id="contacto">Contacto</h2>
+        <p class="legal-contact">
+            {{BUSINESS_NAME}}<br>
+            Correo: <a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a><br>
+            WhatsApp: <a href="https://wa.me/{{WHATSAPP_PHONE}}">{{WHATSAPP_PHONE}}</a>
+        </p>
+
+        <h2 id="atribucion">Atribuciones</h2>
+        <p>Mapas © <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap contributors</a> · Tiles © <a href="https://carto.com/attributions" rel="noopener">CARTO</a> · Mapa interactivo con <a href="https://leafletjs.com" rel="noopener">Leaflet</a> (BSD-2).</p>
+
+        <p class="legal-note">Este texto es la plantilla legal base de la plataforma. {{LEGAL_NAME}} debe revisarlo y adaptarlo a su marco legal antes de operar comercialmente.</p>
+        <p class="legal-note">© {{YEAR}} {{LEGAL_NAME}}</p>
+    </main>
+</body>
+</html>

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-    <title>NEXO IA — Tu Asesor Inmobiliario Inteligente</title>
-    <meta name="description" content="Pregunta a NEXO IA qué hogar buscas y recibe recomendaciones reales del catálogo: precio, ubicación y características verificadas.">
+    <title>{{BRAND_NAME}} IA — Tu Asesor Inmobiliario Inteligente</title>
+    <meta name="description" content="Pregunta a {{BRAND_NAME}} IA qué hogar buscas y recibe recomendaciones reales del catálogo: precio, ubicación y características verificadas.">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
@@ -205,7 +205,7 @@
             line-height: var(--line-height-normal);
         }
 
-        /* Estilo de burbuja del Asistente (NEXO IA) */
+        /* Estilo de burbuja del Asistente (IA) */
         .chat-bubble.ai .bubble-text {
             background-color: var(--bg-secondary);
             color: var(--text-primary);
@@ -347,6 +347,7 @@
     </style>
 </head>
 <body>
+    <script src="/demo-banner.js"></script>
 
     <!-- Cabecera de Navegación Premium con efecto glass -->
     <header class="glass-effect">
@@ -354,7 +355,7 @@
             <svg viewBox="0 0 24 24">
                 <path d="M12 3L2 12h3v8h14v-8h3L12 3zm2 15h-4v-4h4v4z"/>
             </svg>
-            NEXO
+            {{BRAND_NAME}}
         </a>
         <nav>
             <a href="/">Propiedades</a>
@@ -372,7 +373,7 @@
             <svg class="sparkle" viewBox="0 0 24 24">
                 <path d="M12 2l2.4 4.9L19.3 7.6l-3.6 3.5.9 5.3-4.6-2.4-4.6 2.4.9-5.3-3.6-3.5 4.9-.7L12 2zm0 4.5l-1.3 2.7-3 .4 2.2 2.1-.5 3 2.6-1.4 2.6 1.4-.5-3 2.2-2.1-3-.4-1.3-2.7z"/>
             </svg>
-            <h1>Hola, soy tu asesor de NEXO IA</h1>
+            <h1>Hola, soy tu asesor de {{BRAND_NAME}} IA</h1>
             <p>Dime qué tipo de hogar estás buscando, tu presupuesto o tus preferencias de vida, y encontraré las mejores opciones estructuradas en segundos.</p>
             
             <div class="suggestions-grid">
@@ -393,7 +394,7 @@
     <!-- Barra de Entrada Flotante -->
     <footer class="input-wrapper">
         <form class="input-bar" id="chat-form">
-            <input type="text" id="chat-input" placeholder="Pregunta a NEXO IA..." autocomplete="off" aria-label="Escribe tu pregunta para NEXO IA">
+            <input type="text" id="chat-input" placeholder="Pregunta a {{BRAND_NAME}} IA..." autocomplete="off" aria-label="Escribe tu pregunta para {{BRAND_NAME}} IA">
             <button type="submit" class="send-btn" aria-label="Enviar mensaje">
                 <svg viewBox="0 0 24 24">
                     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
@@ -402,7 +403,7 @@
         </form>
     </footer>
 
-    <!-- Lógica Conversacional Integrada de NEXO IA (Vanilla engine) -->
+    <!-- Lógica Conversacional Integrada (Vanilla engine) -->
     <script>
         const chatContainer = document.getElementById('chat-container');
         const welcomeScreen = document.getElementById('welcome-screen');
@@ -442,11 +443,11 @@
             appendMessage('user', query);
             chatInput.value = ''; // Limpiar barra inmediatamente
 
-            // 2. Renderizar indicador de pensamiento "NEXO IA está pensando..."
+            // 2. Renderizar indicador de pensamiento
             const typingIndicatorId = appendTypingIndicator();
 
             try {
-                // Petición a la API de Workers AI de NEXO
+                // Petición a la API de Workers AI
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -461,7 +462,7 @@
                 const data = await response.json();
                 
                 // 3. Renderizar la respuesta conversacional de la IA
-                appendMessage('ai', data.response || data.reply || 'Aquí tienes las mejores opciones de NEXO para ti.');
+                appendMessage('ai', data.response || data.reply || 'Aquí tienes las mejores opciones de {{BRAND_NAME}} para ti.');
 
                 // 4. Si la IA recomendó propiedades específicas, inyectar el grid de propiedades directamente
                 if (data.properties && data.properties.length > 0) {
@@ -471,7 +472,7 @@
             } catch (error) {
                 console.error(error);
                 removeTypingIndicator(typingIndicatorId);
-                appendMessage('ai', 'Lo siento, tuve dificultades al procesar tu consulta con la base de datos de NEXO. ¿Podrías reintentarlo?');
+                appendMessage('ai', 'Lo siento, tuve dificultades al procesar tu consulta con la base de datos de {{BRAND_NAME}}. ¿Podrías reintentarlo?');
             }
         }
 

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Comparador de Propiedades — NEXO</title>
-    <meta name="description" content="Compara precio, ubicación, habitaciones, baños y superficie de las propiedades que guardaste para elegir con confianza en NEXO.">
+    <title>Comparador de Propiedades — {{BRAND_NAME}}</title>
+    <meta name="description" content="Compara precio, ubicación, habitaciones, baños y superficie de las propiedades que guardaste para elegir con confianza en {{BRAND_NAME}}.">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
@@ -394,6 +394,7 @@
     </style>
 </head>
 <body>
+    <script src="/demo-banner.js"></script>
 
     <!-- Cabecera de Navegación Premium Glass-Effect -->
     <header class="glass-effect">
@@ -401,7 +402,7 @@
             <svg viewBox="0 0 24 24">
                 <path d="M12 3L2 12h3v8h14v-8h3L12 3zm2 15h-4v-4h4v4z"/>
             </svg>
-            NEXO
+            {{BRAND_NAME}}
         </a>
         <nav>
             <a href="/">Propiedades</a>
@@ -493,7 +494,7 @@
         }
 
         // Teléfono canónico desde /api/config (mismo contrato que property.html)
-        let whatsappPhone = "+5358385702";
+        let whatsappPhone = "{{WHATSAPP_PHONE}}";
         fetch('/api/config')
             .then(r => r.ok ? r.json() : null)
             .then(c => { if (c && c.whatsapp_phone) whatsappPhone = c.whatsapp_phone; })
@@ -525,7 +526,7 @@
 
             try {
                 const response = await fetch(API_ENDPOINT);
-                if (!response.ok) throw new Error('Error al conectar con la API de NEXO.');
+                if (!response.ok) throw new Error('Error al conectar con la API de {{BRAND_NAME}}.');
 
                 const allProperties = await response.json();
                 
@@ -586,7 +587,7 @@
                 const canonicalId = encodeURIComponent(property.public_code || property.id);
                 const phone = escapeHtml(whatsappPhone.replace('+', ''));
                 const waMsg = encodeURIComponent(
-                    `Hola NEXO, comparando opciones me interesa la propiedad [${property.public_code || property.id}]: "${property.title}". Solicito más información.`);
+                    `Hola {{BRAND_NAME}}, comparando opciones me interesa la propiedad [${property.public_code || property.id}]: "${property.title}". Solicito más información.`);
 
                 column.innerHTML = `
                     <!-- Cabecera de la columna con minitarjeta -->

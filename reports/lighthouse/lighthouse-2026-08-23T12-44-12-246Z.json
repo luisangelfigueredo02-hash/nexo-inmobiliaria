@@ -1,0 +1,76 @@
+{
+  "base": "http://localhost:8788",
+  "date": "2026-08-23T12:40:03.574Z",
+  "preset": {
+    "formFactor": "mobile",
+    "screenEmulation": {
+      "mobile": true,
+      "width": 360,
+      "height": 640,
+      "deviceScaleFactor": 2.625,
+      "disabled": false
+    },
+    "throttling": {
+      "rttMs": 150,
+      "throughputKbps": 1638.4,
+      "cpuSlowdownMultiplier": 4
+    }
+  },
+  "runs": 3,
+  "pages": {
+    "/": {
+      "performance": 100,
+      "accessibility": 96,
+      "best-practices": 93,
+      "seo": 100,
+      "LCP_ms": 1463.2607,
+      "CLS": 0,
+      "TBT_ms": 0
+    },
+    "/mapa/": {
+      "performance": 91,
+      "accessibility": 100,
+      "best-practices": 96,
+      "seo": 100,
+      "LCP_ms": 3504.59965,
+      "CLS": 0,
+      "TBT_ms": 0
+    },
+    "/comparar/": {
+      "performance": 100,
+      "accessibility": 100,
+      "best-practices": 93,
+      "seo": 100,
+      "LCP_ms": 1230.2383499999999,
+      "CLS": 0,
+      "TBT_ms": 0
+    },
+    "/ia/": {
+      "performance": 100,
+      "accessibility": 100,
+      "best-practices": 93,
+      "seo": 100,
+      "LCP_ms": 1301.9475499999999,
+      "CLS": 0,
+      "TBT_ms": 0
+    },
+    "/cuenta/": {
+      "performance": 100,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 63,
+      "LCP_ms": 1286.0666999999999,
+      "CLS": 0,
+      "TBT_ms": 0
+    },
+    "/property.html?id=N-001": {
+      "performance": 100,
+      "accessibility": 100,
+      "best-practices": 93,
+      "seo": 91,
+      "LCP_ms": 1327.3319,
+      "CLS": 0,
+      "TBT_ms": 0
+    }
+  }
+}

@@ -1,6 +1,8 @@
--- schema.sql - NEXO Unificado (04.4.1: modelo canónico listing identity)
--- Bootstrap local únicamente. Las tablas Identity vienen de migrations/.
--- Producción se alinea vía 0005_canonical_listing_identity.sql.
+-- schema.sql - NEXO Unificado (bootstrap local/desarrollo)
+-- Contrato canónico de `properties`: superset de todas las migrations
+-- (0001-0007). Producción se alinea vía migrations; este archivo solo
+-- inicializa entornos nuevos. Columnas marcadas (private) jamás se
+-- exponen en la API pública (serializeProperty, doble barrera).
 DROP TABLE IF EXISTS properties;
 CREATE TABLE properties (
     id INTEGER PRIMARY KEY AUTOINCREMENT, -- identificador interno (relaciones)
@@ -9,10 +11,11 @@ CREATE TABLE properties (
     type TEXT NOT NULL, -- 'casa', 'apartamento', 'terreno', 'penthouse'
     operation TEXT NOT NULL DEFAULT 'venta', -- 'venta', 'alquiler'
     price REAL NOT NULL,
+    currency TEXT, -- 'USD', 'EUR', 'CUP' (0007; normalizeCurrency en worker.js)
     province TEXT NOT NULL,
     city TEXT NOT NULL,
     neighborhood TEXT NOT NULL,
-    address TEXT, -- Dirección exacta (Privado)
+    address TEXT, -- Dirección exacta (private)
     bedrooms INTEGER DEFAULT 0,
     bathrooms INTEGER DEFAULT 0,
     area REAL, -- Metros cuadrados
@@ -21,10 +24,19 @@ CREATE TABLE properties (
     latitude REAL,
     longitude REAL,
     status TEXT NOT NULL DEFAULT 'published', -- 'published', 'draft'
-    owner_name TEXT, -- Datos privados
-    owner_phone TEXT, -- Datos privados
-    internal_notes TEXT, -- Datos privados
-    contact_email TEXT, -- legacy (privado)
+    owner_name TEXT, -- (private)
+    owner_phone TEXT, -- (private)
+    internal_notes TEXT, -- (private)
+    contact_email TEXT, -- (private, legacy)
+    verified INTEGER DEFAULT 0,
+    placa_libre INTEGER NOT NULL DEFAULT 0,
+    gas_calle INTEGER NOT NULL DEFAULT 0,
+    agua_247 INTEGER NOT NULL DEFAULT 0,
+    pago_exterior INTEGER NOT NULL DEFAULT 0,
+    embedding_id TEXT,
+    agreed_price REAL, -- (private)
+    commission REAL, -- (private)
+    created_by TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

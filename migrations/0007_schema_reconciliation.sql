@@ -1,0 +1,33 @@
+-- 0007_schema_reconciliation.sql
+-- FASE 14A: reconciliación de esquema repo ↔ producción.
+--
+-- CONTEXTO (auditoría FINAL-GATE-13, 2026-08-23):
+--   Producción contenía una migration "0006_properties_currency.sql"
+--   (aplicada 2026-08-22) que nunca se commiteó al repo. Resultado:
+--   un deploy desde el repo quedaba sin la columna properties.currency
+--   y worker.js fallaba (no such column) en /api/properties y admin.
+--   Además, dos migrations distintas compartían el identificador 0006
+--   en d1_migrations de producción.
+--
+-- DECISIÓN:
+--   La columna currency queda definida AQUÍ, en una migration 0007
+--   idempotente, aplicable tanto a una D1 nueva como a la producción
+--   actual (donde la columna ya existe). La entrada histórica
+--   "0006_properties_currency.sql" en d1_migrations de producción se
+--   conserva como evidencia; el repo solo crea entradas nuevas.
+--
+-- IDEMPOTENCIA:
+--   SQLite no soporta ADD COLUMN IF NOT EXISTS. Este archivo es el
+--   documento canónico de la columna: el script de aplicación
+--   (scripts/apply-migrations.mjs) ejecuta el ALTER solo si la columna
+--   no existe todavía (PRAGMA table_info), lo que lo hace seguro tanto
+--   en una D1 nueva como en la producción actual.
+--
+-- DDL canónico aplicado condicionalmente:
+--   ALTER TABLE properties ADD COLUMN currency TEXT;
+--
+-- En producción la columna ya existe con datos (vía la migration
+-- histórica 0006_properties_currency); en D1 nueva queda NULL y
+-- worker.js aplica normalizeCurrency() en cada INSERT/UPDATE.
+
+ALTER TABLE properties ADD COLUMN currency TEXT;

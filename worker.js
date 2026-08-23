@@ -1,7 +1,8 @@
-import { enforceRateLimit, rejectResponse, NO_CACHE_HEADERS } from "./rate-limit.js";
+import { enforceRateLimit, enforceScopedRateLimit, rejectResponse, NO_CACHE_HEADERS } from "./rate-limit.js";
 import { getAuthenticatedSession, destroySession, createSession, isStateChangingAllowed } from "./session-runtime.js";
 import { hashPassword, verifyPassword, isPasswordValid } from "./src/auth/passwords.js";
 import { PERMISSIONS, legacyAdminActor, authorize, isAllowed, denyResponse, serializeProperty, emitAuthorizationAudit } from "./src/auth/authorization/index.js";
+import { buildBrand, applyTokens, buildManifest, escHtml as escBrandHtml } from "./src/brand.js";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 function clientContext(request) {
@@ -111,7 +112,7 @@ function pathSegmentsUnsafe(key) {
   return key.split("/").some((seg) => seg === ".." || seg === "" || seg === ".");
 }
 // === GENERATED CSP-SCRIPT-SRC:BEGIN (scripts/generate-csp-hashes.mjs, no editar a mano) ===
-const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE=' 'sha256-0lD9CoQJat5O4zXdE+lwvkn9Bn9r1t5YVqJHOViTbak=' 'sha256-L3z+/oVX6PwfprsVX/TR3qgnCALHrlfprj1Ff2Kcgvk=' 'sha256-SJ1RHO+1ytvWaxwjB9jFO6KC+9tL3WaOvEFUtBrryr4=' 'sha256-a8MZi3UWgS8zY2bwXTUyY9uKCG1TvSSYPk1Y2yoWPgg=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-ebNrBEyBPbWX3IpEKOsYL8DpsFpMnytqzmwFy9PsGNw=' 'sha256-k8/QEzy6VTXR1kQye4ofYhJXP6juQ9dnP+qQIuWw5ms=' 'sha256-lPXd+5fiaph4D51tYnQM455M1RyFavnNWmANinid5LA=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-s6QrhcaEMu+35KUHHRKAAkkxu3qyjS0Z2XvGJ36C+aE='";
+const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE=' 'sha256-6oEuiIaYrVoThazgfAXhRsRsG1f/5Zki5spgP3weLdE=' 'sha256-9eEjc5jVXp8QJNDq2sAqefa4trpq+qVLIZ2r8caUIQQ=' 'sha256-IMXd5gnPy7nS7t0eNoP0e6GbfxzBWw+YMqObNUtRAQw=' 'sha256-L3z+/oVX6PwfprsVX/TR3qgnCALHrlfprj1Ff2Kcgvk=' 'sha256-akkxeKXyJXrq6lACpj562rR6M4hT63yD7LAVA/8Qnpw=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-ebNrBEyBPbWX3IpEKOsYL8DpsFpMnytqzmwFy9PsGNw=' 'sha256-k8/QEzy6VTXR1kQye4ofYhJXP6juQ9dnP+qQIuWw5ms=' 'sha256-n4ItUFNRH5kBaDADPEvXJRABhjfp+//VgY4KoCxjRyg=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8='";
 // === GENERATED CSP-SCRIPT-SRC:END ===
 var CSP_POLICY = [
   "default-src 'self'",
@@ -165,34 +166,38 @@ export default {
   async route(request, env, ctx) {
     const url = new URL(request.url);
     const method = request.method;
-    const WHATSAPP_PHONE = env.WHATSAPP_PHONE || "+5358385702";
+    const BRAND = buildBrand(env);
+    const WHATSAPP_PHONE = BRAND.whatsapp;
     const MARKET_CONFIG = {
       whatsapp_phone: WHATSAPP_PHONE,
-      market_country: env.MARKET_COUNTRY || "Cuba",
-      market_locale: env.MARKET_LOCALE || "es_CU",
-      default_currency: env.DEFAULT_CURRENCY || "USD",
-      map_center: [
-        parseFloat(env.MAP_CENTER_LAT || "23.1136"),
-        parseFloat(env.MAP_CENTER_LNG || "-82.3666")
-      ],
-      map_zoom: parseInt(env.MAP_ZOOM || "12", 10),
-      demo_mode: String(env.DEMO_MODE || "0") === "1",
+      market_country: BRAND.country,
+      market_country_code: BRAND.countryCode,
+      market_locale: BRAND.locale,
+      default_currency: BRAND.currency,
+      map_center: [BRAND.mapCenterLat, BRAND.mapCenterLng],
+      map_zoom: BRAND.mapZoom,
+      demo_mode: BRAND.demoMode,
       brand: {
-        name: env.BRAND_NAME || "NEXO",
-        logo: env.BRAND_LOGO || "/icons/icon-192.png",
-        description: env.BRAND_DESCRIPTION || "Descubre casas, apartamentos y terrenos en Cuba con datos reales. Búsqueda, mapa, comparador y asistente IA.",
-        tagline: env.BRAND_TAGLINE || "Encuentra tu próximo lugar.",
-        theme_color: env.BRAND_THEME_COLOR || "#1C1917"
+        name: BRAND.name,
+        logo: BRAND.logo,
+        description: BRAND.description,
+        tagline: BRAND.tagline,
+        theme_color: BRAND.secondaryColor,
+        primary_color: BRAND.primaryColor,
+        secondary_color: BRAND.secondaryColor,
+        bg_color: BRAND.bgColor
       },
       business: {
-        email: env.CONTACT_EMAIL || null,
-        phone: env.CONTACT_PHONE || null,
-        address: env.BUSINESS_ADDRESS || null
+        name: BRAND.businessName,
+        legal_name: BRAND.legalName,
+        email: BRAND.email || null,
+        phone: BRAND.phone || null,
+        address: BRAND.address || null
       },
       social: {
-        instagram: env.SOCIAL_INSTAGRAM || null,
-        facebook: env.SOCIAL_FACEBOOK || null,
-        linkedin: env.SOCIAL_LINKEDIN || null
+        instagram: BRAND.socialInstagram || null,
+        facebook: BRAND.socialFacebook || null,
+        linkedin: BRAND.socialLinkedin || null
       }
     };
     const PRODUCTION_ORIGINS = new Set([
@@ -361,6 +366,9 @@ export default {
     if (url.pathname === "/api/auth/login" && method === "POST") {
       const rate = await enforceRateLimit(env, request);
       if (rate.limited) return rejectResponse(rate.retryAfter, corsHeaders);
+      // 14F: límite estricto anti fuerza-bruta (10 intentos / 5 min / IP).
+      const authRate = await enforceScopedRateLimit(env, request, "auth-login");
+      if (authRate.limited) return rejectResponse(authRate.retryAfter, corsHeaders);
       if (!isStateChangingAllowed(request, allowedOrigin)) return authJsonReq({ error: "Origin no permitido" }, 403);
       const body = await authJson();
       const email = String(body?.email || "").trim().toLowerCase();
@@ -440,8 +448,8 @@ export default {
             `SELECT id, public_code, title, description, images, price, currency, city, province, latitude, longitude, placa_libre, gas_calle, agua_247, pago_exterior FROM properties WHERE ${lookup.column} = ?`
           ).bind(lookup.value).first();
           if (property) {
-            const brandName = env.BRAND_NAME || "NEXO";
-            const brandDesc = env.BRAND_DESCRIPTION || "Propiedad en Cuba";
+            const brandName = BRAND.name;
+            const brandDesc = BRAND.description;
             const origin = url.origin;
             const images = normalizeImages(property.images);
             const rawImage = images[0] || "/icons/icon-512.png";
@@ -471,7 +479,7 @@ export default {
               <meta property="og:image" content="${seoImage}">
               <meta property="og:url" content="${seoUrl}">
               <meta property="og:type" content="website">
-              <meta property="og:locale" content="es_CU">
+              <meta property="og:locale" content="${escHtml(BRAND.locale)}">
               <meta property="og:site_name" content="${seoBrand}">
               <meta name="twitter:card" content="summary_large_image">
               <meta name="twitter:title" content="${seoTitle}">
@@ -490,7 +498,7 @@ export default {
                   "@type": "PostalAddress",
                   "addressLocality": "${escJson(property.city)}",
                   "addressRegion": "${escJson(property.province)}",
-                  "addressCountry": "CU"
+                  "addressCountry": "${escJson(BRAND.countryCode)}"
                 }${geoJson}
               }
               <\/script>
@@ -501,7 +509,15 @@ export default {
           console.error("Error en SEO dinámico:", err);
         }
       }
-      return new Response(htmlContent, { headers: { "Content-Type": "text/html" } });
+      return new Response(applyTokens(htmlContent, BRAND, url.origin), { headers: { "Content-Type": "text/html" } });
+    }
+    if ((url.pathname === "/manifest.json" || url.pathname === "/manifest.webmanifest") && method === "GET") {
+      return new Response(JSON.stringify(buildManifest(BRAND, url.origin)), {
+        headers: {
+          "Content-Type": "application/manifest+json; charset=utf-8",
+          "Cache-Control": "public, max-age=300"
+        }
+      });
     }
     if (url.pathname === "/sitemap.xml" && method === "GET") {
       try {
@@ -1079,7 +1095,7 @@ Habitaciones: ${p.bedrooms}, Baños: ${p.bathrooms}, Área: ${p.area} m²
 Descripción: ${p.description}
 ---`
         ).join("\n");
-        const systemPrompt = `Eres NEXO IA, el asesor virtual premium y sofisticado de NEXO en Cuba. Tu tono es profesional, minimalista y educado.
+        const systemPrompt = `Eres ${BRAND.name} IA, el asesor virtual premium y sofisticado de ${BRAND.name} en ${BRAND.country}. Tu tono es profesional, minimalista y educado.
         Recomienda exclusivamente propiedades del siguiente contexto real. Jamás inventes propiedades, ubicaciones o precios.
         Siempre que menciones o recomiendes un inmueble, cita explícitamente su ID entre corchetes, por ejemplo [${matchedProperties[0]?.public_code || "N-001"}].
         
@@ -1105,7 +1121,16 @@ Descripción: ${p.description}
       }
     }
     if (env.ASSETS) {
-      return env.ASSETS.fetch(request);
+      const assetRes = await env.ASSETS.fetch(request);
+      const contentType = assetRes.headers.get("Content-Type") || "";
+      if (assetRes.ok && contentType.includes("text/html")) {
+        const html = await assetRes.text();
+        const headers = new Headers(assetRes.headers);
+        headers.set("Content-Type", "text/html; charset=utf-8");
+        headers.set("Cache-Control", "public, max-age=0, must-revalidate");
+        return new Response(applyTokens(html, BRAND, url.origin), { status: assetRes.status, headers });
+      }
+      return assetRes;
     }
     return new Response("Not Found", { status: 404 });
   }

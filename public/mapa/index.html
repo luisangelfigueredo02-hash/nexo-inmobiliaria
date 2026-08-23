@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Mapa Interactivo de Propiedades — NEXO</title>
-    <meta name="description" content="Explora casas, apartamentos y terrenos en un mapa interactivo. Ubicación, precio y detalles de cada propiedad en NEXO.">
+    <title>Mapa Interactivo de Propiedades — {{BRAND_NAME}}</title>
+    <meta name="description" content="Explora casas, apartamentos y terrenos en un mapa interactivo. Ubicación, precio y detalles de cada propiedad en {{BRAND_NAME}}.">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
@@ -253,6 +253,7 @@
     </style>
 </head>
 <body>
+    <script src="/demo-banner.js"></script>
 
     <!-- Cabecera de Navegación Glass Premium -->
     <header class="glass-effect">
@@ -260,7 +261,7 @@
             <svg viewBox="0 0 24 24">
                 <path d="M12 3L2 12h3v8h14v-8h3L12 3zm2 15h-4v-4h4v4z"/>
             </svg>
-            NEXO
+            {{BRAND_NAME}}
         </a>
         <nav>
             <a href="/">Propiedades</a>
@@ -380,7 +381,7 @@
             map.on('moveend', filterSidebarProperties);
         }
 
-        // 2. Cargar los datos de la base de datos de NEXO (D1)
+        // 2. Cargar los datos del inventario (D1)
         async function loadMapData() {
             try {
                 const response = await fetch(API_ENDPOINT);
