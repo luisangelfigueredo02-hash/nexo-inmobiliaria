@@ -404,7 +404,9 @@
 
                 globalProperties = await response.json();
 
-                // Centrar el mapa en el promedio de propiedades geolocalizadas;
+                // Encuadrar TODAS las propiedades geolocalizadas (como la home):
+                // el promedio aritmético de un inventario multi-provincia cae en
+                // zonas rurales vacías (bug 15D: mapa "gris" con 0 visibles).
                 // NULL = "sin geolocalización", nunca 0,0 ni coordenadas inventadas.
                 if (globalProperties.length > 0) {
                     const geo = globalProperties.filter(p => {
@@ -412,10 +414,13 @@
                         const lng = parseFloat(p.longitude);
                         return !isNaN(lat) && !isNaN(lng);
                     });
-                    if (geo.length > 0) {
-                        const avgLat = geo.reduce((a, p) => a + parseFloat(p.latitude), 0) / geo.length;
-                        const avgLng = geo.reduce((a, p) => a + parseFloat(p.longitude), 0) / geo.length;
-                        map.setView([avgLat, avgLng], 14);
+                    if (geo.length === 1) {
+                        map.setView([parseFloat(geo[0].latitude), parseFloat(geo[0].longitude)], 14);
+                    } else if (geo.length > 1) {
+                        map.fitBounds(
+                            geo.map(p => [parseFloat(p.latitude), parseFloat(p.longitude)]),
+                            { padding: [40, 40], maxZoom: 13 }
+                        );
                     } else {
                         // Sin ninguna coordenada: estado explícito, no mapa vacío mudo.
                         showNoCoordsState();
