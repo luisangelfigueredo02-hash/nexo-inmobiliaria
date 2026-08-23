@@ -31,3 +31,13 @@ WHATSAPP_PHONE = "+5358385702"
 # DSN de Sentry (opcional): configura con `wrangler secret put SENTRY_DSN`
 # o reemplaza el valor por un DSN real cuando lo tengas disponible
 SENTRY_DSN = ""
+# DEMO_MODE: "1" para marcar datos de demostración en la UI y API.
+# Útil para mostrar el producto con inventario de ejemplo claramente rotulado.
+DEMO_MODE = "0"
+# White-label (opcional, se sirven en /api/config.brand):
+# BRAND_NAME = "NEXO"
+# BRAND_DESCRIPTION = "..."
+# BRAND_TAGLINE = "..."
+# BRAND_THEME_COLOR = "#1C1917"
+# CONTACT_EMAIL = "..."  CONTACT_PHONE = "..."  BUSINESS_ADDRESS = "..."
+# SOCIAL_INSTAGRAM / SOCIAL_FACEBOOK / SOCIAL_LINKEDIN = "https://..."

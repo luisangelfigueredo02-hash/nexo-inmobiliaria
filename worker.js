@@ -102,7 +102,7 @@ function pathSegmentsUnsafe(key) {
   return key.split("/").some((seg) => seg === ".." || seg === "" || seg === ".");
 }
 // === GENERATED CSP-SCRIPT-SRC:BEGIN (scripts/generate-csp-hashes.mjs, no editar a mano) ===
-const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE=' 'sha256-SJ1RHO+1ytvWaxwjB9jFO6KC+9tL3WaOvEFUtBrryr4=' 'sha256-YTNEXBAIAVjgkhbGz0CXBrM0pjEtjeiv39zot/ieRkw=' 'sha256-a8MZi3UWgS8zY2bwXTUyY9uKCG1TvSSYPk1Y2yoWPgg=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-izGshArIwM4z7J6QS0cch9lZrazQ/2hKdZwIYp6HMSc=' 'sha256-lPXd+5fiaph4D51tYnQM455M1RyFavnNWmANinid5LA=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-s6QrhcaEMu+35KUHHRKAAkkxu3qyjS0Z2XvGJ36C+aE='";
+const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE=' 'sha256-SJ1RHO+1ytvWaxwjB9jFO6KC+9tL3WaOvEFUtBrryr4=' 'sha256-YTNEXBAIAVjgkhbGz0CXBrM0pjEtjeiv39zot/ieRkw=' 'sha256-a8MZi3UWgS8zY2bwXTUyY9uKCG1TvSSYPk1Y2yoWPgg=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-lPXd+5fiaph4D51tYnQM455M1RyFavnNWmANinid5LA=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-s6QrhcaEMu+35KUHHRKAAkkxu3qyjS0Z2XvGJ36C+aE=' 'sha256-wBfcudqfFkOv2QcZ+2JKh3Zy4OdqQ6ObK8Qqwt/vbvg='";
 // === GENERATED CSP-SCRIPT-SRC:END ===
 var CSP_POLICY = [
   "default-src 'self'",
@@ -166,6 +166,7 @@ export default {
         parseFloat(env.MAP_CENTER_LNG || "-82.3666")
       ],
       map_zoom: parseInt(env.MAP_ZOOM || "12", 10),
+      demo_mode: String(env.DEMO_MODE || "0") === "1",
       brand: {
         name: env.BRAND_NAME || "NEXO",
         logo: env.BRAND_LOGO || "/icons/icon-192.png",

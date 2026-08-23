@@ -585,8 +585,20 @@
                 if (c.whatsapp_phone) whatsappPhone = c.whatsapp_phone;
                 if (Array.isArray(c.map_center) && c.map_center.length === 2) MARKET.mapCenter = c.map_center;
                 if (c.map_zoom) MARKET.mapZoom = c.map_zoom;
+                if (c.demo_mode) showDemoBanner();
             })
             .catch(() => { /* fallback estático */ });
+
+        // DEMO_MODE: banner de advertencia cuando el inventario es de demostración.
+        function showDemoBanner() {
+            if (document.getElementById("demo-banner")) return;
+            const b = document.createElement("div");
+            b.id = "demo-banner";
+            b.setAttribute("role", "note");
+            b.innerHTML = "🧪 <strong>Modo demostración</strong> — el inventario mostrado es de ejemplo.";
+            b.style.cssText = "position:sticky;top:0;z-index:60;background:linear-gradient(90deg,#b45309,#c2410c);color:#fff;text-align:center;padding:8px 12px;font-size:13px;font-weight:500;";
+            document.body.prepend(b);
+        }
 
         // Persistencia de favoritos: intenta localStorage; si está bloqueado
         // (SecurityError) o lleno (QuotaExceededError), usa memoria como fallback
