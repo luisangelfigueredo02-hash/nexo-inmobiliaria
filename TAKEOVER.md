@@ -69,13 +69,18 @@ CI/CD: `.github/workflows/deploy.yml` despliega en push a `main` con
 ```bash
 # Local
 npx wrangler d1 execute nexo-db --local --file=schema.sql
-npx wrangler d1 migrations apply nexo-db --local
+node scripts/apply-migrations.mjs --local
 
 # Producción (D1 recién creada: schema.sql PRIMERO — crea `properties`;
 # la migración 0002 hace ALTER sobre ella y fallaría sin este paso)
 npx wrangler d1 execute nexo-db --remote --file=schema.sql
-npx wrangler d1 migrations apply nexo-db --remote
+node scripts/apply-migrations.mjs --remote
 ```
+
+Usa SIEMPRE `scripts/apply-migrations.mjs` (no `wrangler d1 migrations
+apply`): `schema.sql` ya incluye `properties.currency`, por lo que el ALTER
+crudo de 0007 fallaría por columna duplicada; el script lo omite de forma
+idempotente y reconcilia el tracker `d1_migrations`.
 
 Esquema canónico: `schema.sql` + migraciones `migrations/0001–0007`.
 `properties.id` (INTEGER PK interno) + `properties.public_code` (`N-001`, público).

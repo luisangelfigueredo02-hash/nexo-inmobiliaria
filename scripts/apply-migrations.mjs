@@ -61,6 +61,9 @@ for (const file of files) {
     sql = sql.replace(/ALTER TABLE properties ADD COLUMN currency TEXT;/g, "SELECT 1;");
     console.log(`~ ${file}: currency ya existe, ALTER omitido`);
   }
+  // yargs interpreta un --command que empieza por "--" (comentario SQL) como
+  // flag desconocida; el statement no-op inicial lo evita.
+  sql = "SELECT 1;\n" + sql;
   execFileSync(
     "npx", ["wrangler", "d1", "execute", DB_NAME, flag, "--command", sql],
     { cwd: ROOT, stdio: "inherit" }
