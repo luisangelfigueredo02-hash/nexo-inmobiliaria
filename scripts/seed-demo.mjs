@@ -96,7 +96,9 @@ const properties = SPOTS.map((spot, i) => {
     address: null,
     bedrooms, bathrooms, area,
     description: desc,
-    images: "[]",
+    // Imágenes de demostración PROPIAS (SVG generados en /demo-media, con
+    // marca de agua DEMO). Nunca fotos de terceros: cero riesgo de licencia.
+    images: JSON.stringify([`/demo-media/${type}.svg`]),
     latitude: lat.toFixed(6),
     longitude: lng.toFixed(6),
     status: "published",

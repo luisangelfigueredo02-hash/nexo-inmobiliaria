@@ -379,6 +379,13 @@ img { display: block; max-width: 100%; height: auto; }
     backdrop-filter: blur(8px);
 }
 
+.nx-card__badge--demo {
+    left: auto;
+    right: var(--space-3);
+    background: var(--color-ink);
+    color: var(--color-surface);
+}
+
 .nx-card__body {
     display: flex;
     flex-direction: column;

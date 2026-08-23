@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Imagen de demostración — apartamento">
+  <rect width="800" height="600" fill="#e9eef5"/>
+  <g fill="none" stroke="#33526e" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.85">
+    <path d="M300 180h200v320H300z"/>
+    <path d="M340 230h50v50h-50z M410 230h50v50h-50z M340 320h50v50h-50z M410 320h50v50h-50z M375 440h50v60h-50z"/>
+  </g>
+  <g transform="rotate(-18 400 300)">
+    <rect x="240" y="258" width="320" height="84" rx="12" fill="#33526e" opacity="0.9"/>
+    <text x="400" y="316" text-anchor="middle" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="48" font-weight="800" letter-spacing="6" fill="#ffffff">DEMO</text>
+  </g>
+</svg>

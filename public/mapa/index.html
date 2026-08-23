@@ -373,9 +373,24 @@
             }).setView(MARKET.mapCenter, MARKET.mapZoom);
 
             // Tiles consistentes con la homepage (CARTO light) — no OSM directo.
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            const tiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
             }).addTo(map);
+
+            // 14D: si el proveedor de tiles falla (red 3G, bloqueo, caída de CARTO),
+            // el mapa no debe quedarse gris en silencio: aviso honesto + marcadores
+            // siguen operativos sobre el fondo.
+            let tileErrors = 0;
+            tiles.on('tileerror', () => {
+                tileErrors += 1;
+                if (tileErrors === 8) {
+                    const notice = document.createElement('div');
+                    notice.id = 'tiles-fallback-notice';
+                    notice.style.cssText = 'position:absolute;z-index:1000;bottom:12px;left:50%;transform:translateX(-50%);background:var(--surface,#fff);color:var(--text-secondary,#555);padding:8px 14px;border-radius:8px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.15);max-width:90%;text-align:center;';
+                    notice.textContent = 'El mapa base no está disponible. Los marcadores siguen activos.';
+                    document.getElementById('fullscreen-map').appendChild(notice);
+                }
+            });
 
             // Escuchar el movimiento del mapa para filtrar elementos en el listado
             map.on('moveend', filterSidebarProperties);
@@ -437,7 +452,7 @@
             if (countLabel) countLabel.textContent = msg;
             if (sidebarGrid) sidebarGrid.innerHTML = `
                 <div style="grid-column: 1/-1; padding: var(--space-7) var(--space-4); text-align: center;">
-                    <div style="font-size:32px; margin-bottom: var(--space-3);">🗺️</div>
+                    <div style="margin-bottom: var(--space-3); color: var(--text-secondary);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14"/><path d="M15 6v14"/></svg></div>
                     <h3 style="font-size: var(--text-md); font-weight: var(--weight-bold); color: var(--text-primary); margin-bottom: var(--space-2);">${msg}</h3>
                     <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-4);">${sub}</p>
                     <a href="/" style="display:inline-block; padding: var(--space-2) var(--space-4); background: var(--accent); color: #fff; border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-medium);">Ver listado</a>
@@ -671,5 +686,26 @@
             navigator.serviceWorker.register("/sw.js").catch(() => {});
         }
     </script>
+    <footer class="nx-footer" aria-label="Información de {{BRAND_NAME}}">
+        <div class="nx-footer__inner">
+            <div class="nx-footer__brand">
+                <span class="nx-footer__logo">{{BRAND_NAME}}</span>
+                <span class="nx-footer__tag">Plataforma inmobiliaria de {{MARKET_COUNTRY}}</span>
+            </div>
+            <nav class="nx-footer__nav" aria-label="Enlaces de {{BRAND_NAME}}">
+                <a href="/">Propiedades</a>
+                <a href="/mapa/index.html">Mapa</a>
+                <a href="/comparar/index.html">Comparar</a>
+                <a href="/ia/index.html">{{BRAND_NAME}} IA</a>
+            </nav>
+            <p class="nx-footer__legal">
+                <a href="/legal.html#privacidad">Privacidad</a> ·
+                <a href="/legal.html#terminos">Términos</a> ·
+                <a href="/legal.html#contacto">Contacto</a>
+            </p>
+            <p class="nx-footer__legal">© {{YEAR}} {{LEGAL_NAME}}</p>
+        </div>
+    </footer>
+
 </body>
 </html>

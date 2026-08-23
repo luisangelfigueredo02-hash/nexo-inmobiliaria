@@ -683,6 +683,11 @@
         function render(p, config) {
             // Identidad
             document.getElementById("tag-op").textContent = p.operation || "";
+            // Marca DEMO visible: el inventario de demostración nunca se confunde con real.
+            if (String(p.public_code || "").startsWith("D-")) {
+                const tag = document.getElementById("tag-op");
+                tag.insertAdjacentHTML("afterend", '<span class="tag-accent" style="background:var(--color-ink);color:var(--color-surface);">DEMO</span>');
+            }
             document.getElementById("tag-type").textContent = p.type || "";
             document.getElementById("prop-title").textContent = p.title;
             document.getElementById("prop-loc").textContent = [p.neighborhood, p.city, p.province].filter(Boolean).join(", ");
@@ -943,5 +948,26 @@
             navigator.serviceWorker.register("/sw.js").catch(() => {});
         }
     </script>
+    <footer class="nx-footer" aria-label="Información de {{BRAND_NAME}}">
+        <div class="nx-footer__inner">
+            <div class="nx-footer__brand">
+                <span class="nx-footer__logo">{{BRAND_NAME}}</span>
+                <span class="nx-footer__tag">Plataforma inmobiliaria de {{MARKET_COUNTRY}}</span>
+            </div>
+            <nav class="nx-footer__nav" aria-label="Enlaces de {{BRAND_NAME}}">
+                <a href="/">Propiedades</a>
+                <a href="/mapa/index.html">Mapa</a>
+                <a href="/comparar/index.html">Comparar</a>
+                <a href="/ia/index.html">{{BRAND_NAME}} IA</a>
+            </nav>
+            <p class="nx-footer__legal">
+                <a href="/legal.html#privacidad">Privacidad</a> ·
+                <a href="/legal.html#terminos">Términos</a> ·
+                <a href="/legal.html#contacto">Contacto</a>
+            </p>
+            <p class="nx-footer__legal">© {{YEAR}} {{LEGAL_NAME}}</p>
+        </div>
+    </footer>
+
 </body>
 </html>

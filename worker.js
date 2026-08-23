@@ -112,7 +112,7 @@ function pathSegmentsUnsafe(key) {
   return key.split("/").some((seg) => seg === ".." || seg === "" || seg === ".");
 }
 // === GENERATED CSP-SCRIPT-SRC:BEGIN (scripts/generate-csp-hashes.mjs, no editar a mano) ===
-const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE=' 'sha256-6oEuiIaYrVoThazgfAXhRsRsG1f/5Zki5spgP3weLdE=' 'sha256-9eEjc5jVXp8QJNDq2sAqefa4trpq+qVLIZ2r8caUIQQ=' 'sha256-IMXd5gnPy7nS7t0eNoP0e6GbfxzBWw+YMqObNUtRAQw=' 'sha256-L3z+/oVX6PwfprsVX/TR3qgnCALHrlfprj1Ff2Kcgvk=' 'sha256-akkxeKXyJXrq6lACpj562rR6M4hT63yD7LAVA/8Qnpw=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-ebNrBEyBPbWX3IpEKOsYL8DpsFpMnytqzmwFy9PsGNw=' 'sha256-k8/QEzy6VTXR1kQye4ofYhJXP6juQ9dnP+qQIuWw5ms=' 'sha256-n4ItUFNRH5kBaDADPEvXJRABhjfp+//VgY4KoCxjRyg=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8='";
+const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE=' 'sha256-2sq9W5Hj2Yo0nWIr69InCuKcx7R2NT1hhxfZJmnKvWo=' 'sha256-6oEuiIaYrVoThazgfAXhRsRsG1f/5Zki5spgP3weLdE=' 'sha256-L3z+/oVX6PwfprsVX/TR3qgnCALHrlfprj1Ff2Kcgvk=' 'sha256-QGsc+MvYLjrjRm0izPVyqgZ8+6MysCOTxjtBauTQ0Mo=' 'sha256-U9O3eGte548FOkYv5ewmXiGmUOFTamUxREtgAMeBwHk=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-ebNrBEyBPbWX3IpEKOsYL8DpsFpMnytqzmwFy9PsGNw=' 'sha256-k8/QEzy6VTXR1kQye4ofYhJXP6juQ9dnP+qQIuWw5ms=' 'sha256-n4ItUFNRH5kBaDADPEvXJRABhjfp+//VgY4KoCxjRyg=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8='";
 // === GENERATED CSP-SCRIPT-SRC:END ===
 var CSP_POLICY = [
   "default-src 'self'",

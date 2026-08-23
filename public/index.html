@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
     <title>{{BRAND_NAME}} — Descubre tu próximo hogar en {{MARKET_COUNTRY}}</title>
     <meta name="description" content="{{BRAND_DESCRIPTION}}">
+    <link rel="canonical" href="{{SITE_ORIGIN}}/">
+    <meta property="og:title" content="{{BRAND_NAME}} — Descubre tu próximo hogar en {{MARKET_COUNTRY}}">
+    <meta property="og:description" content="{{BRAND_DESCRIPTION}}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{SITE_ORIGIN}}/">
+    <meta property="og:site_name" content="{{BRAND_NAME}}">
+    <meta property="og:locale" content="{{MARKET_LOCALE}}">
+    <meta name="twitter:card" content="summary">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "{{BRAND_NAME}}",
+        "legalName": "{{LEGAL_NAME}}",
+        "url": "{{SITE_ORIGIN}}/",
+        "logo": "{{SITE_ORIGIN}}{{BRAND_LOGO}}",
+        "description": "{{BRAND_DESCRIPTION}}"
+    }
+    </script>
     <link rel="stylesheet" href="/variables.css">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/favicon.ico" sizes="any">
@@ -861,10 +880,12 @@
             inv.innerHTML = visibleProperties.map(p => {
                 const img = esc((p.images && p.images[0]) || FALLBACK_IMG);
                 const href = `/property.html?id=${encodeURIComponent(p.public_code || p.id)}`;
+                const isDemo = String(p.public_code || "").startsWith("D-");
                 return `
                 <article class="nx-card" data-prop-id="${esc(p.id)}">
                     <div class="nx-card__media">
                         <span class="nx-card__badge">${esc(p.operation)}</span>
+                        ${isDemo ? '<span class="nx-card__badge nx-card__badge--demo">DEMO</span>' : ""}
                         <img src="${img}" srcset="${responsiveSrcSet(img)}" sizes="(max-width: 600px) 100vw, 340px"
                              alt="${esc(p.title)}" loading="lazy" decoding="async" data-fallback-src="${FALLBACK_IMG}">
                     </div>
@@ -933,7 +954,18 @@
         function initMap() {
             if (map) return;
             map = L.map("discovery-map", { scrollWheelZoom: true }).setView(MARKET.mapCenter, MARKET.mapZoom);
-            L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+            const tiles = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", { attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+            // 14D: aviso honesto si el proveedor de tiles falla (3G/bloqueo/caída).
+            let tileErrors = 0;
+            tiles.on("tileerror", () => {
+                tileErrors += 1;
+                if (tileErrors === 8) {
+                    const notice = document.createElement("div");
+                    notice.style.cssText = "position:absolute;z-index:1000;bottom:12px;left:50%;transform:translateX(-50%);background:#fff;color:#555;padding:8px 14px;border-radius:8px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.15);max-width:90%;text-align:center;";
+                    notice.textContent = "El mapa base no está disponible. Los marcadores siguen activos.";
+                    document.getElementById("discovery-map").appendChild(notice);
+                }
+            });
         }
 
         function syncMarkers() {
