@@ -1074,8 +1074,12 @@ ${urls}
     if (url.pathname === "/api/chat" && method === "POST") {
       try {
         const { message } = await request.json();
-        if (!message) {
+        if (!message || typeof message !== "string") {
           return new Response(JSON.stringify({ error: "Mensaje requerido" }), { status: 400, headers: corsHeaders });
+        }
+        // Coste por llamada (Workers AI): rechazar payloads abusivos antes de gastar.
+        if (message.length > 2000) {
+          return new Response(JSON.stringify({ error: "Mensaje demasiado largo (máx. 2000 caracteres)" }), { status: 400, headers: corsHeaders });
         }
         const rate = await enforceRateLimit(env, request);
         if (rate.limited) {

@@ -49,3 +49,27 @@ test("GATE19: /api/chat aplica límite estricto (429 tras 10 en 5 min)", async (
   const limited = codes.filter(c => c === 429).length;
   assert.ok(limited >= 2, `esperaba >=2 respuestas 429, obtuvo: ${codes.join(",")}`);
 });
+
+test("GATE19: /api/chat rechaza mensajes >2000 chars (400) antes de consumir rate limit", async () => {
+  const env = makeEnv();
+  const req = new Request("https://x/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "CF-Connecting-IP": "9.9.9.9" },
+    body: JSON.stringify({ message: "a".repeat(2001) }),
+  });
+  const res = await worker.fetch(req, env, { waitUntil() {} });
+  assert.equal(res.status, 400);
+  const body = await res.json();
+  assert.match(body.error, /largo/);
+});
+
+test("GATE19: /api/chat rechaza message no-string (400)", async () => {
+  const env = makeEnv();
+  const req = new Request("https://x/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "CF-Connecting-IP": "9.9.9.9" },
+    body: JSON.stringify({ message: 42 }),
+  });
+  const res = await worker.fetch(req, env, { waitUntil() {} });
+  assert.equal(res.status, 400);
+});
