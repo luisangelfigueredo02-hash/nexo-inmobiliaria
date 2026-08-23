@@ -165,7 +165,8 @@
             border-color: var(--color-ink);
         }
         .chip select { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
-        .chip-more { color: var(--color-link); border-color: transparent; background: transparent; }
+        .chip-more { color: var(--color-ink-muted); }
+        .chip-more[aria-expanded="true"] { color: var(--color-accent); font-weight: var(--weight-semibold); }
 
         .filters-advanced {
             max-width: 760px;
@@ -859,7 +860,7 @@
             const inv = document.getElementById("inventory");
             const count = document.getElementById("results-count");
             const trust = document.getElementById("trust-count");
-            if (trust) trust.innerHTML = `<strong>${allProperties.length}</strong> propiedades`;
+            if (trust) trust.innerHTML = `<strong>${allProperties.length}</strong> propiedad${allProperties.length !== 1 ? "es" : ""}`;
             if (visibleProperties.length === 0) { showState("empty"); count.textContent = "0 propiedades"; return; }
             count.innerHTML = `<strong>${visibleProperties.length}</strong> propiedad${visibleProperties.length !== 1 ? "es" : ""} encontrada${visibleProperties.length !== 1 ? "s" : ""}`;
             const favs = getFavs();
