@@ -3,7 +3,7 @@
    Arquitectura de caché ultra-resiliente para Cuba.
 ========================================================= */
 
-const SW_VERSION = "nexo-v6-polish";
+const SW_VERSION = "nexo-v7-map-assets";
 const STATIC_CACHE = `${SW_VERSION}-static`;
 const DATA_CACHE = `${SW_VERSION}-data`;
 const IMAGE_CACHE = `${SW_VERSION}-images`;
