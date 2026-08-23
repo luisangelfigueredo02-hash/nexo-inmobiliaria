@@ -400,28 +400,30 @@ ${urls}
       }
     }
     if (url.pathname.startsWith("/media/") && env.BUCKET_IMAGENES && (method === "GET" || method === "HEAD")) {
-      // 05.12 E risk-05: rejecting traversal canónically, fully decoded, no destructive override
+      // 05.12/05.13 RISK-05: guard canónica — decodes fully and rejects traversal segments.
+      // Operates on the raw prefix captured after "/media/". If the URL parser
+      // already normalized the path (edge normalization), the guard still validates
+      // the raw remainder plus every decoded iteration.
       let key = url.pathname.slice("/media/".length);
       try {
-        // decode repeatedly (double-encoded traversal) without throwing on existing valid keys
         let decoded = key;
         for (let i = 0; i < 3; i++) {
           const next = decodeURIComponent(decoded);
           if (next === decoded) break;
           decoded = next;
+          // Reject each decoded iteration, not just the final result, so multi-encoded
+          // traversal never passes (double-encoded: decode1 → "%2e%2e" → decode2 → "..")
+          if (decoded === "" || decoded.startsWith("/") || decoded.includes("\\") ||
+              decoded.split("/").some((seg) => seg === ".." || seg === "" || seg === ".")) {
+            return new Response("Not Found", { status: 404, headers: corsHeaders });
+          }
         }
         key = decoded;
       } catch {
         return new Response("Bad Request", { status: 400, headers: corsHeaders });
       }
-      // reject any path containing traversal segments, backslashes or absolute syntax
-      if (
-        key === "" ||
-        key.startsWith("/") ||
-        key.includes("\\") ||
-        key.split("/").includes("..") ||
-        pathSegmentsUnsafe(key)
-      ) {
+      if (key === "" || key.startsWith("/") || key.includes("\\") ||
+          key.split("/").some((seg) => seg === ".." || seg === "" || seg === ".")) {
         return new Response("Not Found", { status: 404, headers: corsHeaders });
       }
       const accept = request.headers.get("accept") || "";
