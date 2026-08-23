@@ -44,6 +44,13 @@ if (files.length === 0) {
 }
 
 // Estado actual: migrations ya registradas y columnas de properties.
+// En una D1 recién creada el tracker todavía no existe (wrangler solo lo
+// crea con `d1 migrations apply`): crearlo con el mismo DDL que wrangler.
+d1(`CREATE TABLE IF NOT EXISTS d1_migrations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT UNIQUE,
+  applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+)`);
 const applied = new Set(
   d1("SELECT name FROM d1_migrations")[0].results.map((r) => r.name)
 );
@@ -57,10 +64,19 @@ for (const file of files) {
     continue;
   }
   let sql = readFileSync(join(ROOT, "migrations", file), "utf8");
-  if (file.startsWith("0007_") && columns.has("currency")) {
-    sql = sql.replace(/ALTER TABLE properties ADD COLUMN currency TEXT;/g, "SELECT 1;");
-    console.log(`~ ${file}: currency ya existe, ALTER omitido`);
-  }
+  // schema.sql ya crea `properties` con el esquema canónico completo: omite
+  // cualquier ADD COLUMN cuya columna ya exista (mismo criterio que
+  // test/migrations-consistency.test.mjs — la columna es el contrato).
+  sql = sql.replace(
+    /ALTER TABLE properties ADD COLUMN (\w+)[^;]*;/g,
+    (m, col) => {
+      if (columns.has(col)) {
+        console.log(`~ ${file}: properties.${col} ya existe, ALTER omitido`);
+        return "SELECT 1;";
+      }
+      return m;
+    }
+  );
   // yargs interpreta un --command que empieza por "--" (comentario SQL) como
   // flag desconocida; el statement no-op inicial lo evita.
   sql = "SELECT 1;\n" + sql;

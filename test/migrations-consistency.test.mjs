@@ -97,3 +97,13 @@ test("INSERT con currency funciona tras bootstrap (regresión P0 Gate 13)", () =
   assert.equal(row.currency, "USD");
   db.close();
 });
+
+test("apply-migrations.mjs usa el mismo sanitizador genérico que este test (anti-drift Gate 16)", () => {
+  const script = readFileSync(join(ROOT, "scripts", "apply-migrations.mjs"), "utf8");
+  assert.match(script, /ALTER TABLE properties ADD COLUMN \(\\w\+\)/,
+    "El aplicador debe omitir genéricamente ADD COLUMN de columnas existentes (no solo 0007)");
+  assert.match(script, /CREATE TABLE IF NOT EXISTS d1_migrations/,
+    "El aplicador debe crear el tracker si no existe (D1 recién creada)");
+  assert.match(script, /SELECT 1;\\n" \+ sql|"SELECT 1;\\n" \+ sql/,
+    "El aplicador debe prefijar el statement no-op (yargs rechaza --command que empieza por --)");
+});
