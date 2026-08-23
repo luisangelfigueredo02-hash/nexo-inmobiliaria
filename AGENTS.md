@@ -95,6 +95,18 @@ URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.de
 - Secrets expuestos en ~/.cf_token / ~/.gh_token (rotar)
 - Chat AI no aplicó rate-limit (roadmap P0 A-08a pendiente)
 
+### Gate 18 — Premium Visual Rebuild (2026-08-23, COMPLETADO)
+- Frontend rebuild UX/UI completo SIN tocar backend; reporte: reports/FINAL-GATE-18-PREMIUM-VISUAL-UX-AUDIT.md
+- Design system v3 en `public/variables.css` (fuente única): `.nx-header__nav`, `.nx-bottomnav` (móvil + safe-area), `.nx-sheet`/`.nx-scrim` (filtros bottom-sheet/móvil, modal/desktop), `.nx-chip` (+`--action` con badge), `.nx-toast`, `.nx-state__icon`, `.nx-price-marker` (markers mapa en home y /mapa/), `.nx-skeleton`, `.nx-reveal`; motion solo transform/opacity, `prefers-reduced-motion` respetado
+- Navegación unificada: 1 header + bottom nav en las 6 páginas públicas (antes 3 headers distintos)
+- Home: hero centrado, sheet de filtros (FS_KEYS=operation/type/province/bedrooms, case "apply-filters"), fav pop+toast, watchdog 8s anti-spinner-eterno (showState("error"))
+- Mapa reescrito: `showNoCoordsState` (nombre canónico, test 14D), sidebar/preview nx-card, aviso tiles caídos
+- Property: acento por token `{{BRAND_PRIMARY_COLOR}}` (nunca hardcodear #c2410c), key facts sin ceros
+- CSP: 12 hashes en worker.js — tras tocar cualquier `<script>` inline ejecutar `node scripts/generate-csp-hashes.mjs --write`
+- SW: `nexo-v10-static-swr` (bump en cada cambio de estáticos)
+- Tests: 246/246; CI/CD verde; GITHUB_TOKEN es read-only → push con GITHUB_API_KEY
+- Backlog visual: clusters de markers (>100 listings), galería con thumbnails, conversión de moneda UI
+
 ## 📐 Especificaciones de arquitectura (docs)
 - `identity-architecture.md` — Fase 04.0 Identity & Security spec (ARCHITECTURE READY)
 - `identity-architecture-adrs.md` — ADRs 001-011
