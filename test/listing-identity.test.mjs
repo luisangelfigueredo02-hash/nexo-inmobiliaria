@@ -143,6 +143,19 @@ test("DETALLE: numérico '9' resuelve por id interno (compatibilidad legacy)", a
   assert.deepEqual(q.binds, ["9"]);
 });
 
+test("15A: 'D-001' (demo) resuelve por public_code — regresión P0 detalle demo 404", async () => {
+  const demoRow = { ...ROW, id: 10, public_code: "D-001", title: "Casa demo" };
+  const { env, captured } = makeEnv({ rows: [demoRow] });
+  const res = await worker.fetch(req("/api/properties/D-001"), env);
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.public_code, "D-001");
+
+  const q = captured.find(c => /FROM properties WHERE public_code = \?/i.test(c.sql));
+  assert.ok(q, "query usa columna public_code para códigos D-");
+  assert.deepEqual(q.binds, ["D-001"]);
+});
+
 test("DETALLE: public_code case-insensitive ('n-001' → 'N-001')", async () => {
   const { env, captured } = makeEnv();
   const res = await worker.fetch(req("/api/properties/n-001"), env);

@@ -12,7 +12,8 @@ function clientContext(request) {
   return { userAgent: ua, ipSubset };
 }
 
-var PUBLIC_CODE_RE = /^N-\d+$/i;
+// N-XXX = inventario real; D-XXX = inventario demo (14C). Ambos son public_code.
+var PUBLIC_CODE_RE = /^(?:N|D)-\d+$/i;
 function listingLookup(param) {
   return PUBLIC_CODE_RE.test(param) ? { column: "public_code", value: param.toUpperCase() } : { column: "id", value: param };
 }
