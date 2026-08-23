@@ -71,11 +71,13 @@ CI/CD: `.github/workflows/deploy.yml` despliega en push a `main` con
 npx wrangler d1 execute nexo-db --local --file=schema.sql
 npx wrangler d1 migrations apply nexo-db --local
 
-# Producción
+# Producción (D1 recién creada: schema.sql PRIMERO — crea `properties`;
+# la migración 0002 hace ALTER sobre ella y fallaría sin este paso)
+npx wrangler d1 execute nexo-db --remote --file=schema.sql
 npx wrangler d1 migrations apply nexo-db --remote
 ```
 
-Esquema canónico: `schema.sql` + migraciones `migrations/0001–0005`.
+Esquema canónico: `schema.sql` + migraciones `migrations/0001–0007`.
 `properties.id` (INTEGER PK interno) + `properties.public_code` (`N-001`, público).
 
 ---

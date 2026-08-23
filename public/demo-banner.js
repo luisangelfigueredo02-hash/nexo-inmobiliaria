@@ -11,6 +11,17 @@
       "<strong>Modo demostraci\u00f3n</strong> \u2014 el inventario mostrado es de ejemplo.";
     b.style.cssText = "position:sticky;top:0;z-index:1200;background:linear-gradient(90deg,#b45309,#c2410c);color:#fff;text-align:center;padding:8px 12px;font-size:13px;font-weight:500;font-family:system-ui,sans-serif;";
     document.body.prepend(b);
+    // Headers fixed/sticky con top:0 quedarían tapados por el banner (p. ej.
+    // /mapa/, /comparar/, /ia/): desplazarlos justo debajo de él.
+    var shift = function () {
+      var h = b.getBoundingClientRect().height;
+      document.querySelectorAll("header").forEach(function (el) {
+        var pos = getComputedStyle(el).position;
+        if (pos === "fixed" || pos === "sticky") el.style.top = h + "px";
+      });
+    };
+    shift();
+    window.addEventListener("resize", shift);
   }
   window.showDemoBanner = showDemoBanner;
   fetch("/api/config")
