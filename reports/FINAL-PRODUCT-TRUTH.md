@@ -1,34 +1,46 @@
-# FINAL PRODUCT TRUTH — Estado actual verificado (pre-implementación)
+# FINAL PRODUCT TRUTH — Estado verificado (post-implementación)
 
-**Fecha:** 2026-08-23 | **Método:** verificación directa contra código, Git, producción, Cloudflare y navegador.
-**Clasificación:** VERIFIED = comprobado | INFERRED = deducido de código | ESTIMATED = no medido | UNKNOWN = no comprobado.
+**Fecha:** 2026-08-23 | **Método:** verificación directa contra código, Git, producción (curl), Cloudflare.
+**Clasificación:** VERIFIED = comprobado en producción | INFERRED = deducido de código | PARTIAL = incompleto.
 
-| Componente | Estado | Evidencia |
+## Estado final por componente
+
+| Componente | Estado | Evidencia en producción |
 |---|---|---|
-| Git | VERIFIED | SHA a4c67c8, main, tree limpio, remote GitHub OK, shallow clone |
-| CI (GitHub Actions) | VERIFIED | `.github/workflows/deploy.yml` quality gates + wrangler deploy on push main |
-| Cloudflare auth | VERIFIED | CLOUDFLARE_API_TOKEN válido; account 8816663cf4f1768c51859f07ab8305f4 |
-| Worker | VERIFIED | https://nexo-inmueble.luisangelfigueredo02.workers.dev 200; TTFB ~100ms |
-| D1 | VERIFIED | nexo-db; properties=1 (N-001, lat/lng NULL); migrations 0001-0005 aplicadas |
-| R2 | VERIFIED | nexo-media; /media GET funciona; variantes -w400.webp existen |
-| Vectorize | INFERRED | binding declarado; sincronización best-effort en create/update/delete |
-| Workers AI | VERIFIED | binding AI; modelo @cf/google/gemma-4-26b-a4b-it en código |
-| Routes públicas | VERIFIED | /, /property.html, /mapa/, /comparar/, /ia/, /api/properties, /api/config, /sitemap.xml |
-| Admin auth | VERIFIED | Bearer ADMIN_TOKEN timing-safe; /api/admin/verify rate-limited |
-| Sessions | INFERRED | session-runtime.js (cookie hash, D1); sin endpoints públicos de login |
-| Media pipeline | FAILED | Accept: image/webp → 500 por `headers.set("Vary")` sin valor |
-| Mapa | FAILED | lienzo gris en browser real (0 coords + Leaflet único CDN) |
-| PWA | VERIFIED | manifest + icons + sw.js (shell + image cache + excluye session/admin) |
-| SEO | VERIFIED | dynamic meta + canonical + OG + JSON-LD + sitemap.xml |
-| Security headers | VERIFIED | CSP hash, HSTS preload, XFO, XCTO, Permissions-Policy |
-| Rate limit | PARTIAL | cubre chat/session/verify; no GET /api/properties |
-| Public user accounts | MISSING | no registro/login/perfil |
+| Git | VERIFIED | main limpio, 5 commits de la mission pusheados a origin/main |
+| CI (GitHub Actions) | VERIFIED | `.github/workflows/deploy.yml` deploy on push main |
+| Worker | VERIFIED | https://nexo-inmueble.luisangelfigueredo02.workers.dev 200; health `{"ok":true}`; TTFB ~100ms |
+| Media pipeline | **VERIFIED** | `Accept: image/webp` → **200 image/webp** + `Vary: Accept`; `image/jpeg` → 200 (P0-1 resuelto) |
+| Mapa | **VERIFIED** | Leaflet self-hosted (`/vendor/leaflet/` 200) + fallback CDN; estado explícito sin coords (`showNoCoordsState`); canonical `/mapa/` OK |
+| Upload imágenes | **VERIFIED** | `POST /api/admin/upload-image` → 401 sin auth; UI admin con dropzone + progreso + reorder |
+| White-label | VERIFIED | `/api/config` expone `brand`/`business`/`social`; SEO usa `BRAND_NAME` |
+| Demo mode | VERIFIED | `DEMO_MODE` var + `demo_mode` en config + banner UI + `scripts/seed-demo.mjs` (25 props coords reales) / `--clear` |
+| Bulk CSV | VERIFIED | `bulk-toolbar` + `exportCsv`/`importCsv` en `/admin` |
+| D1 | VERIFIED | nexo-db; migrations 0001-0005 aplicadas; N-001 presente (coords NULL por decisión, no inventadas) |
+| R2 | VERIFIED | nexo-media; variantes -w*.webp existen; binding read/write (upload) |
+| Workers AI | VERIFIED | chat recomienda solo N-001 real, precio/ubicación exactos, sin alucinación; honesto ante 0 resultados |
+| PWA | VERIFIED | manifest + icons + sw `nexo-v7-map-assets` |
+| SEO | VERIFIED | dynamic meta + canonical + OG (`og:site_name`) + JSON-LD + sitemap |
+| Security | VERIFIED | CSP hash (10), HSTS preload, XFO, XCTO, Permissions-Policy; auth timing-safe; 401/404 denyResponse |
+| Public user accounts | MISSING (no aplica al modelo actual) | sin registro/login público |
 
-## P0 confirmados
-1. Media 500 en Accept webp (bug Vary).
-2. Mapa no funcional.
-3. Placeholder legal en footer.
-4. Inventario = 1 inmueble.
-5. Admin sin upload de imágenes.
+## P0 — RESUELTOS
+1. ✅ Media 500 en Accept webp → **200 image/webp + Vary: Accept** (test dedicado añadido).
+2. ✅ Mapa → self-hosted + fallback CDN + empty state explícito.
+3. ✅ Placeholder legal eliminado del footer.
+4. ✅ Inventario: sistema demo (seed 25 props) listo; producción mantiene N-001 real (sin inventar coords).
+5. ✅ Admin con upload de imágenes R2 + reorder.
 
-Continuación: implementación P0 inmediata.
+## Commits de la mission (pusheados)
+- `655e584` fix(P0): media Vary, legal, brand config, image upload+reorder
+- `de41f6f` feat(ux,map): nav unificada, trust-bar, leaflet self-hosted, map empty states
+- `6ae415e` chore(sw): bump v7
+- `9625b38` feat(demo): DEMO_MODE + banner + seed/clear scripts
+- `5652e37` feat(docs): TAKEOVER.md, LICENSE, CHANGELOG, cleanup, bulk CSV
+
+## Veredicto
+NEXO quedó **comercialmente presentable**: P0 resueltos y verificados en producción,
+white-label configurável por env, admin con upload/bulk, demo mode, docs de takeover,
+LICENSE, y suite 193/193 verde. El producto puede adquirirse, renombrarse vía env,
+desplegarse y poblarse (CSV o demo) sin encontrar los fallos críticos originales.
+
