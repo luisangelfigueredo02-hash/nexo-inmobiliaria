@@ -126,11 +126,11 @@ if (CLEAR) {
 }
 
 const inserts = properties.map(p => `INSERT INTO properties (
-  public_code, title, type, operation, price, province, city, neighborhood, address,
+  public_code, title, type, operation, price, currency, province, city, neighborhood, address,
   bedrooms, bathrooms, area, description, images, latitude, longitude, status,
   owner_name, owner_phone, internal_notes, contact_email
 ) VALUES (
-  ${esc(p.public_code)}, ${esc(p.title)}, ${esc(p.type)}, ${esc(p.operation)}, ${num(p.price)},
+  ${esc(p.public_code)}, ${esc(p.title)}, ${esc(p.type)}, ${esc(p.operation)}, ${num(p.price)}, 'USD',
   ${esc(p.province)}, ${esc(p.city)}, ${esc(p.neighborhood)}, ${esc(p.address)},
   ${num(p.bedrooms)}, ${num(p.bathrooms)}, ${num(p.area)}, ${esc(p.description)}, ${esc(p.images)},
   ${num(p.latitude)}, ${num(p.longitude)}, ${esc(p.status)},
