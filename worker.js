@@ -157,6 +157,7 @@ export default {
     try {
       return withSecurityHeaders(await this.route(request, env, ctx), request);
     } catch (error) {
+      console.error("worker fetch error:", error.message || error, error.stack || "");
       reportError(env, ctx, error, request.url);
       return withSecurityHeaders(new Response("Internal Error", { status: 500 }), request);
     }

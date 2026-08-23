@@ -4,7 +4,9 @@
 // vendible. Email+password PBKDF2 funciona íntegramente en Workers.
 // Formato almacenado: pbkdf2$<iteraciones>$<salt b64url>$<hash b64url>
 
-const ITERATIONS = 210000; // OWASP 2024 recomendación para PBKDF2-SHA256
+// Cloudflare Workers rechaza PBKDF2 con iteraciones > 100000 (NotSupportedError
+// verificado en producción). 100k es el máximo soportado y sigue siendo sólido.
+const ITERATIONS = 100000;
 const KEY_BITS = 256;
 
 function b64url(bytes) {
