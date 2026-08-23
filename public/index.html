@@ -124,6 +124,14 @@
             align-items: center;
             transition: color var(--duration-fast), background var(--duration-fast);
         }
+        /* 17B: viewports ≤480px — los 5 enlaces exceden el ancho y "Entrar"
+           quedaba clipeado. Se compactan paddings/fuente y el logo;
+           la altura táctil (44px) se mantiene. */
+        @media (max-width: 480px) {
+            .nx-header { padding: 0 var(--space-2); }
+            .nx-logo { font-size: var(--text-body); }
+            .nx-header__nav a { padding: var(--space-2) 6px; font-size: 12px; }
+        }
         .nx-header__nav a:hover { color: var(--color-ink); background: var(--color-surface-sunken); }
         .nx-header__nav a.active { color: var(--color-accent); font-weight: var(--weight-semibold); }
         .nx-header__nav a.account-link {
