@@ -1,7 +1,7 @@
+# Fallback estático: en producción el worker sirve /robots.txt dinámicamente
+# con el origin real del deployment (ver worker.js). No hardcodear dominios aquí.
 User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /admin.html
 Disallow: /api/
-
-Sitemap: https://nexo-inmueble.luisangelfigueredo02.workers.dev/sitemap.xml

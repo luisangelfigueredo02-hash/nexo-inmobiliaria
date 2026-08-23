@@ -47,7 +47,9 @@ test("buildBrand defaults NEXO sin env", () => {
   assert.equal(b.name, "NEXO");
   assert.equal(b.country, "Cuba");
   assert.equal(b.countryCode, "CU");
-  assert.ok(b.whatsapp.length > 0, "whatsapp default presente");
+  // Sin WHATSAPP_PHONE configurado el default es vacío: el código nunca
+  // embebe un número personal; los CTAs de WhatsApp se ocultan (Gate 20).
+  assert.equal(b.whatsapp, "");
 });
 
 test("applyTokens sustituye todos los tokens y escapa HTML", () => {

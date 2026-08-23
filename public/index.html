@@ -847,10 +847,13 @@
 
         function showState(type) {
             const inv = document.getElementById("inventory");
-            // CTA de demanda: si no hay inventario que mostrar, capturar la intención
+            // CTA de demanda: si no hay inventario que mostrar, capturar la intención.
+            // Sin WhatsApp configurado (WHATSAPP_PHONE vacío) el CTA se omite.
             const waPhone = whatsappPhone.replace("+", "");
-            const demandHref = `https://wa.me/${waPhone}?text=${encodeURIComponent(
-                "Hola {{BRAND_NAME}}, busco una propiedad y no la encontré en el catálogo. ¿Pueden ayudarme?")}`;
+            const demandCta = waPhone
+                ? `<a class="nx-btn nx-btn--tertiary" href="https://wa.me/${waPhone}?text=${encodeURIComponent(
+                    "Hola {{BRAND_NAME}}, busco una propiedad y no la encontré en el catálogo. ¿Pueden ayudarme?")}" target="_blank" rel="noopener noreferrer">Cuéntanos qué buscas</a>`
+                : "";
             const states = {
                 empty: `<div class="nx-state" style="grid-column:1/-1;">
                     <div class="nx-state__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/><path d="M8 11h6"/></svg></div>
@@ -858,7 +861,7 @@
                     <p>Prueba ampliando la zona, quitando algún filtro o ajustando el presupuesto máximo.</p>
                     <div style="display:flex; gap: var(--space-3); flex-wrap:wrap; justify-content:center;">
                         <button class="nx-btn nx-btn--secondary" data-action="clear-filters">Limpiar filtros</button>
-                        <a class="nx-btn nx-btn--tertiary" href="${demandHref}" target="_blank" rel="noopener noreferrer">Cuéntanos qué buscas</a>
+                        ${demandCta}
                     </div>
                 </div>`,
                 error: `<div class="nx-state" style="grid-column:1/-1;">

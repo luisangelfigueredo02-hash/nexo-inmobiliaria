@@ -18,7 +18,7 @@ const DEFAULTS = {
   businessName: "",
   legalName: "",
   phone: "",
-  whatsapp: "+5358385702",
+  whatsapp: "",
   email: "",
   address: "",
   websiteUrl: "",
@@ -143,8 +143,7 @@ export function buildManifest(brand, origin) {
     theme_color: brand.secondaryColor,
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icons/icon-512-maskable.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
+      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" }
     ],
     shortcuts: [
       { name: "Explorar propiedades", url: "/", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },

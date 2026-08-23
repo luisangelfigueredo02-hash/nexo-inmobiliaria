@@ -113,7 +113,7 @@ function pathSegmentsUnsafe(key) {
   return key.split("/").some((seg) => seg === ".." || seg === "" || seg === ".");
 }
 // === GENERATED CSP-SCRIPT-SRC:BEGIN (scripts/generate-csp-hashes.mjs, no editar a mano) ===
-const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE=' 'sha256-DTQi18HAT5m4eqlGReAIrz3DGPdIlPR6X2mASNg2adM=' 'sha256-EycqDQKztQxsTA3jQvhPdaEQB+3l8ewoWOH1zqH/yCY=' 'sha256-cZJZxPWh7Oczrm4/qwWl6Z10BGjf+urpF1w72YuQn04=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-ebNrBEyBPbWX3IpEKOsYL8DpsFpMnytqzmwFy9PsGNw=' 'sha256-fj9+zBQfQIlDCa+BuU3/qrUKsE6OMOLXcJ85wQakD0M=' 'sha256-k8/QEzy6VTXR1kQye4ofYhJXP6juQ9dnP+qQIuWw5ms=' 'sha256-knJdgz0IpHdH8NNEwMnhYGWf/ra01qX12bT34lMUt7U=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-qmwLkNcNCDPa0OjWteoePbory4oDXv5S0G0Y3YFp6Hc='";
+const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE=' 'sha256-AXL1iY0pBw/iR4h1Tn/X76v9wSnHD2xgv8PcMwJ272s=' 'sha256-G6B1Yk6Q6cgQZtV1PWy3eSrBQRAUxWXj/kwNEd6Cjuc=' 'sha256-L5hpy6a+nJAMYGKs3Nu3QRRQckKdaynwt0lbZOO+fYg=' 'sha256-cZJZxPWh7Oczrm4/qwWl6Z10BGjf+urpF1w72YuQn04=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-ebNrBEyBPbWX3IpEKOsYL8DpsFpMnytqzmwFy9PsGNw=' 'sha256-fj9+zBQfQIlDCa+BuU3/qrUKsE6OMOLXcJ85wQakD0M=' 'sha256-k8/QEzy6VTXR1kQye4ofYhJXP6juQ9dnP+qQIuWw5ms=' 'sha256-knJdgz0IpHdH8NNEwMnhYGWf/ra01qX12bT34lMUt7U=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8='";
 // === GENERATED CSP-SCRIPT-SRC:END ===
 var CSP_POLICY = [
   "default-src 'self'",
@@ -564,6 +564,26 @@ ${urls}
       } catch (err) {
         return new Response("Error generando sitemap", { status: 500 });
       }
+    }
+    // robots.txt dinámico: el sitemap apunta al origin real del deployment
+    // (white-label: ningún dominio queda hardcodeado en el archivo estático).
+    if (url.pathname === "/robots.txt" && method === "GET") {
+      const body = [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /admin",
+        "Disallow: /admin.html",
+        "Disallow: /api/",
+        "",
+        `Sitemap: ${url.origin}/sitemap.xml`,
+        ""
+      ].join("\n");
+      return new Response(body, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "public, max-age=3600"
+        }
+      });
     }
     if (url.pathname.startsWith("/media/") && env.BUCKET_IMAGENES && (method === "GET" || method === "HEAD")) {
       // 05.12/05.13 RISK-05: guard canónica — decodes fully and rejects traversal segments.

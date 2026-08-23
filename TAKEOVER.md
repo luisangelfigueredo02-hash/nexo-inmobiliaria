@@ -46,6 +46,19 @@ configurable también se expone en `/api/config`:
 Para rebrand: editar `[vars]`, `npx wrangler deploy`. Sin búsqueda/reemplazo
 manual en el HTML.
 
+Notas:
+
+- `WHATSAPP_PHONE` vacío es válido: los CTAs de WhatsApp se ocultan
+  automáticamente (ficha, home, comparador) en lugar de generar enlaces rotos.
+- `/robots.txt`, `/sitemap.xml` y `/manifest.webmanifest` se generan
+  dinámicamente con el origin real del deployment: ningún dominio queda
+  hardcodeado al cambiar de cuenta o de dominio personalizado.
+- Las provincias del filtro y el mapa de normalización (`PROVINCES` en
+  `public/index.html`) y el valor por defecto de provincia en
+  `public/admin.html` son datos de mercado (Cuba): ajústalos a tu mercado si
+  operas en otro país. El centro/zoom del mapa sí es configurable por env
+  (`MAP_CENTER_LAT/LNG/ZOOM`).
+
 ---
 
 ## 3. Despliegue
@@ -165,11 +178,19 @@ Guardar los backups **fuera del repo** (contienen datos de producción).
 
 ---
 
-## 7. Secretos a rotar al transferir
+## 7. Secretos y configuración a rotar al transferir
 
-- `ADMIN_TOKEN` (nuevo valor)
-- Credenciales Cloudflare del comprador
-- `SENTRY_DSN` (si se usa observabilidad propia)
+- `ADMIN_TOKEN` (nuevo valor: `wrangler secret put ADMIN_TOKEN`)
+- Credenciales Cloudflare del comprador (API token + Account ID en GitHub
+  Secrets para CI)
+- `WHATSAPP_PHONE` y datos de contacto en `wrangler.toml [vars]` (el valor
+  actual es el del operador saliente)
+- `SENTRY_DSN` (si se usa observabilidad propia; vacío = desactivado)
+- GitHub: transferir el repo (Settings → Transfer) o forkarlo; revisar
+  Settings → Pages (el repo tiene Pages activo del propietario original)
+- Cloudflare: el worker/D1/R2/Vectorize viven en la cuenta del vendedor;
+  la transferencia se hace creando los recursos en la cuenta del comprador
+  (esta guía §3-§5) y moviendo el dominio si aplica
 
 **Nunca** commitear tokens. Rotar cualquier secreto que haya aparecido en
 `~/.cf_token`, `~/.gh_token` o historiales compartidos.

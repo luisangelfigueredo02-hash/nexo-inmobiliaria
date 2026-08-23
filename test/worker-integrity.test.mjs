@@ -108,10 +108,15 @@ const VALID_PAYLOAD = {
 ========================================================= */
 
 test("/api/config devuelve whatsapp_phone", async () => {
-  const res = await worker.fetch(req("/api/config"), makeEnv());
+  // Configurado vía env: se expone tal cual.
+  const res = await worker.fetch(req("/api/config"), { ...makeEnv(), WHATSAPP_PHONE: "+1555000111" });
   assert.equal(res.status, 200);
   const data = await res.json();
-  assert.ok(data.whatsapp_phone);
+  assert.equal(data.whatsapp_phone, "+1555000111");
+  // Sin configurar: vacío (el código nunca embebe un número personal).
+  const res2 = await worker.fetch(req("/api/config"), makeEnv());
+  const data2 = await res2.json();
+  assert.equal(data2.whatsapp_phone, "");
 });
 
 

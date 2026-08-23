@@ -74,67 +74,84 @@ La configuración actual está enfocada en Cuba, con especial atención inicial 
 
 # 🔌 API
 
+Rutas públicas:
+
 | Método | Ruta | Uso |
 |---|---|---|
 | GET | `/api/health` | Estado del servicio |
-| POST | `/api/admin/login` | Sesión de administración (cookie HttpOnly) |
-| POST | `/api/admin/logout` | Cierre de sesión |
-| GET | `/api/admin/session` | Verificación de sesión |
-| GET | `/api/properties` | Catálogo (público: solo `available`) |
-| GET | `/api/properties?ids=A,B` | Comparación (máx. 5 IDs) |
-| GET | `/api/properties/:id` | Detalle público de propiedad |
-| POST | `/api/search` | Búsqueda inteligente |
-| POST | `/api/ia` | NEXO IA (búsqueda / recomendación / comparación) |
-| POST | `/api/properties` | Crear propiedad (admin) |
-| PUT/PATCH | `/api/properties/:id` | Editar propiedad (admin) |
-| DELETE | `/api/properties/:id` | Eliminar propiedad (admin) |
-| POST | `/api/properties/:id/geocode` | Geocodificación manual (admin) |
+| GET | `/api/config` | Config pública de marca/mercado (white-label) |
+| GET | `/api/properties` | Catálogo publicado (filtros por query string) |
+| GET | `/api/properties?ids=A,B` | Comparación (máx. 5) |
+| GET | `/api/properties/:ref` | Detalle público (`public_code` N-XXX o id legacy) |
+| GET | `/api/properties/:ref/similar` | Propiedades similares |
+| POST | `/api/chat` | Asistente IA (rate limited) |
+| GET | `/media/*` | Imágenes (R2, con negociación WebP) |
+| GET | `/sitemap.xml` · `/robots.txt` · `/manifest.webmanifest` | Generados dinámicamente con el origin real |
+
+Cuentas de usuario (cookie `__Host-session` HttpOnly):
+
+| Método | Ruta | Uso |
+|---|---|---|
+| POST | `/api/auth/register` | Registro (email + password, PBKDF2-SHA256) |
+| POST | `/api/auth/login` | Login |
+| GET | `/api/session/status` | Estado de sesión |
+| POST | `/api/session/logout` | Logout (CSRF por Origin) |
+| GET/PUT/DELETE | `/api/me/favorites[/:ref]` | Favoritos de la cuenta |
+
+Administración (header `Authorization: Bearer $ADMIN_TOKEN`):
+
+| Método | Ruta | Uso |
+|---|---|---|
+| POST | `/api/admin/verify` | Verificar token |
+| GET/POST | `/api/admin/properties` | Listar / crear propiedades |
+| PUT/DELETE | `/api/admin/properties/:id` | Editar / eliminar |
+| POST | `/api/admin/upload-image` | Subir imagen a R2 |
 
 Las rutas públicas nunca exponen `owner_name`, `owner_phone`,
-`contact_email`, `notes` ni `address` exacta sin sesión admin.
+`contact_email`, `internal_notes` ni `address` exacta (serialización
+whitelist por audiencia, ver `AUTHORIZATION.md`).
 
 ---
 
-# ✅ Estado del proyecto (MVP)
+# ✅ Estado del proyecto
 
-| Fase | Resultado | Estado |
-|---|---|---|
-| 1 | Auditoría y estabilización de base | ✔ Completada |
-| 2 | Consolidación del área administrativa | ✔ Completada |
-| 3 | Integración geográfica y mapa | ✔ Completada |
-| 4 | Integración profunda de NEXO IA | ✔ Completada |
-| 5 | Comparación inteligente y bases futuras | ✔ Completada |
-| 6 | Revisión final y MVP | ✔ Completada |
+Plataforma funcional en producción. Flujo de negocio verificado:
+Admin (crear/editar/publicar + imágenes R2) → D1 → Catálogo → Mapa →
+Comparación → Asistente IA (sobre inventario real).
 
-**Flujo de negocio verificado:**
-Admin (crear/editar → geocodificación automática o manual) →
-D1 → Mapa público → Catálogo → Comparación → NEXO IA
-(búsqueda / recomendación / comparación sobre inventario real).
-
-**Preparado para futuras fases:** tablas `users` y `favorites`
-ya existen en el esquema (vacías); índices de provincia y precio
-listos para escala geográfica.
+- Cuentas públicas de usuario (registro/login/favoritos) operativas.
+- Modo demo reversible: `scripts/seed-demo.mjs` (ver `TAKEOVER.md` §5).
+- White-label por variables de entorno: `src/brand.js` + `TAKEOVER.md` §2.
+- Las tablas legacy vacías (`users`, `favorites`, `user_favorites`) son
+  residuo inofensivo pendiente de cleanup; no las usa el código.
 
 ---
 
 # 🚀 Despliegue
 
 ```bash
-# Esquema de base de datos (idempotente)
-wrangler d1 execute nexo-db --remote --file=schema.sql
+npm install
 
-# Secreto de administración
-wrangler secret put ADMIN_PASSWORD
+# 1. Base de datos (D1 recién creada: schema.sql PRIMERO)
+npx wrangler d1 execute nexo-db --remote --file=schema.sql
+node scripts/apply-migrations.mjs --remote
 
-# Publicar
-wrangler deploy
+# 2. Secreto de administración
+npx wrangler secret put ADMIN_TOKEN
+
+# 3. Publicar
+npx wrangler deploy
 ```
+
+Usa SIEMPRE `scripts/apply-migrations.mjs` (no `wrangler d1 migrations
+apply`): hace idempotente el ALTER de la migration 0007. Guía completa de
+transferencia, rebrand y entrega limpia en `TAKEOVER.md`.
 
 ---
 
 # 🧪 Tests
 
 ```bash
-npm test     # suite del Worker (15 pruebas: rutas, auth, CORS, límites, privacidad)
+npm test       # suite completa (249 pruebas: rutas, auth, seguridad, white-label…)
 npm run check  # validación de sintaxis del Worker
 ```
