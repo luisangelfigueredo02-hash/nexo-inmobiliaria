@@ -43,7 +43,7 @@ La configuración actual está enfocada en Cuba, con especial atención inicial 
 | Backend | Cloudflare Workers |
 | Base de datos | Cloudflare D1 / SQLite |
 | IA | Cloudflare Workers AI |
-| Geocodificación | Nominatim / OpenStreetMap |
+| Geolocalización | Coordenadas por clic en el mapa del admin (Leaflet) |
 | Hosting | Cloudflare Workers |
 | Código | GitHub |
 
