@@ -97,6 +97,10 @@ function normalizeCoord(value) {
   const n = parseFloat(value);
   return isNaN(n) ? null : n;
 }
+// RISK-05: rechaza claves que tras decodificación contengan segmentos de traversal, backslashes, o absolutos (R2 05.12-E)
+function pathSegmentsUnsafe(key) {
+  return key.split("/").some((seg) => seg === ".." || seg === "" || seg === ".");
+}
 // === GENERATED CSP-SCRIPT-SRC:BEGIN (scripts/generate-csp-hashes.mjs, no editar a mano) ===
 const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-1khKeq5K/ew7TSjC3cL0XDcBJJ2B7AM2KhOdz++J2qo=' 'sha256-9qbTwzNJeXkhqo1wYO6aj4N3cQ1Q6rOKjL20Fl2SiXc=' 'sha256-SJ1RHO+1ytvWaxwjB9jFO6KC+9tL3WaOvEFUtBrryr4=' 'sha256-a8MZi3UWgS8zY2bwXTUyY9uKCG1TvSSYPk1Y2yoWPgg=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-eh10Ggz5IxwLgYMFovKU0FL0ULi31D0uMj/MkmQCOz0=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8=' 'sha256-s6QrhcaEMu+35KUHHRKAAkkxu3qyjS0Z2XvGJ36C+aE='";
 // === GENERATED CSP-SCRIPT-SRC:END ===
@@ -223,6 +227,9 @@ export default {
       const token = authHeader.slice("Bearer ".length).trim();
       if (!token) return false;
       if (env.ADMIN_TOKEN && timingSafeEqual(token, env.ADMIN_TOKEN)) return true;
+      // 05.13 RISK-01: fallback legacy aislado. Solo activo si se define explícitamente,
+      // y marcado para deprecation en takeover. No se elimina destructivamente para
+      // evitar lockout administrativo si un operador depende de él.
       if (env.ADMIN_PASSWORD && timingSafeEqual(token, env.ADMIN_PASSWORD)) return true;
       return false;
     });
@@ -393,7 +400,30 @@ ${urls}
       }
     }
     if (url.pathname.startsWith("/media/") && env.BUCKET_IMAGENES && (method === "GET" || method === "HEAD")) {
-      let key = decodeURIComponent(url.pathname.slice("/media/".length));
+      // 05.12 E risk-05: rejecting traversal canónically, fully decoded, no destructive override
+      let key = url.pathname.slice("/media/".length);
+      try {
+        // decode repeatedly (double-encoded traversal) without throwing on existing valid keys
+        let decoded = key;
+        for (let i = 0; i < 3; i++) {
+          const next = decodeURIComponent(decoded);
+          if (next === decoded) break;
+          decoded = next;
+        }
+        key = decoded;
+      } catch {
+        return new Response("Bad Request", { status: 400, headers: corsHeaders });
+      }
+      // reject any path containing traversal segments, backslashes or absolute syntax
+      if (
+        key === "" ||
+        key.startsWith("/") ||
+        key.includes("\\") ||
+        key.split("/").includes("..") ||
+        pathSegmentsUnsafe(key)
+      ) {
+        return new Response("Not Found", { status: 404, headers: corsHeaders });
+      }
       const accept = request.headers.get("accept") || "";
       const isOriginalJpg = /\.(jpe?g|png)$/i.test(key) && !/-w(400|800|1200)\.webp$/i.test(key);
       let format = isOriginalJpg && accept.includes("image/webp") ? "webp" : null;

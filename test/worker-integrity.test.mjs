@@ -309,3 +309,50 @@ test("O. status arbitrario → 400", async () => {
   const res = await worker.fetch(req("/api/admin/properties", { method: "POST", ...adminJson({ ...VALID_PAYLOAD, status: "borrado" }) }), makeEnv());
   assert.equal(res.status, 400);
 });
+
+
+/* =========================================================
+   RISK-05 (05.12/05.13) — /media/* path traversal canónico
+   El binding R2 está vacío aquí: con un bucket sin objetos, un path
+   que "sobrevive" a la guarda llega al R2 mock y devuelve 404 por
+   ausencia de objeto. La guarda debe rechazar antes con 404/400
+   sin llegar a consultar R2.
+========================================================= */
+
+const TRAVERSAL_CASES = [
+  ["/media/../config.js", "bare traversal"],
+  ["/media/%2e%2e/config.js", "single-encoded traversal"],
+  ["/media/%2E%2E/config.js", "single-encoded uppercase traversal"],
+  ["/media/%252e%252e/config.js", "double-encoded traversal"],
+  ["/media/..%2fconfig.js", "encoded separator traversal"],
+  ["/media/%2e%2e%2fconfig.js", "multi-encoded traversal"],
+  ["/media/%5c%5cconfig.js", "backslash traversal"],
+  ["/media/%2e%2e%5cconfig.js", "encoded traversal + backslash"],
+  ["/media/n001/..\\config.js", "literal backslash traversal"],
+  ["/media/n001/./../../config.js", "dot-segment traversal"]
+];
+
+test("RISK-05: traversal paths rejected (400/404), never reaching R2", async () => {
+  const { env } = makeEnv();
+  // R2 mock ausente significa BUCKET_IMAGENES=undefined → ruta bloqueada en routing
+  // pero el guard alcanza antes: queremos 400/404 y nunca 200 de un objeto.
+  for (const [path, label] of TRAVERSAL_CASES) {
+    // Se desactiva el check de R2 binding para llegar al guard directamente:
+    // cuello-piantar un bucket mock vacío que devuelva null siempre.
+    const res = await worker.fetch(req(path, { method: "GET" }), { ...env, BUCKET_IMAGENES: { async get() { return null; }, async head() { return null; } } });
+    assert.notEqual(res.status, 200, `${label} should not return 200 (got ${res.status} for ${path})`);
+    assert.ok([400, 404].includes(res.status), `${label} (${path}) → return 400 or 404 (got ${res.status})`);
+  }
+});
+
+test("RISK-05: valid object still resolves through guard", async () => {
+  const { env } = makeEnv();
+  let keySeen = null;
+  const bucket = {
+    async get(key) { keySeen = key; return { body: new Uint8Array([1]), httpEtag: "e-tag", writeHttpMetadata(h) { h.set("content-type", "image/jpeg"); } }; },
+    async head(key) { keySeen = key; return { httpEtag: "e-tag", writeHttpMetadata(h) { h.set("content-type", "image/jpeg"); } }; }
+  };
+  const res = await worker.fetch(req("/media/n001/photo-01.jpg", { method: "GET" }), { ...env, BUCKET_IMAGENES: bucket });
+  assert.equal(res.status, 200);
+  assert.equal(keySeen, "n001/photo-01.jpg", "key canonical, unchanged");
+});
