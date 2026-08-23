@@ -3,6 +3,30 @@
 Todos los cambios notables del producto NEXO. Formato basado en
 [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
+## [Unreleased] — Master Productization & Sale-Ready (Fases 06–12)
+
+### Añadido (FASE 07)
+- **Sistema público de usuarios**: `POST /api/auth/register`, `POST /api/auth/login`,
+  `GET|PUT|DELETE /api/me/favorites`. Passwords PBKDF2-SHA256 100k (Workers),
+  cookie `__Host-session` (HttpOnly/Secure/SameSite=Lax, rotación y revocación).
+- **`/cuenta/`**: página de cuenta con tabs login/registro, favoritos sincronizados
+  y logout. Favoritos locales anónimos se fusionan al servidor al autenticarse.
+- Migration **0006**: `accounts.password_hash` + `account_favorites`.
+- Aislamiento admin: el plano público nunca habilita admin (tests).
+
+### Corregido
+- **PBKDF2 210k → 100k**: Cloudflare Workers rechaza iteraciones >100000
+  (NotSupportedError verificado en producción; antes: registro 500).
+- Trust-bar concordancia ("1 propiedad"); chip "Más filtros" consistente.
+
+### Documentación (FASE 12)
+- `DEPLOYMENT.md`, `SECURITY.md`, `ARCHITECTURE.md` + `reports/06..12-*`.
+
+### Decisión documentada
+- La spec 04.0 era passwordless-first, pero magic link requiere email provider
+  inexistente → email+password PBKDF2 adoptado (ver `reports/07-user-system.md`).
+- Recovery de cuenta: P1 abierta (requiere proveedor de email).
+
 ## [Unreleased] — Final Productization (Master Execution Mission)
 
 ### Corregido (P0)
