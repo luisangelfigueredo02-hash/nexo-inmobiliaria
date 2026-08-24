@@ -104,8 +104,8 @@ URL única de producción: https://nexo-inmueble.luisangelfigueredo02.workers.de
 - Mapa reescrito: `showNoCoordsState` (nombre canónico, test 14D), sidebar/preview nx-card, aviso tiles caídos
 - Property: acento por token `{{BRAND_PRIMARY_COLOR}}` (nunca hardcodear #c2410c), key facts sin ceros
 - CSP: 12 hashes en worker.js — tras tocar cualquier `<script>` inline ejecutar `node scripts/generate-csp-hashes.mjs --write`
-- SW: `nexo-v10-static-swr` (bump en cada cambio de estáticos)
-- Tests: 246/246; CI/CD verde; GITHUB_TOKEN es read-only → push con GITHUB_API_KEY
+- SW: `nexo-v12-static-swr` (bump en cada cambio de estáticos)
+- Tests: 251/251; CI/CD verde; GITHUB_TOKEN es read-only → push con GITHUB_API_KEY
 - Backlog visual: clusters de markers (>100 listings), galería con thumbnails, conversión de moneda UI
 
 ## 📐 Especificaciones de arquitectura (docs)

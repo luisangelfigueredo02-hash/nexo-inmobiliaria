@@ -89,5 +89,5 @@ jobs:
 
       - name: Confirmar despliegue
         run: |
-          echo "✔ Desplegado: nexo-platform"
+          echo "✔ Desplegado: nexo-inmueble"
           echo "Versión publicada en el edge de Cloudflare"

@@ -81,7 +81,6 @@ Rutas públicas:
 | GET | `/api/health` | Estado del servicio |
 | GET | `/api/config` | Config pública de marca/mercado (white-label) |
 | GET | `/api/properties` | Catálogo publicado (filtros por query string) |
-| GET | `/api/properties?ids=A,B` | Comparación (máx. 5) |
 | GET | `/api/properties/:ref` | Detalle público (`public_code` N-XXX o id legacy) |
 | GET | `/api/properties/:ref/similar` | Propiedades similares |
 | POST | `/api/chat` | Asistente IA (rate limited) |
@@ -152,6 +151,6 @@ transferencia, rebrand y entrega limpia en `TAKEOVER.md`.
 # 🧪 Tests
 
 ```bash
-npm test       # suite completa (249 pruebas: rutas, auth, seguridad, white-label…)
+npm test       # suite completa (251 pruebas: rutas, auth, seguridad, white-label…)
 npm run check  # validación de sintaxis del Worker
 ```

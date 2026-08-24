@@ -231,7 +231,17 @@
                     const price = p.currency === "USD" ? `US$${Number(p.price).toLocaleString("en-US")}` : Number(p.price).toLocaleString("en-US");
                     const meta = document.createElement("div");
                     meta.className = "meta";
-                    meta.innerHTML = `<div class="price">${price}</div><div>${p.title || p.public_code}</div><div class="loc">${[p.neighborhood, p.province].filter(Boolean).join(", ")}</div>`;
+                    // textContent: título/ubicación vienen de D1 — jamás innerHTML
+                    // sin escapar (inyección HTML almacenada).
+                    const priceEl = document.createElement("div");
+                    priceEl.className = "price";
+                    priceEl.textContent = price;
+                    const titleEl = document.createElement("div");
+                    titleEl.textContent = p.title || p.public_code;
+                    const locEl = document.createElement("div");
+                    locEl.className = "loc";
+                    locEl.textContent = [p.neighborhood, p.province].filter(Boolean).join(", ");
+                    meta.append(priceEl, titleEl, locEl);
                     if (img) {
                         const el = document.createElement("img");
                         el.src = img.replace(/\.(jpe?g|png)$/i, "-w400.webp");

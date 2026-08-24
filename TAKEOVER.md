@@ -142,7 +142,7 @@ wrangler d1 execute nexo-db --remote \
   --command "DELETE FROM sessions; DELETE FROM account_favorites; DELETE FROM accounts;"
 
 # 4. Verificación: catálogo vacío + empty state, registro/login funcionales
-curl https://<dominio>/api/properties   # → {"properties":[]}
+curl https://<dominio>/api/properties   # → []
 ```
 
 Limitaciones conocidas: `demo-clear.sql` NO borra cuentas/favoritos (los

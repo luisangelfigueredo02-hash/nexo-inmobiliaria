@@ -211,3 +211,38 @@ test("11. login: el límite estricto no afecta a otras rutas", async () => {
   assert.equal(res.status, 200);
 });
 
+/* Regresión (forensic gate 2026-08-24): register tenía solo el límite general
+   (20/min) → creación masiva de cuentas por IP. Ahora comparte el límite
+   estricto scoped ("auth-register", 10/5min) como login. */
+
+function registerReq(ip) {
+  return new Request(BASE + "/api/auth/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "CF-Connecting-IP": ip,
+      "Origin": BASE
+    },
+    body: JSON.stringify({ email: `u${Math.random()}@example.com`, password: "password-larga-123" })
+  });
+}
+
+test("12. register: intento AUTH_LIMIT_DEF.max+1 desde misma IP → 429", async () => {
+  const env = makeEnv();
+  for (let i = 0; i < AUTH_LIMIT_DEF.max; i++) {
+    const res = await worker.fetch(registerReq(env.__LIMIT_IP), env);
+    assert.notEqual(res.status, 429, `registro ${i + 1} no debe ser 429`);
+  }
+  const res = await worker.fetch(registerReq(env.__LIMIT_IP), env);
+  assert.equal(res.status, 429);
+});
+
+test("13. register: el límite scoped no bloquea a otra IP", async () => {
+  const env = makeEnv();
+  for (let i = 0; i < AUTH_LIMIT_DEF.max; i++) {
+    await worker.fetch(registerReq(env.__LIMIT_IP), env);
+  }
+  const res = await worker.fetch(registerReq("198.51.100.9"), env);
+  assert.notEqual(res.status, 429);
+});
+

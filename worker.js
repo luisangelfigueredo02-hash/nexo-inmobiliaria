@@ -113,7 +113,7 @@ function pathSegmentsUnsafe(key) {
   return key.split("/").some((seg) => seg === ".." || seg === "" || seg === ".");
 }
 // === GENERATED CSP-SCRIPT-SRC:BEGIN (scripts/generate-csp-hashes.mjs, no editar a mano) ===
-const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE=' 'sha256-AXL1iY0pBw/iR4h1Tn/X76v9wSnHD2xgv8PcMwJ272s=' 'sha256-G6B1Yk6Q6cgQZtV1PWy3eSrBQRAUxWXj/kwNEd6Cjuc=' 'sha256-L5hpy6a+nJAMYGKs3Nu3QRRQckKdaynwt0lbZOO+fYg=' 'sha256-cZJZxPWh7Oczrm4/qwWl6Z10BGjf+urpF1w72YuQn04=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-ebNrBEyBPbWX3IpEKOsYL8DpsFpMnytqzmwFy9PsGNw=' 'sha256-fj9+zBQfQIlDCa+BuU3/qrUKsE6OMOLXcJ85wQakD0M=' 'sha256-k8/QEzy6VTXR1kQye4ofYhJXP6juQ9dnP+qQIuWw5ms=' 'sha256-knJdgz0IpHdH8NNEwMnhYGWf/ra01qX12bT34lMUt7U=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8='";
+const CSP_SCRIPT_SRC = "'self' https://unpkg.com 'sha256-+MR2RqQmwkgF2nCzCLGIAkRZ6JLha92X4pCX12p1nNE=' 'sha256-AXL1iY0pBw/iR4h1Tn/X76v9wSnHD2xgv8PcMwJ272s=' 'sha256-CSxrDv2Z3rB1rGguHXpUiRufa8RwJSpLshBZTgbQC58=' 'sha256-G6B1Yk6Q6cgQZtV1PWy3eSrBQRAUxWXj/kwNEd6Cjuc=' 'sha256-L5hpy6a+nJAMYGKs3Nu3QRRQckKdaynwt0lbZOO+fYg=' 'sha256-cZJZxPWh7Oczrm4/qwWl6Z10BGjf+urpF1w72YuQn04=' 'sha256-cj+xP4VvVU4mMT+NWCf992zhnujY/t9Sf6qU6IcdtuE=' 'sha256-ebNrBEyBPbWX3IpEKOsYL8DpsFpMnytqzmwFy9PsGNw=' 'sha256-k8/QEzy6VTXR1kQye4ofYhJXP6juQ9dnP+qQIuWw5ms=' 'sha256-knJdgz0IpHdH8NNEwMnhYGWf/ra01qX12bT34lMUt7U=' 'sha256-o08bddWbJ/IzIgR00hBRqFu+/6sMrOkz9zymrJU8w9U=' 'sha256-obiTLnS/y6BeEzKCtQ3jTRfZ2HObfPZoZ+s++fRrLH8='";
 // === GENERATED CSP-SCRIPT-SRC:END ===
 var CSP_POLICY = [
   "default-src 'self'",
@@ -360,6 +360,10 @@ export default {
     if (url.pathname === "/api/auth/register" && method === "POST") {
       const rate = await enforceRateLimit(env, request);
       if (rate.limited) return rejectResponse(rate.retryAfter, corsHeaders);
+      // Mismo límite estricto que login: sin él, el límite general (20/min)
+      // permitía crear cuentas en masa por IP.
+      const registerRate = await enforceScopedRateLimit(env, request, "auth-register");
+      if (registerRate.limited) return rejectResponse(registerRate.retryAfter, corsHeaders);
       if (!isStateChangingAllowed(request, allowedOrigin)) return authJsonReq({ error: "Origin no permitido" }, 403);
       const body = await authJson();
       const email = String(body?.email || "").trim().toLowerCase();
@@ -489,7 +493,6 @@ export default {
             const currencyJson = property.currency ? `,
                 "priceCurrency": ${JSON.stringify(property.currency)}` : "";
             const seoTags = `
-              <title>${seoTitle} | ${seoBrand}</title>
               <meta name="description" content="${seoDesc || seoBrandDesc}.">
               <link rel="canonical" href="${seoUrl}">
               <meta property="og:title" content="${seoTitle} - ${seoBrand}">
@@ -522,6 +525,9 @@ export default {
               <\/script>
             `;
             htmlContent = htmlContent.replace("<!-- SEO_TAGS -->", seoTags);
+            // Un único <title>: reemplazar el estático de la plantilla en vez
+            // de inyectar uno adicional (HTML inválido con dos <title>).
+            htmlContent = htmlContent.replace(/<title>[^<]*<\/title>/, `<title>${seoTitle} | ${seoBrand}</title>`);
           }
         } catch (err) {
           console.error("Error en SEO dinámico:", err);
@@ -1176,7 +1182,9 @@ Descripción: ${p.description}
     if (env.ASSETS) {
       const assetRes = await env.ASSETS.fetch(request);
       const contentType = assetRes.headers.get("Content-Type") || "";
-      if (assetRes.ok && contentType.includes("text/html")) {
+      // HEAD: sin cuerpo que transformar; servir tal cual (evita un CSP de
+      // respuesta sin hashes calculado sobre HTML vacío).
+      if (assetRes.ok && contentType.includes("text/html") && request.method !== "HEAD") {
         const html = await assetRes.text();
         const transformed = applyTokens(html, BRAND, url.origin);
         const headers = new Headers(assetRes.headers);
